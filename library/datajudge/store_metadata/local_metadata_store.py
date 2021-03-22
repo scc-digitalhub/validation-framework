@@ -8,15 +8,17 @@ from datajudge.utils.file_utils import (check_dir, get_path, make_dir,
 class LocalMetadataStore(MetadataStore):
     """Local store."""
 
-    def __init__(self, uri_metadata: str) -> None:
-        super().__init__(uri_metadata)
+    def __init__(self,
+                 uri_metadata: str,
+                 credentials:  Optional[dict] = None) -> None:
+        super().__init__(uri_metadata, credentials)
 
     def create_run_enviroment(self,
                               run_id: str,
                               overwrite: bool) -> None:
         """Check if run folder already exist,
         otherwise it creates it."""
-        uri = self.get_run_metadata_uri(run_id)        
+        uri = self.get_run_metadata_uri(run_id)
         if check_dir(uri):
             if overwrite:
                 raise OSError("Run already exists, please use another id")
@@ -32,7 +34,7 @@ class LocalMetadataStore(MetadataStore):
         write_json(src, dst)
 
     @staticmethod
-    def build_source_destination(dst: str,
+    def _build_source_destination(dst: str,
                                  src_type: str) -> str:
         """Return source destination based
         on source type."""
@@ -45,7 +47,7 @@ class LocalMetadataStore(MetadataStore):
             src_name = FileNames.DATA_RESOURCE.value
         else:
             raise RuntimeError("No such metadata type.")
-        
+
         return get_path(dst, src_name)
 
     def get_run_metadata_uri(self, run_id: str) -> str:

@@ -1,17 +1,17 @@
 from enum import Enum
 
 
-class ClientDefault(Enum):
-    # Default names
-    EXP_NAME = "DefaultExp"
-    PROJ_ID = "DefaultProj"
-    STORE_URI = "./validruns"
-    CREDENTIALS = None
-
-
-class OutputDesc(Enum):
-    ARTIFACT = "artifact"
-    METADATA = "metadata"
+# Default names
+EXP_NAME = "DefaultExp"
+PROJ_ID = "DefaultProj"
+METADATA_STORE_PARAMS = {
+    "store_uri" : "./validruns",
+    "credentials": None
+}
+ARTIFACT_STORE_PARAMS = {
+    "store_uri" : "./validruns",
+    "credentials": None
+}
 
 
 class FileNames(Enum):
@@ -23,7 +23,7 @@ class FileNames(Enum):
     FULL_REPORT = "report_full.json"
     SCHEMA_INFERRED = "inferred_schema.json"
 
-    
+
 class ApiEndpoint(Enum):
     RUN = "run-metadata/"
     DATA_RESOURCE = "data-resource/"

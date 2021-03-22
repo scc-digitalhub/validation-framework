@@ -7,8 +7,11 @@ class MetadataStore:
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, uri_metadata: str) -> None:
+    def __init__(self,
+                 uri_metadata: str,
+                 credentials:  Optional[dict] = None) -> None:
         self.uri_metadata = uri_metadata
+        self.credentials = credentials
 
     @abstractmethod
     def create_run_enviroment(self,
@@ -38,7 +41,7 @@ class MetadataStore:
 
     @staticmethod
     @abstractmethod
-    def build_source_destination(src_type: str):
+    def _build_source_destination(src_type: str):
         """Return source destination based
         on source type."""
         pass

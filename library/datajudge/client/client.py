@@ -7,7 +7,8 @@ from typing import Any, Optional
 
 from slugify import slugify
 
-from datajudge.utils.constants import ClientDefault
+from datajudge.utils.constants import (ARTIFACT_STORE_PARAMS, EXP_NAME,
+                                       METADATA_STORE_PARAMS, PROJ_ID)
 from datajudge.utils.factories import get_stores, select_run_flavour
 
 # For type checking -> avoids circular imports
@@ -20,11 +21,11 @@ class Client:
     """Client class."""
 
     def __init__(self,
-                 project_id: Optional[str] = ClientDefault.PROJ_ID.value,
-                 experiment_name: Optional[str] = ClientDefault.EXP_NAME.value,
-                 metadata_store_uri: Optional[str] = ClientDefault.STORE_URI.value,
-                 artifact_store_uri: Optional[str] = ClientDefault.STORE_URI.value,
-                 credentials: Optional[dict] = ClientDefault.CREDENTIALS.value) -> None:
+                 project_id: Optional[str] = PROJ_ID,
+                 experiment_name: Optional[str] = EXP_NAME,
+                 metadata_params: Optional[str] = METADATA_STORE_PARAMS,
+                 artifact_params: Optional[str] = ARTIFACT_STORE_PARAMS,
+                 ) -> None:
 
         self._project_id = project_id
         self._experiment_name = experiment_name
@@ -33,9 +34,8 @@ class Client:
                                       separator="_")
         self._metadata_store, self._artifact_store = get_stores(self._experiment_id,
                                                                 self._project_id,
-                                                                metadata_store_uri,
-                                                                artifact_store_uri,
-                                                                credentials)
+                                                                metadata_params,
+                                                                artifact_params)
 
     def create_run(self,
                    data_resource: DataResource,

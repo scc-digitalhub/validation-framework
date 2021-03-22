@@ -11,8 +11,10 @@ from datajudge.utils.rest_utils import (api_delete_call, api_get_call,
 class RestMetadataStore(MetadataStore):
     """Rest store."""
 
-    def __init__(self, uri_metadata: str):
-        super().__init__(uri_metadata)
+    def __init__(self,
+                 uri_metadata: str,
+                 credentials:  Optional[dict] = None) -> None:
+        super().__init__(uri_metadata, credentials)
         self._key_vault = {
             MetadataType.RUN_METADATA.value: [],
             MetadataType.SHORT_REPORT.value: [],
@@ -46,7 +48,7 @@ class RestMetadataStore(MetadataStore):
             api_put_call(contents, dst)
 
     @staticmethod
-    def build_source_destination(dst:str,
+    def _build_source_destination(dst:str,
                                  src_type: str,
                                  key: Optional[str] = None) -> str:
         """Return source destination based
