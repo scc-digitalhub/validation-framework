@@ -91,7 +91,7 @@ public class RunMetadataService {
 		
 		String experimentName = request.getExperimentName();
 		String runId = request.getRunId();
-		if ((experimentName != null && experimentName != documentToUpdate.getExperimentName()) || (runId != null && runId != documentToUpdate.getRunId()))
+		if ((experimentName != null && !(experimentName.equals(documentToUpdate.getExperimentName()))) || (runId != null && (!runId.equals(documentToUpdate.getRunId()))))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A value was specified for experiment_name and/or run_id, but they do not match the values in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
 		
 		documentToUpdate.setContents(request.getContents());
