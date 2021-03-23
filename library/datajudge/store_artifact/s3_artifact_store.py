@@ -1,9 +1,9 @@
 import json
 import os
-from botocore.client import ClientError
 from pathlib import Path
 from typing import Any, Optional
 
+from botocore.client import ClientError
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.s3_utils import (build_S3_key, build_s3_uri, get_bucket,
                                       s3client_creator)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import typing
 from typing import Any, Optional
 
-from slugify import slugify
+from slugify import slugify  # pylint: disable=import-error
 
 from datajudge.utils.constants import (ARTIFACT_STORE_PARAMS, EXP_NAME,
                                        METADATA_STORE_PARAMS, PROJ_ID)
@@ -18,13 +18,40 @@ if typing.TYPE_CHECKING:
 
 
 class Client:
-    """Client class."""
+    """Client class.
+
+    Attributes
+    ----------
+    project_id :
+        The id of the project, needed for the rest metadata store.
+    experiment_name :
+        Experiment name. An experiment is a logical unit for keeping
+        together the validation runs made on a Data Package/Data Resource.
+    metadata_params :
+        A dictionary containing two keys:
+            'store_uri', a uri string pointing to the metadata store
+            'credentials', a dictionary with access credentials.
+        By default 'store_uri' point to local './validruns' and
+        'credentials' is None.
+    artifact_params :
+        A dictionary containing two keys:
+            'store_uri', a uri string pointing to the artifact store
+            'credentials', a dictionary with access credentials.
+        By default 'store_uri' point to local './validruns' and
+        'credentials' is None.
+
+    Methods
+    -------
+    create_run :
+        Create a run for a specific validation framework.
+
+    """
 
     def __init__(self,
                  project_id: Optional[str] = PROJ_ID,
                  experiment_name: Optional[str] = EXP_NAME,
-                 metadata_params: Optional[str] = METADATA_STORE_PARAMS,
-                 artifact_params: Optional[str] = ARTIFACT_STORE_PARAMS,
+                 metadata_params: Optional[dict] = None,
+                 artifact_params: Optional[dict] = None,
                  ) -> None:
 
         self._project_id = project_id
@@ -32,6 +59,13 @@ class Client:
         self._experiment_id = slugify(experiment_name,
                                       max_length=20,
                                       separator="_")
+
+        # Because of mutable default args
+        if not metadata_params:
+            metadata_params = METADATA_STORE_PARAMS
+        if not artifact_params:
+            artifact_params = ARTIFACT_STORE_PARAMS
+
         self._metadata_store, self._artifact_store = get_stores(self._experiment_id,
                                                                 self._project_id,
                                                                 metadata_params,
@@ -41,8 +75,26 @@ class Client:
                    data_resource: DataResource,
                    validation_library: str,
                    run_id: Optional[str] = None,
-                   overwrite: Optional[bool] = True) -> Run:
-        """Create a new run."""
+                   overwrite: Optional[bool] = False) -> Run:
+        """Create a new run.
+
+        Parameters
+        ----------
+        validation_library :
+            Name of the validation framework used to perform
+            the validation task. Used to select a specific
+            Run object.
+        run_id :
+            Optional string parameter for the run id.
+        overwrite :
+            If True, the run metadata/artifact can be overwritten
+            by a run with the same id.
+
+        Return
+        ------
+        Return a specific Run object.
+
+        """
 
         run_id = self._metadata_store.get_run_id(run_id)
 

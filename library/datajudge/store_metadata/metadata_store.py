@@ -41,7 +41,7 @@ class MetadataStore:
 
     @staticmethod
     @abstractmethod
-    def _build_source_destination(src_type: str):
+    def _build_source_destination(src_type: str) -> str:
         """Return source destination based
         on source type."""
         pass

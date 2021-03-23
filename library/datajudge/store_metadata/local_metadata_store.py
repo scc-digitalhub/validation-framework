@@ -30,7 +30,7 @@ class LocalMetadataStore(MetadataStore):
                          dst: str,
                          src_type: str) -> None:
         """Method to persist metadata locally."""
-        dst = self.build_source_destination(dst, src_type)
+        dst = self._build_source_destination(dst, src_type)
         write_json(src, dst)
 
     @staticmethod

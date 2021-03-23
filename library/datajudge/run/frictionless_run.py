@@ -5,13 +5,12 @@ from mimetypes import guess_type
 from typing import Any, Optional
 
 import frictionless
-from frictionless import Resource
-from frictionless.report import Report
-from frictionless.schema import Schema
-
 from datajudge.data import ShortReport
 from datajudge.run import Run
 from datajudge.utils.constants import FileNames, MetadataType
+from frictionless import Resource
+from frictionless.report import Report
+from frictionless.schema import Schema
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client

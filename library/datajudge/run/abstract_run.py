@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 import typing
-from typing import Any, Optional
 from abc import ABCMeta, abstractmethod
+from typing import Any, Optional
 
 from datajudge.utils.time_utils import get_time
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
-    from datajudge.data import DataResource
-    from datajudge.data import ShortReport
+    from datajudge.data import DataResource, ShortReport
     from datajudge.run import RunInfo
 
 

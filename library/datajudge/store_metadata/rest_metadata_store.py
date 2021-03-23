@@ -39,7 +39,7 @@ class RestMetadataStore(MetadataStore):
                 if elm["run_id"] == contents["run_id"]:
                     key = elm["key"]
 
-        dst = self.build_source_destination(dst, src_type, key)
+        dst = self._build_source_destination(dst, src_type, key)
 
         if key is None:
             response = api_post_call(contents, dst)

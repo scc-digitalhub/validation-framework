@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import typing
 import urllib.parse
-from typing import Any, Iterable, Optional, Tuple
+from typing import Iterable, Optional, Tuple
 
 from datajudge.run import FrictionlessRun, RunInfo
 from datajudge.store_artifact import LocalArtifactStore, S3ArtifactStore
@@ -12,6 +12,8 @@ from datajudge.utils.s3_utils import build_s3_uri
 from datajudge.utils.rest_utils import parse_url
 
 if typing.TYPE_CHECKING:
+    from datajudge.client import Client
+    from datajudge.data import DataResource
     from datajudge.run import Run
     from datajudge.store_artifact import ArtifactStore
     from datajudge.store_metadata import MetadataStore
@@ -142,8 +144,8 @@ def select_artifact_store(scheme: str,
 
 def select_run_flavour(run_info_args: Iterable[str],
                        library: str,
-                       data_resource: Any,
-                       client: Any) -> Run:
+                       data_resource: DataResource,
+                       client: Client) -> Run:
     """
     Return a run for a specific validation
     library.

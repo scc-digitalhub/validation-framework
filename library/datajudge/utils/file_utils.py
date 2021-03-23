@@ -1,9 +1,8 @@
 import json
 import os
 import shutil
-from typing import Union
-
 from pathlib import Path
+from typing import Union
 
 
 # Directories
