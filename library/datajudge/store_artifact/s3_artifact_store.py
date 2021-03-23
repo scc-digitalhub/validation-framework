@@ -10,6 +10,23 @@ from datajudge.utils.s3_utils import (build_S3_key, build_s3_uri, get_bucket,
 
 
 class S3ArtifactStore(ArtifactStore):
+    """
+    S3 Artifact Store to interact with S3 based storages.
+    The credentials, in order to create an S3 client,
+    must have the following form :
+
+        {
+            's3_endpoint': some-endpoint,
+            's3_access_key': some-access-key,
+            's3_secret_key': some-secret-key
+        }
+
+    Attributes
+    ----------
+    client :
+        An S3 client to interact with the storage.
+
+    """
 
     def __init__(self,
                  artifact_uri: str,
@@ -23,8 +40,10 @@ class S3ArtifactStore(ArtifactStore):
                          src: Any,
                          dst: str,
                          src_name: Optional[str] = None) -> None:
-        """Persist an artifact."""
-        
+        """
+        Persist an artifact.
+        """
+
         if isinstance(src, list):
             for obj in src:
                 self.persist_artifact(obj, dst, src_name)
@@ -47,7 +66,7 @@ class S3ArtifactStore(ArtifactStore):
 
         # or a dictionary that we dump in a json
         elif isinstance(src, dict) and src_name is not None:
-            
+
             json_obj = json.dumps(src)
             key = build_S3_key(dst, src_name)
             self.client.put_object(Body=json_obj,
@@ -56,7 +75,9 @@ class S3ArtifactStore(ArtifactStore):
 
     def _check_access_to_storage(self,
                                  bucket: str) -> None:
-        """Check bucket existence."""
+        """
+        Check bucket existence.
+        """
         try:
             self.client.head_bucket(Bucket=bucket)
         except ClientError:
@@ -64,5 +85,7 @@ class S3ArtifactStore(ArtifactStore):
                                 " you have no access.")
 
     def get_run_artifacts_uri(self, run_id: str) -> str:
-        """Return the URI of the artifact store for the Run."""
+        """
+        Return the URI of the artifact store for the Run.
+        """
         return build_s3_uri(self.artifact_uri, run_id)

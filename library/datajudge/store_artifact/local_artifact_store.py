@@ -8,6 +8,10 @@ from datajudge.utils.file_utils import (check_dir, check_file_dimension,
 
 
 class LocalArtifactStore(ArtifactStore):
+    """
+    Local Artifact Store to interact with local filesystem.
+
+    """
 
     def __init__(self,
                  artifact_uri: str,
@@ -18,14 +22,16 @@ class LocalArtifactStore(ArtifactStore):
                          src: Any,
                          dst: str,
                          src_name: Optional[str] = None) -> None:
-        """Persist an artifact."""
+        """
+        Persist an artifact.
+        """
         # Check if the destination folder exists
         if isinstance(src, list):
             for obj in src:
                 self.persist_artifact(obj, dst, src_name)
-        
+
         self._check_access_to_storage(dst)
-        
+
         if src_name is not None:
             dst = get_path(dst, src_name)
 
@@ -41,9 +47,14 @@ class LocalArtifactStore(ArtifactStore):
 
     @staticmethod
     def _check_access_to_storage(dst) -> None:
+        """
+        Check if there is access to the storage.
+        """
         if not check_dir(dst):
             make_dir(dst)
 
     def get_run_artifacts_uri(self, run_id: str) -> str:
-        """Return the URI of the artifact store for the Run."""
+        """
+        Return the path of the artifact store for the Run.
+        """
         return get_path(self.artifact_uri, run_id)

@@ -1,5 +1,3 @@
-"""Client definition module."""
-
 from __future__ import annotations
 
 import typing
@@ -18,7 +16,8 @@ if typing.TYPE_CHECKING:
 
 
 class Client:
-    """Client class.
+    """
+    Client class.
 
     Attributes
     ----------
@@ -76,7 +75,8 @@ class Client:
                    validation_library: str,
                    run_id: Optional[str] = None,
                    overwrite: Optional[bool] = False) -> Run:
-        """Create a new run.
+        """
+        Create a new run.
 
         Parameters
         ----------
@@ -98,7 +98,7 @@ class Client:
 
         run_id = self._metadata_store.get_run_id(run_id)
 
-        self._metadata_store.create_run_enviroment(run_id, overwrite=overwrite)
+        self._metadata_store.check_run(run_id, overwrite=overwrite)
 
         run_metadata_uri = self._metadata_store.get_run_metadata_uri(run_id)
         data_resource_uri = self._metadata_store.get_data_resource_uri(run_id)
@@ -122,7 +122,9 @@ class Client:
                           src: dict,
                           dst: str,
                           src_type: str) -> None:
-        """Persist metadata."""
+        """
+        Persist metadata.
+        """
         self._metadata_store.persist_metadata(src,
                                               dst,
                                               src_type)
@@ -131,7 +133,9 @@ class Client:
                           src: Any,
                           dst: str,
                           src_name: Optional[str] = None) -> None:
-        """Persist artifact."""
+        """
+        Persist artifact.
+        """
         self._artifact_store.persist_artifact(src, dst, src_name)
 
     def __repr__(self) -> str:

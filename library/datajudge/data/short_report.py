@@ -3,7 +3,8 @@ from typing import Optional
 
 
 class ShortReport:
-    """Short report object.
+    """Short report object. A partial version of the
+    full report produced by the validation library.
 
     Attributes
     ----------
@@ -45,7 +46,9 @@ class ShortReport:
         self.errors = errors
 
     def to_dict(self):
-        """Return a dictionary of the attributes."""
+        """
+        Return a dictionary of the attributes.
+        """
         return self.__dict__
 
     def __repr__(self):

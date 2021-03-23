@@ -9,7 +9,20 @@ from datajudge.utils.rest_utils import (api_delete_call, api_get_call,
 
 
 class RestMetadataStore(MetadataStore):
-    """Rest store."""
+    """
+    Rest store to interact with the DigitalHub API service.
+
+    Attributes
+    ----------
+    _key_vault :
+        Mapper to retain object reference presents in the MongoDB.
+
+    Methods
+    -------
+    parse_response :
+        Parse the JSON response from the backend APIs.
+
+    """
 
     def __init__(self,
                  uri_metadata: str,
@@ -21,17 +34,21 @@ class RestMetadataStore(MetadataStore):
             MetadataType.DATA_RESOURCE.value: []
         }
 
-    def create_run_enviroment(self,
-                              run_id: str,
-                              overwrite: bool) -> None:
-        """Create the run enviroment."""
+    def check_run(self,
+                  run_id: str,
+                  overwrite: bool) -> None:
+        """
+        Check run id existence.
+        """
         pass
 
     def persist_metadata(self,
                          contents: dict,
                          dst: str,
                          src_type: str) -> None:
-
+        """
+        Method that persist metadata.
+        """
         # control post/put
         key = None
         for elm in self._key_vault[src_type]:
@@ -49,10 +66,11 @@ class RestMetadataStore(MetadataStore):
 
     @staticmethod
     def _build_source_destination(dst:str,
-                                 src_type: str,
-                                 key: Optional[str] = None) -> str:
-        """Return source destination based
-        on source type."""
+                                  src_type: str,
+                                  key: Optional[str] = None) -> str:
+        """
+        Return source destination API based on input source type.
+        """
 
         key = key if key is not None else ""
 
@@ -69,6 +87,9 @@ class RestMetadataStore(MetadataStore):
     def parse_response(self,
                        response: Response,
                        src_type: str) -> None:
+        """
+        Parse the JSON response from the backend APIs.
+        """
         try:
             contents = response.json()
             self._key_vault[src_type].append(contents)
@@ -77,9 +98,13 @@ class RestMetadataStore(MetadataStore):
 
     def get_run_metadata_uri(self,
                              run_id: Optional[str] = None) -> str:
-        """Return the URI for the run metadata"""
+        """
+        Return the URL of the metadata store for the Run.
+        """
         return self.uri_metadata
 
     def get_data_resource_uri(self, run_id: str) -> str:
-        """Return the URI of the data_resource"""
+        """
+        Return the URL of the data resource for the Run.
+        """
         return parse_url(self.uri_metadata + ApiEndpoint.DATA_RESOURCE.value)

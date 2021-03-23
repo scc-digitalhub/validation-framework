@@ -52,7 +52,9 @@ class RunInfo:
         self.finished = ""
 
     def to_dict(self):
-        """Return a dictionary of attributes."""
+        """
+        Return a dictionary of attributes.
+        """
         return self.__dict__
 
     def __repr__(self) -> str:

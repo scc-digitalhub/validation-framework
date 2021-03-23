@@ -19,7 +19,9 @@ if typing.TYPE_CHECKING:
 
 
 class FrictionlessRun(Run):
-    """Run object."""
+    """
+    Frictionless flavoured run. Inherits from Run.
+    """
 
     def __init__(self,
                  run_info: RunInfo,
@@ -35,11 +37,16 @@ class FrictionlessRun(Run):
         self._log_run()
 
     def _update_library_info(self) -> None:
-        """Update validation library metadata."""
+        """
+        Update run's info about the validation framework used.
+        """
         self.run_info.validation_library = "frictionless"
         self.run_info.library_version = frictionless.__version__
 
     def _update_data_resource(self) -> None:
+        """
+        Update resource with inferred information.
+        """
         frict_resource = self.get_resource()
         frict_resource.infer()
         try:
@@ -62,18 +69,23 @@ class FrictionlessRun(Run):
             raise kex
 
     def _log_run(self) -> None:
-        """Log run metadata."""
+        """
+        Method to log run's metadata.
+        """
         self._log_metadata(self.run_info.to_dict(),
                            MetadataType.RUN_METADATA.value)
 
     def log_data_resource(self) -> None:
-        """Log data resource metadata."""
+        """
+        Method to log data resource.
+        """
         self._log_metadata(self.data_resource.to_dict(),
                            MetadataType.DATA_RESOURCE.value)
 
     def _parse_report(self, report: Report) -> ShortReport:
-        """Parse the full report to get a shorter version."""
-
+        """
+        Parse the report produced by frictionless.
+        """
         short_report = ShortReport(self.run_info.data_resource_uri,
                                    self.run_info.experiment_name,
                                    self.run_info.run_id)
@@ -86,8 +98,9 @@ class FrictionlessRun(Run):
         return short_report
 
     def log_short_report(self, report: Report) -> None:
-        """Log shortened report from datajudge report."""
-
+        """
+        Method to log short report.
+        """
         if not isinstance(report, Report):
             raise TypeError("Only frictionless report accepted.")
 
@@ -98,9 +111,9 @@ class FrictionlessRun(Run):
     def _log_metadata(self,
                       metadata: dict,
                       src_type: str) -> None:
-        """Call client persist_metadata
-        method to store a json file."""
-        
+        """
+        Method to log generic metadata.
+        """
         content = {
             "run_id": self.run_info.run_id,
             "experiment_id": self.run_info.experiment_id,
@@ -114,36 +127,44 @@ class FrictionlessRun(Run):
     def persist_artifact(self,
                          src: Any,
                          src_name: Optional[str] = None) -> None:
-        """Call client persist_artifact
-        method to store an artifact."""
+        """
+        Method to persist artifacts in the artifact store.
+        """
         self.client._persist_artifact(
                             src,
                             self.run_info.run_artifacts_uri,
                             src_name=src_name)
 
     def persist_data(self) -> None:
-        """Shortcut to persist the input resources
-        into the artifacts storage."""
+        """
+        Shortcut to persist data and validation schema.
+        """
         self.persist_artifact(self.data_resource.path)
         if self.data_resource.schema is not None:
             self.persist_artifact(self.data_resource.schema)
 
     def persist_full_report(self, report: Report) -> None:
-        """Persist full report produced by validation."""
+        """
+        Shortcut to persist the full report produced
+        by frictionless.
+        """
         self.persist_artifact(
                     dict(report),
                     src_name=FileNames.FULL_REPORT.value)
 
     def persist_inferred_schema(self, schema: Schema) -> None:
-        """Shortcut to persist inferred schema
-        for a DataResource as artifact."""
+        """
+        Shortcut to persist the inferred schema produced
+        by frictionless.
+        """
         self.persist_artifact(
                     dict(schema),
                     src_name=FileNames.SCHEMA_INFERRED.value)
 
     def get_resource(self, **kwargs) -> Resource:
-        """Return a frictionless Resource to perform
-        frictionless tasks."""
+        """
+        Return a frictionless Resource object.
+        """
         if "path" in kwargs.keys():
             kwargs.pop("path")
         return Resource(path=self.data_resource.path,
