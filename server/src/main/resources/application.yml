@@ -1,0 +1,9 @@
+server:
+  port: ${VALST_SERVER_PORT:8200}
+  error:
+    include-message: ${VALST_SERVER_ERROR_INCLUDE_MESSAGE:always}
+
+spring:
+  data:
+    mongodb:
+      uri: ${VALST_SPRING_DATA_MONGODB_URI:mongodb://admin:password@localhost:27017/validation?authSource=admin}
