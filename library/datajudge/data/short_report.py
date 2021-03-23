@@ -3,8 +3,9 @@ from typing import Optional
 
 
 class ShortReport:
-    """Short report object. A partial version of the
-    full report produced by the validation library.
+    """
+    Short report object consisting in a partial version of
+    the full report produced by the validation library.
 
     Attributes
     ----------

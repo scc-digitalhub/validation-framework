@@ -2,8 +2,9 @@ from typing import List, Mapping, Optional, Union
 
 
 class DataResource:
-    """DataResource object as decribed in
-    frictionless Data Resource specification.
+    """
+    DataResource object as decribed in frictionless
+    Data Resource specification.
 
     Attributes
     ----------

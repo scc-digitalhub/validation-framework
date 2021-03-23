@@ -44,11 +44,13 @@ REST_SCHEME = ["http", "https"]
 S3_SCHEME = ["s3"]
 
 
-def resolve_uri_metadata(scheme: str,
+def build_exp_metadata_uri(scheme: str,
                          uri: str,
                          experiment_id: str,
                          project_id: str) -> str:
-    """Resolve experiment URI for metadata."""
+    """
+	Build experiment URI for metadata.
+	"""
     log_type = METADATA_LOG_TYPE
     if scheme in LOCAL_SCHEME:
         return get_absolute_path(uri, log_type, experiment_id)
@@ -58,10 +60,12 @@ def resolve_uri_metadata(scheme: str,
     raise NotImplementedError
 
 
-def resolve_uri_artifact(scheme: str,
+def build_exp_artifact_uri(scheme: str,
                          uri: str,
                          experiment_id: str) -> str:
-    """Resolve experiment URI for artifact."""
+    """
+	Build experiment URI for artifact.
+	"""
     log_type = ARTIFACT_LOG_TYPE
     if scheme in LOCAL_SCHEME:
         return get_absolute_path(uri, log_type, experiment_id)
@@ -74,13 +78,14 @@ def resolve_uri(uri: str,
                 experiment_id: str,
                 store: str,
                 project_id: Optional[str] = None) -> Tuple[str, str]:
-    """Return a builded URI for the
-    artifact/metadata store and it's schema."""
+    """
+	Return a builded URI and it's scheme.
+	"""
     scheme = urllib.parse.urlparse(uri).scheme
     if store == "metadata":
-        new_uri = resolve_uri_metadata(scheme, uri, experiment_id, project_id)
+        new_uri = build_exp_metadata_uri(scheme, uri, experiment_id, project_id)
     elif store == "artifact":
-        new_uri = resolve_uri_artifact(scheme, uri, experiment_id)
+        new_uri = build_exp_artifact_uri(scheme, uri, experiment_id)
     else:
         raise RuntimeError("Invalid store.")
     return new_uri, scheme
@@ -91,8 +96,9 @@ def get_stores(experiment_id: str,
                metadata_params: dict,
                artifact_params: dict
                ) -> Tuple[MetadataStore, ArtifactStore]:
-    """Function that return metadata and artifact
-    stores with authenticated credentials."""
+    """
+	Function that returns metadata and artifact stores.
+	"""
 
     metadata_store_uri, metadata_creds = metadata_params.values()
     artifact_store_uri, artifact_creds = artifact_params.values()
@@ -117,7 +123,7 @@ def select_metadata_store(scheme: str,
                           credentials: Optional[dict] = None
                           ) -> MetadataStore:
     """
-    Return a metadata store object to interact
+    Factory method that returns a metadata store object to interact
     with various backends.
     """
     try:
@@ -132,7 +138,7 @@ def select_artifact_store(scheme: str,
                           credentials: Optional[dict] = None
                           ) -> ArtifactStore:
     """
-    Return an artifact store object to interact
+    Factory method that returns an artifact store object to interact
     with various backends.
     """
     try:
@@ -147,7 +153,7 @@ def select_run_flavour(run_info_args: Iterable[str],
                        data_resource: DataResource,
                        client: Client) -> Run:
     """
-    Return a run for a specific validation
+    Factory method that returns a run for a specific validation
     library.
     """
     try:
