@@ -14,7 +14,7 @@
 	<name>validation-storage</name>
 	<description>Storage of validation result files</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>8</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
