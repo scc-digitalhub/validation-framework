@@ -1,10 +1,10 @@
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import (check_dir, check_file_dimension,
                                         copy_file, get_path, make_dir,
-                                        write_json)
+                                        write_json, split_path_name)
 
 
 class LocalArtifactStore(ArtifactStore):
@@ -21,9 +21,10 @@ class LocalArtifactStore(ArtifactStore):
     def persist_artifact(self,
                          src: Any,
                          dst: str,
-                         src_name: Optional[str] = None) -> None:
+                         src_name: Optional[str] = None
+                         ) -> Tuple[str, str]:
         """
-        Persist an artifact.
+        Persist an artifact and return filename and URI.
         """
         # Check if the destination folder exists
         if isinstance(src, list):
@@ -44,6 +45,8 @@ class LocalArtifactStore(ArtifactStore):
         if isinstance(src, (str, Path)):
             if check_file_dimension(src) > 0:
                 copy_file(src, dst)
+        
+        return split_path_name(dst)
 
     @staticmethod
     def _check_access_to_storage(dst) -> None:

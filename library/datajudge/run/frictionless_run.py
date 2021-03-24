@@ -5,7 +5,6 @@ from mimetypes import guess_type
 from typing import Any, Optional
 
 import frictionless
-from datajudge.data import ShortReport
 from datajudge.run import Run
 from datajudge.utils.constants import FileNames, MetadataType
 from frictionless import Resource
@@ -15,6 +14,7 @@ from frictionless.schema import Schema
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
     from datajudge.data import DataResource
+    from datajudge.data import ShortReport
     from datajudge.run import RunInfo
 
 
@@ -72,24 +72,25 @@ class FrictionlessRun(Run):
         """
         Method to log run's metadata.
         """
-        self._log_metadata(self.run_info.to_dict(),
+        metadata = self.get_content()
+        metadata["content"] = self.run_info.to_dict()
+        self._log_metadata(metadata,
                            MetadataType.RUN_METADATA.value)
 
     def log_data_resource(self) -> None:
         """
         Method to log data resource.
         """
-        self._log_metadata(self.data_resource.to_dict(),
+        metadata = self.get_content()
+        metadata["content"] = self.data_resource.to_dict()
+        self._log_metadata(metadata,
                            MetadataType.DATA_RESOURCE.value)
 
     def _parse_report(self, report: Report) -> ShortReport:
         """
         Parse the report produced by frictionless.
         """
-        short_report = ShortReport(self.run_info.data_resource_uri,
-                                   self.run_info.experiment_name,
-                                   self.run_info.run_id)
-        
+        short_report = self.get_short_report()
         if len(report.tables) > 0:
             short_report.time = report.tables[0]["time"]
             short_report.valid = report.tables[0]["valid"]
@@ -105,7 +106,9 @@ class FrictionlessRun(Run):
             raise TypeError("Only frictionless report accepted.")
 
         report_short = self._parse_report(report)
-        self._log_metadata(report_short.to_dict(),
+        metadata = self.get_content()
+        metadata["content"] = report_short.to_dict()
+        self._log_metadata(metadata,
                            MetadataType.SHORT_REPORT.value)
 
     def _log_metadata(self,
@@ -113,14 +116,9 @@ class FrictionlessRun(Run):
                       src_type: str) -> None:
         """
         Method to log generic metadata.
-        """
-        content = {
-            "run_id": self.run_info.run_id,
-            "experiment_id": self.run_info.experiment_id,
-            "content": metadata}
-        
+        """        
         self.client._persist_metadata(
-                            content,
+                            metadata,
                             self.run_info.run_metadata_uri,
                             src_type)
 
@@ -130,10 +128,15 @@ class FrictionlessRun(Run):
         """
         Method to persist artifacts in the artifact store.
         """
-        self.client._persist_artifact(
-                            src,
-                            self.run_info.run_artifacts_uri,
-                            src_name=src_name)
+        file, uri = self.client._persist_artifact(
+                                        src,
+                                        self.run_info.run_artifacts_uri,
+                                        src_name=src_name)
+        metadata = self.get_content()
+        metadata["name"] = file
+        metadata["uri"] = uri
+        self._log_metadata(metadata,
+                           MetadataType.ARTIFACT.value)
 
     def persist_data(self) -> None:
         """

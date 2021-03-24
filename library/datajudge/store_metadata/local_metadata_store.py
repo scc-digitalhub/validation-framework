@@ -62,6 +62,8 @@ class LocalMetadataStore(MetadataStore):
             src_name = FileNames.SHORT_REPORT.value
         elif src_type == MetadataType.DATA_RESOURCE.value:
             src_name = FileNames.DATA_RESOURCE.value
+        elif src_type == MetadataType.ARTIFACT.value:
+            src_name = FileNames.ARTIFACT_METADATA.value
         else:
             raise RuntimeError("No such metadata type.")
 

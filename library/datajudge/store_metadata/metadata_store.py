@@ -75,7 +75,6 @@ class MetadataStore:
         """
         pass
 
-    @staticmethod
     @abstractmethod
     def _build_source_destination(src_type: str) -> str:
         """

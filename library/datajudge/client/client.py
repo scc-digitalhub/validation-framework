@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import typing
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 from slugify import slugify  # pylint: disable=import-error
 
@@ -132,11 +132,14 @@ class Client:
     def _persist_artifact(self,
                           src: Any,
                           dst: str,
-                          src_name: Optional[str] = None) -> None:
+                          src_name: Optional[str] = None
+                          ) -> Tuple[str, str]:
         """
         Persist artifact.
         """
-        self._artifact_store.persist_artifact(src, dst, src_name)
+        return self._artifact_store.persist_artifact(src,
+                                                     dst,
+                                                     src_name)
 
     def __repr__(self) -> str:
         return str(self.__dict__)

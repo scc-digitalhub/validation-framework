@@ -4,6 +4,7 @@ import typing
 from abc import ABCMeta, abstractmethod
 from typing import Any, Optional
 
+from datajudge.data import ShortReport
 from datajudge.utils.time_utils import get_time
 
 if typing.TYPE_CHECKING:
@@ -61,6 +62,10 @@ class Run:
         validation framework as artifact.
     get_resource :
         Return a resource object specific of the library.
+    get_short_report :
+        Return a ShortReport object.
+    get_content :
+        Return structured content to log.
 
     """
 
@@ -173,6 +178,25 @@ class Run:
         Return a resource object specific of the library.
         """
         pass
+    
+    def get_short_report(self) -> ShortReport:
+        """
+        Return a ShortReport object.
+        """
+        return ShortReport(self.run_info.data_resource_uri,
+                           self.run_info.experiment_name,
+                           self.run_info.run_id)
+    
+    def get_content(self) -> dict:
+        """
+        Get structured content to log.
+        """
+        content = {
+            "run_id": self.run_info.run_id,
+            "experiment_id": self.run_info.experiment_id,
+            "experiment_name": self.run_info.experiment_name,
+        }
+        return content
 
     def __enter__(self) -> Run:
         self.run_info.begin_status = "active"

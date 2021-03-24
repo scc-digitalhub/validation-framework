@@ -1,15 +1,18 @@
 import json
+from typing import Optional
 from urllib.parse import urljoin, urlparse
 
 import requests
 
 
-def api_post_call(data: dict, uri: str) -> dict:
+def api_post_call(data: dict,
+                  uri: str,
+                  params: Optional[dict] = None) -> dict:
     """
     REST POST call.
     """
     data = json.dumps(data)
-    return requests.post(uri, data=data)
+    return requests.post(uri, data=data, params=params)
 
 
 def api_put_call(data: dict, uri: str) -> None:
@@ -18,20 +21,6 @@ def api_put_call(data: dict, uri: str) -> None:
     """
     data = json.dumps(data)
     return requests.put(uri, data=data)
-
-
-def api_get_call(uri: str) -> None:
-    """
-    REST GET call.
-    """
-    return requests.get(uri)
-
-
-def api_delete_call() -> None:
-    """
-    REST DELETE call.
-    """
-    pass
 
 
 def parse_url(url: str):

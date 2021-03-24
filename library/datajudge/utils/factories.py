@@ -45,27 +45,27 @@ S3_SCHEME = ["s3"]
 
 
 def build_exp_metadata_uri(scheme: str,
-                         uri: str,
-                         experiment_id: str,
-                         project_id: str) -> str:
+                           uri: str,
+                           experiment_id: str,
+                           project_id: str) -> str:
     """
-	Build experiment URI for metadata.
-	"""
+    Build experiment URI for metadata.
+    """
     log_type = METADATA_LOG_TYPE
     if scheme in LOCAL_SCHEME:
         return get_absolute_path(uri, log_type, experiment_id)
     if scheme in REST_SCHEME:
-        base_url = f"/api/p/{project_id}/e/{experiment_id}/"
+        base_url = f"/api/project/{project_id}"
         return parse_url(uri + base_url)
     raise NotImplementedError
 
 
 def build_exp_artifact_uri(scheme: str,
-                         uri: str,
-                         experiment_id: str) -> str:
+                           uri: str,
+                           experiment_id: str) -> str:
     """
-	Build experiment URI for artifact.
-	"""
+    Build experiment URI for artifact.
+    """
     log_type = ARTIFACT_LOG_TYPE
     if scheme in LOCAL_SCHEME:
         return get_absolute_path(uri, log_type, experiment_id)
@@ -79,8 +79,8 @@ def resolve_uri(uri: str,
                 store: str,
                 project_id: Optional[str] = None) -> Tuple[str, str]:
     """
-	Return a builded URI and it's scheme.
-	"""
+    Return a builded URI and it's scheme.
+    """
     scheme = urllib.parse.urlparse(uri).scheme
     if store == "metadata":
         new_uri = build_exp_metadata_uri(scheme, uri, experiment_id, project_id)
@@ -97,8 +97,8 @@ def get_stores(experiment_id: str,
                artifact_params: dict
                ) -> Tuple[MetadataStore, ArtifactStore]:
     """
-	Function that returns metadata and artifact stores.
-	"""
+    Function that returns metadata and artifact stores.
+    """
 
     metadata_store_uri, metadata_creds = metadata_params.values()
     artifact_store_uri, artifact_creds = artifact_params.values()

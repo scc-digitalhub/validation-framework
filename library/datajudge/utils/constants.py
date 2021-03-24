@@ -23,6 +23,7 @@ class FileNames(Enum):
     DATA_RESOURCE = "data_resource.json"
     SHORT_REPORT = "report_short.json"
 
+    ARTIFACT_METADATA = "artifact_metadata.json"
     FULL_REPORT = "report_full.json"
     SCHEMA_INFERRED = "inferred_schema.json"
 
@@ -32,9 +33,10 @@ class ApiEndpoint(Enum):
     Enum API endpoints.
     """
 
-    RUN = "run-metadata/"
-    DATA_RESOURCE = "data-resource/"
-    SHORT_REPORT = "short-report/"
+    RUN = "/run-metadata?overwrite={}"
+    DATA_RESOURCE = "/data-resource"
+    SHORT_REPORT = "/short-report"
+    ARTIFACT = "/artifact-metadata"
 
 
 class MetadataType(Enum):
