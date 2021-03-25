@@ -4,6 +4,7 @@ import typing
 from abc import ABCMeta, abstractmethod
 from typing import Any, Optional
 
+from datajudge.utils.constants import MetadataType
 from datajudge.data import ShortReport
 from datajudge.utils.time_utils import get_time
 
@@ -45,10 +46,6 @@ class Run:
         Method to persist artifacts in the artifact store.
     persist_data :
         Shortcut to persist data and validation schema.
-    _setup_run :
-        Method that generate a Data Resource, update it based on
-        inference made by the validation library and update some
-        run's information.
     _update_library_info :
         Update run's info about the validation framework used.
     _update_data_resource :
@@ -67,12 +64,16 @@ class Run:
         Return a resource object specific of the library.
     get_short_report :
         Return a ShortReport object.
-    get_content :
+    _get_content :
         Return structured content to log.
 
     """
 
     __metaclass__ = ABCMeta
+    RUN_METADATA = MetadataType.RUN_METADATA.value
+    DATA_RESOURCE = MetadataType.DATA_RESOURCE.value
+    SHORT_REPORT = MetadataType.SHORT_REPORT.value
+    ARTIFACT_METADATA = MetadataType.ARTIFACT_METADATA.value
 
     def __init__(self,
                  run_info: RunInfo,
@@ -121,15 +122,6 @@ class Run:
     def persist_data(self) -> None:
         """
         Shortcut to persist data and validation schema.
-        """
-        pass
-
-    @abstractmethod
-    def _setup_run(self) -> None:
-        """
-        Method that generate a Data Resource, update it based on
-        inference made by the validation library and update some
-        run's information.
         """
         pass
 
@@ -184,7 +176,7 @@ class Run:
         """
         pass
 
-    def get_short_report(self) -> ShortReport:
+    def _get_short_report(self) -> ShortReport:
         """
         Return a ShortReport object.
         """
@@ -192,20 +184,23 @@ class Run:
                            self.run_info.experiment_name,
                            self.run_info.run_id)
 
-    def get_content(self) -> dict:
+    def _get_content(self, cnt: Optional[dict] = None) -> dict:
         """
-        Get structured content to log.
+        Return structured content to log.
         """
         content = {
             "run_id": self.run_info.run_id,
             "experiment_id": self.run_info.experiment_id,
             "experiment_name": self.run_info.experiment_name,
+            "content": cnt
         }
         return content
 
     def __enter__(self) -> Run:
         self.run_info.begin_status = "active"
         self.run_info.started = get_time()
+        self.log_data_resource()
+        self._log_run()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:

@@ -34,7 +34,7 @@ class DataResource:
     def __init__(self,
                  uri_data: Union[str, list],
                  uri_schema: Optional[str] = None,
-                 name: Optional[str] = None,
+                 name: Optional[str] = "Unnamed Data Resource",
                  title: Optional[str] = None,
                  description: Optional[str] = None,
                  sources: Optional[List[Mapping]] = None,

@@ -2,7 +2,8 @@ from datajudge.utils.time_utils import get_time
 
 
 class RunInfo:
-    """Run's metadata.
+    """
+    Run's metadata.
 
     Attributes
     ----------

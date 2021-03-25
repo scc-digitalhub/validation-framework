@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 class ArtifactStore:
     """
-    Abstract artifact store that defines methods on how to persist
+    Abstract artifact class that defines methods to persist
     artifacts into different storage backends.
 
     Attributes

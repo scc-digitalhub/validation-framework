@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 import frictionless
 from datajudge.run import Run
-from datajudge.utils.constants import FileNames, MetadataType
+from datajudge.utils.constants import FileNames
 from frictionless import Resource
 from frictionless.report import Report
 from frictionless.schema import Schema
@@ -32,13 +32,8 @@ class FrictionlessRun(Run):
                          data_resource,
                          client,
                          overwrite)
-        self._setup_run()
-
-    def _setup_run(self) -> None:
         self._update_library_info()
         self._update_data_resource()
-        self.log_data_resource()
-        self._log_run()
 
     def _update_library_info(self) -> None:
         """
@@ -76,25 +71,21 @@ class FrictionlessRun(Run):
         """
         Method to log run's metadata.
         """
-        metadata = self.get_content()
-        metadata["content"] = self.run_info.to_dict()
-        self._log_metadata(metadata,
-                           MetadataType.RUN_METADATA.value)
+        metadata = self._get_content(self.run_info.to_dict())
+        self._log_metadata(metadata, self.RUN_METADATA)
 
     def log_data_resource(self) -> None:
         """
         Method to log data resource.
         """
-        metadata = self.get_content()
-        metadata["content"] = self.data_resource.to_dict()
-        self._log_metadata(metadata,
-                           MetadataType.DATA_RESOURCE.value)
+        metadata = self._get_content(self.data_resource.to_dict())
+        self._log_metadata(metadata, self.DATA_RESOURCE)
 
     def _parse_report(self, report: Report) -> ShortReport:
         """
         Parse the report produced by frictionless.
         """
-        short_report = self.get_short_report()
+        short_report = self._get_short_report()
         if len(report.tables) > 0:
             short_report.time = report.tables[0]["time"]
             short_report.valid = report.tables[0]["valid"]
@@ -110,10 +101,8 @@ class FrictionlessRun(Run):
             raise TypeError("Only frictionless report accepted.")
 
         report_short = self._parse_report(report)
-        metadata = self.get_content()
-        metadata["content"] = report_short.to_dict()
-        self._log_metadata(metadata,
-                           MetadataType.SHORT_REPORT.value)
+        metadata = self._get_content(report_short.to_dict())
+        self._log_metadata(metadata, self.SHORT_REPORT)
 
     def _log_metadata(self,
                       metadata: dict,
@@ -137,11 +126,11 @@ class FrictionlessRun(Run):
                                         src,
                                         self.run_info.run_artifacts_uri,
                                         src_name=src_name)
-        metadata = self.get_content()
+        metadata = self._get_content()
+        metadata.pop("content")
         metadata["name"] = file
         metadata["uri"] = uri
-        self._log_metadata(metadata,
-                           MetadataType.ARTIFACT.value)
+        self._log_metadata(metadata, self.ARTIFACT_METADATA)
 
     def persist_data(self) -> None:
         """

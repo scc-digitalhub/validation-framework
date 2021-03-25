@@ -12,8 +12,8 @@ from datajudge.utils.s3_utils import (build_S3_key, build_s3_uri, get_bucket,
 class S3ArtifactStore(ArtifactStore):
     """
     S3 Artifact Store to interact with S3 based storages.
-    In order to create an S3 client, use boto3 client creation
-    keywords.
+    The credentials must follow the keywords arguments of
+    the boto3 client creation method.
 
     Attributes
     ----------

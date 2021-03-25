@@ -1,8 +1,9 @@
+from json.decoder import JSONDecodeError
 from typing import Optional
 
 from requests.models import Response  # pylint: disable=import-error
 from datajudge.store_metadata.metadata_store import MetadataStore
-from datajudge.utils.constants import ApiEndpoint, MetadataType
+from datajudge.utils.constants import ApiEndpoint
 from datajudge.utils.rest_utils import api_post_call, api_put_call, parse_url
 
 
@@ -17,7 +18,7 @@ class RestMetadataStore(MetadataStore):
 
     Methods
     -------
-    parse_response :
+    _parse_response :
         Parse the JSON response from the backend APIs.
 
     """
@@ -27,10 +28,16 @@ class RestMetadataStore(MetadataStore):
                  credentials:  Optional[dict] = None) -> None:
         super().__init__(uri_metadata, credentials)
         self._key_vault = {
-            MetadataType.RUN_METADATA.value: [],
-            MetadataType.SHORT_REPORT.value: [],
-            MetadataType.DATA_RESOURCE.value: [],
-            MetadataType.ARTIFACT.value: []
+            self.RUN_METADATA: [],
+            self.SHORT_REPORT: [],
+            self.DATA_RESOURCE: [],
+            self.ARTIFACT_METADATA: []
+        }
+        self.endpoints = {
+            self.RUN_METADATA: ApiEndpoint.RUN_METADATA.value,
+            self.SHORT_REPORT: ApiEndpoint.SHORT_REPORT.value,
+            self.DATA_RESOURCE: ApiEndpoint.DATA_RESOURCE.value,
+            self.ARTIFACT_METADATA: ApiEndpoint.ARTIFACT_METADATA.value
         }
 
     def persist_metadata(self,
@@ -51,47 +58,37 @@ class RestMetadataStore(MetadataStore):
         dst = self._build_source_destination(dst, src_type, key)
 
         if key is None:
-            if src_type == MetadataType.RUN_METADATA.value:
+            if src_type == self.RUN_METADATA:
                 params = {"overwrite": overwrite}
                 response = api_post_call(metadata, dst, params)
             else:
                 response = api_post_call(metadata, dst)
-            self.parse_response(response, src_type)
+            self._parse_response(response, src_type)
         else:
             api_put_call(metadata, dst)
 
-    @staticmethod
-    def _build_source_destination(dst: str,
+    def _build_source_destination(self,
+                                  dst: str,
                                   src_type: str,
                                   key: Optional[str] = None
                                   ) -> str:
         """
         Return source destination API based on input source type.
         """
-
         key = key if key is not None else ""
+        return parse_url(dst + self.endpoints[src_type] + key)
 
-        if src_type == MetadataType.RUN_METADATA.value:
-            endpoint = ApiEndpoint.RUN.value
-        elif src_type == MetadataType.SHORT_REPORT.value:
-            endpoint = ApiEndpoint.SHORT_REPORT.value
-        elif src_type == MetadataType.DATA_RESOURCE.value:
-            endpoint = ApiEndpoint.DATA_RESOURCE.value
-        elif src_type == MetadataType.ARTIFACT.value:
-            endpoint = ApiEndpoint.ARTIFACT.value
-        else:
-            raise RuntimeError("No such metadata type.")
-        return parse_url(dst + endpoint + key)
-
-    def parse_response(self,
-                       response: Response,
-                       src_type: str) -> None:
+    def _parse_response(self,
+                        response: Response,
+                        src_type: str) -> None:
         """
         Parse the JSON response from the backend APIs.
         """
         try:
             resp = response.json()
             self._key_vault[src_type].append(resp)
+        except JSONDecodeError as jx:
+            raise jx
         except Exception as ex:
             raise ex
 
@@ -107,4 +104,5 @@ class RestMetadataStore(MetadataStore):
         """
         Return the URL of the data resource for the Run.
         """
-        return parse_url(self.uri_metadata + ApiEndpoint.DATA_RESOURCE.value)
+        return parse_url(self.uri_metadata +
+                         ApiEndpoint.DATA_RESOURCE.value)

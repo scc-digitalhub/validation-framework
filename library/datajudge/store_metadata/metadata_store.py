@@ -2,6 +2,8 @@ import uuid
 from abc import ABCMeta, abstractmethod
 from typing import Optional
 
+from datajudge.utils.constants import MetadataType
+
 
 class MetadataStore:
     """
@@ -32,6 +34,11 @@ class MetadataStore:
     """
 
     __metaclass__ = ABCMeta
+
+    RUN_METADATA = MetadataType.RUN_METADATA.value
+    DATA_RESOURCE = MetadataType.DATA_RESOURCE.value
+    SHORT_REPORT = MetadataType.SHORT_REPORT.value
+    ARTIFACT_METADATA = MetadataType.ARTIFACT_METADATA.value
 
     def __init__(self,
                  uri_metadata: str,

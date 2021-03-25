@@ -5,7 +5,7 @@ from typing import Any, Optional, Tuple
 
 from slugify import slugify  # pylint: disable=import-error
 
-from datajudge.utils.factories import get_stores, select_run_flavour
+from datajudge.utils.factories import get_stores, get_run_flavour
 
 # For type checking -> avoids circular imports
 if typing.TYPE_CHECKING:
@@ -106,11 +106,11 @@ class Client:
                          run_artifacts_uri,
                          data_resource_uri)
 
-        run = select_run_flavour(run_info_args,
-                                 validation_library,
-                                 data_resource,
-                                 self,
-                                 overwrite)
+        run = get_run_flavour(run_info_args,
+                              validation_library,
+                              data_resource,
+                              self,
+                              overwrite)
 
         return run
 

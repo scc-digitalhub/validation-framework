@@ -1,7 +1,7 @@
 from typing import Optional
 
 from datajudge.store_metadata.metadata_store import MetadataStore
-from datajudge.utils.constants import FileNames, MetadataType
+from datajudge.utils.constants import FileNames
 from datajudge.utils.file_utils import (check_dir, get_path, make_dir,
                                         write_json)
 
@@ -26,6 +26,12 @@ class LocalMetadataStore(MetadataStore):
                  uri_metadata: str,
                  credentials:  Optional[dict] = None) -> None:
         super().__init__(uri_metadata, credentials)
+        self.filenames = {
+            self.RUN_METADATA: FileNames.RUN_METADATA.value,
+            self.SHORT_REPORT: FileNames.SHORT_REPORT.value,
+            self.DATA_RESOURCE: FileNames.DATA_RESOURCE.value,
+            self.ARTIFACT_METADATA: FileNames.ARTIFACT_METADATA.value
+        }
 
     def persist_metadata(self,
                          metadata: dict,
@@ -51,26 +57,14 @@ class LocalMetadataStore(MetadataStore):
         else:
             make_dir(dst)
 
-    @staticmethod
-    def _build_source_destination(dst: str,
+    def _build_source_destination(self,
+                                  dst: str,
                                   src_type: str,
                                   key: Optional[str] = None) -> str:
         """
         Return source path based on input source type.
         """
-
-        if src_type == MetadataType.RUN_METADATA.value:
-            src_name = FileNames.RUN_METADATA.value
-        elif src_type == MetadataType.SHORT_REPORT.value:
-            src_name = FileNames.SHORT_REPORT.value
-        elif src_type == MetadataType.DATA_RESOURCE.value:
-            src_name = FileNames.DATA_RESOURCE.value
-        elif src_type == MetadataType.ARTIFACT.value:
-            src_name = FileNames.ARTIFACT_METADATA.value
-        else:
-            raise RuntimeError("No such metadata type.")
-
-        return get_path(dst, src_name)
+        return get_path(dst, self.filenames[src_type])
 
     def get_run_metadata_uri(self, run_id: str) -> str:
         """

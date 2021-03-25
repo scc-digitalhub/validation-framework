@@ -154,11 +154,11 @@ def select_artifact_store(scheme: str,
         raise NotImplementedError from k_err
 
 
-def select_run_flavour(run_info_args: Tuple[str],
-                       library: str,
-                       data_resource: DataResource,
-                       client: Client,
-                       overwrite: bool) -> Run:
+def get_run_flavour(run_info_args: Tuple[str],
+                    library: str,
+                    data_resource: DataResource,
+                    client: Client,
+                    overwrite: bool) -> Run:
     """
     Factory method that returns a run for a specific validation
     library.
