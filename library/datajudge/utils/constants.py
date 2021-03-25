@@ -1,19 +1,6 @@
 from enum import Enum
 
 
-# Default names
-EXP_NAME = "DefaultExp"
-PROJ_ID = "DefaultProj"
-METADATA_STORE_PARAMS = {
-    "store_uri": "./validruns",
-    "credentials": None
-}
-ARTIFACT_STORE_PARAMS = {
-    "store_uri": "./validruns",
-    "credentials": None
-}
-
-
 class FileNames(Enum):
     """
     Enum for filenames, both metadata and artifact.

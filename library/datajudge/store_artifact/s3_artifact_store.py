@@ -6,20 +6,14 @@ from typing import Any, Optional
 from botocore.client import ClientError
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.s3_utils import (build_S3_key, build_s3_uri, get_bucket,
-                                      s3client_creator)
+                                      s3client_creator, split_path_name)
 
 
 class S3ArtifactStore(ArtifactStore):
     """
     S3 Artifact Store to interact with S3 based storages.
-    The credentials, in order to create an S3 client,
-    must have the following form :
-
-        {
-            's3_endpoint': some-endpoint,
-            's3_access_key': some-access-key,
-            's3_secret_key': some-secret-key
-        }
+    In order to create an S3 client, use boto3 client creation
+    keywords.
 
     Attributes
     ----------
@@ -32,9 +26,7 @@ class S3ArtifactStore(ArtifactStore):
                  artifact_uri: str,
                  credentials: Optional[dict] = None) -> None:
         super().__init__(artifact_uri, credentials)
-        self.client = s3client_creator(self.credentials["s3_endpoint"],
-                                       self.credentials["s3_access_key"],
-                                       self.credentials["s3_secret_key"])
+        self.client = s3client_creator(**self.credentials)
 
     def persist_artifact(self,
                          src: Any,
@@ -43,7 +35,6 @@ class S3ArtifactStore(ArtifactStore):
         """
         Persist an artifact.
         """
-
         if isinstance(src, list):
             for obj in src:
                 self.persist_artifact(obj, dst, src_name)
@@ -72,6 +63,8 @@ class S3ArtifactStore(ArtifactStore):
             self.client.put_object(Body=json_obj,
                                    Bucket=bucket,
                                    Key=key)
+
+        return split_path_name(dst)
 
     def _check_access_to_storage(self,
                                  bucket: str) -> None:

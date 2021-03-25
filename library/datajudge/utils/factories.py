@@ -96,18 +96,16 @@ def resolve_uri(uri: str,
     return new_uri, scheme
 
 
-def get_stores(experiment_id: str,
-               project_id: str,
-               metadata_params: dict,
-               artifact_params: dict
+def get_stores(project_id: str,
+               experiment_id: str,
+               metadata_store_uri: str,
+               artifact_store_uri: str,
+               metadata_creds: Optional[dict] = None,
+               artifact_creds: Optional[dict] = None
                ) -> Tuple[MetadataStore, ArtifactStore]:
     """
     Function that returns metadata and artifact stores.
     """
-
-    metadata_store_uri, metadata_creds = metadata_params.values()
-    artifact_store_uri, artifact_creds = artifact_params.values()
-
     uri_metadata, scheme_metadata = resolve_uri(metadata_store_uri,
                                                 experiment_id,
                                                 "metadata",

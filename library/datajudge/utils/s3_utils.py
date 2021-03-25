@@ -1,24 +1,23 @@
 import urllib.parse
 from pathlib import Path
-from typing import Type
+from typing import Tuple, Type
 
 import boto3
 import botocore.client as bc  # type: ignore
 from botocore.client import Config
 
 
-def s3client_creator(s3_endpoint: str,
-                     s3_access_key: str,
-                     s3_secret_key: str) -> Type["bc.S3"]:
+def s3client_creator(**kwargs) -> Type["bc.S3"]:
     """
     Return boto client.
     """
-    return boto3.client('s3',
-                        endpoint_url=s3_endpoint,
-                        aws_access_key_id=s3_access_key,
-                        aws_secret_access_key=s3_secret_key,
-                        config=Config(signature_version='s3v4'),
-                        region_name='us-east-1')
+    try:
+        return boto3.client('s3',
+                            **kwargs,
+                            config=Config(signature_version='s3v4'),
+                            region_name='us-east-1')
+    except Exception as ex:
+        raise ex
 
 
 def parse_S3_uri(uri: str) -> urllib.parse.ParseResult:
@@ -70,3 +69,13 @@ def get_bucket(uri: str) -> str:
     """
     parsed = parse_S3_uri(uri)
     return parsed.netloc
+
+
+def split_path_name(uri: str) -> Tuple[str, str]:
+    """
+    Return uri and key.
+    """
+    key = get_s3_path(uri)
+    # orrendo
+    base_uri = "s3://" + get_bucket(uri)
+    return key, base_uri

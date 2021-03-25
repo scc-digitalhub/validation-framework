@@ -5,8 +5,6 @@ from typing import Any, Optional, Tuple
 
 from slugify import slugify  # pylint: disable=import-error
 
-from datajudge.utils.constants import (ARTIFACT_STORE_PARAMS, EXP_NAME,
-                                       METADATA_STORE_PARAMS, PROJ_ID)
 from datajudge.utils.factories import get_stores, select_run_flavour
 
 # For type checking -> avoids circular imports
@@ -47,10 +45,12 @@ class Client:
     """
 
     def __init__(self,
-                 project_id: Optional[str] = PROJ_ID,
-                 experiment_name: Optional[str] = EXP_NAME,
-                 metadata_params: Optional[dict] = None,
-                 artifact_params: Optional[dict] = None,
+                 project_id: Optional[str] = "project",
+                 experiment_name: Optional[str] = "experiment",
+                 metadata_store_uri: Optional[str] = "./validruns",
+                 artifact_store_uri: Optional[str] = "./validruns",
+                 metadata_store_creds: Optional[dict] = None,
+                 artifact_store_creds: Optional[dict] = None,
                  ) -> None:
 
         self._project_id = project_id
@@ -59,17 +59,13 @@ class Client:
                                       max_length=20,
                                       separator="_")
 
-        # Because of mutable default args
-        if not metadata_params:
-            metadata_params = METADATA_STORE_PARAMS
-        if not artifact_params:
-            artifact_params = ARTIFACT_STORE_PARAMS
-
         self._metadata_store, self._artifact_store = get_stores(
-                                                        self._experiment_id,
                                                         self._project_id,
-                                                        metadata_params,
-                                                        artifact_params)
+                                                        self._experiment_id,
+                                                        metadata_store_uri,
+                                                        artifact_store_uri,
+                                                        metadata_store_creds,
+                                                        artifact_store_creds)
 
     def create_run(self,
                    data_resource: DataResource,
