@@ -41,44 +41,51 @@ A list of available endpoints and their use should now be hosted at http://local
 
 Here is a list of notable endpoints. 4 kinds of documents may be saved: `artifact-metadata`, `data-resource`, `run-metadata`, `short-report`.
 
-The endpoints for each kind are identical, so only those related to `data-resource` are reported in this section. Simply replace `data-resource` with whichever other kind of document you need.
+The endpoints for each kind are identical (with some exceptions described in the corresponding subsections), so only those related to `data-resource` are reported in this section. Simply replace `data-resource` with whichever other kind of document you need.
 
 ---
 
 ### Get document by ID:
 
 ```
-localhost:8200/api/data-resource/<document_id>
+localhost:8200/api/project/<project_id>/data-resource/<document_id>
 ```
+* `project_id` - Path variable, ID of the project the document belongs to. If it does not match the project ID contained in the document, it will result in error.
 * `document_id` - Path variable, ID of the document you wish to retrieve.
 
 ---
 
 ### Get documents by project ID
 ```
-localhost:8200/api/project/<project_id>/data-resource?experiment_name=<exp_name>&run_id=<run_id>
+localhost:8200/api/project/<project_id>/data-resource?experiment_id=<experiment_id>&run_id=<run_id>
 ```
 * `project_id` - Path variable, ID of the project.
-* `exp_name` - Optional parameter, name of the experiment.
+* `experiment_id` - Optional parameter, ID of the experiment.
 * `run_id` - Optional parameter, ID of the run.
 
 ---
 
 ### Create document
+This API involves some significant differences depending on the kind of document to be created.
+
 ```
-localhost:8200/api/data-resource?projectId=<project_id>
+localhost:8200/api/project/<project_id>/data-resource
 ```
-* `project_id` - Mandatory parameter, ID of the project.
+* `project_id` - Path variable, ID of the project.
 
 The body for `data-resource`, `run-metadata` and `short-report` must include the following:
-* `experiment_name` - Name of the experiment.
+* `experiment_id` - ID of the experiment.
 * `run_id` - ID of the run.
+
+Optionally, the body may also include:
+* `experiment_name` - Name of the experiment.
 * `contents` - Any object, can contain any valid JSON.
 
 Example:
 ```
 {
-  "experiment_name": "exp1",
+  "experiment_id": "exp1",
+  "experiment_name": "some_experiment",
   "run_id": "run1",
   "contents": {
     "a":"aaa",
@@ -87,7 +94,15 @@ Example:
 }
 ```
 
-However, the body for `artifact-metadata` must include the following:
+For `data-resource` and `short-report`, if a document already exists with the same `project_id`, `experiment_id` and `run_id`, it will result in an error.
+
+For `run-metadata`, an optional parameter named `overwrite` may be specified.
+
+If `overwrite` is specified and set to `true`, it will generate the document, and delete all previously existing documents that match the same combination of `project_id`, `experiment_id` and `run_id` under `data-resource`, `run-metadata` and `short-report`.
+
+If `overwrite` is not specified or set to a different value, it will behave the same as `data-resource` and `short-report`, resulting in an error if a document with the same `project_id`, `experiment_id` and `run_id` already exists.
+
+The body for `artifact-metadata` must include the following:
 * `experiment_name` - Name of the experiment.
 * `run_id` - ID of the run.
 * `name` - Name of the artifact.
@@ -104,32 +119,36 @@ Example:
 }
 ```
 
+No error will occur for `artifact-metadata` if other documents contain the same values in these fields.
+
 ---
 
 ### Update document
 ```
-localhost:8200/api/data-resource/<document_id>
+localhost:8200/api/project/<project_id>/data-resource/<document_id>
 ```
+* `project_id` - Path variable, ID of the project the document belongs to. If it does not match the project ID contained in the document, it will result in error.
 * `document_id` - Path variable, ID of the document you wish to update.
 
 The content of the body follows the same structure as the endpoint for creation.
 
-The `experiment_name` and `run_id` fields are not mandatory for `data-resource`, `run-metadata` and `short-report`, but, if specified, the back-end will check they match the ID.
+The `experiment_id` and `run_id` fields are not mandatory for `data-resource`, `run-metadata` and `short-report`, but, if specified, the back-end will check if they indeed match the values of the document with the specified ID. If they do not, it will result in an error.
 
 ---
 
 ### Delete document by ID
 ```
-localhost:8200/api/data-resource/<document_id>
+localhost:8200/api/project/<project_id>/data-resource/<document_id>
 ```
+* `project_id` - Path variable, ID of the project the document belongs to. If it does not match the project ID contained in the document, it will result in error.
 * `document_id` - Path variable, ID of the document you wish to retrieve.
 
 ---
 
 ### Delete documents by project ID
 ```
-localhost:8200/api/project/<project_id>/data-resource?experiment_name=<exp_name>&run_id=<run_id>
+localhost:8200/api/project/<project_id>/data-resource?experiment_id=<experiment_id>&run_id=<run_id>
 ```
 * `project_id` - Path variable, ID of the project.
-* `exp_name` - Optional parameter, name of the experiment.
+* `experiment_id` - Optional parameter, ID of the experiment.
 * `run_id` - Optional parameter, ID of the run.
