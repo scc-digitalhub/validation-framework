@@ -9,17 +9,17 @@ import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 public interface ArtifactMetadataRepository extends MongoRepository<ArtifactMetadata, String> {
 	List<ArtifactMetadata> findByProjectId(String projectId);
 	
-	List<ArtifactMetadata> findByProjectIdAndExperimentName(String projectId, String experimentName);
+	List<ArtifactMetadata> findByProjectIdAndExperimentId(String projectId, String experimentId);
 	
 	List<ArtifactMetadata> findByProjectIdAndRunId(String projectId, String runId);
 	
-	List<ArtifactMetadata> findByProjectIdAndExperimentNameAndRunId(String projectId, String experimentName, String runId);
+	List<ArtifactMetadata> findByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
 	
 	void deleteByProjectId(String projectId);
 	
-	void deleteByProjectIdAndExperimentName(String projectId, String experimentName);
+	void deleteByProjectIdAndExperimentId(String projectId, String experimentId);
 	
 	void deleteByProjectIdAndRunId(String projectId, String runId);
 	
-	void deleteByProjectIdAndExperimentNameAndRunId(String projectId, String experimentName, String runId);
+	void deleteByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
 }

@@ -1,5 +1,8 @@
 package it.smartcommunitylab.validationstorage.controller;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,29 +21,45 @@ import it.smartcommunitylab.validationstorage.service.ArtifactMetadataService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping(value = "/api/" + ValidationStorageUtils.ARTIFACT_METADATA)
+@RequestMapping(value = "/api/project")
 @RequiredArgsConstructor
 public class ArtifactMetadataController {
 	private final ArtifactMetadataService documentService;
 	
-	@GetMapping("/{id}")
-	public ResponseEntity<ArtifactMetadata> findDocumentById(@PathVariable String id) {
-		return ResponseEntity.ok(documentService.findDocumentById(id));
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA + "/{id}")
+	public ResponseEntity<ArtifactMetadata> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
+		return ResponseEntity.ok(documentService.findDocumentById(projectId, id));
 	}
 	
-	@PostMapping
-	public ResponseEntity<ArtifactMetadata> createDocument(@RequestParam String projectId, @RequestBody ArtifactMetadataDTO request) {
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA)
+    public ResponseEntity<List<ArtifactMetadata>> findDocuments(@PathVariable String projectId,
+    														@RequestParam("experiment_id") Optional<String> experimentId,
+    														@RequestParam("run_id") Optional<String> runId,
+    														@RequestParam("search") Optional<String> search) {
+        return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
+    }
+	
+	@PostMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA)
+	public ResponseEntity<ArtifactMetadata> createDocument(@PathVariable String projectId, @RequestBody ArtifactMetadataDTO request) {
 		return ResponseEntity.ok(documentService.createDocument(projectId, request));
 	}
 	
-	@PutMapping("/{id}")
-	public ResponseEntity<ArtifactMetadata> updateDocument(@PathVariable String id, @RequestBody ArtifactMetadataDTO request) {
-		return ResponseEntity.ok(documentService.updateDocument(id, request));
+	@PutMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA + "/{id}")
+	public ResponseEntity<ArtifactMetadata> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody ArtifactMetadataDTO request) {
+		return ResponseEntity.ok(documentService.updateDocument(projectId, id, request));
 	}
 	
-	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteDocumentById(@PathVariable String id) {
-		documentService.deleteDocumentById(id);
+	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA + "/{id}")
+	public ResponseEntity<Void> deleteDocumentById(@PathVariable String projectId, @PathVariable String id) {
+		documentService.deleteDocumentById(projectId, id);
 		return ResponseEntity.ok().build();
 	}
+	
+	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA)
+    public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
+    											@RequestParam("experiment_id") Optional<String> experimentId,
+    											@RequestParam("run_id") Optional<String> runId) {
+		documentService.deleteDocumentsByProjectId(projectId, experimentId, runId);
+        return ResponseEntity.ok().build();
+    }
 }

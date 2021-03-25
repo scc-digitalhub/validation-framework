@@ -7,6 +7,9 @@ import lombok.Data;
 @Data
 public class ShortReportDTO {
 	
+	@JsonProperty("experiment_id")
+	private String experimentId;
+	
 	@JsonProperty("experiment_name")
 	private String experimentName;
 	

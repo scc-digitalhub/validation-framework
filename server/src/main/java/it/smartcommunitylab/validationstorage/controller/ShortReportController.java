@@ -1,5 +1,8 @@
 package it.smartcommunitylab.validationstorage.controller;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,29 +21,45 @@ import it.smartcommunitylab.validationstorage.service.ShortReportService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping(value = "/api/" + ValidationStorageUtils.SHORT_REPORT)
+@RequestMapping(value = "/api/project")
 @RequiredArgsConstructor
 public class ShortReportController {
 	private final ShortReportService documentService;
 	
-	@GetMapping("/{id}")
-	public ResponseEntity<ShortReport> findDocumentById(@PathVariable String id) {
-		return ResponseEntity.ok(documentService.findDocumentById(id));
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.SHORT_REPORT + "/{id}")
+	public ResponseEntity<ShortReport> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
+		return ResponseEntity.ok(documentService.findDocumentById(projectId, id));
 	}
 	
-	@PostMapping
-	public ResponseEntity<ShortReport> createDocument(@RequestParam String projectId, @RequestBody ShortReportDTO request) {
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.SHORT_REPORT)
+    public ResponseEntity<List<ShortReport>> findDocuments(@PathVariable String projectId,
+    														@RequestParam("experiment_id") Optional<String> experimentId,
+    														@RequestParam("run_id") Optional<String> runId,
+    														@RequestParam("search") Optional<String> search) {
+        return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
+    }
+	
+	@PostMapping("/{projectId}/" + ValidationStorageUtils.SHORT_REPORT)
+	public ResponseEntity<ShortReport> createDocument(@PathVariable String projectId, @RequestBody ShortReportDTO request) {
 		return ResponseEntity.ok(documentService.createDocument(projectId, request));
 	}
 	
-	@PutMapping("/{id}")
-	public ResponseEntity<ShortReport> updateDocument(@PathVariable String id, @RequestBody ShortReportDTO request) {
-		return ResponseEntity.ok(documentService.updateDocument(id, request));
+	@PutMapping("/{projectId}/" + ValidationStorageUtils.SHORT_REPORT + "/{id}")
+	public ResponseEntity<ShortReport> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody ShortReportDTO request) {
+		return ResponseEntity.ok(documentService.updateDocument(projectId, id, request));
 	}
 	
-	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteDocumentById(@PathVariable String id) {
-		documentService.deleteDocumentById(id);
+	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.SHORT_REPORT + "/{id}")
+	public ResponseEntity<Void> deleteDocumentById(@PathVariable String projectId, @PathVariable String id) {
+		documentService.deleteDocumentById(projectId, id);
 		return ResponseEntity.ok().build();
 	}
+	
+	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.SHORT_REPORT)
+    public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
+    											@RequestParam("experiment_id") Optional<String> experimentId,
+    											@RequestParam("run_id") Optional<String> runId) {
+		documentService.deleteDocumentsByProjectId(projectId, experimentId, runId);
+        return ResponseEntity.ok().build();
+    }
 }

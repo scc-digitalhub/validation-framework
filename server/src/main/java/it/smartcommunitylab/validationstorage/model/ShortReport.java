@@ -21,14 +21,18 @@ public class ShortReport {
 	private String projectId;
 	
 	@NonNull
-	@JsonProperty("experiment_name")
-	@Field("experiment_name")
-	private String experimentName;
+	@JsonProperty("experiment_id")
+	@Field("experiment_id")
+	private String experimentId;
 	
 	@NonNull
 	@JsonProperty("run_id")
 	@Field("run_id")
 	private String runId;
+	
+	@JsonProperty("experiment_name")
+	@Field("experiment_name")
+	private String experimentName;
 	
 	private Object contents;
 }

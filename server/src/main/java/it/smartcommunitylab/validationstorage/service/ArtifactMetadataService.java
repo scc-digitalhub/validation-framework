@@ -31,59 +31,79 @@ public class ArtifactMetadataService {
 		return null;
 	}
 	
+	private List<ArtifactMetadata> filterBySearchTerms(List<ArtifactMetadata> items, String search) {
+		return items;
+	}
+	
 	// Create
 	public ArtifactMetadata createDocument(String projectId, ArtifactMetadataDTO request) {
 		if (ObjectUtils.isEmpty(projectId))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project ID is missing or blank.");
 		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.CREATE, projectId);
 		
-		String experimentName = request.getExperimentName();
+		String experimentId = request.getExperimentId();
 		String runId = request.getRunId();
 		String name = request.getName();
 		String uri = request.getUri();
 		
-		if ((ObjectUtils.isEmpty(experimentName)) || (ObjectUtils.isEmpty(runId)) || (ObjectUtils.isEmpty(name)) || (ObjectUtils.isEmpty(uri)))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fields 'experiment_name', 'run_id', 'name', 'uri' are required and cannot be blank.");
+		if ((ObjectUtils.isEmpty(experimentId)) || (ObjectUtils.isEmpty(runId)) || (ObjectUtils.isEmpty(name)) || (ObjectUtils.isEmpty(uri)))
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fields 'experiment_id', 'run_id', 'name', 'uri' are required and cannot be blank.");
 		
-		ArtifactMetadata documentToSave = new ArtifactMetadata(projectId, experimentName, runId, name, uri);
+		ArtifactMetadata documentToSave = new ArtifactMetadata(projectId, experimentId, runId, name, uri);
+		
+		documentToSave.setExperimentName(request.getExperimentName());
 		
 		return documentRepository.save(documentToSave);
 	}
 	
 	// Read
-	public List<ArtifactMetadata> findDocumentsByProjectId(String projectId, Optional<String> experimentName, Optional<String> runId) {
+	public List<ArtifactMetadata> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
 		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.READ, projectId);
 		
-		if (experimentName.isPresent() && runId.isPresent())
-			return documentRepository.findByProjectIdAndExperimentNameAndRunId(projectId, experimentName.get(), runId.get());
-		else if (experimentName.isPresent())
-			return documentRepository.findByProjectIdAndExperimentName(projectId, experimentName.get());
+		List<ArtifactMetadata> repositoryResults;
+		
+		if (experimentId.isPresent() && runId.isPresent())
+			repositoryResults = documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId.get(), runId.get());
+		else if (experimentId.isPresent())
+			repositoryResults = documentRepository.findByProjectIdAndExperimentId(projectId, experimentId.get());
 		else if (runId.isPresent())
-			return documentRepository.findByProjectIdAndRunId(projectId, runId.get());
+			repositoryResults = documentRepository.findByProjectIdAndRunId(projectId, runId.get());
 		else
-			return documentRepository.findByProjectId(projectId);
+			repositoryResults = documentRepository.findByProjectId(projectId);
+		
+		if (search.isPresent())
+			repositoryResults = filterBySearchTerms(repositoryResults, search.get());
+		
+		return repositoryResults;
 	}
 	
 	// Read
-	public ArtifactMetadata findDocumentById(String id) {
+	public ArtifactMetadata findDocumentById(String projectId, String id) {
 		ArtifactMetadata document = getDocument(id);
 		if (document != null) {
 			ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.READ, document.getProjectId());
+			
+			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
+			
 			return document;
 		}
-		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with id=" + id + " was not found.");
+		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
 	}
 	
 	// Update
-	public ArtifactMetadata updateDocument(String id, ArtifactMetadataDTO request) {
+	public ArtifactMetadata updateDocument(String projectId, String id, ArtifactMetadataDTO request) {
 		if (ObjectUtils.isEmpty(id))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document ID is missing or blank.");
 		
 		ArtifactMetadata documentToUpdate = getDocument(id);
 		if (documentToUpdate == null)
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+		
 		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.UPDATE, documentToUpdate.getProjectId());
 		
+		ValidationStorageUtils.checkProjectIdMatch(id, documentToUpdate.getProjectId(), projectId);
+		
+		documentToUpdate.setExperimentId(request.getExperimentId());
 		documentToUpdate.setExperimentName(request.getExperimentName());
 		documentToUpdate.setRunId(request.getRunId());
 		documentToUpdate.setName(request.getName());
@@ -93,10 +113,13 @@ public class ArtifactMetadataService {
 	}
 	
 	// Delete
-	public void deleteDocumentById(String id) {
+	public void deleteDocumentById(String projectId, String id) {
 		ArtifactMetadata document = getDocument(id);
 		if (document != null) {
 			ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.DELETE, document.getProjectId());
+			
+			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
+			
 			documentRepository.deleteById(id);
 			return;
 		}
@@ -104,13 +127,13 @@ public class ArtifactMetadataService {
 	}
 	
 	// Delete
-	public void deleteDocumentsByProjectId(String projectId, Optional<String> experimentName, Optional<String> runId) {
+	public void deleteDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId) {
 		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.DELETE, projectId);
 		
-		if (experimentName.isPresent() && runId.isPresent())
-			documentRepository.deleteByProjectIdAndExperimentNameAndRunId(projectId, experimentName.get(), runId.get());
-		else if (experimentName.isPresent())
-			documentRepository.deleteByProjectIdAndExperimentName(projectId, experimentName.get());
+		if (experimentId.isPresent() && runId.isPresent())
+			documentRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId.get(), runId.get());
+		else if (experimentId.isPresent())
+			documentRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
 		else if (runId.isPresent())
 			documentRepository.deleteByProjectIdAndRunId(projectId, runId.get());
 		else

@@ -21,4 +21,9 @@ public class ValidationStorageUtils {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not allowed to perform this operation.");
 	}
 	
+	public static void checkProjectIdMatch(String id, String documentProjectId, String projectId) {
+		if (!documentProjectId.equals(projectId))
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document with ID " + id + " has project ID " + documentProjectId + ", which does not match the specified project ID " + projectId + ".");
+	}
+	
 }

@@ -21,9 +21,9 @@ public class ArtifactMetadata {
 	private String projectId;
 	
 	@NonNull
-	@JsonProperty("experiment_name")
-	@Field("experiment_name")
-	private String experimentName;
+	@JsonProperty("experiment_id")
+	@Field("experiment_id")
+	private String experimentId;
 	
 	@NonNull
 	@JsonProperty("run_id")
@@ -35,4 +35,8 @@ public class ArtifactMetadata {
 	
 	@NonNull
 	private String uri;
+	
+	@JsonProperty("experiment_name")
+	@Field("experiment_name")
+	private String experimentName;
 }

@@ -8,6 +8,9 @@ import lombok.Data;
 public class ArtifactMetadataDTO {
 	private String id;
 	
+	@JsonProperty("experiment_id")
+	private String experimentId;
+	
 	@JsonProperty("experiment_name")
 	private String experimentName;
 	
