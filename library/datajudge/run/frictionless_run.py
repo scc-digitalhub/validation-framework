@@ -26,8 +26,12 @@ class FrictionlessRun(Run):
     def __init__(self,
                  run_info: RunInfo,
                  data_resource: DataResource,
-                 client: Client) -> None:
-        super().__init__(run_info, data_resource, client)
+                 client: Client,
+                 overwrite: bool) -> None:
+        super().__init__(run_info,
+                         data_resource,
+                         client,
+                         overwrite)
         self._setup_run()
 
     def _setup_run(self) -> None:
@@ -120,7 +124,8 @@ class FrictionlessRun(Run):
         self.client._persist_metadata(
                             metadata,
                             self.run_info.run_metadata_uri,
-                            src_type)
+                            src_type,
+                            self.overwrite)
 
     def persist_artifact(self,
                          src: Any,

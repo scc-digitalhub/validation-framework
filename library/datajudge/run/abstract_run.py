@@ -28,6 +28,9 @@ class Run:
         A DataResource object.
     client:
         A Client object that interact with the storages.
+    overwrite :
+        Boolean describing whether a run with same id should be
+        overwritten
 
     Methods
     -------
@@ -74,11 +77,13 @@ class Run:
     def __init__(self,
                  run_info: RunInfo,
                  data_resource: DataResource,
-                 client: Client) -> None:
+                 client: Client,
+                 overwrite: bool) -> None:
 
         self.data_resource = data_resource
         self.client = client
         self.run_info = run_info
+        self.overwrite = overwrite
 
     @abstractmethod
     def _log_run(self) -> None:

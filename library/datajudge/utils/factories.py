@@ -157,7 +157,8 @@ def select_artifact_store(scheme: str,
 def select_run_flavour(run_info_args: Tuple[str],
                        library: str,
                        data_resource: DataResource,
-                       client: Client) -> Run:
+                       client: Client,
+                       overwrite: bool) -> Run:
     """
     Factory method that returns a run for a specific validation
     library.
@@ -166,6 +167,7 @@ def select_run_flavour(run_info_args: Tuple[str],
         run_info = RunInfo(*run_info_args)
         return RUN_REGISTRY[library](run_info,
                                      data_resource,
-                                     client)
+                                     client,
+                                     overwrite)
     except KeyError as k_err:
         raise NotImplementedError from k_err

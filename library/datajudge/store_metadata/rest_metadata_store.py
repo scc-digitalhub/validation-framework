@@ -1,6 +1,6 @@
 from typing import Optional
 
-from requests.models import Response
+from requests.models import Response  # pylint: disable=import-error
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils.constants import ApiEndpoint, MetadataType
 from datajudge.utils.rest_utils import api_post_call, api_put_call, parse_url
@@ -32,21 +32,12 @@ class RestMetadataStore(MetadataStore):
             MetadataType.DATA_RESOURCE.value: [],
             MetadataType.ARTIFACT.value: []
         }
-        self._overwrite = False
-
-    def check_run(self,
-                  run_id: str,
-                  overwrite: Optional[bool] = False) -> None:
-        """
-        Check run id existence.
-        """
-        if overwrite:
-            self._overwrite = True
 
     def persist_metadata(self,
                          metadata: dict,
                          dst: str,
-                         src_type: str) -> None:
+                         src_type: str,
+                         overwrite: bool) -> None:
         """
         Method that persist metadata.
         """
@@ -61,7 +52,7 @@ class RestMetadataStore(MetadataStore):
 
         if key is None:
             if src_type == MetadataType.RUN_METADATA.value:
-                params = {"overwrite": self._overwrite}
+                params = {"overwrite": overwrite}
                 response = api_post_call(metadata, dst, params)
             else:
                 response = api_post_call(metadata, dst)

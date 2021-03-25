@@ -5,7 +5,7 @@ from typing import Optional
 
 class MetadataStore:
     """
-    Abstract metadata repo that defines methods on how to persist
+    Abstract metadata class that defines methods on how to persist
     metadata into different storage backends.
 
     Attributes
@@ -20,14 +20,12 @@ class MetadataStore:
     -------
     persist_metadata :
         Method that persist metadata.
-    check_run :
-        Check run id existence.
     get_run_metadata_uri :
         Return the URI of the metadata store for the Run.
     get_data_resource_uri :
         Return the URI of the data resource for the Run.
     _build_source_destination :
-        Return source destination based on source type
+        Return source destination based on source type.
     get_run_id :
         Return a string id for a Run.
 
@@ -42,19 +40,11 @@ class MetadataStore:
         self.credentials = credentials
 
     @abstractmethod
-    def check_run(self,
-                  run_id: str,
-                  overwrite: Optional[bool] = False) -> None:
-        """
-        Check run id existence.
-        """
-        pass
-
-    @abstractmethod
     def persist_metadata(self,
                          metadata: str,
                          dst: str,
-                         src_type: str) -> None:
+                         src_type: str,
+                         overwrite: bool) -> None:
         """
         Method that persist metadata.
         """
@@ -77,7 +67,8 @@ class MetadataStore:
     @staticmethod
     @abstractmethod
     def _build_source_destination(dst: str,
-                                  src_type: str) -> str:
+                                  src_type: str,
+                                  key: Optional[str] = None) -> str:
         """
         Return source destination based on source type.
         """

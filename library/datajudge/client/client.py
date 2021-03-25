@@ -95,36 +95,37 @@ class Client:
 
         run_id = self._metadata_store.get_run_id(run_id)
 
-        self._metadata_store.check_run(run_id, overwrite=overwrite)
-
         run_metadata_uri = self._metadata_store.get_run_metadata_uri(run_id)
         data_resource_uri = self._metadata_store.get_data_resource_uri(run_id)
         run_artifacts_uri = self._artifact_store.get_run_artifacts_uri(run_id)
 
-        run_builder_args = (self._experiment_name,
-                            self._experiment_id,
-                            run_id,
-                            run_metadata_uri,
-                            run_artifacts_uri,
-                            data_resource_uri)
+        run_info_args = (self._experiment_name,
+                         self._experiment_id,
+                         run_id,
+                         run_metadata_uri,
+                         run_artifacts_uri,
+                         data_resource_uri)
 
-        run = select_run_flavour(run_builder_args,
+        run = select_run_flavour(run_info_args,
                                  validation_library,
                                  data_resource,
-                                 self)
+                                 self,
+                                 overwrite)
 
         return run
 
     def _persist_metadata(self,
                           metadata: dict,
                           dst: str,
-                          src_type: str) -> None:
+                          src_type: str,
+                          overwrite: bool) -> None:
         """
         Persist metadata.
         """
         self._metadata_store.persist_metadata(metadata,
                                               dst,
-                                              src_type)
+                                              src_type,
+                                              overwrite)
 
     def _persist_artifact(self,
                           src: Any,

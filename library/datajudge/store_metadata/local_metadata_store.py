@@ -17,8 +17,8 @@ class LocalMetadataStore(MetadataStore):
 
     Methods
     -------
-    parse_response :
-        Parse the JSON response from the backend APIs.
+    _check_dst_folder :
+        Check if run folder already exist, otherwise it creates it.
 
     """
 
@@ -27,32 +27,34 @@ class LocalMetadataStore(MetadataStore):
                  credentials:  Optional[dict] = None) -> None:
         super().__init__(uri_metadata, credentials)
 
-    def check_run(self,
-                  run_id: str,
-                  overwrite: Optional[bool] = False) -> None:
-        """
-        Check if run folder already exist, otherwise it creates it.
-        """
-        uri = self.get_run_metadata_uri(run_id)
-        if check_dir(uri):
-            if not overwrite:
-                raise OSError("Run already exists, please use another id")
-        else:
-            make_dir(uri)
-
     def persist_metadata(self,
                          metadata: dict,
                          dst: str,
-                         src_type: str) -> None:
+                         src_type: str,
+                         overwrite: bool) -> None:
         """
         Method that persist metadata.
         """
+        self._check_dst_folder(dst, overwrite)
         dst = self._build_source_destination(dst, src_type)
         write_json(metadata, dst)
 
     @staticmethod
+    def _check_dst_folder(dst: str,
+                          overwrite: bool) -> None:
+        """
+        Check if run folder already exist, otherwise it creates it.
+        """
+        if check_dir(dst):
+            if not overwrite:
+                raise OSError("Run already exists, please use another id")
+        else:
+            make_dir(dst)
+
+    @staticmethod
     def _build_source_destination(dst: str,
-                                  src_type: str) -> str:
+                                  src_type: str,
+                                  key: Optional[str] = None) -> str:
         """
         Return source path based on input source type.
         """
