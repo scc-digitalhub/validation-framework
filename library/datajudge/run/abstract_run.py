@@ -70,10 +70,10 @@ class Run:
     """
 
     __metaclass__ = ABCMeta
-    RUN_METADATA = MetadataType.RUN_METADATA.value
-    DATA_RESOURCE = MetadataType.DATA_RESOURCE.value
-    SHORT_REPORT = MetadataType.SHORT_REPORT.value
-    ARTIFACT_METADATA = MetadataType.ARTIFACT_METADATA.value
+    _RUN_METADATA = MetadataType.RUN_METADATA.value
+    _DATA_RESOURCE = MetadataType.DATA_RESOURCE.value
+    _SHORT_REPORT = MetadataType.SHORT_REPORT.value
+    _ARTIFACT_METADATA = MetadataType.ARTIFACT_METADATA.value
 
     def __init__(self,
                  run_info: RunInfo,
@@ -81,10 +81,10 @@ class Run:
                  client: Client,
                  overwrite: bool) -> None:
 
-        self.data_resource = data_resource
-        self.client = client
-        self.run_info = run_info
-        self.overwrite = overwrite
+        self._data_resource = data_resource
+        self._client = client
+        self._run_info = run_info
+        self._overwrite = overwrite
 
     @abstractmethod
     def _log_run(self) -> None:
@@ -180,38 +180,52 @@ class Run:
         """
         Return a ShortReport object.
         """
-        return ShortReport(self.run_info.data_resource_uri,
-                           self.run_info.experiment_name,
-                           self.run_info.run_id)
+        return ShortReport(self._run_info.data_resource_uri,
+                           self._run_info.experiment_name,
+                           self._run_info.run_id)
 
-    def _get_content(self, cnt: Optional[dict] = None) -> dict:
+    def _get_content(self, cont: Optional[dict] = None) -> dict:
         """
         Return structured content to log.
         """
         content = {
-            "run_id": self.run_info.run_id,
-            "experiment_id": self.run_info.experiment_id,
-            "experiment_name": self.run_info.experiment_name,
-            "content": cnt
+            "run_id": self._run_info.run_id,
+            "experiment_id": self._run_info.experiment_id,
+            "experiment_name": self._run_info.experiment_name,
+            "contents": cont
         }
         return content
 
+    def get_run(self) -> dict:
+        """
+        Return a dictionary of run info attributes.
+        """
+        return self._run_info.to_dict()
+
     def __enter__(self) -> Run:
-        self.run_info.begin_status = "active"
-        self.run_info.started = get_time()
+        # Set run status
+        self._run_info.begin_status = "active"
+        self._run_info.started = get_time()
+
+        # Log data resource
         self.log_data_resource()
+
+        # Update run info
+        uri_res = self._client._get_data_resource_uri(
+                                        self._run_info.run_id)
+        self._run_info.data_resource_uri = uri_res
         self._log_run()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         if exc_type in (InterruptedError, KeyboardInterrupt):
-            self.run_info.end_status = "interrupted"
+            self._run_info.end_status = "interrupted"
         elif exc_type in (OSError, NotImplementedError):
-            self.run_info.end_status = "failed"
+            self._run_info.end_status = "failed"
         else:
-            self.run_info.end_status = "finished"
-        self.run_info.finished = get_time()
+            self._run_info.end_status = "finished"
+        self._run_info.finished = get_time()
         self._log_run()
 
     def __repr__(self) -> str:
-        return str(self.run_info.__dict__)
+        return str(self._run_info.to_dict())

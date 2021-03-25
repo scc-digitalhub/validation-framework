@@ -21,7 +21,7 @@ class ApiEndpoint(Enum):
     """
     RUN_METADATA = "/run-metadata"
     DATA_RESOURCE = "/data-resource"
-    SHORT_REPORT = "/short-report"
+    SHORT_REPORT = "/report-short"
     ARTIFACT_METADATA = "/artifact-metadata"
 
 

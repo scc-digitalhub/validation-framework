@@ -46,11 +46,11 @@ class ShortReport:
         self.valid = valid
         self.errors = errors
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """
         Return a dictionary of the attributes.
         """
         return self.__dict__
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self.__dict__)

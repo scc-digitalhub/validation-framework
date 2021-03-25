@@ -13,9 +13,9 @@ def s3client_creator(**kwargs) -> Type["bc.S3"]:
     """
     try:
         return boto3.client('s3',
-                            **kwargs,
                             config=Config(signature_version='s3v4'),
-                            region_name='us-east-1')
+                            region_name='us-east-1',
+                            **kwargs)
     except Exception as ex:
         raise ex
 

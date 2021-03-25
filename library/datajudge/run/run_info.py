@@ -32,8 +32,7 @@ class RunInfo:
                  experiment_id: str,
                  run_id: str,
                  run_metadata_uri: str,
-                 run_artifacts_uri: str,
-                 data_resource_uri: str) -> None:
+                 run_artifacts_uri: str) -> None:
 
         self.experiment_name = experiment_name
         self.experiment_id = experiment_id
@@ -41,7 +40,8 @@ class RunInfo:
         self.run_id = run_id
         self.run_metadata_uri = run_metadata_uri
         self.run_artifacts_uri = run_artifacts_uri
-        self.data_resource_uri = data_resource_uri
+
+        self.data_resource_uri = ""
 
         self.validation_library = ""
         self.library_version = ""
@@ -52,7 +52,7 @@ class RunInfo:
         self.end_status = ""
         self.finished = ""
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """
         Return a dictionary of attributes.
         """

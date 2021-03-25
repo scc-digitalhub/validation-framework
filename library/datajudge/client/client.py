@@ -96,15 +96,13 @@ class Client:
         run_id = self._metadata_store.get_run_id(run_id)
 
         run_metadata_uri = self._metadata_store.get_run_metadata_uri(run_id)
-        data_resource_uri = self._metadata_store.get_data_resource_uri(run_id)
         run_artifacts_uri = self._artifact_store.get_run_artifacts_uri(run_id)
 
         run_info_args = (self._experiment_name,
                          self._experiment_id,
                          run_id,
                          run_metadata_uri,
-                         run_artifacts_uri,
-                         data_resource_uri)
+                         run_artifacts_uri)
 
         run = get_run_flavour(run_info_args,
                               validation_library,
@@ -138,6 +136,10 @@ class Client:
         return self._artifact_store.persist_artifact(src,
                                                      dst,
                                                      src_name)
+
+    def _get_data_resource_uri(self,
+                               run_id: str):
+        return self._metadata_store.get_data_resource_uri(run_id)
 
     def __repr__(self) -> str:
         return str(self.__dict__)

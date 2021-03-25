@@ -3,8 +3,8 @@ from typing import Any, Optional, Tuple
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import (check_dir, check_file_dimension,
-                                        copy_file, get_path, make_dir,
-                                        write_json, split_path_name)
+                                        copy_file, get_file_name, get_path,
+                                        make_dir, split_path_name, write_json)
 
 
 class LocalArtifactStore(ArtifactStore):
@@ -45,8 +45,12 @@ class LocalArtifactStore(ArtifactStore):
         if isinstance(src, (str, Path)):
             if check_file_dimension(src) > 0:
                 copy_file(src, dst)
+            else:
+                raise OSError("Empty file, not allowed to copy.")
 
-        return split_path_name(dst)
+        if src_name:
+            return split_path_name(dst)
+        return get_file_name(src), dst
 
     @staticmethod
     def _check_access_to_storage(dst) -> None:

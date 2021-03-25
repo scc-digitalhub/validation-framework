@@ -51,21 +51,20 @@ class RestMetadataStore(MetadataStore):
         # control post/put
         key = None
         for elm in self._key_vault[src_type]:
-            if isinstance(elm, dict):
-                if elm["run_id"] == metadata["run_id"]:
-                    key = elm["id"]
+            if elm["run_id"] == metadata["run_id"] and overwrite:
+                key = elm["key"]
 
         dst = self._build_source_destination(dst, src_type, key)
 
         if key is None:
             if src_type == self.RUN_METADATA:
-                params = {"overwrite": overwrite}
+                params = {"overwrite": "true" if overwrite else "false"}
                 response = api_post_call(metadata, dst, params)
             else:
                 response = api_post_call(metadata, dst)
             self._parse_response(response, src_type)
         else:
-            api_put_call(metadata, dst)
+            response = api_put_call(metadata, dst)
 
     def _build_source_destination(self,
                                   dst: str,
@@ -75,7 +74,7 @@ class RestMetadataStore(MetadataStore):
         """
         Return source destination API based on input source type.
         """
-        key = key if key is not None else ""
+        key = "/" + key if key is not None else "/"
         return parse_url(dst + self.endpoints[src_type] + key)
 
     def _parse_response(self,
@@ -86,7 +85,10 @@ class RestMetadataStore(MetadataStore):
         """
         try:
             resp = response.json()
-            self._key_vault[src_type].append(resp)
+            if "run_id" in resp.keys() and "id" in resp.keys():
+                new_key = {"run_id": resp["run_id"],
+                           "key": resp["id"]}
+                self._key_vault[src_type].append(new_key)
         except JSONDecodeError as jx:
             raise jx
         except Exception as ex:

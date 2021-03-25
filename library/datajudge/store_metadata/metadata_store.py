@@ -71,9 +71,9 @@ class MetadataStore:
         """
         pass
 
-    @staticmethod
     @abstractmethod
-    def _build_source_destination(dst: str,
+    def _build_source_destination(self,
+                                  dst: str,
                                   src_type: str,
                                   key: Optional[str] = None) -> str:
         """
@@ -89,6 +89,3 @@ class MetadataStore:
         if run_id:
             return run_id
         return uuid.uuid4().hex
-
-    def __repr__(self) -> str:
-        return str(self.__dict__)

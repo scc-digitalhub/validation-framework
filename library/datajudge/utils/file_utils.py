@@ -82,6 +82,15 @@ def copy_file(src: str, dst: str) -> None:
     shutil.copy(src, dst)
 
 
+def get_file_name(src: str):
+    """
+    Get file name of a resource.
+    """
+    if check_file(src):
+        return Path(src).name
+    return "Unnamed-file"
+
+
 # Json
 
 def write_json(data: dict,

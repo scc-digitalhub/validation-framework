@@ -53,7 +53,7 @@ class DataResource:
         self.sources = sources
         self.licenses = licenses
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """
         Return dictionary of non null values.
         """
