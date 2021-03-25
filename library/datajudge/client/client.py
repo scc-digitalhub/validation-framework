@@ -65,10 +65,11 @@ class Client:
         if not artifact_params:
             artifact_params = ARTIFACT_STORE_PARAMS
 
-        self._metadata_store, self._artifact_store = get_stores(self._experiment_id,
-                                                                self._project_id,
-                                                                metadata_params,
-                                                                artifact_params)
+        self._metadata_store, self._artifact_store = get_stores(
+                                                        self._experiment_id,
+                                                        self._project_id,
+                                                        metadata_params,
+                                                        artifact_params)
 
     def create_run(self,
                    data_resource: DataResource,
@@ -119,13 +120,13 @@ class Client:
         return run
 
     def _persist_metadata(self,
-                          src: dict,
+                          metadata: dict,
                           dst: str,
                           src_type: str) -> None:
         """
         Persist metadata.
         """
-        self._metadata_store.persist_metadata(src,
+        self._metadata_store.persist_metadata(metadata,
                                               dst,
                                               src_type)
 

@@ -44,7 +44,7 @@ class MetadataStore:
     @abstractmethod
     def check_run(self,
                   run_id: str,
-                  overwrite: bool) -> None:
+                  overwrite: Optional[bool] = False) -> None:
         """
         Check run id existence.
         """
@@ -52,10 +52,9 @@ class MetadataStore:
 
     @abstractmethod
     def persist_metadata(self,
-                         src: str,
+                         metadata: str,
                          dst: str,
-                         src_type: str,
-                         uid: Optional[str] = None) -> None:
+                         src_type: str) -> None:
         """
         Method that persist metadata.
         """
@@ -75,8 +74,10 @@ class MetadataStore:
         """
         pass
 
+    @staticmethod
     @abstractmethod
-    def _build_source_destination(src_type: str) -> str:
+    def _build_source_destination(dst: str,
+                                  src_type: str) -> str:
         """
         Return source destination based on source type.
         """

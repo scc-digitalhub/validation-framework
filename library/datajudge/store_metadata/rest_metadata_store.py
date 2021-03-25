@@ -1,9 +1,9 @@
 from typing import Optional
 
+from requests.models import Response
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils.constants import ApiEndpoint, MetadataType
 from datajudge.utils.rest_utils import api_post_call, api_put_call, parse_url
-from requests.models import Response
 
 
 class RestMetadataStore(MetadataStore):
@@ -29,19 +29,19 @@ class RestMetadataStore(MetadataStore):
         self._key_vault = {
             MetadataType.RUN_METADATA.value: [],
             MetadataType.SHORT_REPORT.value: [],
-            MetadataType.DATA_RESOURCE.value: []
+            MetadataType.DATA_RESOURCE.value: [],
+            MetadataType.ARTIFACT.value: []
         }
         self._overwrite = False
 
     def check_run(self,
                   run_id: str,
-                  overwrite: bool) -> None:
+                  overwrite: Optional[bool] = False) -> None:
         """
         Check run id existence.
         """
-        if isinstance(overwrite, bool):
-            if overwrite:
-                self._overwrite = True
+        if overwrite:
+            self._overwrite = True
 
     def persist_metadata(self,
                          metadata: dict,
@@ -57,29 +57,31 @@ class RestMetadataStore(MetadataStore):
                 if elm["run_id"] == metadata["run_id"]:
                     key = elm["id"]
 
-        dst, params = self._build_source_destination(dst, src_type, key)
+        dst = self._build_source_destination(dst, src_type, key)
 
         if key is None:
-            response = api_post_call(metadata, dst, params)
+            if src_type == MetadataType.RUN_METADATA.value:
+                params = {"overwrite": self._overwrite}
+                response = api_post_call(metadata, dst, params)
+            else:
+                response = api_post_call(metadata, dst)
             self.parse_response(response, src_type)
         else:
             api_put_call(metadata, dst)
 
     @staticmethod
-    def _build_source_destination(self,
-                                  dst:str,
+    def _build_source_destination(dst: str,
                                   src_type: str,
-                                  key: Optional[str] = None) -> str:
+                                  key: Optional[str] = None
+                                  ) -> str:
         """
         Return source destination API based on input source type.
         """
 
         key = key if key is not None else ""
-        params = None
 
         if src_type == MetadataType.RUN_METADATA.value:
             endpoint = ApiEndpoint.RUN.value
-            params = {"overwrite": self._overwrite}
         elif src_type == MetadataType.SHORT_REPORT.value:
             endpoint = ApiEndpoint.SHORT_REPORT.value
         elif src_type == MetadataType.DATA_RESOURCE.value:
@@ -88,7 +90,7 @@ class RestMetadataStore(MetadataStore):
             endpoint = ApiEndpoint.ARTIFACT.value
         else:
             raise RuntimeError("No such metadata type.")
-        return parse_url(dst + endpoint + key), params
+        return parse_url(dst + endpoint + key)
 
     def parse_response(self,
                        response: Response,
@@ -99,8 +101,8 @@ class RestMetadataStore(MetadataStore):
         try:
             resp = response.json()
             self._key_vault[src_type].append(resp)
-        except:
-            raise
+        except Exception as ex:
+            raise ex
 
     def get_run_metadata_uri(self,
                              run_id: Optional[str] = None) -> str:
@@ -109,7 +111,8 @@ class RestMetadataStore(MetadataStore):
         """
         return self.uri_metadata
 
-    def get_data_resource_uri(self, run_id: str) -> str:
+    def get_data_resource_uri(self,
+                              run_id: Optional[str] = None) -> str:
         """
         Return the URL of the data resource for the Run.
         """

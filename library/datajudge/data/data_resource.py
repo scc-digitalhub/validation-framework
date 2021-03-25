@@ -58,7 +58,7 @@ class DataResource:
         Return dictionary of non null values.
         """
         return {k: v for k, v in self.__dict__.items() if v is not None}
-        #return self.__dict__
+        # return self.__dict__
 
     def __repr__(self) -> str:
         return str(self.__dict__)

@@ -5,11 +5,11 @@ from enum import Enum
 EXP_NAME = "DefaultExp"
 PROJ_ID = "DefaultProj"
 METADATA_STORE_PARAMS = {
-    "store_uri" : "./validruns",
+    "store_uri": "./validruns",
     "credentials": None
 }
 ARTIFACT_STORE_PARAMS = {
-    "store_uri" : "./validruns",
+    "store_uri": "./validruns",
     "credentials": None
 }
 

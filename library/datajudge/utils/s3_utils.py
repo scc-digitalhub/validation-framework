@@ -54,7 +54,7 @@ def build_S3_key(dst: str, src_name: str) -> str:
     if key.startswith("/"):
         key = key[1:]
     return key
-  
+
 
 def get_s3_path(uri: str) -> str:
     """

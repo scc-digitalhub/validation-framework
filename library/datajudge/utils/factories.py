@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import typing
 import urllib.parse
-from typing import Iterable, Optional, Tuple
+from typing import Optional, Tuple
 
 from datajudge.run import FrictionlessRun, RunInfo
 from datajudge.store_artifact import LocalArtifactStore, S3ArtifactStore
@@ -83,9 +83,14 @@ def resolve_uri(uri: str,
     """
     scheme = urllib.parse.urlparse(uri).scheme
     if store == "metadata":
-        new_uri = build_exp_metadata_uri(scheme, uri, experiment_id, project_id)
+        new_uri = build_exp_metadata_uri(scheme,
+                                         uri,
+                                         experiment_id,
+                                         project_id)
     elif store == "artifact":
-        new_uri = build_exp_artifact_uri(scheme, uri, experiment_id)
+        new_uri = build_exp_artifact_uri(scheme,
+                                         uri,
+                                         experiment_id)
     else:
         raise RuntimeError("Invalid store.")
     return new_uri, scheme
@@ -103,7 +108,6 @@ def get_stores(experiment_id: str,
     metadata_store_uri, metadata_creds = metadata_params.values()
     artifact_store_uri, artifact_creds = artifact_params.values()
 
-
     uri_metadata, scheme_metadata = resolve_uri(metadata_store_uri,
                                                 experiment_id,
                                                 "metadata",
@@ -112,8 +116,12 @@ def get_stores(experiment_id: str,
                                                 experiment_id,
                                                 "artifact")
 
-    store_metadata = select_metadata_store(scheme_metadata, uri_metadata, metadata_creds)
-    store_artifact = select_artifact_store(scheme_artifact, uri_artifact, artifact_creds)
+    store_metadata = select_metadata_store(scheme_metadata,
+                                           uri_metadata,
+                                           metadata_creds)
+    store_artifact = select_artifact_store(scheme_artifact,
+                                           uri_artifact,
+                                           artifact_creds)
 
     return store_metadata, store_artifact
 
@@ -148,7 +156,7 @@ def select_artifact_store(scheme: str,
         raise NotImplementedError from k_err
 
 
-def select_run_flavour(run_info_args: Iterable[str],
+def select_run_flavour(run_info_args: Tuple[str],
                        library: str,
                        data_resource: DataResource,
                        client: Client) -> Run:

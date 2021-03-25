@@ -116,7 +116,7 @@ class FrictionlessRun(Run):
                       src_type: str) -> None:
         """
         Method to log generic metadata.
-        """        
+        """
         self.client._persist_metadata(
                             metadata,
                             self.run_info.run_metadata_uri,
@@ -172,8 +172,3 @@ class FrictionlessRun(Run):
             kwargs.pop("path")
         return Resource(path=self.data_resource.path,
                         **kwargs)
-
-    def validate_resource(self) -> Report:
-        return frictionless.validate_resource(
-                        self.get_resource(
-                            schema=Schema(self.data_resource.schema)))

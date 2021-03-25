@@ -45,7 +45,7 @@ class LocalArtifactStore(ArtifactStore):
         if isinstance(src, (str, Path)):
             if check_file_dimension(src) > 0:
                 copy_file(src, dst)
-        
+
         return split_path_name(dst)
 
     @staticmethod

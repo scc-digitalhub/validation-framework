@@ -1,8 +1,9 @@
 from typing import Optional
+
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils.constants import FileNames, MetadataType
 from datajudge.utils.file_utils import (check_dir, get_path, make_dir,
-                                         write_json)
+                                        write_json)
 
 
 class LocalMetadataStore(MetadataStore):
@@ -28,26 +29,26 @@ class LocalMetadataStore(MetadataStore):
 
     def check_run(self,
                   run_id: str,
-                  overwrite: bool) -> None:
+                  overwrite: Optional[bool] = False) -> None:
         """
         Check if run folder already exist, otherwise it creates it.
         """
         uri = self.get_run_metadata_uri(run_id)
         if check_dir(uri):
-            if overwrite:
+            if not overwrite:
                 raise OSError("Run already exists, please use another id")
         else:
             make_dir(uri)
 
     def persist_metadata(self,
-                         src: dict,
+                         metadata: dict,
                          dst: str,
                          src_type: str) -> None:
         """
         Method that persist metadata.
         """
         dst = self._build_source_destination(dst, src_type)
-        write_json(src, dst)
+        write_json(metadata, dst)
 
     @staticmethod
     def _build_source_destination(dst: str,
@@ -79,4 +80,6 @@ class LocalMetadataStore(MetadataStore):
         """
         Return the path of the data resource for the Run.
         """
-        return get_path(self.uri_metadata, run_id, FileNames.DATA_RESOURCE.value)
+        return get_path(self.uri_metadata,
+                        run_id,
+                        FileNames.DATA_RESOURCE.value)

@@ -28,4 +28,4 @@ def parse_url(url: str):
     Parse an URL and clean it from double '/' character.
     """
     return urljoin(url,
-                   urlparse(url).path.replace('//','/'))
+                   urlparse(url).path.replace('//', '/'))

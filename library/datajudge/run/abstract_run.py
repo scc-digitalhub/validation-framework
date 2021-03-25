@@ -9,7 +9,7 @@ from datajudge.utils.time_utils import get_time
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
-    from datajudge.data import DataResource, ShortReport
+    from datajudge.data import DataResource
     from datajudge.run import RunInfo
 
 
@@ -178,7 +178,7 @@ class Run:
         Return a resource object specific of the library.
         """
         pass
-    
+
     def get_short_report(self) -> ShortReport:
         """
         Return a ShortReport object.
@@ -186,7 +186,7 @@ class Run:
         return ShortReport(self.run_info.data_resource_uri,
                            self.run_info.experiment_name,
                            self.run_info.run_id)
-    
+
     def get_content(self) -> dict:
         """
         Get structured content to log.
