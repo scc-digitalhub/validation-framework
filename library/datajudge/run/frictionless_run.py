@@ -34,13 +34,13 @@ class FrictionlessRun(Run):
                          overwrite)
         self._log_run()
         self._update_library_info()
-        # self._update_data_resource()
+        self._update_data_resource()
 
     def _update_library_info(self) -> None:
         """
         Update run's info about the validation framework used.
         """
-        self._run_info.validation_library = "frictionless"
+        self._run_info.validation_library = frictionless.__name__
         self._run_info.library_version = frictionless.__version__
 
     def _update_data_resource(self) -> None:

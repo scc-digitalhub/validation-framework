@@ -50,9 +50,10 @@ class RestMetadataStore(MetadataStore):
         """
         # control post/put
         key = None
-        for elm in self._key_vault[src_type]:
-            if elm["run_id"] == metadata["run_id"] and overwrite:
-                key = elm["key"]
+        if src_type != self.ARTIFACT_METADATA:
+            for elm in self._key_vault[src_type]:
+                if elm["run_id"] == metadata["run_id"]:
+                    key = elm["key"]
 
         dst = self._build_source_destination(dst, src_type, key)
 
@@ -83,12 +84,19 @@ class RestMetadataStore(MetadataStore):
         """
         Parse the JSON response from the backend APIs.
         """
+        if response.status_code == 400:
+                raise BaseException("Id already present, please change it " +
+                                    "or enable overwrite.")
         try:
             resp = response.json()
-            if "run_id" in resp.keys() and "id" in resp.keys():
-                new_key = {"run_id": resp["run_id"],
-                           "key": resp["id"]}
-                self._key_vault[src_type].append(new_key)
+            keys = resp.keys()
+            if "run_id" in keys and "id" in keys:
+                new_key = {
+                    "run_id": resp["run_id"],
+                    "key": resp["id"]
+                }
+                if new_key not in self._key_vault[src_type]:
+                    self._key_vault[src_type].append(new_key)
         except JSONDecodeError as jx:
             raise jx
         except Exception as ex:
