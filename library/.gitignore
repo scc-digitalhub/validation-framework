@@ -129,7 +129,5 @@ dmypy.json
 .pyre/
 
 # VScode
-.vscode/*
+\.vscode/*
 *.code-workspace
-
-/api.py
