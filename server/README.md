@@ -98,7 +98,7 @@ For `data-resource` and `short-report`, if a document already exists with the sa
 
 For `run-metadata`, an optional parameter named `overwrite` may be specified.
 
-If `overwrite` is specified and set to `true`, it will generate the document, and delete all previously existing documents that match the same combination of `project_id`, `experiment_id` and `run_id` under `data-resource`, `run-metadata` and `short-report`.
+If `overwrite` is specified and set to `true`, it will generate the document, and delete all previously existing documents of any kind that match the same combination of `project_id`, `experiment_id` and `run_id`.
 
 If `overwrite` is not specified or set to a different value, it will behave the same as `data-resource` and `short-report`, resulting in an error if a document with the same `project_id`, `experiment_id` and `run_id` already exists.
 
