@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
 import it.smartcommunitylab.validationstorage.model.dto.RunMetadataDTO;
+import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
@@ -22,6 +23,7 @@ public class RunMetadataService {
 	private final RunMetadataRepository documentRepository;
 	private final DataResourceRepository dataResourceRepository;
 	private final ShortReportRepository shortReportRepository;
+	private final ArtifactMetadataRepository artifactMetadataRepository;
 	
 	private RunMetadata getDocument(String id) {
 		if (ObjectUtils.isEmpty(id))
@@ -61,6 +63,7 @@ public class RunMetadataService {
 			documentRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
 			dataResourceRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
 			shortReportRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+			artifactMetadataRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
 		}
 		
 		RunMetadata documentToSave = new RunMetadata(projectId, experimentId, runId);
