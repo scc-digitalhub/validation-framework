@@ -6,7 +6,6 @@ from typing import Any, Optional
 
 import frictionless
 from datajudge.run import Run
-from datajudge.utils.constants import FileNames
 from frictionless import Resource
 from frictionless.report import Report
 from frictionless.schema import Schema
@@ -123,14 +122,12 @@ class FrictionlessRun(Run):
         """
         Method to persist artifacts in the artifact store.
         """
-        file, uri = self._client._persist_artifact(
-                                        src,
-                                        self._run_info.run_artifacts_uri,
-                                        src_name=src_name)
-        metadata = self._get_content()
-        metadata.pop("contents")
-        metadata["name"] = file
-        metadata["uri"] = uri
+        self._client._persist_artifact(src,
+                                       self._run_info.run_artifacts_uri,
+                                       src_name=src_name)
+        uri = self._run_info.run_artifacts_uri
+        name = src if isinstance(src, str) else src_name
+        metadata = self._get_artifact_metadata(name, uri)
         self._log_metadata(metadata, self._ARTIFACT_METADATA)
 
     def persist_data(self) -> None:
@@ -148,7 +145,7 @@ class FrictionlessRun(Run):
         """
         self.persist_artifact(
                     dict(report),
-                    src_name=FileNames.FULL_REPORT.value)
+                    src_name=self._FULL_REPORT)
 
     def persist_inferred_schema(self, schema: Schema) -> None:
         """
@@ -157,7 +154,7 @@ class FrictionlessRun(Run):
         """
         self.persist_artifact(
                     dict(schema),
-                    src_name=FileNames.SCHEMA_INFERRED.value)
+                    src_name=self._SCHEMA_INFERRED)
 
     def get_resource(self, **kwargs) -> Resource:
         """

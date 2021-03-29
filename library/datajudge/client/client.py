@@ -27,15 +27,15 @@ class Client:
     metadata_params :
         A dictionary containing two keys:
             'store_uri', a uri string pointing to the metadata store
-            'credentials', a dictionary with access credentials.
+            'config', a dictionary with access config.
         By default 'store_uri' point to local './validruns' and
-        'credentials' is None.
+        'config' is None.
     artifact_params :
         A dictionary containing two keys:
             'store_uri', a uri string pointing to the artifact store
-            'credentials', a dictionary with access credentials.
+            'config', a dictionary with access config.
         By default 'store_uri' point to local './validruns' and
-        'credentials' is None.
+        'config' is None.
 
     Methods
     -------
@@ -47,10 +47,10 @@ class Client:
     def __init__(self,
                  project_id: Optional[str] = "project",
                  experiment_name: Optional[str] = "experiment",
-                 metadata_store_uri: Optional[str] = "./validruns",
-                 artifact_store_uri: Optional[str] = "./validruns",
-                 metadata_store_creds: Optional[dict] = None,
-                 artifact_store_creds: Optional[dict] = None,
+                 metadata_store_uri: Optional[str] = None,
+                 artifact_store_uri: Optional[str] = None,
+                 metadata_store_config: Optional[dict] = None,
+                 artifact_store_config: Optional[dict] = None,
                  ) -> None:
 
         self._project_id = project_id
@@ -64,8 +64,8 @@ class Client:
                                                         self._experiment_id,
                                                         metadata_store_uri,
                                                         artifact_store_uri,
-                                                        metadata_store_creds,
-                                                        artifact_store_creds)
+                                                        metadata_store_config,
+                                                        artifact_store_config)
 
     def create_run(self,
                    data_resource: DataResource,
@@ -94,6 +94,8 @@ class Client:
         """
 
         run_id = self._metadata_store.get_run_id(run_id)
+
+        self._metadata_store.init_run(run_id, overwrite)
 
         run_metadata_uri = self._metadata_store.get_run_metadata_uri(run_id)
         run_artifacts_uri = self._artifact_store.get_run_artifacts_uri(run_id)

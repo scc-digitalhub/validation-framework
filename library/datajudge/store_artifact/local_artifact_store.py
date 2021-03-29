@@ -15,8 +15,9 @@ class LocalArtifactStore(ArtifactStore):
 
     def __init__(self,
                  artifact_uri: str,
-                 credentials: Optional[dict] = None) -> None:
-        super().__init__(artifact_uri, credentials)
+                 config: Optional[dict] = None) -> None:
+        super().__init__(artifact_uri, config)
+        self._check_access_to_storage(self.artifact_uri)
 
     def persist_artifact(self,
                          src: Any,

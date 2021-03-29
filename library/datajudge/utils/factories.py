@@ -22,6 +22,8 @@ if typing.TYPE_CHECKING:
 METADATA_LOG_TYPE = "metadata"
 ARTIFACT_LOG_TYPE = "artifact"
 
+DEFAULT_STORE = "./validruns"
+
 METADATA_STORE_REGISTRY = {
     "": LocalMetadataStore,
     "file": LocalMetadataStore,
@@ -81,6 +83,7 @@ def resolve_uri(uri: str,
     """
     Return a builded URI and it's scheme.
     """
+    uri = uri if uri is not None else DEFAULT_STORE
     scheme = urllib.parse.urlparse(uri).scheme
     if store == "metadata":
         new_uri = build_exp_metadata_uri(scheme,
@@ -100,8 +103,8 @@ def get_stores(project_id: str,
                experiment_id: str,
                metadata_store_uri: str,
                artifact_store_uri: str,
-               metadata_creds: Optional[dict] = None,
-               artifact_creds: Optional[dict] = None
+               metadata_config: Optional[dict] = None,
+               artifact_config: Optional[dict] = None
                ) -> Tuple[MetadataStore, ArtifactStore]:
     """
     Function that returns metadata and artifact stores.
@@ -116,17 +119,17 @@ def get_stores(project_id: str,
 
     store_metadata = select_metadata_store(scheme_metadata,
                                            uri_metadata,
-                                           metadata_creds)
+                                           metadata_config)
     store_artifact = select_artifact_store(scheme_artifact,
                                            uri_artifact,
-                                           artifact_creds)
+                                           artifact_config)
 
     return store_metadata, store_artifact
 
 
 def select_metadata_store(scheme: str,
                           uri_metadata: str,
-                          credentials: Optional[dict] = None
+                          config: Optional[dict] = None
                           ) -> MetadataStore:
     """
     Factory method that returns a metadata store object to interact
@@ -134,14 +137,14 @@ def select_metadata_store(scheme: str,
     """
     try:
         return METADATA_STORE_REGISTRY[scheme](uri_metadata,
-                                               credentials)
+                                               config)
     except KeyError as k_err:
         raise NotImplementedError from k_err
 
 
 def select_artifact_store(scheme: str,
                           uri_artifact: str,
-                          credentials: Optional[dict] = None
+                          config: Optional[dict] = None
                           ) -> ArtifactStore:
     """
     Factory method that returns an artifact store object to interact
@@ -149,7 +152,7 @@ def select_artifact_store(scheme: str,
     """
     try:
         return ARTIFACT_STORE_REGISTRY[scheme](uri_artifact,
-                                               credentials)
+                                               config)
     except KeyError as k_err:
         raise NotImplementedError from k_err
 

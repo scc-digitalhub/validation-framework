@@ -11,7 +11,7 @@ class ArtifactStore:
     ----------
     artifact_uri :
         An URI string that points to the storage.
-    credentials :
+    config :
         A dictionary containing the credential needed to performs
         actions on the storage.
 
@@ -30,9 +30,9 @@ class ArtifactStore:
 
     def __init__(self,
                  artifact_uri: str,
-                 credentials: Optional[dict] = None) -> None:
+                 config: Optional[dict] = None) -> None:
         self.artifact_uri = artifact_uri
-        self.credentials = credentials
+        self.config = config
 
     @abstractmethod
     def persist_artifact(self,
