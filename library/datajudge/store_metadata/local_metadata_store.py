@@ -24,8 +24,8 @@ class LocalMetadataStore(MetadataStore):
 
     def __init__(self,
                  uri_metadata: str,
-                 credentials:  Optional[dict] = None) -> None:
-        super().__init__(uri_metadata, credentials)
+                 config:  Optional[dict] = None) -> None:
+        super().__init__(uri_metadata, config)
         self.filenames = {
             self.RUN_METADATA: FileNames.RUN_METADATA.value,
             self.SHORT_REPORT: FileNames.SHORT_REPORT.value,
@@ -33,13 +33,23 @@ class LocalMetadataStore(MetadataStore):
             self.ARTIFACT_METADATA: FileNames.ARTIFACT_METADATA.value
         }
 
-    def persist_metadata(self,
-                         metadata: dict,
-                         dst: str,
-                         src_type: str,
-                         overwrite: bool) -> None:
+    def init_run(self,
+                 run_id: str,
+                 overwrite: bool) -> None:
         """
-        Method that persist metadata.
+        Check run enviroment existence. If folder
+        doesn't exist, create it.
+        """
+        uri = self.get_run_metadata_uri(run_id)
+        self._check_dst_folder(uri, overwrite)
+
+    def log_metadata(self,
+                     metadata: dict,
+                     dst: str,
+                     src_type: str,
+                     overwrite: bool) -> None:
+        """
+        Method that log metadata.
         """
         self._check_dst_folder(dst, overwrite)
         dst = self._build_source_destination(dst, src_type)

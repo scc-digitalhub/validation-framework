@@ -4,7 +4,7 @@ import typing
 from abc import ABCMeta, abstractmethod
 from typing import Any, Optional
 
-from datajudge.utils.constants import MetadataType
+from datajudge.utils.constants import FileNames, MetadataType
 from datajudge.data import ShortReport
 from datajudge.utils.time_utils import get_time
 
@@ -74,6 +74,8 @@ class Run:
     _DATA_RESOURCE = MetadataType.DATA_RESOURCE.value
     _SHORT_REPORT = MetadataType.SHORT_REPORT.value
     _ARTIFACT_METADATA = MetadataType.ARTIFACT_METADATA.value
+    _FULL_REPORT = FileNames.FULL_REPORT.value
+    _SCHEMA_INFERRED = FileNames.SCHEMA_INFERRED.value
 
     def __init__(self,
                  run_info: RunInfo,
@@ -196,6 +198,15 @@ class Run:
         }
         return content
 
+    def _get_artifact_metadata(self,
+                               name: str,
+                               uri: str) -> dict:
+        metadata = self._get_content()
+        metadata.pop("contents")
+        metadata["name"] = name
+        metadata["uri"] = uri
+        return metadata
+
     def get_run(self) -> dict:
         """
         Return a dictionary of run info attributes.
@@ -211,9 +222,9 @@ class Run:
         self.log_data_resource()
 
         # Update run info
-        uri_res = self._client._get_data_resource_uri(
-                                        self._run_info.run_id)
-        self._run_info.data_resource_uri = uri_res
+        uri_resource = self._client._get_data_resource_uri(
+                                            self._run_info.run_id)
+        self._run_info.data_resource_uri = uri_resource
         self._log_run()
         return self
 

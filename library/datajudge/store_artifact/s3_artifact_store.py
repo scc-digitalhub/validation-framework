@@ -24,9 +24,11 @@ class S3ArtifactStore(ArtifactStore):
 
     def __init__(self,
                  artifact_uri: str,
-                 credentials: Optional[dict] = None) -> None:
-        super().__init__(artifact_uri, credentials)
-        self.client = s3client_creator(**self.credentials)
+                 config: Optional[dict] = None) -> None:
+        super().__init__(artifact_uri, config)
+        self.client = s3client_creator(**self.config)
+        self.bucket = get_bucket(self.artifact_uri)
+        self._check_access_to_storage(self.bucket)
 
     def persist_artifact(self,
                          src: Any,
@@ -39,20 +41,19 @@ class S3ArtifactStore(ArtifactStore):
             for obj in src:
                 self.persist_artifact(obj, dst, src_name)
 
-        bucket = get_bucket(dst)
-        self._check_access_to_storage(bucket)
+        self._check_access_to_storage(self.bucket)
 
         # src is a local file in this case
         if isinstance(src, (str or Path)) and src_name is None:
 
             # Check if resource has size > 0
             if Path(src).stat().st_size == 0:
-                raise OSError("File is empty, will not be logged to S3.")
+                raise OSError("File is empty, will not be persisted to S3.")
 
             src_name = os.path.basename(src)
             key = build_S3_key(dst, src_name)
             self.client.upload_file(Filename=src,
-                                    Bucket=bucket,
+                                    Bucket=self.bucket,
                                     Key=key)
 
         # or a dictionary that we dump in a json
@@ -61,7 +62,7 @@ class S3ArtifactStore(ArtifactStore):
             json_obj = json.dumps(src)
             key = build_S3_key(dst, src_name)
             self.client.put_object(Body=json_obj,
-                                   Bucket=bucket,
+                                   Bucket=self.bucket,
                                    Key=key)
 
         return split_path_name(dst)
@@ -69,13 +70,13 @@ class S3ArtifactStore(ArtifactStore):
     def _check_access_to_storage(self,
                                  bucket: str) -> None:
         """
-        Check bucket existence.
+        Check access to storage.
         """
         try:
             self.client.head_bucket(Bucket=bucket)
         except ClientError:
-            raise BaseException("The bucket does not exist or",
-                                " you have no access.")
+            raise BaseException("The bucket does not exist or" +
+                                " you have no access to it.")
 
     def get_run_artifacts_uri(self, run_id: str) -> str:
         """

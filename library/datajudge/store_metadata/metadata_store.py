@@ -14,12 +14,14 @@ class MetadataStore:
     ----------
     metadata_uri :
         An URI string that points to the storage.
-    credentials :
+    config :
         A dictionary containing the credential needed to performs
         actions on the storage.
 
     Methods
     -------
+    init_run :
+        Check run enviroment existence.
     persist_metadata :
         Method that persist metadata.
     get_run_metadata_uri :
@@ -42,18 +44,27 @@ class MetadataStore:
 
     def __init__(self,
                  uri_metadata: str,
-                 credentials:  Optional[dict] = None) -> None:
+                 config:  Optional[dict] = None) -> None:
         self.uri_metadata = uri_metadata
-        self.credentials = credentials
+        self.config = config
 
     @abstractmethod
-    def persist_metadata(self,
-                         metadata: str,
-                         dst: str,
-                         src_type: str,
-                         overwrite: bool) -> None:
+    def init_run(self,
+                 run_id: str,
+                 overwrite: bool) -> None:
         """
-        Method that persist metadata.
+        Check run enviroment existence.
+        """
+        pass
+
+    @abstractmethod
+    def log_metadata(self,
+                     metadata: str,
+                     dst: str,
+                     src_type: str,
+                     overwrite: bool) -> None:
+        """
+        Method that log metadata.
         """
         pass
 
