@@ -114,18 +114,18 @@ class Client:
 
         return run
 
-    def _persist_metadata(self,
-                          metadata: dict,
-                          dst: str,
-                          src_type: str,
-                          overwrite: bool) -> None:
+    def _log_metadata(self,
+                      metadata: dict,
+                      dst: str,
+                      src_type: str,
+                      overwrite: bool) -> None:
         """
         Persist metadata.
         """
-        self._metadata_store.persist_metadata(metadata,
-                                              dst,
-                                              src_type,
-                                              overwrite)
+        self._metadata_store.log_metadata(metadata,
+                                          dst,
+                                          src_type,
+                                          overwrite)
 
     def _persist_artifact(self,
                           src: Any,
@@ -135,9 +135,7 @@ class Client:
         """
         Persist artifact.
         """
-        return self._artifact_store.persist_artifact(src,
-                                                     dst,
-                                                     src_name)
+        self._artifact_store.persist_artifact(src, dst, src_name)
 
     def _get_data_resource_uri(self,
                                run_id: str):

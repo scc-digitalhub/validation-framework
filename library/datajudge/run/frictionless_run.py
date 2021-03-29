@@ -110,7 +110,7 @@ class FrictionlessRun(Run):
         """
         Method to log generic metadata.
         """
-        self._client._persist_metadata(
+        self._client._log_metadata(
                             metadata,
                             self._run_info.run_metadata_uri,
                             src_type,
