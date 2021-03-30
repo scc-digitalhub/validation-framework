@@ -20,7 +20,7 @@ def s3client_creator(**kwargs) -> Type["bc.S3"]:
         raise ex
 
 
-def parse_S3_uri(uri: str) -> urllib.parse.ParseResult:
+def parse_s3_uri(uri: str) -> urllib.parse.ParseResult:
     """
     Return parsed URI.
     """
@@ -34,7 +34,7 @@ def build_s3_uri(uri: str, *args) -> str:
     """
     Return a full S3 path.
     """
-    parsed = parse_S3_uri(uri)
+    parsed = parse_s3_uri(uri)
     s3_path = str(Path(parsed.path, *args))
     s3_new_url = urllib.parse.urlunparse((parsed.scheme,
                                           parsed.netloc,
@@ -45,7 +45,7 @@ def build_s3_uri(uri: str, *args) -> str:
     return s3_new_url
 
 
-def build_S3_key(dst: str, src_name: str) -> str:
+def build_s3_key(dst: str, src_name: str) -> str:
     """
     Build key to upload objects.
     """
@@ -59,7 +59,7 @@ def get_s3_path(uri: str) -> str:
     """
     Return the path portion of S3 URI.
     """
-    parsed = parse_S3_uri(uri)
+    parsed = parse_s3_uri(uri)
     return parsed.path
 
 
@@ -67,7 +67,7 @@ def get_bucket(uri: str) -> str:
     """
     Parse an S3 URI, returning bucket.
     """
-    parsed = parse_S3_uri(uri)
+    parsed = parse_s3_uri(uri)
     return parsed.netloc
 
 

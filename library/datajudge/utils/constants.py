@@ -9,7 +9,7 @@ class FileNames(Enum):
     RUN_METADATA = "run_metadata.json"
     DATA_RESOURCE = "data_resource.json"
     SHORT_REPORT = "report_short.json"
-    ARTIFACT_METADATA = "artifact_metadata.json"
+    ARTIFACT_METADATA = "artifact_metadata_{}.json"
     # Artifact
     FULL_REPORT = "report_full.json"
     SCHEMA_INFERRED = "inferred_schema.json"

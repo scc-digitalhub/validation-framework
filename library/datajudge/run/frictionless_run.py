@@ -12,8 +12,7 @@ from frictionless.schema import Schema
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
-    from datajudge.data import DataResource
-    from datajudge.data import ShortReport
+    from datajudge.data import DataResource, ShortReport
     from datajudge.run import RunInfo
 
 
@@ -104,31 +103,49 @@ class FrictionlessRun(Run):
         metadata = self._get_content(report_short.to_dict())
         self._log_metadata(metadata, self._SHORT_REPORT)
 
+    def _log_artifact(self,
+                      src: Any,
+                      src_name: Optional[str] = None
+                      ) -> None:
+        """
+        Method to log artifacts metadata.
+        """
+        uri = self._run_info.run_artifacts_uri
+        names = []
+        if isinstance(src, list):
+            names.extend(src)
+        elif isinstance(src, str):
+            names.append(src)
+        else:
+            names.append(src_name)
+
+        for name in names:
+            metadata = self._get_artifact_metadata(name, uri)
+            self._log_metadata(metadata, self._ARTIFACT_METADATA)
+
     def _log_metadata(self,
                       metadata: dict,
                       src_type: str) -> None:
         """
         Method to log generic metadata.
         """
-        self._client._log_metadata(
-                            metadata,
-                            self._run_info.run_metadata_uri,
-                            src_type,
-                            self._overwrite)
+        self._client.log_metadata(
+                           metadata,
+                           self._run_info.run_metadata_uri,
+                           src_type,
+                           self._overwrite)
 
     def persist_artifact(self,
                          src: Any,
-                         src_name: Optional[str] = None) -> None:
+                         src_name: Optional[str] = None
+                         ) -> None:
         """
         Method to persist artifacts in the artifact store.
         """
-        self._client._persist_artifact(src,
-                                       self._run_info.run_artifacts_uri,
-                                       src_name=src_name)
-        uri = self._run_info.run_artifacts_uri
-        name = src if isinstance(src, str) else src_name
-        metadata = self._get_artifact_metadata(name, uri)
-        self._log_metadata(metadata, self._ARTIFACT_METADATA)
+        self._client.persist_artifact(src,
+                                      self._run_info.run_artifacts_uri,
+                                      src_name=src_name)
+        self._log_artifact(src, src_name)
 
     def persist_data(self) -> None:
         """

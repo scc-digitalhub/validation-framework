@@ -3,7 +3,7 @@ from typing import Optional
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils.constants import FileNames
 from datajudge.utils.file_utils import (check_dir, get_path, make_dir,
-                                        write_json)
+                                        remove_files, write_json)
 
 
 class LocalMetadataStore(MetadataStore):
@@ -32,16 +32,17 @@ class LocalMetadataStore(MetadataStore):
             self.DATA_RESOURCE: FileNames.DATA_RESOURCE.value,
             self.ARTIFACT_METADATA: FileNames.ARTIFACT_METADATA.value
         }
+        self.artifact_count = 0
 
     def init_run(self,
                  run_id: str,
                  overwrite: bool) -> None:
         """
         Check run enviroment existence. If folder
-        doesn't exist, create it.
+        doesn't exist, create or recreate it.
         """
         uri = self.get_run_metadata_uri(run_id)
-        self._check_dst_folder(uri, overwrite)
+        self._check_dst_folder(uri, overwrite, init=True)
 
     def log_metadata(self,
                      metadata: dict,
@@ -55,15 +56,19 @@ class LocalMetadataStore(MetadataStore):
         dst = self._build_source_destination(dst, src_type)
         write_json(metadata, dst)
 
-    @staticmethod
-    def _check_dst_folder(dst: str,
-                          overwrite: bool) -> None:
+    def _check_dst_folder(self,
+                          dst: str,
+                          overwrite: bool,
+                          init: Optional[bool] = False) -> None:
         """
         Check if run folder already exist, otherwise it creates it.
         """
         if check_dir(dst):
             if not overwrite:
                 raise OSError("Run already exists, please use another id")
+            if init and overwrite:
+                self.artifact_count = 0
+                remove_files(dst)
         else:
             make_dir(dst)
 
@@ -74,7 +79,11 @@ class LocalMetadataStore(MetadataStore):
         """
         Return source path based on input source type.
         """
-        return get_path(dst, self.filenames[src_type])
+        filename = self.filenames[src_type]
+        if src_type == self.ARTIFACT_METADATA:
+            filename = filename.format(self.artifact_count)
+            self.artifact_count += 1
+        return get_path(dst, filename)
 
     def get_run_metadata_uri(self, run_id: str) -> str:
         """

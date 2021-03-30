@@ -55,7 +55,6 @@ class MetadataStore:
         """
         Check run enviroment existence.
         """
-        pass
 
     @abstractmethod
     def log_metadata(self,
@@ -66,21 +65,18 @@ class MetadataStore:
         """
         Method that log metadata.
         """
-        pass
 
     @abstractmethod
     def get_run_metadata_uri(self, run_id: str) -> str:
         """
         Return the URI of the metadata store for the Run.
         """
-        pass
 
     @abstractmethod
     def get_data_resource_uri(self, run_id: str) -> str:
         """
         Return the URI of the data resource for the Run.
         """
-        pass
 
     @abstractmethod
     def _build_source_destination(self,
@@ -90,7 +86,6 @@ class MetadataStore:
         """
         Return source destination based on source type.
         """
-        pass
 
     @staticmethod
     def get_run_id(run_id: Optional[str] = None) -> str:

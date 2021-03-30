@@ -114,24 +114,24 @@ class Client:
 
         return run
 
-    def _log_metadata(self,
-                      metadata: dict,
-                      dst: str,
-                      src_type: str,
-                      overwrite: bool) -> None:
+    def log_metadata(self,
+                     metadata: dict,
+                     dst: str,
+                     src_type: str,
+                     overwrite: bool) -> None:
         """
-        Persist metadata.
+        Log metadata.
         """
         self._metadata_store.log_metadata(metadata,
                                           dst,
                                           src_type,
                                           overwrite)
 
-    def _persist_artifact(self,
-                          src: Any,
-                          dst: str,
-                          src_name: Optional[str] = None
-                          ) -> Tuple[str, str]:
+    def persist_artifact(self,
+                         src: Any,
+                         dst: str,
+                         src_name: Optional[str] = None
+                         ) -> Tuple[str, str]:
         """
         Persist artifact.
         """

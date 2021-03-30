@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 import shutil
@@ -82,13 +83,24 @@ def copy_file(src: str, dst: str) -> None:
     shutil.copy(src, dst)
 
 
-def get_file_name(src: str):
+def get_file_name(src: str) -> None:
     """
     Get file name of a resource.
     """
     if check_file(src):
         return Path(src).name
     return "Unnamed-file"
+
+
+def remove_files(path: str) -> None:
+    """
+    Remove files from a folder.
+    """
+    if not path.endswith("*"):
+        path = get_path(path, "*")
+    files = glob.glob(path)
+    for file in files:
+        os.remove(file)
 
 
 # Json

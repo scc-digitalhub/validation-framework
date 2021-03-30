@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 from botocore.client import ClientError
 from datajudge.store_artifact.artifact_store import ArtifactStore
-from datajudge.utils.s3_utils import (build_S3_key, build_s3_uri, get_bucket,
+from datajudge.utils.s3_utils import (build_s3_key, build_s3_uri, get_bucket,
                                       s3client_creator)
 
 
@@ -44,14 +44,14 @@ class S3ArtifactStore(ArtifactStore):
         self._check_access_to_storage(self.bucket)
 
         # src is a local file in this case
-        if isinstance(src, (str or Path)) and src_name is None:
+        if isinstance(src, (str, Path)) and src_name is None:
 
             # Check if resource has size > 0
             if Path(src).stat().st_size == 0:
                 raise OSError("File is empty, will not be persisted to S3.")
 
             src_name = os.path.basename(src)
-            key = build_S3_key(dst, src_name)
+            key = build_s3_key(dst, src_name)
             self.client.upload_file(Filename=src,
                                     Bucket=self.bucket,
                                     Key=key)
@@ -60,7 +60,7 @@ class S3ArtifactStore(ArtifactStore):
         elif isinstance(src, dict) and src_name is not None:
 
             json_obj = json.dumps(src)
-            key = build_S3_key(dst, src_name)
+            key = build_s3_key(dst, src_name)
             self.client.put_object(Body=json_obj,
                                    Bucket=self.bucket,
                                    Key=key)
@@ -72,9 +72,8 @@ class S3ArtifactStore(ArtifactStore):
         """
         try:
             self.client.head_bucket(Bucket=bucket)
-        except ClientError:
-            raise BaseException("The bucket does not exist or" +
-                                " you have no access to it.")
+        except ClientError as c_err:
+            raise c_err
 
     def get_run_artifacts_uri(self, run_id: str) -> str:
         """

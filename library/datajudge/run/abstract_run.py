@@ -39,6 +39,8 @@ class Run:
         Method to log run's metadata.
     log_data_resource :
         Method to log data resource.
+    _log_artofact:
+        Method to log artifacts metadata.
     _log_metadata :
         Method to log generic metadata.
         It interacts directly with the client.
@@ -93,23 +95,29 @@ class Run:
         """
         Method to log run's metadata.
         """
-        pass
 
     @abstractmethod
     def log_data_resource(self) -> None:
         """
         Method to log data resource.
         """
-        pass
+
+    @abstractmethod
+    def _log_artifact(self,
+                      src: Any,
+                      src_name: Optional[str]
+                      ) -> None:
+        """
+        Method to log artifacts metadata.
+        """
 
     @abstractmethod
     def _log_metadata(self,
                       metadata: dict,
-                      src_type: Optional[str] = None) -> None:
+                      src_type: str) -> None:
         """
         Method to log generic metadata.
         """
-        pass
 
     @abstractmethod
     def persist_artifact(self,
@@ -118,42 +126,36 @@ class Run:
         """
         Method to persist artifacts in the artifact store.
         """
-        pass
 
     @abstractmethod
     def persist_data(self) -> None:
         """
         Shortcut to persist data and validation schema.
         """
-        pass
 
     @abstractmethod
     def _update_library_info(self) -> None:
         """
         Update run's info about the validation framework used.
         """
-        pass
 
     @abstractmethod
     def _update_data_resource(self) -> None:
         """
         Update resource with inferred information.
         """
-        pass
 
     @abstractmethod
     def _parse_report(self, report: Any) -> ShortReport:
         """
         Parse the report produced by the validation framework.
         """
-        pass
 
     @abstractmethod
     def log_short_report(self, report: Any) -> None:
         """
         Method to log short report.
         """
-        pass
 
     @abstractmethod
     def persist_full_report(self, report: Any) -> None:
@@ -161,7 +163,6 @@ class Run:
         Shortcut to persist the full report produced by the
         validation framework as artifact.
         """
-        pass
 
     @abstractmethod
     def persist_inferred_schema(self, schema: Any) -> None:
@@ -169,14 +170,12 @@ class Run:
         Shortcut to persist the inferred schema produced by the
         validation framework as artifact.
         """
-        pass
 
     @abstractmethod
     def get_resource(self) -> Any:
         """
         Return a resource object specific of the library.
         """
-        pass
 
     def _get_short_report(self) -> ShortReport:
         """

@@ -58,7 +58,7 @@ class RestMetadataStore(MetadataStore):
                 break
 
         if overwrite:
-            for i in self._key_vault.keys():
+            for i in self._key_vault:
                 # Cleanup on overwrite
                 self._key_vault[i] = [
                     elm for elm in self._key_vault[i] if elm.run_id != run_id]
@@ -121,8 +121,8 @@ class RestMetadataStore(MetadataStore):
                 new_pair = KeyPairs(resp["run_id"], resp["id"])
                 if new_pair not in self._key_vault[src_type]:
                     self._key_vault[src_type].append(new_pair)
-        except JSONDecodeError as jx:
-            raise jx
+        except JSONDecodeError as j_err:
+            raise j_err
         except Exception as ex:
             raise ex
 

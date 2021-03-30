@@ -42,18 +42,15 @@ class ArtifactStore:
         """
         Method to persist an artifact.
         """
-        pass
 
     @abstractmethod
     def _check_access_to_storage(self, args: Any) -> None:
         """
         Check if there is access to the storage.
         """
-        pass
 
     @abstractmethod
     def get_run_artifacts_uri(self, run_id: str) -> str:
         """
         Return the URI of the artifact store for the Run.
         """
-        pass
