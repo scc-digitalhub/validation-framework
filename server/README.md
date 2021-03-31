@@ -20,7 +20,7 @@ The main settings are:
 ### Authentication
 
 The `application.yml` file also contains a number of settings for authentication:
-* `auth.type` - Type of authentication to use. Only `basic` is currently supported. To disable authentication, change it to `none` (or any other value).
+* `auth.type` - Type of authentication to use. Only `basic` is currently supported, for which you will need to attach a `Authorization: Basic <Base64_encoded_username:password>` header to your API calls. To disable authentication, change it to `none` (or any other value).
 * `auth.project-authority-prefix` - A prefix used to identify authorities over projects.
 * `auth.users` - A list of users, identified by `username` and `password`. The `authorities` element lists projects the user is allowed to work on. Each project must be presented as a string made by the same value as `auth.project-authority-prefix` followed by the project ID.
 
