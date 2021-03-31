@@ -83,7 +83,7 @@ class FrictionlessRun(Run):
         Method to log data resource.
         """
         metadata = self._get_content(self.data_resource.to_dict())
-        self._log_metadata(metadata, self.data_resource)
+        self._log_metadata(metadata, self._DATA_RESOURCE)
 
     def _parse_report(self, report: Report) -> ShortReport:
         """

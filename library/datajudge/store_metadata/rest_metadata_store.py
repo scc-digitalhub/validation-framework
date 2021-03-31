@@ -3,10 +3,11 @@ from json.decoder import JSONDecodeError
 from typing import Optional
 
 from requests.models import Response  # pylint: disable=import-error
+
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils.constants import ApiEndpoint
-from datajudge.utils.rest_utils import api_post_call, api_put_call, parse_url
-
+from datajudge.utils.rest_utils import (api_post_call, api_put_call,
+                                        parse_status_code, parse_url)
 
 KeyPairs = namedtuple("KeyPairs", ("run_id", "key"))
 
@@ -68,7 +69,7 @@ class RestMetadataStore(MetadataStore):
 
         """
         exist = False
-        for run in self._key_vault[self.RUN_METADATA]:
+        for run in self._key_vault[self._RUN_METADATA]:
             if run.run_id == run_id:
                 exist = True
                 break
@@ -103,12 +104,12 @@ class RestMetadataStore(MetadataStore):
         if key is None:
             if src_type == self._RUN_METADATA:
                 params = {"overwrite": "true" if overwrite else "false"}
-                response = api_post_call(metadata, dst, params)
+                response = api_post_call(metadata, dst, self.config, params)
             else:
-                response = api_post_call(metadata, dst)
+                response = api_post_call(metadata, dst, self.config)
             self._parse_response(response, src_type)
         else:
-            response = api_put_call(metadata, dst)
+            response = api_put_call(metadata, dst, self.config)
 
     def _build_source_destination(self,
                                   dst: str,
@@ -127,9 +128,7 @@ class RestMetadataStore(MetadataStore):
         """
         Parse the JSON response from the backend APIs.
         """
-        if response.status_code == 400:
-            raise RuntimeError("Id already present, please change it " +
-                               "or enable overwrite.")
+        parse_status_code(response)
         try:
             resp = response.json()
             keys = resp.keys()
