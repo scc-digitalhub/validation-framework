@@ -53,8 +53,8 @@ class FrictionlessRun(Run):
         frict_resource = self.get_resource()
         frict_resource.infer()
         try:
-            self.data_resource.profile = frict_resource["profile"]
-            self.data_resource.format = frict_resource["format"]
+            self.data_resource._profile = frict_resource["profile"]
+            self.data_resource._format = frict_resource["format"]
             if isinstance(self.data_resource.path, str):
                 mediatype, _ = guess_type(self.data_resource.path)
             else:
@@ -64,10 +64,10 @@ class FrictionlessRun(Run):
                 # tsv, for the data resource all of them are csv.
                 mediatype, _ = guess_type(self.data_resource.path[0])
             mediatype = mediatype if mediatype is not None else ""
-            self.data_resource.mediatype = mediatype
-            self.data_resource.encoding = frict_resource["encoding"]
-            self.data_resource.bytes = frict_resource["stats"]["bytes"]
-            self.data_resource.hash = frict_resource["stats"]["hash"]
+            self.data_resource._mediatype = mediatype
+            self.data_resource._encoding = frict_resource["encoding"]
+            self.data_resource._bytes = frict_resource["stats"]["bytes"]
+            self.data_resource._hash = frict_resource["stats"]["hash"]
         except KeyError as kex:
             raise kex
 
