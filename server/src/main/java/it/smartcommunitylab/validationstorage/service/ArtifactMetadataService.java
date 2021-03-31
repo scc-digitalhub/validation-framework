@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.server.ResponseStatusException;
 
+import it.smartcommunitylab.validationstorage.auth.SecurityAccessor;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 import it.smartcommunitylab.validationstorage.model.dto.ArtifactMetadataDTO;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ArtifactMetadataService {
 	private final ArtifactMetadataRepository documentRepository;
+	private final SecurityAccessor securityAccessor;
 	
 	private ArtifactMetadata getDocument(String id) {
 		if (ObjectUtils.isEmpty(id))
@@ -39,7 +41,7 @@ public class ArtifactMetadataService {
 	public ArtifactMetadata createDocument(String projectId, ArtifactMetadataDTO request) {
 		if (ObjectUtils.isEmpty(projectId))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project ID is missing or blank.");
-		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.CREATE, projectId);
+		securityAccessor.checkUserHasPermissions(projectId);
 		
 		String experimentId = request.getExperimentId();
 		String runId = request.getRunId();
@@ -58,7 +60,7 @@ public class ArtifactMetadataService {
 	
 	// Read
 	public List<ArtifactMetadata> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
-		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.READ, projectId);
+		securityAccessor.checkUserHasPermissions(projectId);
 		
 		List<ArtifactMetadata> repositoryResults;
 		
@@ -81,7 +83,7 @@ public class ArtifactMetadataService {
 	public ArtifactMetadata findDocumentById(String projectId, String id) {
 		ArtifactMetadata document = getDocument(id);
 		if (document != null) {
-			ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.READ, document.getProjectId());
+			securityAccessor.checkUserHasPermissions(document.getProjectId());
 			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
@@ -95,28 +97,28 @@ public class ArtifactMetadataService {
 		if (ObjectUtils.isEmpty(id))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document ID is missing or blank.");
 		
-		ArtifactMetadata documentToUpdate = getDocument(id);
-		if (documentToUpdate == null)
+		ArtifactMetadata document = getDocument(id);
+		if (document == null)
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
 		
-		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.UPDATE, documentToUpdate.getProjectId());
+		securityAccessor.checkUserHasPermissions(document.getProjectId());
 		
-		ValidationStorageUtils.checkProjectIdMatch(id, documentToUpdate.getProjectId(), projectId);
+		ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 		
-		documentToUpdate.setExperimentId(request.getExperimentId());
-		documentToUpdate.setExperimentName(request.getExperimentName());
-		documentToUpdate.setRunId(request.getRunId());
-		documentToUpdate.setName(request.getName());
-		documentToUpdate.setUri(request.getUri());
+		document.setExperimentId(request.getExperimentId());
+		document.setExperimentName(request.getExperimentName());
+		document.setRunId(request.getRunId());
+		document.setName(request.getName());
+		document.setUri(request.getUri());
 		
-		return documentRepository.save(documentToUpdate);
+		return documentRepository.save(document);
 	}
 	
 	// Delete
 	public void deleteDocumentById(String projectId, String id) {
 		ArtifactMetadata document = getDocument(id);
 		if (document != null) {
-			ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.DELETE, document.getProjectId());
+			securityAccessor.checkUserHasPermissions(document.getProjectId());
 			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
@@ -128,7 +130,7 @@ public class ArtifactMetadataService {
 	
 	// Delete
 	public void deleteDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId) {
-		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.DELETE, projectId);
+		securityAccessor.checkUserHasPermissions(projectId);
 		
 		if (experimentId.isPresent() && runId.isPresent())
 			documentRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId.get(), runId.get());

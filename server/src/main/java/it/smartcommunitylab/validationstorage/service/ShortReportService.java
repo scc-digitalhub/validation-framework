@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.server.ResponseStatusException;
 
+import it.smartcommunitylab.validationstorage.auth.SecurityAccessor;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.ShortReport;
 import it.smartcommunitylab.validationstorage.model.dto.ShortReportDTO;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ShortReportService {
 	private final ShortReportRepository documentRepository;
+	private final SecurityAccessor securityAccessor;
 	
 	private ShortReport getDocument(String id) {
 		if (ObjectUtils.isEmpty(id))
@@ -39,7 +41,7 @@ public class ShortReportService {
 	public ShortReport createDocument(String projectId, ShortReportDTO request) {
 		if (ObjectUtils.isEmpty(projectId))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project ID is missing or blank.");
-		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.CREATE, projectId);
+		securityAccessor.checkUserHasPermissions(projectId);
 		
 		String experimentId = request.getExperimentId();
 		String runId = request.getRunId();
@@ -60,7 +62,7 @@ public class ShortReportService {
 	
 	// Read
 	public List<ShortReport> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
-		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.READ, projectId);
+		securityAccessor.checkUserHasPermissions(projectId);
 		
 		List<ShortReport> repositoryResults;
 		
@@ -83,7 +85,7 @@ public class ShortReportService {
 	public ShortReport findDocumentById(String projectId, String id) {
 		ShortReport document = getDocument(id);
 		if (document != null) {
-			ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.READ, document.getProjectId());
+			securityAccessor.checkUserHasPermissions(document.getProjectId());
 			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
@@ -97,30 +99,30 @@ public class ShortReportService {
 		if (ObjectUtils.isEmpty(id))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document ID is missing or blank.");
 		
-		ShortReport documentToUpdate = getDocument(id);
-		if (documentToUpdate == null)
+		ShortReport document = getDocument(id);
+		if (document == null)
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
 		
-		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.UPDATE, documentToUpdate.getProjectId());
+		securityAccessor.checkUserHasPermissions(document.getProjectId());
 		
-		ValidationStorageUtils.checkProjectIdMatch(id, documentToUpdate.getProjectId(), projectId);
+		ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 		
 		String experimentId = request.getExperimentId();
 		String runId = request.getRunId();
-		if ((experimentId != null && !(experimentId.equals(documentToUpdate.getExperimentId()))) || (runId != null && (!runId.equals(documentToUpdate.getRunId()))))
+		if ((experimentId != null && !(experimentId.equals(document.getExperimentId()))) || (runId != null && (!runId.equals(document.getRunId()))))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A value was specified for experiment_id and/or run_id, but they do not match the values in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
 		
-		documentToUpdate.setExperimentName(request.getExperimentName());
-		documentToUpdate.setContents(request.getContents());
+		document.setExperimentName(request.getExperimentName());
+		document.setContents(request.getContents());
 		
-		return documentRepository.save(documentToUpdate);
+		return documentRepository.save(document);
 	}
 	
 	// Delete
 	public void deleteDocumentById(String projectId, String id) {
 		ShortReport document = getDocument(id);
 		if (document != null) {
-			ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.DELETE, document.getProjectId());
+			securityAccessor.checkUserHasPermissions(document.getProjectId());
 			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
@@ -132,7 +134,7 @@ public class ShortReportService {
 	
 	// Delete
 	public void deleteDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId) {
-		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.DELETE, projectId);
+		securityAccessor.checkUserHasPermissions(projectId);
 		
 		if (experimentId.isPresent() && runId.isPresent())
 			documentRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId.get(), runId.get());

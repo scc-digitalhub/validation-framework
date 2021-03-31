@@ -7,3 +7,14 @@ spring:
   data:
     mongodb:
       uri: ${VALST_SPRING_DATA_MONGODB_URI:mongodb://admin:password@localhost:27017/validation?authSource=admin}
+
+auth:
+  type: ${VALST_AUTH_TYPE:basic}
+  project-authority-prefix: ${VALST_AUTH_PROJECT_AUTHORITY_PREFIX:PROJECT_}
+  users:
+    - username: admin
+      password: password
+      authorities: PROJECT_proj1, PROJECT_proj2
+    - username: other
+      password: password
+      authorities: PROJECT_proj1, PROJECT_proj3

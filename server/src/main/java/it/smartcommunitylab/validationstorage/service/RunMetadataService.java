@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.server.ResponseStatusException;
 
+import it.smartcommunitylab.validationstorage.auth.SecurityAccessor;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
 import it.smartcommunitylab.validationstorage.model.dto.RunMetadataDTO;
@@ -24,6 +25,7 @@ public class RunMetadataService {
 	private final DataResourceRepository dataResourceRepository;
 	private final ShortReportRepository shortReportRepository;
 	private final ArtifactMetadataRepository artifactMetadataRepository;
+	private final SecurityAccessor securityAccessor;
 	
 	private RunMetadata getDocument(String id) {
 		if (ObjectUtils.isEmpty(id))
@@ -45,7 +47,7 @@ public class RunMetadataService {
 	public RunMetadata createDocument(String projectId, RunMetadataDTO request, Optional<String> overwriteParam) {
 		if (ObjectUtils.isEmpty(projectId))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project ID is missing or blank.");
-		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.CREATE, projectId);
+		securityAccessor.checkUserHasPermissions(projectId);
 		
 		String experimentId = request.getExperimentId();
 		String runId = request.getRunId();
@@ -76,7 +78,7 @@ public class RunMetadataService {
 	
 	// Read
 	public List<RunMetadata> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
-		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.READ, projectId);
+		securityAccessor.checkUserHasPermissions(projectId);
 		
 		List<RunMetadata> repositoryResults;
 		
@@ -98,7 +100,7 @@ public class RunMetadataService {
 	public RunMetadata findDocumentById(String projectId, String id) {
 		RunMetadata document = getDocument(id);
 		if (document != null) {
-			ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.READ, document.getProjectId());
+			securityAccessor.checkUserHasPermissions(document.getProjectId());
 			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
@@ -112,30 +114,30 @@ public class RunMetadataService {
 		if (ObjectUtils.isEmpty(id))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document ID is missing or blank.");
 		
-		RunMetadata documentToUpdate = getDocument(id);
-		if (documentToUpdate == null)
+		RunMetadata document = getDocument(id);
+		if (document == null)
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
 		
-		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.UPDATE, documentToUpdate.getProjectId());
+		securityAccessor.checkUserHasPermissions(document.getProjectId());
 		
-		ValidationStorageUtils.checkProjectIdMatch(id, documentToUpdate.getProjectId(), projectId);
+		ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 		
 		String experimentId = request.getExperimentId();
 		String runId = request.getRunId();
-		if ((experimentId != null && !(experimentId.equals(documentToUpdate.getExperimentId()))) || (runId != null && (!runId.equals(documentToUpdate.getRunId()))))
+		if ((experimentId != null && !(experimentId.equals(document.getExperimentId()))) || (runId != null && (!runId.equals(document.getRunId()))))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A value was specified for experiment_id and/or run_id, but they do not match the values in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
 		
-		documentToUpdate.setExperimentName(request.getExperimentName());
-		documentToUpdate.setContents(request.getContents());
+		document.setExperimentName(request.getExperimentName());
+		document.setContents(request.getContents());
 		
-		return documentRepository.save(documentToUpdate);
+		return documentRepository.save(document);
 	}
 	
 	// Delete
 	public void deleteDocumentById(String projectId, String id) {
 		RunMetadata document = getDocument(id);
 		if (document != null) {
-			ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.DELETE, document.getProjectId());
+			securityAccessor.checkUserHasPermissions(document.getProjectId());
 			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
@@ -147,7 +149,7 @@ public class RunMetadataService {
 	
 	// Delete
 	public void deleteDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId) {
-		ValidationStorageUtils.checkUserHasPermissions(ValidationStorageUtils.OperationType.DELETE, projectId);
+		securityAccessor.checkUserHasPermissions(projectId);
 		
 		if (experimentId.isPresent() && runId.isPresent())
 			documentRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId.get(), runId.get());
