@@ -13,17 +13,25 @@ KeyPairs = namedtuple("KeyPairs", ("run_id", "key"))
 
 class RestMetadataStore(MetadataStore):
     """
-    Rest store to interact with the DigitalHub API service.
+    Rest metadata store object.
+
+    Allows the client to interact with the DigitalHub API backend.
 
     Attributes
     ----------
-    _key_vault :
-        Mapper to retain object reference presents in the MongoDB.
+    _key_vault : dict
+        Mapper to retain object reference presents in the backend.
+    _endpoints : dict
+        Mapper to backend metadata endpoints.
 
     Methods
     -------
     _parse_response :
         Parse the JSON response from the backend APIs.
+
+    See also
+    --------
+    MetadataStore : Abstract metadata store class.
 
     """
 
@@ -32,16 +40,16 @@ class RestMetadataStore(MetadataStore):
                  config:  Optional[dict] = None) -> None:
         super().__init__(uri_metadata, config)
         self._key_vault = {
-            self.RUN_METADATA: [],
-            self.SHORT_REPORT: [],
-            self.DATA_RESOURCE: [],
-            self.ARTIFACT_METADATA: []
+            self._RUN_METADATA: [],
+            self._SHORT_REPORT: [],
+            self._DATA_RESOURCE: [],
+            self._ARTIFACT_METADATA: []
         }
-        self.endpoints = {
-            self.RUN_METADATA: ApiEndpoint.RUN_METADATA.value,
-            self.SHORT_REPORT: ApiEndpoint.SHORT_REPORT.value,
-            self.DATA_RESOURCE: ApiEndpoint.DATA_RESOURCE.value,
-            self.ARTIFACT_METADATA: ApiEndpoint.ARTIFACT_METADATA.value
+        self._endpoints = {
+            self._RUN_METADATA: ApiEndpoint.RUN_METADATA.value,
+            self._SHORT_REPORT: ApiEndpoint.SHORT_REPORT.value,
+            self._DATA_RESOURCE: ApiEndpoint.DATA_RESOURCE.value,
+            self._ARTIFACT_METADATA: ApiEndpoint.ARTIFACT_METADATA.value
         }
 
     def init_run(self,
@@ -50,6 +58,14 @@ class RestMetadataStore(MetadataStore):
         """
         Check if run id is cached in the store keys vault.
         Decide then if overwrite or not run metadata.
+
+        Parameters
+        ----------
+        run_id : str
+            A run id.
+        overwrite : bool
+            If True, overwrite run related metadata.
+
         """
         exist = False
         for run in self._key_vault[self.RUN_METADATA]:
@@ -77,7 +93,7 @@ class RestMetadataStore(MetadataStore):
         """
         # control post/put
         key = None
-        if src_type != self.ARTIFACT_METADATA:
+        if src_type != self._ARTIFACT_METADATA:
             for elm in self._key_vault[src_type]:
                 if elm.run_id == metadata["run_id"]:
                     key = elm.key
@@ -85,7 +101,7 @@ class RestMetadataStore(MetadataStore):
         dst = self._build_source_destination(dst, src_type, key)
 
         if key is None:
-            if src_type == self.RUN_METADATA:
+            if src_type == self._RUN_METADATA:
                 params = {"overwrite": "true" if overwrite else "false"}
                 response = api_post_call(metadata, dst, params)
             else:
@@ -103,7 +119,7 @@ class RestMetadataStore(MetadataStore):
         Return source destination API based on input source type.
         """
         key = "/" + key if key is not None else "/"
-        return parse_url(dst + self.endpoints[src_type] + key)
+        return parse_url(dst + self._endpoints[src_type] + key)
 
     def _parse_response(self,
                         response: Response,
@@ -138,5 +154,5 @@ class RestMetadataStore(MetadataStore):
         """
         Return the URL of the data resource for the Run.
         """
-        return parse_url(self.uri_metadata +
-                         ApiEndpoint.DATA_RESOURCE.value)
+        endpoint = self._endpoints[self._DATA_RESOURCE]
+        return parse_url(self.uri_metadata + endpoint)

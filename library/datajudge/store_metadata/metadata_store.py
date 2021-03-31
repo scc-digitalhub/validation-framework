@@ -12,9 +12,9 @@ class MetadataStore:
 
     Attributes
     ----------
-    metadata_uri :
+    metadata_uri : str
         An URI string that points to the storage.
-    config :
+    config : dict, default = None
         A dictionary containing the credential needed to performs
         actions on the storage.
 
@@ -31,16 +31,16 @@ class MetadataStore:
     _build_source_destination :
         Return source destination based on source type.
     get_run_id :
-        Return a string id for a Run.
+        Return a string UID for a Run.
 
     """
 
     __metaclass__ = ABCMeta
 
-    RUN_METADATA = MetadataType.RUN_METADATA.value
-    DATA_RESOURCE = MetadataType.DATA_RESOURCE.value
-    SHORT_REPORT = MetadataType.SHORT_REPORT.value
-    ARTIFACT_METADATA = MetadataType.ARTIFACT_METADATA.value
+    _RUN_METADATA = MetadataType.RUN_METADATA.value
+    _DATA_RESOURCE = MetadataType.DATA_RESOURCE.value
+    _SHORT_REPORT = MetadataType.SHORT_REPORT.value
+    _ARTIFACT_METADATA = MetadataType.ARTIFACT_METADATA.value
 
     def __init__(self,
                  uri_metadata: str,
@@ -53,7 +53,7 @@ class MetadataStore:
                  run_id: str,
                  overwrite: bool) -> None:
         """
-        Check run enviroment existence.
+        Initial enviroment operation.
         """
 
     @abstractmethod
@@ -90,7 +90,7 @@ class MetadataStore:
     @staticmethod
     def get_run_id(run_id: Optional[str] = None) -> str:
         """
-        Return a string id for a Run.
+        Return a string UID for a Run.
         """
         if run_id:
             return run_id

@@ -9,7 +9,13 @@ from datajudge.utils.file_utils import (check_dir, check_file_dimension,
 
 class LocalArtifactStore(ArtifactStore):
     """
-    Local Artifact Store to interact with local filesystem.
+    Local artifact store object.
+
+    Allows the client to interact with local filesystem.
+
+    See also
+    --------
+    ArtifactStore : Abstract artifact store class.
 
     """
 

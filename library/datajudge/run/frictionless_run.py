@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import typing
 from mimetypes import guess_type
-from typing import Any, Optional
+from typing import Any, List, Optional, Union
 
 import frictionless
 from datajudge.run import Run
@@ -18,7 +18,12 @@ if typing.TYPE_CHECKING:
 
 class FrictionlessRun(Run):
     """
-    Frictionless flavoured run. Inherits from Run.
+    Frictionless flavoured run.
+
+    See also
+    --------
+    Run : Abstract run class.
+
     """
 
     def __init__(self,
@@ -38,8 +43,8 @@ class FrictionlessRun(Run):
         """
         Update run's info about the validation framework used.
         """
-        self._run_info.validation_library = frictionless.__name__
-        self._run_info.library_version = frictionless.__version__
+        self.run_info.validation_library = frictionless.__name__
+        self.run_info.library_version = frictionless.__version__
 
     def _update_data_resource(self) -> None:
         """
@@ -48,21 +53,21 @@ class FrictionlessRun(Run):
         frict_resource = self.get_resource()
         frict_resource.infer()
         try:
-            self._data_resource.profile = frict_resource["profile"]
-            self._data_resource.format = frict_resource["format"]
-            if isinstance(self._data_resource.path, str):
-                mediatype, _ = guess_type(self._data_resource.path)
+            self.data_resource.profile = frict_resource["profile"]
+            self.data_resource.format = frict_resource["format"]
+            if isinstance(self.data_resource.path, str):
+                mediatype, _ = guess_type(self.data_resource.path)
             else:
                 # Apparently frictionless fetch the first file and
                 # generalize the inference to all the other files
                 # e.g. if the first file is a csv and the second a
                 # tsv, for the data resource all of them are csv.
-                mediatype, _ = guess_type(self._data_resource.path[0])
+                mediatype, _ = guess_type(self.data_resource.path[0])
             mediatype = mediatype if mediatype is not None else ""
-            self._data_resource.mediatype = mediatype
-            self._data_resource.encoding = frict_resource["encoding"]
-            self._data_resource.bytes = frict_resource["stats"]["bytes"]
-            self._data_resource.hash = frict_resource["stats"]["hash"]
+            self.data_resource.mediatype = mediatype
+            self.data_resource.encoding = frict_resource["encoding"]
+            self.data_resource.bytes = frict_resource["stats"]["bytes"]
+            self.data_resource.hash = frict_resource["stats"]["hash"]
         except KeyError as kex:
             raise kex
 
@@ -70,15 +75,15 @@ class FrictionlessRun(Run):
         """
         Method to log run's metadata.
         """
-        metadata = self._get_content(self._run_info.to_dict())
+        metadata = self._get_content(self.run_info.to_dict())
         self._log_metadata(metadata, self._RUN_METADATA)
 
     def log_data_resource(self) -> None:
         """
         Method to log data resource.
         """
-        metadata = self._get_content(self._data_resource.to_dict())
-        self._log_metadata(metadata, self._DATA_RESOURCE)
+        metadata = self._get_content(self.data_resource.to_dict())
+        self._log_metadata(metadata, self.data_resource)
 
     def _parse_report(self, report: Report) -> ShortReport:
         """
@@ -95,6 +100,12 @@ class FrictionlessRun(Run):
     def log_short_report(self, report: Report) -> None:
         """
         Method to log short report.
+
+        Parameters
+        ----------
+        report : Report
+            A frictionless Report object.
+
         """
         if not isinstance(report, Report):
             raise TypeError("Only frictionless report accepted.")
@@ -110,7 +121,7 @@ class FrictionlessRun(Run):
         """
         Method to log artifacts metadata.
         """
-        uri = self._run_info.run_artifacts_uri
+        uri = self.run_info.run_artifacts_uri
         names = []
         if isinstance(src, list):
             names.extend(src)
@@ -129,36 +140,50 @@ class FrictionlessRun(Run):
         """
         Method to log generic metadata.
         """
-        self._client.log_metadata(
+        self.client.log_metadata(
                            metadata,
-                           self._run_info.run_metadata_uri,
+                           self.run_info.run_metadata_uri,
                            src_type,
                            self._overwrite)
 
     def persist_artifact(self,
-                         src: Any,
+                         src: Union[str, List[str], dict],
                          src_name: Optional[str] = None
                          ) -> None:
         """
         Method to persist artifacts in the artifact store.
+
+        Parameters
+        ----------
+        src : str, list or dict
+            One or a list of URI described by a string, or a dictionary.
+        src_name : str, default = None
+            Filename. Required only if src is a dictionary.
+
         """
-        self._client.persist_artifact(src,
-                                      self._run_info.run_artifacts_uri,
-                                      src_name=src_name)
+        self.client.persist_artifact(src,
+                                     self.run_info.run_artifacts_uri,
+                                     src_name=src_name)
         self._log_artifact(src, src_name)
 
     def persist_data(self) -> None:
         """
         Shortcut to persist data and validation schema.
         """
-        self.persist_artifact(self._data_resource.path)
-        if self._data_resource.schema is not None:
-            self.persist_artifact(self._data_resource.schema)
+        self.persist_artifact(self.data_resource.path)
+        if self.data_resource.schema is not None:
+            self.persist_artifact(self.data_resource.schema)
 
     def persist_full_report(self, report: Report) -> None:
         """
         Shortcut to persist the full report produced
         by frictionless.
+
+        Parameters
+        ----------
+        report : Report
+            A frictionless Report object.
+
         """
         self.persist_artifact(
                     dict(report),
@@ -168,6 +193,12 @@ class FrictionlessRun(Run):
         """
         Shortcut to persist the inferred schema produced
         by frictionless.
+
+        Parameters
+        ----------
+        schema : Schema
+            A frictionless Schema object.
+
         """
         self.persist_artifact(
                     dict(schema),
@@ -176,8 +207,19 @@ class FrictionlessRun(Run):
     def get_resource(self, **kwargs) -> Resource:
         """
         Return a frictionless Resource object.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Optional arguments to pass to frictionless Resource
+            constructor.
+
+        Returns
+        -------
+        Resource
+
         """
         if "path" in kwargs.keys():
             kwargs.pop("path")
-        return Resource(path=self._data_resource.path,
+        return Resource(path=self.data_resource.path,
                         **kwargs)

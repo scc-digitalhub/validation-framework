@@ -9,9 +9,9 @@ class ArtifactStore:
 
     Attributes
     ----------
-    artifact_uri :
+    artifact_uri : str
         An URI string that points to the storage.
-    config :
+    config : dict, default = None
         A dictionary containing the credential needed to performs
         actions on the storage.
 

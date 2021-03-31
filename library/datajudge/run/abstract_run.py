@@ -22,38 +22,22 @@ class Run:
 
     Attributes
     ----------
-
-    run_info :
-        The metadata set of the run.
-    data_resource :
+    run_info : RunInfo
+        The metadata info of the run.
+    data_resource : DataResource
         A DataResource object.
-    client:
+    client : Client
         A Client object that interact with the storages.
-    overwrite :
-        Boolean describing whether a run with same id should be
-        overwritten
 
     Methods
     -------
-    _log_run :
-        Method to log run's metadata.
     log_data_resource :
         Method to log data resource.
-    _log_artofact:
-        Method to log artifacts metadata.
-    _log_metadata :
-        Method to log generic metadata.
-        It interacts directly with the client.
     persist_artifact :
         Method to persist artifacts in the artifact store.
+        It interacts directly with the client.
     persist_data :
         Shortcut to persist data and validation schema.
-    _update_library_info :
-        Update run's info about the validation framework used.
-    _update_data_resource :
-        Update resource with inferred information.
-    _parse_report :
-        Parse the report produced by the validation framework.
     log_short_report :
         Method to log short report.
     persist_full_report :
@@ -66,8 +50,6 @@ class Run:
         Return a resource object specific of the library.
     get_short_report :
         Return a ShortReport object.
-    _get_content :
-        Return structured content to log.
 
     """
 
@@ -85,9 +67,9 @@ class Run:
                  client: Client,
                  overwrite: bool) -> None:
 
-        self._data_resource = data_resource
-        self._client = client
-        self._run_info = run_info
+        self.data_resource = data_resource
+        self.client = client
+        self.run_info = run_info
         self._overwrite = overwrite
 
     @abstractmethod
@@ -181,18 +163,18 @@ class Run:
         """
         Return a ShortReport object.
         """
-        return ShortReport(self._run_info.data_resource_uri,
-                           self._run_info.experiment_name,
-                           self._run_info.run_id)
+        return ShortReport(self.run_info.data_resource_uri,
+                           self.run_info.experiment_name,
+                           self.run_info.run_id)
 
     def _get_content(self, cont: Optional[dict] = None) -> dict:
         """
         Return structured content to log.
         """
         content = {
-            "run_id": self._run_info.run_id,
-            "experiment_id": self._run_info.experiment_id,
-            "experiment_name": self._run_info.experiment_name,
+            "run_id": self.run_info.run_id,
+            "experiment_id": self.run_info.experiment_id,
+            "experiment_name": self.run_info.experiment_name,
             "contents": cont
         }
         return content
@@ -210,32 +192,32 @@ class Run:
         """
         Return a dictionary of run info attributes.
         """
-        return self._run_info.to_dict()
+        return self.run_info.to_dict()
 
     def __enter__(self) -> Run:
         # Set run status
-        self._run_info.begin_status = "active"
-        self._run_info.started = get_time()
+        self.run_info.begin_status = "active"
+        self.run_info.started = get_time()
 
         # Log data resource
         self.log_data_resource()
 
         # Update run info
-        uri_resource = self._client._get_data_resource_uri(
-                                            self._run_info.run_id)
-        self._run_info.data_resource_uri = uri_resource
+        uri_resource = self.client._get_data_resource_uri(
+                                            self.run_info.run_id)
+        self.run_info.data_resource_uri = uri_resource
         self._log_run()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         if exc_type in (InterruptedError, KeyboardInterrupt):
-            self._run_info.end_status = "interrupted"
+            self.run_info.end_status = "interrupted"
         elif exc_type in (OSError, NotImplementedError):
-            self._run_info.end_status = "failed"
+            self.run_info.end_status = "failed"
         else:
-            self._run_info.end_status = "finished"
-        self._run_info.finished = get_time()
+            self.run_info.end_status = "finished"
+        self.run_info.finished = get_time()
         self._log_run()
 
     def __repr__(self) -> str:
-        return str(self._run_info.to_dict())
+        return str(self.run_info.to_dict())

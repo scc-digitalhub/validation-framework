@@ -9,19 +9,19 @@ class ShortReport:
 
     Attributes
     ----------
-    data_resource :
+    data_resource : str
         URI that point to the resource.
-    experiment_name :
+    experiment_name : str
         Name of the experiment.
-    run_id :
+    run_id : str
         Run id.
-    time :
+    time : datetime, default = None
         Time required by the validation process.
         Derived from the validation report.
-    valid :
+    valid : bool, default = None
         Validation result.
         Derived from the validation report.
-    errors :
+    errors : list, default = None
         List of errors found by validation process.
         Derived from the validation report.
 

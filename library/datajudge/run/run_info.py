@@ -7,17 +7,17 @@ class RunInfo:
 
     Attributes
     ----------
-    experiment_id :
+    experiment_id : str
         Id of the experiment.
-    experiment_name :
+    experiment_name : str
         Name of the experiment.
-    run_id :
+    run_id : str
         Run id.
-    run_metadata_uri :
+    run_metadata_uri : str
         URI that point to the metadata store.
-    run_artifacts_uri :
+    run_artifacts_uri : str
         URI that point to the artifact store.
-    data_resource_uri :
+    data_resource_uri : str
         URI that point to the resource.
 
     Methods

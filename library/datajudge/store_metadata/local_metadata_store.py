@@ -8,17 +8,25 @@ from datajudge.utils.file_utils import (check_dir, get_path, make_dir,
 
 class LocalMetadataStore(MetadataStore):
     """
-    Rest store to interact with local filesystem.
+    Local metadata store object.
+
+    Allows the client to interact with local filesystem.
 
     Attributes
     ----------
-    _key_vault :
-        Mapper to retain object reference presents in the MongoDB.
+    _filenames : dict
+        Mapper for output filenames.
+    _artifact_count : int
+        Counter to number artifact stored metadata.
 
     Methods
     -------
     _check_dst_folder :
         Check if run folder already exist, otherwise it creates it.
+
+    See also
+    --------
+    MetadataStore : Abstract metadata store class.
 
     """
 
@@ -26,20 +34,21 @@ class LocalMetadataStore(MetadataStore):
                  uri_metadata: str,
                  config:  Optional[dict] = None) -> None:
         super().__init__(uri_metadata, config)
-        self.filenames = {
-            self.RUN_METADATA: FileNames.RUN_METADATA.value,
-            self.SHORT_REPORT: FileNames.SHORT_REPORT.value,
-            self.DATA_RESOURCE: FileNames.DATA_RESOURCE.value,
-            self.ARTIFACT_METADATA: FileNames.ARTIFACT_METADATA.value
+        self._filenames = {
+            self._RUN_METADATA: FileNames.RUN_METADATA.value,
+            self._SHORT_REPORT: FileNames.SHORT_REPORT.value,
+            self._DATA_RESOURCE: FileNames.DATA_RESOURCE.value,
+            self._ARTIFACT_METADATA: FileNames.ARTIFACT_METADATA.value
         }
-        self.artifact_count = 0
+        self._artifact_count = 0
 
     def init_run(self,
                  run_id: str,
                  overwrite: bool) -> None:
         """
-        Check run enviroment existence. If folder
-        doesn't exist, create or recreate it.
+        Check run metadata folder existence.
+        If folder doesn't exist, create it.
+        If overwrite is True, it delete all the run's folder contents.
         """
         uri = self.get_run_metadata_uri(run_id)
         self._check_dst_folder(uri, overwrite, init=True)
@@ -67,7 +76,7 @@ class LocalMetadataStore(MetadataStore):
             if not overwrite:
                 raise OSError("Run already exists, please use another id")
             if init and overwrite:
-                self.artifact_count = 0
+                self._artifact_count = 0
                 remove_files(dst)
         else:
             make_dir(dst)
@@ -79,10 +88,10 @@ class LocalMetadataStore(MetadataStore):
         """
         Return source path based on input source type.
         """
-        filename = self.filenames[src_type]
-        if src_type == self.ARTIFACT_METADATA:
-            filename = filename.format(self.artifact_count)
-            self.artifact_count += 1
+        filename = self._filenames[src_type]
+        if src_type == self._ARTIFACT_METADATA:
+            filename = filename.format(self._artifact_count)
+            self._artifact_count += 1
         return get_path(dst, filename)
 
     def get_run_metadata_uri(self, run_id: str) -> str:
@@ -95,6 +104,7 @@ class LocalMetadataStore(MetadataStore):
         """
         Return the path of the data resource for the Run.
         """
+        filename = self._filenames[self._DATA_RESOURCE]
         return get_path(self.uri_metadata,
                         run_id,
-                        FileNames.DATA_RESOURCE.value)
+                        filename)

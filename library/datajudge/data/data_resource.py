@@ -3,50 +3,55 @@ from typing import List, Mapping, Optional, Union
 
 class DataResource:
     """
-    DataResource object as described in frictionless
-    Data Resource specification.
+    DataResource object as described in frictionless Data Resource
+    specifications.
+
+    A Data Resource must have a path pointing to it's locations.
+    It's strongly advised to fill the other fields to better describe
+    the Data Resource.
+    For more info, please check:
+    'https://specs.frictionlessdata.io/data-resource/'
 
     Attributes
     ----------
-    path :
+    path : str
         Required. An URI (or a list of URI) that point to
         data to be validated.
-    name :
+    name : str, default = None
         Name of the Data Resource.
-    profile :
-        A string identifying the profile of this descriptor
-        as per the profiles specification e.g. 'tabular-data-resource'.
-        Inferred.
-    title :
+    title : str, default = None
         A title or label for the resource.
-    description :
+    description : str, default = None
         A description of the resource.
-    format :
-        Standard file extension.
-        Inferred.
-    mediatype :
-        The mediatype/mimetype of the resource e.g. 'text/csv'.
-        Inferred.
-    encoding :
-        Character encoding of the resource’s data file.
-        Inferred.
-    bytes :
-        Size of the file in bytes.
-        Inferred.
-    hash :
-        MD5 hash for this resource.
-        Inferred.
-    schema :
+    schema : str, default = None
         An URI pointing to a validation schema.
-    sources :
+    sources : list of dict, default = None
         Source of data.
-    licenses :
+    licenses : list of dict, default = None
         Licenses pending on data.
 
     Methods
     -------
     to_dict :
         Transform the object in a dictionary.
+
+    Notes
+    -----
+    The following attributes are inferred by the library and
+    should not be setted by users.
+    profile : str, default = None
+        A string identifying the profile of Data Resource descriptor
+        as per the profiles specification e.g. 'tabular-data-resource'.
+    format : str, default = None
+        Standard file extension.
+    mediatype : str, default = None
+        The mediatype/mimetype of the resource e.g. 'text/csv'.
+    encoding : str, default = None
+        Character encoding of the resource’s data file.
+    bytes : int, default = None
+        Size of the file(s) in bytes.
+    hash : str, default = None
+        MD5 hash for this resource.
 
     """
 
@@ -60,14 +65,14 @@ class DataResource:
                  licenses: Optional[List[Mapping]] = None) -> None:
         self.path = path
         self.name = name
-        self.profile = None
+        self._profile = None
         self.title = title
         self.description = description
-        self.format = None
-        self.mediatype = None
-        self.encoding = None
-        self.bytes = None
-        self.hash = None
+        self._format = None
+        self._mediatype = None
+        self._encoding = None
+        self._bytes = None
+        self._hash = None
         self.schema = schema
         self.sources = sources
         self.licenses = licenses

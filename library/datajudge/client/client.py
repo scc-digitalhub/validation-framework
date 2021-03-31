@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import typing
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 from slugify import slugify  # pylint: disable=import-error
 
@@ -17,30 +17,47 @@ class Client:
     """
     Client class.
 
+    The Client allows interaction with storages and create runs.
+    It builds two storages, one for metadata and another for
+    artifacts.
+    The metadata are a collection of data describing
+    the runs, the data resources/packages, reports and artifacts.
+    The artifact can be files, object, dictionaries.
+
     Attributes
     ----------
-    project_id :
+    project_id : str, default = 'project'
         The id of the project, needed for the rest metadata store.
-    experiment_name :
+    experiment_name : str, default = 'experiment'
         Experiment name. An experiment is a logical unit for keeping
         together the validation runs made on a Data Package/Data Resource.
-    metadata_params :
-        A dictionary containing two keys:
-            'store_uri', a uri string pointing to the metadata store
-            'config', a dictionary with access config.
-        By default 'store_uri' point to local './validruns' and
-        'config' is None.
-    artifact_params :
-        A dictionary containing two keys:
-            'store_uri', a uri string pointing to the artifact store
-            'config', a dictionary with access config.
-        By default 'store_uri' point to local './validruns' and
-        'config' is None.
+    metadata_store_uri : str, default = None
+        Metadata store URI. The library will select an appropriate
+        store object based on the URI scheme.
+    metadata_store_config : dict, default = None
+        Dictionary containing configuration for the store.
+        e.g. credentials, endpoints, etc.
+    artifact_store_uri : str, default = None
+        Artifact store URI. The library will select an appropriate
+        store object based on the URI scheme.
+    metadata_store_config : dict, default = None
+        Dictionary containing configuration for the store.
+        e.g. credentials, endpoints, etc.
 
     Methods
     -------
     create_run :
-        Create a run for a specific validation framework.
+        Create a new run.
+    log_metadata :
+        Log metadata to the metadata store.
+    persist_artifact:
+        Persist artifact to the srtifact store.
+
+    Notes
+    -----
+    Although the client exposes methods to log metadata and persist
+    artifacts, it's preferrable to use methodes exposed by the Run
+    object.
 
     """
 
@@ -77,19 +94,22 @@ class Client:
 
         Parameters
         ----------
-        validation_library :
+        data_resource : DataResource
+            A DataResource object.
+        validation_library : str
             Name of the validation framework used to perform
-            the validation task. Used to select a specific
+            the validation task. It's used to select a specific
             Run object.
-        run_id :
-            Optional string parameter for the run id.
-        overwrite :
+        run_id : str, default = None
+            Optional string parameter for user defined run id.
+        overwrite : bool, default = False
             If True, the run metadata/artifact can be overwritten
             by a run with the same id.
 
-        Return
-        ------
-        Return a specific Run object.
+        Returns
+        -------
+        Run :
+            Return a specific Run object.
 
         """
 
@@ -120,7 +140,19 @@ class Client:
                      src_type: str,
                      overwrite: bool) -> None:
         """
-        Log metadata.
+        Method to log metadata in the metadata store.
+
+        Parameters
+        ----------
+        metadata : dict
+            A dictionary to be logged.
+        dst : str
+            URI destination of metadata.
+        src_type : str
+            Metadata type.
+        overwrite : bool
+            If True, overwrite existent metadata.
+
         """
         self._metadata_store.log_metadata(metadata,
                                           dst,
@@ -131,14 +163,28 @@ class Client:
                          src: Any,
                          dst: str,
                          src_name: Optional[str] = None
-                         ) -> Tuple[str, str]:
+                         ) -> None:
         """
-        Persist artifact.
+        Method to persist artifacts in the artifact store.
+
+        Parameters
+        ----------
+        src : str, list or dict
+            One or a list of URI described by a string, or a dictionary.
+        dst : str
+            URI destination of artifact.
+        src_name : str, default = None
+            Filename. Required only if src is a dictionary.
+
         """
         self._artifact_store.persist_artifact(src, dst, src_name)
 
     def _get_data_resource_uri(self,
                                run_id: str):
+        """
+        Method that wrap 'get_data_resource_uri' of the
+        metadata store. Return DataREsource URI.
+        """
         return self._metadata_store.get_data_resource_uri(run_id)
 
     def __repr__(self) -> str:
