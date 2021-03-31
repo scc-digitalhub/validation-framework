@@ -11,12 +11,32 @@ The `server/src/main/resources/application.yml` file contains a list of settings
 ${NAME_OF_ENVIRONMENT_VARIABLE:default_value}
 ```
 
-A brief description of each currently available setting is as follows:
+The main settings are:
 
 * `server.port` - Port to host the service on.
 * `server.error.include-message` - When to include self-explaining messages when an API results in an error.
 * `spring.data.mongodb.uri` - Connection URI to the MongoDB server.
 
+### Authentication
+
+The `application.yml` file also contains a number of settings for authentication:
+* `auth.type` - Type of authentication to use. Only `basic` is currently supported. To disable authentication, change it to `none` (or any other value).
+* `auth.project-authority-prefix` - A prefix used to identify authorities over projects.
+* `auth.users` - A list of users, identified by `username` and `password`. The `authorities` element lists projects the user is allowed to work on. Each project must be presented as a string made by the same value as `auth.project-authority-prefix` followed by the project ID.
+
+For example:
+```
+auth:
+  type: basic
+  project-authority-prefix: PROJECT_
+  users:
+    - username: admin
+      password: password
+      authorities: PROJECT_proj1, PROJECT_proj2
+    - username: other
+      password: password
+      authorities: PROJECT_proj1, PROJECT_proj3
+```
 
 ## Installing and running
 
