@@ -1,5 +1,6 @@
 package it.smartcommunitylab.validationstorage.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,8 +34,19 @@ public class DataResourceService {
 		return null;
 	}
 	
-	private List<DataResource> filterBySearchTerms(List<DataResource> items, String search) {
-		return items;
+	private List<DataResource> filterBySearch(List<DataResource> items, String search) {
+		if (ObjectUtils.isEmpty(search))
+			return items;
+		
+		String normalized = ValidationStorageUtils.normalizeString(search);
+		
+		List<DataResource> results = new ArrayList<DataResource>();
+		for (DataResource item : items) {
+			if (item.getExperimentName().contains(normalized))
+				results.add(item);
+		}
+		
+		return results;
 	}
 	
 	// Create
@@ -76,7 +88,7 @@ public class DataResourceService {
 			repositoryResults = documentRepository.findByProjectId(projectId);
 		
 		if (search.isPresent())
-			repositoryResults = filterBySearchTerms(repositoryResults, search.get());
+			repositoryResults = filterBySearch(repositoryResults, search.get());
 		
 		return repositoryResults;
 	}

@@ -1,5 +1,6 @@
 package it.smartcommunitylab.validationstorage.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,8 +34,19 @@ public class ArtifactMetadataService {
 		return null;
 	}
 	
-	private List<ArtifactMetadata> filterBySearchTerms(List<ArtifactMetadata> items, String search) {
-		return items;
+	private List<ArtifactMetadata> filterBySearch(List<ArtifactMetadata> items, String search) {
+		if (ObjectUtils.isEmpty(search))
+			return items;
+		
+		String normalized = ValidationStorageUtils.normalizeString(search);
+		
+		List<ArtifactMetadata> results = new ArrayList<ArtifactMetadata>();
+		for (ArtifactMetadata item : items) {
+			if (item.getExperimentName().contains(normalized) || (item.getName().contains(normalized)))
+				results.add(item);
+		}
+		
+		return results;
 	}
 	
 	// Create
@@ -74,7 +86,7 @@ public class ArtifactMetadataService {
 			repositoryResults = documentRepository.findByProjectId(projectId);
 		
 		if (search.isPresent())
-			repositoryResults = filterBySearchTerms(repositoryResults, search.get());
+			repositoryResults = filterBySearch(repositoryResults, search.get());
 		
 		return repositoryResults;
 	}

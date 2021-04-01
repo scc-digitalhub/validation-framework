@@ -1,5 +1,6 @@
 package it.smartcommunitylab.validationstorage.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,8 +34,19 @@ public class ShortReportService {
 		return null;
 	}
 	
-	private List<ShortReport> filterBySearchTerms(List<ShortReport> items, String search) {
-		return items;
+	private List<ShortReport> filterBySearch(List<ShortReport> items, String search) {
+		if (ObjectUtils.isEmpty(search))
+			return items;
+		
+		String normalized = ValidationStorageUtils.normalizeString(search);
+		
+		List<ShortReport> results = new ArrayList<ShortReport>();
+		for (ShortReport item : items) {
+			if (item.getExperimentName().contains(normalized))
+				results.add(item);
+		}
+		
+		return results;
 	}
 	
 	// Create
@@ -76,7 +88,7 @@ public class ShortReportService {
 			repositoryResults = documentRepository.findByProjectId(projectId);
 		
 		if (search.isPresent())
-			repositoryResults = filterBySearchTerms(repositoryResults, search.get());
+			repositoryResults = filterBySearch(repositoryResults, search.get());
 		
 		return repositoryResults;
 	}
