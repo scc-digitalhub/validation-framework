@@ -77,11 +77,12 @@ localhost:8200/api/project/<project_id>/data-resource/<document_id>
 
 ### Get documents by project ID
 ```
-localhost:8200/api/project/<project_id>/data-resource?experiment_id=<experiment_id>&run_id=<run_id>
+localhost:8200/api/project/<project_id>/data-resource?experiment_id=<experiment_id>&run_id=<run_id>&search=<search>
 ```
 * `project_id` - Path variable, ID of the project.
 * `experiment_id` - Optional parameter, ID of the experiment.
 * `run_id` - Optional parameter, ID of the run.
+* `search` - Optional parameter, a case-insensitive, diacritics-insensitive keyword to filter results by. Looks for a match in the `experiment_name` field of entries. For `artifact-metadata` documents only, the match may also be found in the `name` field instead.
 
 ---
 
