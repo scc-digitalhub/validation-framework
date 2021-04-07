@@ -40,6 +40,7 @@ class MetadataStore:
     _RUN_METADATA = MetadataType.RUN_METADATA.value
     _DATA_RESOURCE = MetadataType.DATA_RESOURCE.value
     _SHORT_REPORT = MetadataType.SHORT_REPORT.value
+    _SHORT_SCHEMA = MetadataType.SHORT_SCHEMA.value
     _ARTIFACT_METADATA = MetadataType.ARTIFACT_METADATA.value
 
     def __init__(self,

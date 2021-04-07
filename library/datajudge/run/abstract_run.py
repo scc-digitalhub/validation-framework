@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import typing
 from abc import ABCMeta, abstractmethod
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 
 from datajudge.utils.constants import FileNames, MetadataType
-from datajudge.data import ShortReport
+from datajudge.data import ShortReport, ShortSchema
 from datajudge.utils.time_utils import get_time
 
 if typing.TYPE_CHECKING:
@@ -57,6 +57,7 @@ class Run:
     _RUN_METADATA = MetadataType.RUN_METADATA.value
     _DATA_RESOURCE = MetadataType.DATA_RESOURCE.value
     _SHORT_REPORT = MetadataType.SHORT_REPORT.value
+    _SHORT_SCHEMA = MetadataType.SHORT_SCHEMA.value
     _ARTIFACT_METADATA = MetadataType.ARTIFACT_METADATA.value
     _FULL_REPORT = FileNames.FULL_REPORT.value
     _SCHEMA_INFERRED = FileNames.SCHEMA_INFERRED.value
@@ -147,7 +148,7 @@ class Run:
         """
 
     @abstractmethod
-    def persist_inferred_schema(self, schema: Any) -> None:
+    def persist_inferred_schema(self) -> None:
         """
         Shortcut to persist the inferred schema produced by the
         validation framework as artifact.
@@ -166,6 +167,14 @@ class Run:
         return ShortReport(self.run_info.data_resource_uri,
                            self.run_info.experiment_name,
                            self.run_info.run_id)
+
+    def _get_short_schema(self,
+                          fields: List[Dict[str, str]]
+                          ) -> ShortSchema:
+        """
+        Return a ShortSchema object.
+        """
+        return ShortSchema(fields)
 
     def _get_content(self, cont: Optional[dict] = None) -> dict:
         """
@@ -210,12 +219,12 @@ class Run:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
-        if exc_type in (InterruptedError, KeyboardInterrupt):
-            self.run_info.end_status = "interrupted"
-        elif exc_type in (OSError, NotImplementedError):
-            self.run_info.end_status = "failed"
-        else:
+        if exc_type is None:
             self.run_info.end_status = "finished"
+        elif exc_type in (InterruptedError, KeyboardInterrupt):
+            self.run_info.end_status = "interrupted"
+        else:
+            self.run_info.end_status = "failed"
         self.run_info.finished = get_time()
         self._log_run()
 

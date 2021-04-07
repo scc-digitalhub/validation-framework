@@ -9,6 +9,7 @@ class FileNames(Enum):
     RUN_METADATA = "run_metadata.json"
     DATA_RESOURCE = "data_resource.json"
     SHORT_REPORT = "report_short.json"
+    SHORT_SCHEMA = "schema_short.json"
     ARTIFACT_METADATA = "artifact_metadata_{}.json"
     # Artifact
     FULL_REPORT = "report_full.json"
@@ -22,6 +23,7 @@ class ApiEndpoint(Enum):
     RUN_METADATA = "/run-metadata"
     DATA_RESOURCE = "/data-resource"
     SHORT_REPORT = "/report-short"
+    SHORT_SCHEMA = "/schema-short"
     ARTIFACT_METADATA = "/artifact-metadata"
 
 
@@ -32,4 +34,5 @@ class MetadataType(Enum):
     RUN_METADATA = "run"
     DATA_RESOURCE = "resource"
     SHORT_REPORT = "report"
+    SHORT_SCHEMA = "schema"
     ARTIFACT_METADATA = "artifact"

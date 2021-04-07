@@ -4,15 +4,20 @@ import typing
 from mimetypes import guess_type
 from typing import Any, List, Optional, Union
 
-import frictionless
+try:
+    import frictionless
+    from frictionless import Resource
+    from frictionless.report import Report
+    from frictionless.schema import Schema
+except ImportError as ierr:
+    raise ImportError("Please install frictionless!") from ierr
+
+from datajudge.data import SchemaTuple
 from datajudge.run import Run
-from frictionless import Resource
-from frictionless.report import Report
-from frictionless.schema import Schema
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
-    from datajudge.data import DataResource, ShortReport
+    from datajudge.data import DataResource, ShortReport, ShortSchema
     from datajudge.run import RunInfo
 
 
@@ -53,8 +58,8 @@ class FrictionlessRun(Run):
         frict_resource = self.get_resource()
         frict_resource.infer()
         try:
-            self.data_resource._profile = frict_resource["profile"]
-            self.data_resource._format = frict_resource["format"]
+            self.data_resource.profile = frict_resource["profile"]
+            self.data_resource.format = frict_resource["format"]
             if isinstance(self.data_resource.path, str):
                 mediatype, _ = guess_type(self.data_resource.path)
             else:
@@ -64,10 +69,10 @@ class FrictionlessRun(Run):
                 # tsv, for the data resource all of them are csv.
                 mediatype, _ = guess_type(self.data_resource.path[0])
             mediatype = mediatype if mediatype is not None else ""
-            self.data_resource._mediatype = mediatype
-            self.data_resource._encoding = frict_resource["encoding"]
-            self.data_resource._bytes = frict_resource["stats"]["bytes"]
-            self.data_resource._hash = frict_resource["stats"]["hash"]
+            self.data_resource.mediatype = mediatype
+            self.data_resource.encoding = frict_resource["encoding"]
+            self.data_resource.bytes = frict_resource["stats"]["bytes"]
+            self.data_resource.hash = frict_resource["stats"]["hash"]
         except KeyError as kex:
             raise kex
 
@@ -134,6 +139,36 @@ class FrictionlessRun(Run):
             metadata = self._get_artifact_metadata(name, uri)
             self._log_metadata(metadata, self._ARTIFACT_METADATA)
 
+    def _infer_schema(self) -> Schema:
+        """
+        Method that call infer on a frictionless Resource
+        and return an inferred schema.
+        """
+        resource = self.get_resource()
+        resource.infer()
+        schema = resource["schema"]
+        return schema
+
+    def _parse_schema(self, schema: Schema) -> ShortSchema:
+        parsed = []
+        try:
+            for field in schema["fields"]:
+                tup = SchemaTuple(field["name"], field["type"])
+                parsed.append(tup)
+        except KeyError as kerr:
+            raise KeyError("Missing 'fields' key in inferred schema.") from kerr
+        short_schema = self._get_short_schema(parsed)
+        return short_schema
+
+    def log_short_schema(self) -> dict:
+        """
+        Method to log short schema.
+        """
+        schema = self._infer_schema()
+        parsed = self._parse_schema(schema)
+        metadata = self._get_content(parsed.to_dict())
+        self._log_metadata(metadata, self._SHORT_SCHEMA)
+
     def _log_metadata(self,
                       metadata: dict,
                       src_type: str) -> None:
@@ -189,17 +224,12 @@ class FrictionlessRun(Run):
                     dict(report),
                     src_name=self._FULL_REPORT)
 
-    def persist_inferred_schema(self, schema: Schema) -> None:
+    def persist_inferred_schema(self) -> None:
         """
         Shortcut to persist the inferred schema produced
         by frictionless.
-
-        Parameters
-        ----------
-        schema : Schema
-            A frictionless Schema object.
-
         """
+        schema = self._infer_schema()
         self.persist_artifact(
                     dict(schema),
                     src_name=self._SCHEMA_INFERRED)
