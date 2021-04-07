@@ -31,25 +31,8 @@ class Run:
 
     Methods
     -------
-    log_data_resource :
-        Method to log data resource.
-    persist_artifact :
-        Method to persist artifacts in the artifact store.
-        It interacts directly with the client.
-    persist_data :
-        Shortcut to persist data and validation schema.
-    log_short_report :
-        Method to log short report.
-    persist_full_report :
-        Shortcut to persist the full report produced by the validation
-        framework as artifact.
-    persist_inferred_schema :
-        Shortcut to persist the inferred schema produced by the
-        validation framework as artifact.
-    get_resource :
-        Return a resource object specific of the library.
-    get_short_report :
-        Return a ShortReport object.
+    get_run :
+        Return Run Info as dictionary.
 
     """
 
@@ -74,15 +57,71 @@ class Run:
         self._overwrite = overwrite
 
     @abstractmethod
+    def _update_library_info(self) -> None:
+        """
+        Update run's info about the validation framework used.
+        """
+
+    @abstractmethod
     def _log_run(self) -> None:
         """
         Method to log run's metadata.
         """
 
     @abstractmethod
+    def _update_data_resource(self) -> None:
+        """
+        Update resource with inferred information.
+        """
+
+    @abstractmethod
     def log_data_resource(self) -> None:
         """
         Method to log data resource.
+        """
+
+    @abstractmethod
+    def _parse_report(self, report: Any) -> ShortReport:
+        """
+        Parse the report produced by the validation framework.
+        """
+
+    @abstractmethod
+    def _check_report(self, report: Any) -> None:
+        """
+        Check a report before log/persist it.
+        """
+
+    @abstractmethod
+    def log_short_report(self, report: Any) -> None:
+        """
+        Method to log short report.
+        """
+
+    @abstractmethod
+    def _infer_schema(self) -> Any:
+        """
+        Parse the inferred schema produced by the validation
+        framework.
+        """
+
+    @abstractmethod
+    def _parse_schema(self, schema: Any) -> ShortSchema:
+        """
+        Parse the inferred schema produced by the validation
+        framework.
+        """
+
+    @abstractmethod
+    def _check_schema(self, schema: Any) -> None:
+        """
+        Check a schema before log/persist it.
+        """
+
+    @abstractmethod
+    def log_short_schema(self, schema: Any) -> None:
+        """
+        Method to log short schema.
         """
 
     @abstractmethod
@@ -103,41 +142,9 @@ class Run:
         """
 
     @abstractmethod
-    def persist_artifact(self,
-                         src: Any,
-                         src_name: Optional[str] = None) -> None:
-        """
-        Method to persist artifacts in the artifact store.
-        """
-
-    @abstractmethod
     def persist_data(self) -> None:
         """
         Shortcut to persist data and validation schema.
-        """
-
-    @abstractmethod
-    def _update_library_info(self) -> None:
-        """
-        Update run's info about the validation framework used.
-        """
-
-    @abstractmethod
-    def _update_data_resource(self) -> None:
-        """
-        Update resource with inferred information.
-        """
-
-    @abstractmethod
-    def _parse_report(self, report: Any) -> ShortReport:
-        """
-        Parse the report produced by the validation framework.
-        """
-
-    @abstractmethod
-    def log_short_report(self, report: Any) -> None:
-        """
-        Method to log short report.
         """
 
     @abstractmethod
@@ -148,10 +155,18 @@ class Run:
         """
 
     @abstractmethod
-    def persist_inferred_schema(self) -> None:
+    def persist_inferred_schema(self, schema: Any) -> None:
         """
         Shortcut to persist the inferred schema produced by the
         validation framework as artifact.
+        """
+
+    @abstractmethod
+    def persist_artifact(self,
+                         src: Any,
+                         src_name: Optional[str] = None) -> None:
+        """
+        Method to persist artifacts in the artifact store.
         """
 
     @abstractmethod
@@ -168,9 +183,8 @@ class Run:
                            self.run_info.experiment_name,
                            self.run_info.run_id)
 
-    def _get_short_schema(self,
-                          fields: List[Dict[str, str]]
-                          ) -> ShortSchema:
+    @staticmethod
+    def _get_short_schema(fields: List[Dict[str, str]]) -> ShortSchema:
         """
         Return a ShortSchema object.
         """

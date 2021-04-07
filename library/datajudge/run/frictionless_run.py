@@ -25,6 +25,25 @@ class FrictionlessRun(Run):
     """
     Frictionless flavoured run.
 
+    Methods
+    -------
+    log_data_resource :
+        Method to log data resource.
+    log_short_report :
+        Method to log short report.
+    log_short_schema :
+        Method to log short schema.
+    persist_data :
+        Shortcut to persist data and validation schema.
+    persist_full_report :
+        Shortcut to persist the full report produced by the validation
+        framework as artifact.
+    persist_inferred_schema :
+        Shortcut to persist the inferred schema produced by the
+        validation framework as artifact.
+    persist_artifact :
+        Method to persist artifacts in the artifact store.
+
     See also
     --------
     Run : Abstract run class.
@@ -43,6 +62,8 @@ class FrictionlessRun(Run):
         self._log_run()
         self._update_library_info()
         self._update_data_resource()
+        self._schema = None
+        self._report = None
 
     def _update_library_info(self) -> None:
         """
@@ -50,6 +71,13 @@ class FrictionlessRun(Run):
         """
         self.run_info.validation_library = frictionless.__name__
         self.run_info.library_version = frictionless.__version__
+
+    def _log_run(self) -> None:
+        """
+        Method to log run's metadata.
+        """
+        metadata = self._get_content(self.run_info.to_dict())
+        self._log_metadata(metadata, self._RUN_METADATA)
 
     def _update_data_resource(self) -> None:
         """
@@ -76,13 +104,6 @@ class FrictionlessRun(Run):
         except KeyError as kex:
             raise kex
 
-    def _log_run(self) -> None:
-        """
-        Method to log run's metadata.
-        """
-        metadata = self._get_content(self.run_info.to_dict())
-        self._log_metadata(metadata, self._RUN_METADATA)
-
     def log_data_resource(self) -> None:
         """
         Method to log data resource.
@@ -102,6 +123,16 @@ class FrictionlessRun(Run):
 
         return short_report
 
+    def _check_report(self, report: Report) -> None:
+        """
+        Check a report before log/persist it.
+        Check if report is a frictionless 'Report'.
+        """
+        if not isinstance(report, Report):
+            raise TypeError("Expected frictionless Report!")
+        if self._report is None:
+            self._report = report
+
     def log_short_report(self, report: Report) -> None:
         """
         Method to log short report.
@@ -112,12 +143,65 @@ class FrictionlessRun(Run):
             A frictionless Report object.
 
         """
-        if not isinstance(report, Report):
-            raise TypeError("Only frictionless report accepted.")
-
-        report_short = self._parse_report(report)
-        metadata = self._get_content(report_short.to_dict())
+        self._check_report(report)
+        parsed = self._parse_report(self._report)
+        metadata = self._get_content(parsed.to_dict())
         self._log_metadata(metadata, self._SHORT_REPORT)
+
+    def _infer_schema(self) -> Schema:
+        """
+        Method that call infer on a frictionless Resource
+        and return an inferred schema.
+        """
+        resource = self.get_resource()
+        resource.infer()
+        schema = resource["schema"]
+        return schema
+
+    def _parse_schema(self, schema: Schema) -> ShortSchema:
+        """
+        Parse an inferred schema and return a standardized
+        ShortSchema.
+        """
+        parsed = [SchemaTuple(f["name"], f["type"]) for f in schema["fields"]]
+        short_schema = self._get_short_schema(parsed)
+        return short_schema
+
+    def _check_schema(self,
+                      schema: Optional[Schema] = None) -> None:
+        """
+        Check a schema before log/persist it.
+        If no schema is passed, frictionless will infer it and set it as
+        private 'self._schema' variable.
+        If a schema is provided, check if it is a frictionless 'Schema' and
+        set it as private 'self._schema' variable.
+        """
+        if schema is None and self._schema is None:
+            self._schema = self._infer_schema()
+            return
+        if schema is not None:
+            if not isinstance(schema, Schema):
+                raise TypeError("Expected frictionless schema!")
+            if self._schema is None:
+                self._schema = schema
+            return
+
+    def log_short_schema(self,
+                         schema: Optional[Schema] = None) -> dict:
+        """
+        Method to log short schema.
+
+        Parameters
+        ----------
+        schema : Schema, default = None
+            A frictionless Schema to be logged. If it is not
+            provided, the run will check its own schema attribute.
+            If no schema attribute is setted
+        """
+        self._check_schema(schema)
+        parsed = self._parse_schema(self._schema)
+        metadata = self._get_content(parsed.to_dict())
+        self._log_metadata(metadata, self._SHORT_SCHEMA)
 
     def _log_artifact(self,
                       src: Any,
@@ -139,36 +223,6 @@ class FrictionlessRun(Run):
             metadata = self._get_artifact_metadata(name, uri)
             self._log_metadata(metadata, self._ARTIFACT_METADATA)
 
-    def _infer_schema(self) -> Schema:
-        """
-        Method that call infer on a frictionless Resource
-        and return an inferred schema.
-        """
-        resource = self.get_resource()
-        resource.infer()
-        schema = resource["schema"]
-        return schema
-
-    def _parse_schema(self, schema: Schema) -> ShortSchema:
-        parsed = []
-        try:
-            for field in schema["fields"]:
-                tup = SchemaTuple(field["name"], field["type"])
-                parsed.append(tup)
-        except KeyError as kerr:
-            raise KeyError("Missing 'fields' key in inferred schema.") from kerr
-        short_schema = self._get_short_schema(parsed)
-        return short_schema
-
-    def log_short_schema(self) -> dict:
-        """
-        Method to log short schema.
-        """
-        schema = self._infer_schema()
-        parsed = self._parse_schema(schema)
-        metadata = self._get_content(parsed.to_dict())
-        self._log_metadata(metadata, self._SHORT_SCHEMA)
-
     def _log_metadata(self,
                       metadata: dict,
                       src_type: str) -> None:
@@ -180,26 +234,6 @@ class FrictionlessRun(Run):
                            self.run_info.run_metadata_uri,
                            src_type,
                            self._overwrite)
-
-    def persist_artifact(self,
-                         src: Union[str, List[str], dict],
-                         src_name: Optional[str] = None
-                         ) -> None:
-        """
-        Method to persist artifacts in the artifact store.
-
-        Parameters
-        ----------
-        src : str, list or dict
-            One or a list of URI described by a string, or a dictionary.
-        src_name : str, default = None
-            Filename. Required only if src is a dictionary.
-
-        """
-        self.client.persist_artifact(src,
-                                     self.run_info.run_artifacts_uri,
-                                     src_name=src_name)
-        self._log_artifact(src, src_name)
 
     def persist_data(self) -> None:
         """
@@ -224,15 +258,35 @@ class FrictionlessRun(Run):
                     dict(report),
                     src_name=self._FULL_REPORT)
 
-    def persist_inferred_schema(self) -> None:
+    def persist_inferred_schema(self,
+                                schema: Optional[Schema] = None) -> None:
         """
         Shortcut to persist the inferred schema produced
         by frictionless.
         """
-        schema = self._infer_schema()
-        self.persist_artifact(
-                    dict(schema),
-                    src_name=self._SCHEMA_INFERRED)
+        self._check_schema(schema)
+        self.persist_artifact(dict(self._schema),
+                              src_name=self._SCHEMA_INFERRED)
+
+    def persist_artifact(self,
+                         src: Union[str, List[str], dict],
+                         src_name: Optional[str] = None
+                         ) -> None:
+        """
+        Method to persist artifacts in the artifact store.
+
+        Parameters
+        ----------
+        src : str, list or dict
+            One or a list of URI described by a string, or a dictionary.
+        src_name : str, default = None
+            Filename. Required only if src is a dictionary.
+
+        """
+        self.client.persist_artifact(src,
+                                     self.run_info.run_artifacts_uri,
+                                     src_name=src_name)
+        self._log_artifact(src, src_name)
 
     def get_resource(self, **kwargs) -> Resource:
         """
