@@ -59,7 +59,7 @@ A list of available endpoints and their use should now be hosted at http://local
 
 ## Endpoints
 
-Here is a list of notable endpoints. 4 kinds of documents may be saved: `artifact-metadata`, `data-resource`, `run-metadata`, `short-report`.
+Here is a list of notable endpoints. 6 kinds of documents may be saved: `artifact-metadata`, `data-profile`, `data-resource`, `run-metadata`, `short-report`, `short-schema`.
 
 The endpoints for each kind are identical (with some exceptions described in the corresponding subsections), so only those related to `data-resource` are reported in this section. Simply replace `data-resource` with whichever other kind of document you need.
 
@@ -94,7 +94,7 @@ localhost:8200/api/project/<project_id>/data-resource
 ```
 * `project_id` - Path variable, ID of the project.
 
-The body for `data-resource`, `run-metadata` and `short-report` must include the following:
+The body for `data-profile`, `data-resource`, `run-metadata`, `short-report` and `short-schema` must include the following:
 * `experiment_id` - ID of the experiment.
 * `run_id` - ID of the run.
 
@@ -115,32 +115,34 @@ Example:
 }
 ```
 
-For `data-resource` and `short-report`, if a document already exists with the same `project_id`, `experiment_id` and `run_id`, it will result in an error.
+For any kind of document other than `artifact-metadata`, if a document already exists with the same `project_id`, `experiment_id` and `run_id`, it will result in an error.
 
 For `run-metadata`, an optional parameter named `overwrite` may be specified.
 
 If `overwrite` is specified and set to `true`, it will generate the document, and delete all previously existing documents of any kind that match the same combination of `project_id`, `experiment_id` and `run_id`.
 
-If `overwrite` is not specified or set to a different value, it will behave the same as `data-resource` and `short-report`, resulting in an error if a document with the same `project_id`, `experiment_id` and `run_id` already exists.
+If `overwrite` is not specified or set to a different value and a document with the same `project_id`, `experiment_id` and `run_id` already exists, it will result in an error.
 
 The body for `artifact-metadata` must include the following:
-* `experiment_name` - Name of the experiment.
+* `experiment_id` - ID of the experiment.
 * `run_id` - ID of the run.
 * `name` - Name of the artifact.
 * `uri` - Location of the artifact.
 
+Optionally, the body may also include:
+* `experiment_name` - Name of the experiment.
+
 Example:
 ```
 {
-  "id":"60477dbfc30c0d5703a7da5c",
-  "experiment_name":"experiment_validation",
+  "experiment_id":"experiment_validation",
   "run_id":"c51dbaf523e943c099b11a53a38e6a4f",
   "name": "file.sample",
   "uri":"a/b/c"
 }
 ```
 
-No error will occur for `artifact-metadata` if other documents contain the same values in these fields.
+No error will occur for `artifact-metadata` if other documents contain the same combination of values.
 
 ---
 
@@ -151,9 +153,9 @@ localhost:8200/api/project/<project_id>/data-resource/<document_id>
 * `project_id` - Path variable, ID of the project the document belongs to. If it does not match the project ID contained in the document, it will result in error.
 * `document_id` - Path variable, ID of the document you wish to update.
 
-The content of the body follows the same structure as the endpoint for creation.
+The content of the body follows the same structure as the endpoint for creation, but no fields are mandatory.
 
-The `experiment_id` and `run_id` fields are not mandatory for `data-resource`, `run-metadata` and `short-report`, but, if specified, the back-end will check if they indeed match the values of the document with the specified ID. If they do not, it will result in an error.
+If `experiment_id` and `run_id` are specified, however, the back-end will (unless it's an `artifact-metadata` document) check that they indeed match the values of the document with the specified ID, and return an error if they don't.
 
 ---
 
