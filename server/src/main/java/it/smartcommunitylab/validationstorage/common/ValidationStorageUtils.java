@@ -6,10 +6,12 @@ import org.springframework.web.server.ResponseStatusException;
 import java.text.Normalizer;
 
 public class ValidationStorageUtils {
+	public static final String RUN_METADATA = "run-metadata";
 	public static final String ARTIFACT_METADATA = "artifact-metadata";
 	public static final String DATA_RESOURCE = "data-resource";
-	public static final String RUN_METADATA = "run-metadata";
-	public static final String SHORT_REPORT = "report-short";
+	public static final String DATA_PROFILE = "data-profile";
+	public static final String SHORT_REPORT = "short-report";
+	public static final String SHORT_SCHEMA = "short-schema";
 	
 	public static void checkProjectIdMatch(String id, String documentProjectId, String projectId) {
 		if (!documentProjectId.equals(projectId))

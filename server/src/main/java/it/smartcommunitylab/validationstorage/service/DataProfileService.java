@@ -11,49 +11,37 @@ import org.springframework.web.server.ResponseStatusException;
 
 import it.smartcommunitylab.validationstorage.auth.SecurityAccessor;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
-import it.smartcommunitylab.validationstorage.model.RunMetadata;
-import it.smartcommunitylab.validationstorage.model.dto.RunMetadataDTO;
-import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
+import it.smartcommunitylab.validationstorage.model.DataProfile;
+import it.smartcommunitylab.validationstorage.model.dto.DataProfileDTO;
 import it.smartcommunitylab.validationstorage.repository.DataProfileRepository;
-import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
-import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
-import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
-import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class RunMetadataService {
-	private final RunMetadataRepository documentRepository;
-	
-	private final ArtifactMetadataRepository artifactMetadataRepository;
-	private final DataResourceRepository dataResourceRepository;
-	private final DataProfileRepository dataProfileRepository;
-	private final ShortReportRepository shortReportRepository;
-	private final ShortSchemaRepository shortSchemaRepository;
-	
+public class DataProfileService {
+	private final DataProfileRepository documentRepository;
 	private final SecurityAccessor securityAccessor;
 	
-	private RunMetadata getDocument(String id) {
+	private DataProfile getDocument(String id) {
 		if (ObjectUtils.isEmpty(id))
 			return null;
 		
-		Optional<RunMetadata> o = documentRepository.findById(id);
+		Optional<DataProfile> o = documentRepository.findById(id);
 		if (o.isPresent()) {
-			RunMetadata document = o.get();
+			DataProfile document = o.get();
 			return document;
 		}
 		return null;
 	}
 	
-	private List<RunMetadata> filterBySearch(List<RunMetadata> items, String search) {
+	private List<DataProfile> filterBySearch(List<DataProfile> items, String search) {
 		if (ObjectUtils.isEmpty(search))
 			return items;
 		
 		String normalized = ValidationStorageUtils.normalizeString(search);
 		
-		List<RunMetadata> results = new ArrayList<RunMetadata>();
-		for (RunMetadata item : items) {
+		List<DataProfile> results = new ArrayList<DataProfile>();
+		for (DataProfile item : items) {
 			if (item.getExperimentName().contains(normalized))
 				results.add(item);
 		}
@@ -62,7 +50,7 @@ public class RunMetadataService {
 	}
 	
 	// Create
-	public RunMetadata createDocument(String projectId, RunMetadataDTO request, Optional<String> overwriteParam) {
+	public DataProfile createDocument(String projectId, DataProfileDTO request) {
 		if (ObjectUtils.isEmpty(projectId))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project ID is missing or blank.");
 		securityAccessor.checkUserHasPermissions(projectId);
@@ -73,23 +61,10 @@ public class RunMetadataService {
 		if ((ObjectUtils.isEmpty(experimentId)) || (ObjectUtils.isEmpty(runId)))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fields 'experiment_id', 'run_id' are required and cannot be blank.");
 		
-		Boolean overwrite = false;
-		if (overwriteParam.isPresent() && !(ObjectUtils.isEmpty(overwriteParam.get())) && (overwriteParam.get().equals("true")))
-			overwrite = true;
-		
-		if ((!overwrite) && (!(documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId).isEmpty())))
+		if (!(documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId).isEmpty()))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") already exists.");
-		else if (overwrite) {
-			documentRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
-			
-			artifactMetadataRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
-			dataResourceRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
-			dataProfileRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
-			shortReportRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
-			shortSchemaRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
-		}
 		
-		RunMetadata documentToSave = new RunMetadata(projectId, experimentId, runId);
+		DataProfile documentToSave = new DataProfile(projectId, experimentId, runId);
 		
 		documentToSave.setExperimentName(request.getExperimentName());
 		documentToSave.setContents(request.getContents());
@@ -98,10 +73,10 @@ public class RunMetadataService {
 	}
 	
 	// Read
-	public List<RunMetadata> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
+	public List<DataProfile> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
 		securityAccessor.checkUserHasPermissions(projectId);
 		
-		List<RunMetadata> repositoryResults;
+		List<DataProfile> repositoryResults;
 		
 		if (experimentId.isPresent() && runId.isPresent())
 			repositoryResults = documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId.get(), runId.get());
@@ -118,8 +93,9 @@ public class RunMetadataService {
 		return repositoryResults;
 	}
 	
-	public RunMetadata findDocumentById(String projectId, String id) {
-		RunMetadata document = getDocument(id);
+	// Read
+	public DataProfile findDocumentById(String projectId, String id) {
+		DataProfile document = getDocument(id);
 		if (document != null) {
 			securityAccessor.checkUserHasPermissions(document.getProjectId());
 			
@@ -131,11 +107,11 @@ public class RunMetadataService {
 	}
 	
 	// Update
-	public RunMetadata updateDocument(String projectId, String id, RunMetadataDTO request) {
+	public DataProfile updateDocument(String projectId, String id, DataProfileDTO request) {
 		if (ObjectUtils.isEmpty(id))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document ID is missing or blank.");
 		
-		RunMetadata document = getDocument(id);
+		DataProfile document = getDocument(id);
 		if (document == null)
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
 		
@@ -156,7 +132,7 @@ public class RunMetadataService {
 	
 	// Delete
 	public void deleteDocumentById(String projectId, String id) {
-		RunMetadata document = getDocument(id);
+		DataProfile document = getDocument(id);
 		if (document != null) {
 			securityAccessor.checkUserHasPermissions(document.getProjectId());
 			
