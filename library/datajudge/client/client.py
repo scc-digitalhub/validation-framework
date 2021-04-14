@@ -1,3 +1,8 @@
+"""
+Client module.
+Implementation of a Client object which interact with storages
+and create runs.
+"""
 from __future__ import annotations
 
 import typing
@@ -12,17 +17,20 @@ if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
     from datajudge.run import Run
 
+# pylint: disable=too-many-arguments
+
 
 class Client:
     """
     Client class.
 
     The Client allows interaction with storages and create runs.
-    It builds two storages, one for metadata and another for
-    artifacts.
-    The metadata are a collection of data describing
-    the runs, the data resources/packages, reports and artifacts.
-    The artifact can be files, object, dictionaries.
+    It builds two storages, one for metadata and one for artifacts.
+
+    Metadata are a collection of data describing runs, data resources/packages,
+    reports, schemas and artifacts metadata.
+
+    Artifacts are files or objects that are stored as files.
 
     Attributes
     ----------
@@ -52,11 +60,13 @@ class Client:
         Log metadata to the metadata store.
     persist_artifact:
         Persist artifact to the srtifact store.
+    get_data_resource_uri:
+        Return the URI of a Data Resource.
 
     Notes
     -----
     Although the client exposes methods to log metadata and persist
-    artifacts, it's preferrable to use methodes exposed by the Run
+    artifacts, it's preferrable the ones exposed by the Run
     object.
 
     """
@@ -179,11 +189,11 @@ class Client:
         """
         self._artifact_store.persist_artifact(src, dst, src_name)
 
-    def _get_data_resource_uri(self,
-                               run_id: str):
+    def get_data_resource_uri(self,
+                              run_id: str) -> str:
         """
         Method that wrap 'get_data_resource_uri' of the
-        metadata store. Return DataREsource URI.
+        metadata store. Return DataResource URI.
         """
         return self._metadata_store.get_data_resource_uri(run_id)
 

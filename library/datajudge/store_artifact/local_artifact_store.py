@@ -1,10 +1,11 @@
+from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Any, Optional, Tuple
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
-from datajudge.utils.file_utils import (check_dir, check_file_dimension,
-                                        copy_file, get_path, make_dir,
-                                        write_json)
+from datajudge.utils.file_utils import (check_dir, copy_file, get_path,
+                                        make_dir, write_json, write_object)
+from datajudge.utils.uri_utils import check_local_scheme
 
 
 class LocalArtifactStore(ArtifactStore):
@@ -33,26 +34,25 @@ class LocalArtifactStore(ArtifactStore):
         """
         Persist an artifact.
         """
-        if isinstance(src, list):
-            for obj in src:
-                self.persist_artifact(obj, dst, src_name)
-
         self._check_access_to_storage(dst)
 
         if src_name is not None:
             dst = get_path(dst, src_name)
 
-        if isinstance(src, dict):
-            if src_name is not None:
-                write_json(src, dst)
-            else:
-                raise OSError("File name needed.")
+        # Local file
+        if isinstance(src, (str, Path)) and check_local_scheme(src):
+            copy_file(src, dst)
 
-        if isinstance(src, (str, Path)):
-            if check_file_dimension(src) > 0:
-                copy_file(src, dst)
-            else:
-                raise OSError("Empty file, not allowed to copy.")
+        # Dictionary
+        elif isinstance(src, dict) and src_name is not None:
+            write_json(src, dst)
+
+        # StringIO/BytesIO buffer
+        elif isinstance(src, (BytesIO, StringIO)) and src_name is not None:
+            write_object(src, dst)
+
+        else:
+            raise NotImplementedError
 
     @staticmethod
     def _check_access_to_storage(dst: str) -> None:

@@ -1,12 +1,15 @@
 import json
 import os
+from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Any, Optional
 
 from botocore.client import ClientError
 from datajudge.store_artifact.artifact_store import ArtifactStore
+from datajudge.utils.io_utils import check_buffer
 from datajudge.utils.s3_utils import (build_s3_key, build_s3_uri, get_bucket,
                                       s3client_creator)
+from datajudge.utils.uri_utils import check_local_scheme
 
 
 class S3ArtifactStore(ArtifactStore):
@@ -43,33 +46,36 @@ class S3ArtifactStore(ArtifactStore):
         """
         Persist an artifact.
         """
-        if isinstance(src, list):
-            for obj in src:
-                self.persist_artifact(obj, dst, src_name)
-
         self._check_access_to_storage(self.bucket)
 
-        # src is a local file in this case
-        if isinstance(src, (str, Path)) and src_name is None:
+        local = check_local_scheme(src)
+        if local:
+            src_name = os.path.basename(src) if src_name is None else src_name
 
-            # Check if resource has size > 0
-            if Path(src).stat().st_size == 0:
-                raise OSError("File is empty, will not be persisted to S3.")
+        key = build_s3_key(dst, src_name)
 
-            src_name = os.path.basename(src)
-            key = build_s3_key(dst, src_name)
+        # Local file
+        if isinstance(src, (str, Path)) and local:
             self.client.upload_file(Filename=src,
                                     Bucket=self.bucket,
                                     Key=key)
 
-        # or a dictionary that we dump in a json
+        # Dictionary
         elif isinstance(src, dict) and src_name is not None:
-
             json_obj = json.dumps(src)
-            key = build_s3_key(dst, src_name)
             self.client.put_object(Body=json_obj,
                                    Bucket=self.bucket,
                                    Key=key)
+
+        # StringIO/BytesIO buffer
+        elif isinstance(src, (BytesIO, StringIO)) and src_name is not None:
+            src = check_buffer(src)
+            self.client.upload_fileobj(src,
+                                       Bucket=self.bucket,
+                                       Key=key)
+
+        else:
+            raise NotImplementedError
 
     def _check_access_to_storage(self,
                                  bucket: str) -> None:

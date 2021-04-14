@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 import typing
-import urllib.parse
 from typing import Optional, Tuple
 
 from datajudge.run import FrictionlessRun, RunInfo
 from datajudge.store_artifact import LocalArtifactStore, S3ArtifactStore
 from datajudge.store_metadata import LocalMetadataStore, RestMetadataStore
-from datajudge.utils.file_utils import get_absolute_path
-from datajudge.utils.s3_utils import build_s3_uri
-from datajudge.utils.rest_utils import parse_url
+from datajudge.utils.uri_utils import resolve_uri
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
@@ -18,11 +15,6 @@ if typing.TYPE_CHECKING:
     from datajudge.store_artifact import ArtifactStore
     from datajudge.store_metadata import MetadataStore
 
-
-METADATA_LOG_TYPE = "metadata"
-ARTIFACT_LOG_TYPE = "artifact"
-
-DEFAULT_STORE = "./validruns"
 
 METADATA_STORE_REGISTRY = {
     "": LocalMetadataStore,
@@ -40,63 +32,6 @@ ARTIFACT_STORE_REGISTRY = {
 RUN_REGISTRY = {
     "frictionless": FrictionlessRun
 }
-
-LOCAL_SCHEME = ["", "file"]
-REST_SCHEME = ["http", "https"]
-S3_SCHEME = ["s3"]
-
-
-def build_exp_metadata_uri(scheme: str,
-                           uri: str,
-                           experiment_id: str,
-                           project_id: str) -> str:
-    """
-    Build experiment URI for metadata.
-    """
-    log_type = METADATA_LOG_TYPE
-    if scheme in LOCAL_SCHEME:
-        return get_absolute_path(uri, log_type, experiment_id)
-    if scheme in REST_SCHEME:
-        base_url = f"/api/project/{project_id}"
-        return parse_url(uri + base_url)
-    raise NotImplementedError
-
-
-def build_exp_artifact_uri(scheme: str,
-                           uri: str,
-                           experiment_id: str) -> str:
-    """
-    Build experiment URI for artifact.
-    """
-    log_type = ARTIFACT_LOG_TYPE
-    if scheme in LOCAL_SCHEME:
-        return get_absolute_path(uri, log_type, experiment_id)
-    if scheme in S3_SCHEME:
-        return build_s3_uri(uri, log_type, experiment_id)
-    raise NotImplementedError
-
-
-def resolve_uri(uri: str,
-                experiment_id: str,
-                store: str,
-                project_id: Optional[str] = None) -> Tuple[str, str]:
-    """
-    Return a builded URI and it's scheme.
-    """
-    uri = uri if uri is not None else DEFAULT_STORE
-    scheme = urllib.parse.urlparse(uri).scheme
-    if store == "metadata":
-        new_uri = build_exp_metadata_uri(scheme,
-                                         uri,
-                                         experiment_id,
-                                         project_id)
-    elif store == "artifact":
-        new_uri = build_exp_artifact_uri(scheme,
-                                         uri,
-                                         experiment_id)
-    else:
-        raise RuntimeError("Invalid store.")
-    return new_uri, scheme
 
 
 def get_stores(project_id: str,

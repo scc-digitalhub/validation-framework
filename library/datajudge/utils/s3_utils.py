@@ -1,6 +1,6 @@
 import urllib.parse
 from pathlib import Path
-from typing import Tuple, Type
+from typing import Any, Tuple, Type
 
 import boto3
 import botocore.client as bc  # type: ignore
@@ -79,3 +79,13 @@ def split_path_name(uri: str) -> Tuple[str, str]:
     # orrendo
     base_uri = "s3://" + get_bucket(uri)
     return key, base_uri
+
+
+def get_size(src: Any) -> None:
+    """
+    Check input file size to avoid to upload empty files on S3.
+    """
+    err_msg = "File is empty, will not be persisted to S3."
+    if isinstance(src, (str, Path)):
+        if Path(src).stat().st_size == 0:
+            raise BaseException(err_msg)

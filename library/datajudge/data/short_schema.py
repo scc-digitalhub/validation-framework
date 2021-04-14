@@ -1,3 +1,7 @@
+"""
+ShortSchema module.
+Implementation of a Short Schema common structure.
+"""
 from collections import namedtuple
 from typing import List
 

@@ -10,10 +10,12 @@ class FileNames(Enum):
     DATA_RESOURCE = "data_resource.json"
     SHORT_REPORT = "report_short.json"
     SHORT_SCHEMA = "schema_short.json"
+    DATA_PROFILE = "data_profile.json"
     ARTIFACT_METADATA = "artifact_metadata_{}.json"
     # Artifact
     FULL_REPORT = "report_full.json"
     SCHEMA_INFERRED = "inferred_schema.json"
+    FULL_PROFILE = "pandas_profile.json"
 
 
 class ApiEndpoint(Enum):
@@ -24,6 +26,7 @@ class ApiEndpoint(Enum):
     DATA_RESOURCE = "/data-resource"
     SHORT_REPORT = "/report-short"
     SHORT_SCHEMA = "/schema-short"
+    DATA_PROFILE = "/data-profile"
     ARTIFACT_METADATA = "/artifact-metadata"
 
 
@@ -35,4 +38,5 @@ class MetadataType(Enum):
     DATA_RESOURCE = "resource"
     SHORT_REPORT = "report"
     SHORT_SCHEMA = "schema"
+    DATA_PROFILE = "profile"
     ARTIFACT_METADATA = "artifact"

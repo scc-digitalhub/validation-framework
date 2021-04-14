@@ -42,16 +42,18 @@ class RestMetadataStore(MetadataStore):
         super().__init__(uri_metadata, config)
         self._key_vault = {
             self._RUN_METADATA: [],
+            self._DATA_RESOURCE: [],
             self._SHORT_REPORT: [],
             self._SHORT_SCHEMA: [],
-            self._DATA_RESOURCE: [],
+            self._DATA_PROFILE: [],
             self._ARTIFACT_METADATA: []
         }
         self._endpoints = {
             self._RUN_METADATA: ApiEndpoint.RUN_METADATA.value,
+            self._DATA_RESOURCE: ApiEndpoint.DATA_RESOURCE.value,
             self._SHORT_REPORT: ApiEndpoint.SHORT_REPORT.value,
             self._SHORT_SCHEMA: ApiEndpoint.SHORT_SCHEMA.value,
-            self._DATA_RESOURCE: ApiEndpoint.DATA_RESOURCE.value,
+            self._DATA_PROFILE: ApiEndpoint.DATA_PROFILE.value,
             self._ARTIFACT_METADATA: ApiEndpoint.ARTIFACT_METADATA.value
         }
 

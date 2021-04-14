@@ -1,9 +1,12 @@
 import glob
+from io import BytesIO, StringIO
 import json
 import os
 import shutil
 from pathlib import Path
 from typing import Tuple, Union
+
+from datajudge.utils.io_utils import wrap_bytes
 
 
 # Directories
@@ -121,3 +124,17 @@ def read_json(path: Union[str, Path]) -> dict:
     with open(path) as file:
         json_dict = json.load(file)
     return json_dict
+
+
+# Fileobj
+
+def write_object(buff: Union[StringIO, BytesIO],
+                 dst: str) -> None:
+    """
+    Save a buffer as file.
+    """
+    buff.seek(0)
+    if isinstance(buff, BytesIO):
+        buff = wrap_bytes(buff)
+    with open(dst, "w") as f:
+        shutil.copyfileobj(buff, f)

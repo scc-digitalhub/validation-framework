@@ -1,4 +1,12 @@
+"""
+DataResource module.
+Implementation of a DataResource object as defined in frictionless
+specifications.
+"""
 from typing import List, Mapping, Optional, Union
+
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-arguments
 
 
 class DataResource:

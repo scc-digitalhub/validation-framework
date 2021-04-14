@@ -36,9 +36,10 @@ class LocalMetadataStore(MetadataStore):
         super().__init__(uri_metadata, config)
         self._filenames = {
             self._RUN_METADATA: FileNames.RUN_METADATA.value,
+            self._DATA_RESOURCE: FileNames.DATA_RESOURCE.value,
             self._SHORT_REPORT: FileNames.SHORT_REPORT.value,
             self._SHORT_SCHEMA: FileNames.SHORT_SCHEMA.value,
-            self._DATA_RESOURCE: FileNames.DATA_RESOURCE.value,
+            self._DATA_PROFILE: FileNames.DATA_PROFILE.value,
             self._ARTIFACT_METADATA: FileNames.ARTIFACT_METADATA.value
         }
         self._artifact_count = 0
