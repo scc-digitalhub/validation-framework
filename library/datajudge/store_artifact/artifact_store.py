@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from io import BytesIO
 from typing import Any, Optional
 
 
@@ -41,6 +42,12 @@ class ArtifactStore:
                          src_name: str) -> None:
         """
         Method to persist an artifact.
+        """
+
+    @abstractmethod
+    def fetch_artifact(src: str) -> BytesIO:
+        """
+        Method to fetch an artifact.
         """
 
     @abstractmethod
