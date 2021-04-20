@@ -1,6 +1,7 @@
 import urllib.parse
 from typing import Optional, Tuple
 
+from datajudge.utils.constants import StoreType
 from datajudge.utils.file_utils import get_absolute_path
 from datajudge.utils.s3_utils import build_s3_uri
 from datajudge.utils.rest_utils import parse_url
@@ -10,10 +11,7 @@ LOCAL_SCHEME = ["", "file"]
 REST_SCHEME = ["http", "https"]
 S3_SCHEME = ["s3"]
 
-METADATA = "metadata"
-ARTIFACT = "artifact"
-
-DEFAULT_STORE = "./validruns"
+DEFAULT_LOCAL = "./validruns"
 
 
 def build_exp_uri(scheme: str,
@@ -24,21 +22,29 @@ def build_exp_uri(scheme: str,
     """
     Build experiment URI.
     """
-    if store == METADATA:
+
+    # Metadata stores
+    if store == StoreType.METADATA.value:
+
         if scheme in LOCAL_SCHEME:
-            return get_absolute_path(uri, METADATA, experiment_id)
-        elif scheme in REST_SCHEME and project_id is not None:
-            base_url = f"/api/project/{project_id}"
-            return parse_url(uri + base_url)
-        elif scheme in REST_SCHEME and project_id is None:
+            return get_absolute_path(uri, store, experiment_id)
+
+        elif scheme in REST_SCHEME:
+            if project_id is not None:
+                return parse_url(uri + f"/api/project/{project_id}")
             raise RuntimeError("'project_id' needed!")
+
         raise NotImplementedError
 
-    elif store == ARTIFACT:
+    # Artifact/data stores
+    elif store in (StoreType.DATA.value, StoreType.ARTIFACT.value):
+
         if scheme in LOCAL_SCHEME:
-            return get_absolute_path(uri, ARTIFACT, experiment_id)
+            return get_absolute_path(uri, store, experiment_id)
+
         elif scheme in S3_SCHEME:
-            return build_s3_uri(uri, ARTIFACT, experiment_id)
+            return build_s3_uri(uri, store, experiment_id)
+
         raise NotImplementedError
 
     else:
@@ -52,7 +58,7 @@ def resolve_uri(uri: str,
     """
     Return a builded URI and it's scheme.
     """
-    uri = uri if uri is not None else DEFAULT_STORE
+    uri = uri if uri is not None else DEFAULT_LOCAL
     scheme = get_scheme(uri)
     new_uri = build_exp_uri(scheme, uri, experiment_id, store, project_id)
     return new_uri, scheme

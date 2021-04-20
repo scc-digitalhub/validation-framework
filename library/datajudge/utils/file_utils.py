@@ -1,10 +1,14 @@
+"""
+Common file utils.
+"""
 import glob
-from io import BytesIO, StringIO
+import gzip
 import json
 import os
 import shutil
+from io import BytesIO
 from pathlib import Path
-from typing import Tuple, Union
+from typing import IO, Tuple, Union
 
 from datajudge.utils.io_utils import wrap_bytes
 
@@ -128,7 +132,7 @@ def read_json(path: Union[str, Path]) -> dict:
 
 # Fileobj
 
-def write_object(buff: Union[StringIO, BytesIO],
+def write_object(buff: IO,
                  dst: str) -> None:
     """
     Save a buffer as file.
@@ -136,5 +140,20 @@ def write_object(buff: Union[StringIO, BytesIO],
     buff.seek(0)
     if isinstance(buff, BytesIO):
         buff = wrap_bytes(buff)
-    with open(dst, "w") as f:
-        shutil.copyfileobj(buff, f)
+    with open(dst, "w") as file:
+        shutil.copyfileobj(buff, file)
+
+
+def open_file(path: str) -> IO:
+    """
+    Open file.
+    """
+    buffer = BytesIO()
+    if path.endswith(".gz"):
+        with gzip.open(path, "rb") as file:
+            buffer.write(file.read())
+    else:
+        with open(path, "rb") as file:
+            buffer.write(file.read())
+    buffer.seek(0)
+    return buffer

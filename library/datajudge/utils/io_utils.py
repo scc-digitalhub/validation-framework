@@ -1,5 +1,5 @@
 from io import BufferedReader, BytesIO, StringIO, TextIOWrapper
-from typing import Union
+from typing import IO
 
 
 #  https://stackoverflow.com/questions/55889474/convert-io-stringio-to-io-bytesio
@@ -29,7 +29,7 @@ class BytesIOWrapper(BufferedReader):
         return self._encoding_call('peek', size)
 
 
-def wrap_bytes(src: BytesIO) -> StringIO:
+def wrap_bytes(src: IO) -> StringIO:
     """
     Wrap a BytesIO in a StringIO.
     """
@@ -37,7 +37,7 @@ def wrap_bytes(src: BytesIO) -> StringIO:
     return TextIOWrapper(src)
 
 
-def check_buffer(src: Union[BytesIO, StringIO]) -> BytesIO:
+def check_buffer(src: IO) -> BytesIO:
     src.seek(0)
     if isinstance(src, StringIO):
         src = BytesIOWrapper(src)

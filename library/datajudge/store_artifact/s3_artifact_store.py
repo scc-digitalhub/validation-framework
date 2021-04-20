@@ -33,8 +33,9 @@ class S3ArtifactStore(ArtifactStore):
 
     def __init__(self,
                  artifact_uri: str,
-                 config: Optional[dict] = None) -> None:
-        super().__init__(artifact_uri, config)
+                 config: Optional[dict] = None,
+                 data: bool = False) -> None:
+        super().__init__(artifact_uri, config, data)
         self.client = s3client_creator(**self.config)
         self.bucket = get_bucket(self.artifact_uri)
         self._check_access_to_storage(self.bucket)
@@ -76,6 +77,11 @@ class S3ArtifactStore(ArtifactStore):
 
         else:
             raise NotImplementedError
+
+    def fetch_artifact(src: str) -> BytesIO:
+        """
+        Method to fetch an artifact.
+        """
 
     def _check_access_to_storage(self,
                                  bucket: str) -> None:

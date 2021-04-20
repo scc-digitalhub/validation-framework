@@ -40,3 +40,12 @@ class MetadataType(Enum):
     SHORT_SCHEMA = "schema"
     DATA_PROFILE = "profile"
     ARTIFACT_METADATA = "artifact"
+
+
+class StoreType(Enum):
+    """
+    Enum Store types.
+    """
+    METADATA = "metadata"
+    ARTIFACT = "artifact"
+    DATA = "data"

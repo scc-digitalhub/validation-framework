@@ -6,11 +6,14 @@ and create runs.
 from __future__ import annotations
 
 import typing
-from typing import Any, Optional
+from copy import deepcopy
+from io import BytesIO
+from typing import Any, IO, Optional
 
 from slugify import slugify  # pylint: disable=import-error
 
-from datajudge.utils.factories import get_stores, get_run_flavour
+from datajudge.utils.factories import get_store, get_run_flavour
+from datajudge.utils.constants import StoreType
 
 # For type checking -> avoids circular imports
 if typing.TYPE_CHECKING:
@@ -25,32 +28,12 @@ class Client:
     Client class.
 
     The Client allows interaction with storages and create runs.
-    It builds two storages, one for metadata and one for artifacts.
+    It builds three storages, one for metadata and two for artifacts.
 
     Metadata are a collection of data describing runs, data resources/packages,
     reports, schemas and artifacts metadata.
 
-    Artifacts are files or objects that are stored as files.
-
-    Attributes
-    ----------
-    project_id : str, default = 'project'
-        The id of the project, needed for the rest metadata store.
-    experiment_name : str, default = 'experiment'
-        Experiment name. An experiment is a logical unit for keeping
-        together the validation runs made on a Data Package/Data Resource.
-    metadata_store_uri : str, default = None
-        Metadata store URI. The library will select an appropriate
-        store object based on the URI scheme.
-    metadata_store_config : dict, default = None
-        Dictionary containing configuration for the store.
-        e.g. credentials, endpoints, etc.
-    artifact_store_uri : str, default = None
-        Artifact store URI. The library will select an appropriate
-        store object based on the URI scheme.
-    metadata_store_config : dict, default = None
-        Dictionary containing configuration for the store.
-        e.g. credentials, endpoints, etc.
+    Artifacts are files or objects that are read as buffer or stored as files.
 
     Methods
     -------
@@ -75,24 +58,58 @@ class Client:
                  project_id: Optional[str] = "project",
                  experiment_name: Optional[str] = "experiment",
                  metadata_store_uri: Optional[str] = None,
-                 artifact_store_uri: Optional[str] = None,
                  metadata_store_config: Optional[dict] = None,
+                 artifact_store_uri: Optional[str] = None,
                  artifact_store_config: Optional[dict] = None,
+                 data_store_uri: Optional[str] = None,
+                 data_store_config: Optional[dict] = None
                  ) -> None:
+        """
+        Client constructor.
+
+        Parameters
+        ----------
+        project_id : str, default = 'project'
+            The id of the project, needed for the rest metadata store.
+        experiment_name : str, default = 'experiment'
+            Experiment name. An experiment is a logical unit for keeping
+            together the validation runs made on a Data Package/Data Resource.
+        metadata_store_uri : str, default = None
+            Metadata store URI.
+        metadata_store_config : dict, default = None
+            Dictionary containing configuration for the store.
+        artifact_store_uri : str, default = None
+            Artifact store URI (output data).
+        artifact_store_config : dict, default = None
+            Dictionary containing configuration for the store.
+        data_store_uri : str, default = None
+            Data store URI (input data).
+        data_store_config : dict, default = None
+            Dictionary containing configuration for the store.
+
+        """
 
         self._project_id = project_id
         self._experiment_name = experiment_name
         self._experiment_id = slugify(experiment_name,
                                       max_length=20,
                                       separator="_")
-
-        self._metadata_store, self._artifact_store = get_stores(
-                                                        self._project_id,
-                                                        self._experiment_id,
-                                                        metadata_store_uri,
-                                                        artifact_store_uri,
-                                                        metadata_store_config,
-                                                        artifact_store_config)
+        self._metadata_store = get_store(StoreType.METADATA.value,
+                                         self._project_id,
+                                         self._experiment_id,
+                                         metadata_store_uri,
+                                         metadata_store_config)
+        self._artifact_store = get_store(StoreType.ARTIFACT.value,
+                                         self._project_id,
+                                         self._experiment_id,
+                                         artifact_store_uri,
+                                         artifact_store_config)
+        self._data_store = get_store(StoreType.DATA.value,
+                                     self._project_id,
+                                     self._experiment_id,
+                                     data_store_uri,
+                                     data_store_config)
+        self.data = None
 
     def create_run(self,
                    data_resource: DataResource,
@@ -188,6 +205,17 @@ class Client:
 
         """
         self._artifact_store.persist_artifact(src, dst, src_name)
+
+    def fetch_artifact(self,
+                       uri: str) -> IO:
+        """
+        Return read data.
+        """
+        if self.data is None:
+            self.data = self._data_store.fetch_artifact(uri)
+        if isinstance(self.data, BytesIO):
+            self.data.seek(0)
+        return deepcopy(self.data)
 
     def get_data_resource_uri(self,
                               run_id: str) -> str:

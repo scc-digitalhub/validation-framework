@@ -5,9 +5,8 @@ validation framework.
 """
 from __future__ import annotations
 
-import typing
 from mimetypes import guess_type
-from typing import Optional
+from typing import List, Optional
 
 try:
     import frictionless
@@ -19,9 +18,6 @@ except ImportError as ierr:
 
 from datajudge.data import SchemaTuple
 from datajudge.run import Run
-
-if typing.TYPE_CHECKING:
-    from datajudge.data import ShortReport, ShortSchema
 
 
 class FrictionlessRun(Run):
@@ -86,20 +82,15 @@ class FrictionlessRun(Run):
         except KeyError as kex:
             raise kex
 
-        # Cleanup
-        del frict_resource
-
-    def _parse_report(self, report: Report) -> ShortReport:
+    @staticmethod
+    def _parse_report(report: Report, kwargs: dict) -> dict:
         """
         Parse the report produced by frictionless.
         """
-        short_report = self._create_short_report()
         if len(report.tables) > 0:
-            short_report.time = report.tables[0]["time"]
-            short_report.valid = report.tables[0]["valid"]
-            short_report.errors = report.tables[0]["errors"]
-
-        return short_report
+            for key in kwargs:
+                kwargs[key] = report.tables[0][key]
+        return kwargs
 
     @staticmethod
     def _check_report(report: Optional[Report] = None) -> None:
@@ -118,14 +109,13 @@ class FrictionlessRun(Run):
         resource.infer()
         return resource["schema"]
 
-    def _parse_schema(self, schema: Schema) -> ShortSchema:
+    @staticmethod
+    def _parse_schema(schema: Schema) -> List[SchemaTuple]:
         """
         Parse an inferred schema and return a standardized
         ShortSchema.
         """
-        parsed = [SchemaTuple(f["name"], f["type"]) for f in schema["fields"]]
-        short_schema = self._create_short_schema(parsed)
-        return short_schema
+        return [SchemaTuple(f["name"], f["type"]) for f in schema["fields"]]
 
     @staticmethod
     def _check_schema(schema: Optional[Schema] = None) -> None:

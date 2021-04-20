@@ -1,10 +1,11 @@
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any, IO, Optional, Tuple
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import (check_dir, copy_file, get_path,
-                                        make_dir, write_json, write_object)
+                                        make_dir, write_json, write_object,
+                                        open_file)
 from datajudge.utils.uri_utils import check_local_scheme
 
 
@@ -22,8 +23,9 @@ class LocalArtifactStore(ArtifactStore):
 
     def __init__(self,
                  artifact_uri: str,
-                 config: Optional[dict] = None) -> None:
-        super().__init__(artifact_uri, config)
+                 config: Optional[dict] = None,
+                 data: bool = False) -> None:
+        super().__init__(artifact_uri, config, data)
         self._check_access_to_storage(self.artifact_uri)
 
     def persist_artifact(self,
@@ -54,12 +56,17 @@ class LocalArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    @staticmethod
-    def _check_access_to_storage(dst: str) -> None:
+    def fetch_artifact(self, src: str) -> IO:
+        """
+        Method to fetch an artifact.
+        """
+        return open_file(src)
+
+    def _check_access_to_storage(self, dst: str) -> None:
         """
         Check if there is access to the storage.
         """
-        if not check_dir(dst):
+        if not self.data and not check_dir(dst):
             make_dir(dst)
 
     def get_run_artifacts_uri(self, run_id: str) -> str:

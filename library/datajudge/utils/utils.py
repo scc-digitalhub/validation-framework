@@ -1,8 +1,8 @@
 from typing import Any, Tuple
 
 
-def data_lister(data: Any,
-                data_name: Any) -> Tuple[list, list]:
+def data_listify(data: Any,
+                 data_name: Any) -> Tuple[list, list]:
     """
     Check if the source is composed by multiple files.
     Return list of sources and sources names.

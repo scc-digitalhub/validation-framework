@@ -31,9 +31,11 @@ class ArtifactStore:
 
     def __init__(self,
                  artifact_uri: str,
-                 config: Optional[dict] = None) -> None:
+                 config: Optional[dict] = None,
+                 data: bool = False) -> None:
         self.artifact_uri = artifact_uri
         self.config = config
+        self.data = data
 
     @abstractmethod
     def persist_artifact(self,

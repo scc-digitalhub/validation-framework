@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional, Union
 from datajudge.utils.constants import FileNames, MetadataType
 from datajudge.data import ShortReport, ShortSchema
 from datajudge.utils.time_utils import get_time
-from datajudge.utils.utils import data_lister
+from datajudge.utils.utils import data_listify
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
@@ -109,8 +109,17 @@ class Run:
                                                 self.run_info.run_id)
             self.run_info.data_resource_uri = uri_resource
 
+    def _create_short_report(self, kwargs: dict) -> ShortReport:
+        """
+        Return a ShortReport object.
+        """
+        return ShortReport(self.run_info.data_resource_uri,
+                           self.run_info.experiment_name,
+                           self.run_info.run_id,
+                           **kwargs)
+
     @abstractmethod
-    def _parse_report(self, report: Any) -> ShortReport:
+    def _parse_report(self, report: Any, kwargs: dict) -> dict:
         """
         Parse the report produced by the validation framework.
         """
@@ -133,9 +142,27 @@ class Run:
         """
         self._check_report(report)
         self._set_report(report)
-        parsed = self._parse_report(self._report)
-        metadata = self._get_content(parsed.to_dict())
+
+        report_args = {
+            "time": None,
+            "valid": None,
+            "errors": None
+        }
+
+        parsed = self._parse_report(self._report, report_args)
+
+        short_schema = self._create_short_report(parsed)
+        metadata = self._get_content(short_schema.to_dict())
+
         self._log_metadata(metadata, self._SHORT_REPORT)
+
+    @staticmethod
+    def _create_short_schema(fields: List[Dict[str, str]]
+                             ) -> ShortSchema:
+        """
+        Return a ShortSchema object.
+        """
+        return ShortSchema(fields)
 
     @abstractmethod
     def _infer_schema(self) -> Any:
@@ -171,8 +198,12 @@ class Run:
         """
         self._check_schema(schema)
         self._set_schema(schema)
+
         parsed = self._parse_schema(self._schema)
-        metadata = self._get_content(parsed.to_dict())
+
+        short_schema = self._create_short_schema(parsed)
+        metadata = self._get_content(short_schema.to_dict())
+
         self._log_metadata(metadata, self._SHORT_SCHEMA)
 
     def _parse_profile(self, profile: Any) -> Any:
@@ -232,7 +263,7 @@ class Run:
 
         """
         res = self.data_resource
-        data, data_name = data_lister(res.path, data_name)
+        data, data_name = data_listify(res.path, data_name)
         schema = res.schema
 
         for idx, _ in enumerate(data):
@@ -301,22 +332,6 @@ class Run:
                                       src_name=src_name)
         self._log_artifact(src, src_name)
 
-    def _create_short_report(self) -> ShortReport:
-        """
-        Return a ShortReport object.
-        """
-        return ShortReport(self.run_info.data_resource_uri,
-                           self.run_info.experiment_name,
-                           self.run_info.run_id)
-
-    @staticmethod
-    def _create_short_schema(fields: List[Dict[str, str]]
-                             ) -> ShortSchema:
-        """
-        Return a ShortSchema object.
-        """
-        return ShortSchema(fields)
-
     def _get_content(self, cont: Optional[dict] = None) -> dict:
         """
         Return structured content to log.
@@ -358,6 +373,7 @@ class Run:
         """
         if self._report is None:
             if report is None:
+                # TODO auto-report
                 pass
             else:
                 self._report = report
