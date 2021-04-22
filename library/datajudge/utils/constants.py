@@ -13,6 +13,7 @@ class FileNames(Enum):
     DATA_PROFILE = "data_profile.json"
     ARTIFACT_METADATA = "artifact_metadata_{}.json"
     # Artifact
+    VALID_SCHEMA = "table_schema.json"
     FULL_REPORT = "report_full.json"
     SCHEMA_INFERRED = "inferred_schema.json"
     FULL_PROFILE = "pandas_profile.json"

@@ -6,9 +6,11 @@ from typing import Any, Optional
 
 from botocore.client import ClientError
 from datajudge.store_artifact.artifact_store import ArtifactStore
-from datajudge.utils.io_utils import check_buffer
+from datajudge.utils.io_utils import wrap_string
 from datajudge.utils.s3_utils import (build_s3_key, build_s3_uri, get_bucket,
-                                      s3client_creator)
+                                      get_obj, get_s3_path, put_object,
+                                      s3_client_creator, upload_file,
+                                      upload_fileobj)
 from datajudge.utils.uri_utils import check_local_scheme
 
 
@@ -36,7 +38,7 @@ class S3ArtifactStore(ArtifactStore):
                  config: Optional[dict] = None,
                  data: bool = False) -> None:
         super().__init__(artifact_uri, config, data)
-        self.client = s3client_creator(**self.config)
+        self.client = s3_client_creator(**self.config)
         self.bucket = get_bucket(self.artifact_uri)
         self._check_access_to_storage(self.bucket)
 
@@ -57,31 +59,27 @@ class S3ArtifactStore(ArtifactStore):
 
         # Local file
         if isinstance(src, (str, Path)) and local:
-            self.client.upload_file(Filename=src,
-                                    Bucket=self.bucket,
-                                    Key=key)
+            upload_file(self.client, src, self.bucket, key)
 
         # Dictionary
         elif isinstance(src, dict) and src_name is not None:
-            json_obj = json.dumps(src)
-            self.client.put_object(Body=json_obj,
-                                   Bucket=self.bucket,
-                                   Key=key)
+            src = json.dumps(src)
+            put_object(self.client, src, self.bucket, key)
 
         # StringIO/BytesIO buffer
         elif isinstance(src, (BytesIO, StringIO)) and src_name is not None:
-            src = check_buffer(src)
-            self.client.upload_fileobj(src,
-                                       Bucket=self.bucket,
-                                       Key=key)
+            src = wrap_string(src)
+            upload_fileobj(self.client, src, self.bucket, key)
 
         else:
             raise NotImplementedError
 
-    def fetch_artifact(src: str) -> BytesIO:
+    def fetch_artifact(self, src: str) -> BytesIO:
         """
         Method to fetch an artifact.
         """
+        key = get_s3_path(src)
+        return get_obj(self.client, self.bucket, key)
 
     def _check_access_to_storage(self,
                                  bucket: str) -> None:

@@ -45,16 +45,16 @@ class RunInfo:
         self.run_metadata_uri = run_metadata_uri
         self.run_artifacts_uri = run_artifacts_uri
 
-        self.data_resource_uri = ""
+        self.data_resource_uri = None
 
-        self.validation_library = ""
-        self.library_version = ""
+        self.validation_library = None
+        self.library_version = None
 
         self.created = get_time()
-        self.begin_status = ""
-        self.started = ""
-        self.end_status = ""
-        self.finished = ""
+        self.begin_status = None
+        self.started = None
+        self.end_status = None
+        self.finished = None
 
     def to_dict(self) -> dict:
         """

@@ -47,7 +47,7 @@ class ArtifactStore:
         """
 
     @abstractmethod
-    def fetch_artifact(src: str) -> BytesIO:
+    def fetch_artifact(self, src: str) -> BytesIO:
         """
         Method to fetch an artifact.
         """

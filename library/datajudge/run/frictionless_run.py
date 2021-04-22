@@ -10,7 +10,8 @@ from typing import List, Optional
 
 try:
     import frictionless
-    from frictionless import Resource
+    from frictionless import Resource, validate_resource
+    from frictionless.exception import FrictionlessException
     from frictionless.report import Report
     from frictionless.schema import Schema
 except ImportError as ierr:
@@ -49,6 +50,8 @@ class FrictionlessRun(Run):
 
     """
 
+    # Run
+
     def _update_library_info(self) -> None:
         """
         Update run's info about the validation framework used.
@@ -56,31 +59,32 @@ class FrictionlessRun(Run):
         self.run_info.validation_library = frictionless.__name__
         self.run_info.library_version = frictionless.__version__
 
+    # DataResource
+
     def _update_data_resource(self) -> None:
         """
         Update resource with inferred information.
         """
-        frict_resource = self.get_frictionless_resource()
-        frict_resource.infer()
-        res = self.data_resource
+        frict_res = self._infer_resource()
         try:
-            res.profile = frict_resource["profile"]
-            res.format = frict_resource["format"]
-            if isinstance(res.path, str):
-                mediatype, _ = guess_type(res.path)
+            for key in ["profile", "format", "encoding"]:
+                setattr(self.data_resource, key, frict_res[key])
+            for key in ["bytes", "hash"]:
+                setattr(self.data_resource, key, frict_res["stats"][key])
+            if isinstance(self.data_resource.path, str):
+                mediatype, _ = guess_type(self.data_resource.path)
             else:
                 # Apparently frictionless fetch the first file and
                 # generalize the inference to all the other files
                 # e.g. if the first file is a csv and the second a
                 # tsv, for the data resource all of them are csv.
-                mediatype, _ = guess_type(res.path[0])
-            mediatype = mediatype if mediatype is not None else ""
-            res.mediatype = mediatype
-            res.encoding = frict_resource["encoding"]
-            res.bytes = frict_resource["stats"]["bytes"]
-            res.hash = frict_resource["stats"]["hash"]
+                mediatype, _ = guess_type(self.data_resource.path[0])
+            self.data_resource.mediatype = mediatype
+
         except KeyError as kex:
             raise kex
+
+    # Short report
 
     @staticmethod
     def _parse_report(report: Report, kwargs: dict) -> dict:
@@ -105,9 +109,10 @@ class FrictionlessRun(Run):
         Method that call infer on a frictionless Resource
         and return an inferred schema.
         """
-        resource = self.get_frictionless_resource()
-        resource.infer()
+        resource = self._infer_resource()
         return resource["schema"]
+
+    # Short schema
 
     @staticmethod
     def _parse_schema(schema: Schema) -> List[SchemaTuple]:
@@ -125,14 +130,29 @@ class FrictionlessRun(Run):
         if schema is not None and not isinstance(schema, Schema):
             raise TypeError("Expected frictionless schema!")
 
-    def get_frictionless_resource(self, **kwargs) -> Resource:
+    # Build frictionless objects
+
+    @staticmethod
+    def build_frictionless_schema(schema: dict) -> Schema:
+        """
+        Get frictionless schema object.
+        """
+        return Schema(schema)
+
+    def build_frictionless_resource(self,
+                                    from_path: bool = False,
+                                    **kwargs
+                                    ) -> Resource:
         """
         Return a frictionless Resource object.
 
         Parameters
         ----------
-        kwargs : dict
-            Optional arguments to pass to frictionless Resource
+        from_path : bool, default = False
+            If True, build a frictionless resource from
+            DataResource path.
+        kwargs : dict, default = None
+            Arguments to pass to frictionless Resource
             constructor.
 
         Returns
@@ -140,6 +160,50 @@ class FrictionlessRun(Run):
         Resource
 
         """
-        if "path" not in kwargs or "data" not in kwargs:
+        if from_path:
             kwargs["path"] = self.data_resource.path
         return Resource(**kwargs)
+
+    # Framework wrapper methods
+
+    def _infer_resource(self) -> Resource:
+        """
+        Infer on resource.
+        """
+        try:
+            resource = self.build_frictionless_resource(
+                                            from_path=True)
+            resource.infer()
+
+        except FrictionlessException:
+
+            data = self.fetch_input_data(cached=True)
+            resource = self.build_frictionless_resource(data=data)
+            resource.infer()
+
+        resource.expand()
+        return resource
+
+    def validate_resource(self) -> Report:
+        """
+        Validate a Data Resource.
+        """
+        if self.data_resource.schema is None:
+            raise RuntimeError("No validation schema provided!")
+
+        schema = self.fetch_validation_schema(cached=True)
+        schema = self.build_frictionless_schema(schema)
+
+        try:
+            resource = self.build_frictionless_resource(from_path=True,
+                                                        schema=schema)
+            report = validate_resource(resource)
+
+        except FrictionlessException:
+
+            data = self.fetch_input_data(cached=True)
+            resource = self.build_frictionless_resource(data=data,
+                                                        schema=schema)
+            report = validate_resource(resource)
+
+        return report

@@ -37,7 +37,7 @@ def wrap_bytes(src: IO) -> StringIO:
     return TextIOWrapper(src)
 
 
-def check_buffer(src: IO) -> BytesIO:
+def wrap_string(src: IO) -> BytesIO:
     src.seek(0)
     if isinstance(src, StringIO):
         src = BytesIOWrapper(src)

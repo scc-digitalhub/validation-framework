@@ -1,13 +1,21 @@
+"""
+Common S3 utils.
+"""
+# pylint: disable=invalid-name,import-error,unused-import
 import urllib.parse
+from io import BytesIO
 from pathlib import Path
 from typing import Any, Tuple, Type
 
 import boto3
-import botocore.client as bc  # type: ignore
+import botocore.client as bc
 from botocore.client import Config
 
 
-def s3client_creator(**kwargs) -> Type["bc.S3"]:
+s3_client = Type["bc.S3"]
+
+
+def s3_client_creator(**kwargs) -> s3_client:
     """
     Return boto client.
     """
@@ -89,3 +97,52 @@ def get_size(src: Any) -> None:
     if isinstance(src, (str, Path)):
         if Path(src).stat().st_size == 0:
             raise BaseException(err_msg)
+
+
+def upload_file(client: s3_client,
+                src: str,
+                bucket: str,
+                key: str) -> None:
+    """
+    Upload file to S3.
+    """
+    client.upload_file(Filename=src,
+                       Bucket=bucket,
+                       Key=key)
+
+
+def put_object(client: s3_client,
+               obj: str,
+               bucket: str,
+               key: str) -> None:
+    """
+    Upload json to S3.
+    """
+    client.put_object(Body=obj,
+                      Bucket=bucket,
+                      Key=key)
+
+
+def upload_fileobj(client: s3_client,
+                   obj: BytesIO,
+                   bucket: str,
+                   key: str) -> None:
+    """
+    Upload fileobject to S3.
+    """
+    client.upload_fileobj(obj,
+                          Bucket=bucket,
+                          Key=key)
+
+
+def get_obj(client: s3_client,
+            bucket: str,
+            key: str) -> None:
+    """
+    Download object from S3 into a buffer.
+    """
+    obj = client.get_object(Bucket=bucket, Key=key)
+    buff = BytesIO()
+    buff.write(obj['Body'].read())
+    buff.seek(0)
+    return buff

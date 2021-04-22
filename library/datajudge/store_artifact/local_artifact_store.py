@@ -1,6 +1,6 @@
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, IO, Optional, Tuple
+from typing import Any, IO, Optional
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import (check_dir, copy_file, get_path,
@@ -32,7 +32,7 @@ class LocalArtifactStore(ArtifactStore):
                          src: Any,
                          dst: str,
                          src_name: Optional[str] = None
-                         ) -> Tuple[str, str]:
+                         ) -> None:
         """
         Persist an artifact.
         """
@@ -42,8 +42,11 @@ class LocalArtifactStore(ArtifactStore):
             dst = get_path(dst, src_name)
 
         # Local file
-        if isinstance(src, (str, Path)) and check_local_scheme(src):
-            copy_file(src, dst)
+        if isinstance(src, (str, Path)):
+            if check_local_scheme(src):
+                copy_file(src, dst)
+            else:
+                raise OSError("Not a local file!")
 
         # Dictionary
         elif isinstance(src, dict) and src_name is not None:
@@ -56,7 +59,8 @@ class LocalArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    def fetch_artifact(self, src: str) -> IO:
+    @staticmethod
+    def fetch_artifact(src: str) -> IO:
         """
         Method to fetch an artifact.
         """

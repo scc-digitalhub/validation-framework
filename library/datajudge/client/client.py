@@ -6,8 +6,6 @@ and create runs.
 from __future__ import annotations
 
 import typing
-from copy import deepcopy
-from io import BytesIO
 from typing import Any, IO, Optional
 
 from slugify import slugify  # pylint: disable=import-error
@@ -109,7 +107,6 @@ class Client:
                                      self._experiment_id,
                                      data_store_uri,
                                      data_store_config)
-        self.data = None
 
     def create_run(self,
                    data_resource: DataResource,
@@ -211,11 +208,7 @@ class Client:
         """
         Return read data.
         """
-        if self.data is None:
-            self.data = self._data_store.fetch_artifact(uri)
-        if isinstance(self.data, BytesIO):
-            self.data.seek(0)
-        return deepcopy(self.data)
+        return self._data_store.fetch_artifact(uri)
 
     def get_data_resource_uri(self,
                               run_id: str) -> str:

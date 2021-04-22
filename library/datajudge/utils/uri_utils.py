@@ -1,3 +1,4 @@
+import os
 import urllib.parse
 from typing import Optional, Tuple
 
@@ -78,3 +79,11 @@ def check_local_scheme(uri: str) -> bool:
     if get_scheme(uri) in LOCAL_SCHEME:
         return True
     return False
+
+
+def get_name_from_uri(uri: str) -> str:
+    """
+    Return filename from uri.
+    """
+    parsed = urllib.parse.urlparse(uri).path
+    return os.path.basename(parsed)
