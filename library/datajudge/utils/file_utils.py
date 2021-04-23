@@ -8,7 +8,7 @@ import os
 import shutil
 from io import BytesIO
 from pathlib import Path
-from typing import IO, Tuple, Union
+from typing import IO, Union
 
 from datajudge.utils.io_utils import wrap_bytes
 
@@ -55,14 +55,6 @@ def get_path(*args) -> str:
     Return path.
     """
     return str(Path(*args))
-
-
-def split_path_name(path: str) -> Tuple[str, str]:
-    """
-    Return filename and path.
-    """
-    abs_path = Path(path).absolute()
-    return abs_path.name, abs_path.parent.as_uri()
 
 
 # Files
@@ -146,7 +138,7 @@ def write_object(buff: IO,
 
 def open_file(path: str) -> IO:
     """
-    Open file.
+    Open file and return a buffer.
     """
     buffer = BytesIO()
     if path.endswith(".gz"):

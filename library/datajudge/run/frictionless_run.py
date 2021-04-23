@@ -11,7 +11,6 @@ from typing import List, Optional
 try:
     import frictionless
     from frictionless import Resource, validate_resource
-    from frictionless.exception import FrictionlessException
     from frictionless.report import Report
     from frictionless.schema import Schema
 except ImportError as ierr:
@@ -19,6 +18,7 @@ except ImportError as ierr:
 
 from datajudge.data import SchemaTuple
 from datajudge.run import Run
+from datajudge.utils.io_utils import merge_data_buffer
 
 
 class FrictionlessRun(Run):
@@ -151,7 +151,7 @@ class FrictionlessRun(Run):
         from_path : bool, default = False
             If True, build a frictionless resource from
             DataResource path.
-        kwargs : dict, default = None
+        **kwargs : dict, default = None
             Arguments to pass to frictionless Resource
             constructor.
 
@@ -170,19 +170,20 @@ class FrictionlessRun(Run):
         """
         Infer on resource.
         """
-        try:
-            resource = self.build_frictionless_resource(
-                                            from_path=True)
+        if self._inferred is None:
+            if self._direct_access_data:
+                resource = self.build_frictionless_resource(
+                                                from_path=True)
+            else:
+                data = self.fetch_input_data(cached=True)
+                if isinstance(data, list):
+                    data = merge_data_buffer(data)
+                resource = self.build_frictionless_resource(data=data)
+
             resource.infer()
-
-        except FrictionlessException:
-
-            data = self.fetch_input_data(cached=True)
-            resource = self.build_frictionless_resource(data=data)
-            resource.infer()
-
-        resource.expand()
-        return resource
+            resource.expand()
+            self._inferred = resource
+        return self._inferred
 
     def validate_resource(self) -> Report:
         """
@@ -194,16 +195,15 @@ class FrictionlessRun(Run):
         schema = self.fetch_validation_schema(cached=True)
         schema = self.build_frictionless_schema(schema)
 
-        try:
+        if self._direct_access_data:
             resource = self.build_frictionless_resource(from_path=True,
                                                         schema=schema)
-            report = validate_resource(resource)
-
-        except FrictionlessException:
-
+        else:
             data = self.fetch_input_data(cached=True)
+            if isinstance(data, list):
+                data = merge_data_buffer(data)
             resource = self.build_frictionless_resource(data=data,
                                                         schema=schema)
-            report = validate_resource(resource)
 
+        report = validate_resource(resource)
         return report

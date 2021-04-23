@@ -5,7 +5,7 @@ Common S3 utils.
 import urllib.parse
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Tuple, Type
+from typing import Any, Type
 
 import boto3
 import botocore.client as bc
@@ -19,13 +19,10 @@ def s3_client_creator(**kwargs) -> s3_client:
     """
     Return boto client.
     """
-    try:
-        return boto3.client('s3',
-                            config=Config(signature_version='s3v4'),
-                            region_name='us-east-1',
-                            **kwargs)
-    except Exception as ex:
-        raise ex
+    return boto3.client('s3',
+                        config=Config(signature_version='s3v4'),
+                        region_name='us-east-1',
+                        **kwargs)
 
 
 def parse_s3_uri(uri: str) -> urllib.parse.ParseResult:
@@ -79,14 +76,15 @@ def get_bucket(uri: str) -> str:
     return parsed.netloc
 
 
-def split_path_name(uri: str) -> Tuple[str, str]:
+def check_bucket(client: s3_client, bucket: str) -> bool:
     """
-    Return uri and key.
+    Check access to a bucket.
     """
-    key = get_s3_path(uri)
-    # orrendo
-    base_uri = "s3://" + get_bucket(uri)
-    return key, base_uri
+    try:
+        client.head_bucket(Bucket=bucket)
+        return True
+    except Exception:
+        return False
 
 
 def get_size(src: Any) -> None:
@@ -132,7 +130,7 @@ def upload_fileobj(client: s3_client,
     """
     client.upload_fileobj(obj,
                           Bucket=bucket,
-                          Key=key)
+                          Key=key)  
 
 
 def get_obj(client: s3_client,

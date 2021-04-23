@@ -39,16 +39,12 @@ class Client:
         Create a new run.
     log_metadata :
         Log metadata to the metadata store.
-    persist_artifact:
-        Persist artifact to the srtifact store.
-    get_data_resource_uri:
+    persist_artifact :
+        Persist artifact to the artifact store.
+    fetch_artifact :
+        Fetch artifact from backend storage.
+    get_data_resource_uri :
         Return the URI of a Data Resource.
-
-    Notes
-    -----
-    Although the client exposes methods to log metadata and persist
-    artifacts, it's preferrable the ones exposed by the Run
-    object.
 
     """
 

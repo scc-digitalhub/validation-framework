@@ -1,13 +1,12 @@
 import json
-import os
 from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Any, Optional
 
-from botocore.client import ClientError
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.io_utils import wrap_string
-from datajudge.utils.s3_utils import (build_s3_key, build_s3_uri, get_bucket,
+from datajudge.utils.s3_utils import (build_s3_key, build_s3_uri,
+                                      check_bucket, get_bucket,
                                       get_obj, get_s3_path, put_object,
                                       s3_client_creator, upload_file,
                                       upload_fileobj)
@@ -40,7 +39,7 @@ class S3ArtifactStore(ArtifactStore):
         super().__init__(artifact_uri, config, data)
         self.client = s3_client_creator(**self.config)
         self.bucket = get_bucket(self.artifact_uri)
-        self._check_access_to_storage(self.bucket)
+        self._check_access_to_storage()
 
     def persist_artifact(self,
                          src: Any,
@@ -50,15 +49,10 @@ class S3ArtifactStore(ArtifactStore):
         Persist an artifact.
         """
         self._check_access_to_storage(self.bucket)
-
-        local = check_local_scheme(src)
-        if local:
-            src_name = os.path.basename(src) if src_name is None else src_name
-
         key = build_s3_key(dst, src_name)
 
         # Local file
-        if isinstance(src, (str, Path)) and local:
+        if isinstance(src, (str, Path)) and check_local_scheme(src):
             upload_file(self.client, src, self.bucket, key)
 
         # Dictionary
@@ -81,15 +75,12 @@ class S3ArtifactStore(ArtifactStore):
         key = get_s3_path(src)
         return get_obj(self.client, self.bucket, key)
 
-    def _check_access_to_storage(self,
-                                 bucket: str) -> None:
+    def _check_access_to_storage(self) -> None:
         """
         Check access to storage.
         """
-        try:
-            self.client.head_bucket(Bucket=bucket)
-        except ClientError as c_err:
-            raise c_err
+        if not check_bucket(self.client, self.bucket):
+            raise RuntimeError("No access to s3 bucket!")
 
     def get_run_artifacts_uri(self, run_id: str) -> str:
         """
