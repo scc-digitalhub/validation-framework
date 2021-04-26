@@ -1,3 +1,4 @@
+import os
 import urllib.parse
 from pathlib import Path
 from typing import Optional, Tuple
@@ -105,7 +106,12 @@ def test_uri_access(uri: str) -> bool:
         return check_file(uri)
     if scheme in S3_SCHEME:
         bucket = get_bucket(uri)
-        client = s3_client_creator()
+        env_cred = {
+            "endpoint_url": os.environ.get("S3_ENDPOINT_URL"),
+            "aws_access_key_id": os.environ.get("AWS_ACCESS_KEY_ID"),
+            "aws_secret_access_key": os.environ.get("AWS_SECRET_ACCESS_KEY")
+        }
+        client = s3_client_creator(**env_cred)
         return check_bucket(client, bucket)
     if scheme in REST_SCHEME:
         raise NotImplementedError

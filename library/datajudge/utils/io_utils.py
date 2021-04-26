@@ -45,16 +45,3 @@ def wrap_string(src: IO) -> BytesIO:
     if isinstance(src, StringIO):
         src = BytesIOWrapper(src)
     return src
-
-# Maybe to remove
-def merge_data_buffer(data: list) -> BytesIO:
-    """
-    Merge a list of BytesIO objects.
-    """
-    buff = BytesIO()
-    for i in data:
-        buff.write(i.getvalue())
-        if buff.seek(-1)!=b"\n":
-            buff.write(b"\n")
-    buff.seek(0)
-    return buff

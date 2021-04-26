@@ -84,6 +84,7 @@ def check_bucket(client: s3_client, bucket: str) -> bool:
         client.head_bucket(Bucket=bucket)
         return True
     except Exception:
+        raise
         return False
 
 
@@ -130,10 +131,10 @@ def upload_fileobj(client: s3_client,
     """
     client.upload_fileobj(obj,
                           Bucket=bucket,
-                          Key=key)  
+                          Key=key)
 
 
-def get_obj(client: s3_client,
+def get_object(client: s3_client,
             bucket: str,
             key: str) -> None:
     """

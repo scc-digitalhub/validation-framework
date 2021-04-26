@@ -10,7 +10,7 @@ from typing import List, Optional
 
 try:
     import frictionless
-    from frictionless import Resource, validate_resource
+    from frictionless import Resource
     from frictionless.report import Report
     from frictionless.schema import Schema
 except ImportError as ierr:
@@ -18,7 +18,6 @@ except ImportError as ierr:
 
 from datajudge.data import SchemaTuple
 from datajudge.run import Run
-from datajudge.utils.io_utils import merge_data_buffer
 
 
 class FrictionlessRun(Run):
@@ -69,8 +68,9 @@ class FrictionlessRun(Run):
         try:
             for key in ["profile", "format", "encoding"]:
                 setattr(self.data_resource, key, frict_res[key])
-            for key in ["bytes", "hash"]:
-                setattr(self.data_resource, key, frict_res["stats"][key])
+            if "stats" in frict_res:
+                for key in ["bytes", "hash"]:
+                    setattr(self.data_resource, key, frict_res["stats"][key])
             if isinstance(self.data_resource.path, str):
                 mediatype, _ = guess_type(self.data_resource.path)
             else:
@@ -91,26 +91,26 @@ class FrictionlessRun(Run):
         """
         Parse the report produced by frictionless.
         """
-        if len(report.tables) > 0:
+        if not hasattr(report, "tasks"):
+            return kwargs
+        if len(report.tasks) > 0:
             for key in kwargs:
-                kwargs[key] = report.tables[0][key]
+                kwargs[key] = report.tasks[0][key]
         return kwargs
 
-    @staticmethod
-    def _check_report(report: Optional[Report] = None) -> None:
+    def _check_report(self, report: Optional[Report] = None) -> None:
         """
         Validate frictionless report before log/persist it.
         """
         if report is not None and not isinstance(report, Report):
             raise TypeError("Expected frictionless Report!")
-
-    def _infer_schema(self) -> Schema:
-        """
-        Method that call infer on a frictionless Resource
-        and return an inferred schema.
-        """
-        resource = self._infer_resource()
-        return resource["schema"]
+        # ... ???
+        if "tasks" in report:
+            for idx, res in enumerate(report["tasks"]):
+                if "data" in res["resource"]:
+                    if isinstance(res["resource"]["data"], bytes):
+                        res["resource"].pop("data")
+                        res["resource"]["path"] = self.data_resource.path[idx]
 
     # Short schema
 
@@ -120,7 +120,22 @@ class FrictionlessRun(Run):
         Parse an inferred schema and return a standardized
         ShortSchema.
         """
-        return [SchemaTuple(f["name"], f["type"]) for f in schema["fields"]]
+        if schema is None:
+            new = [SchemaTuple("", "")]
+        else:
+            new = [SchemaTuple(f["name"], f["type"]) for f in schema["fields"]]
+        return new
+
+    def _infer_schema(self) -> Schema:
+        """
+        Method that call infer on a frictionless Resource
+        and return an inferred schema.
+        """
+        resource = self._infer_resource()
+        if "schema" in resource:
+            return resource["schema"]
+        # to change
+        return
 
     @staticmethod
     def _check_schema(schema: Optional[Schema] = None) -> None:
@@ -175,9 +190,10 @@ class FrictionlessRun(Run):
                 resource = self.build_frictionless_resource(
                                                 from_path=True)
             else:
-                data = self.fetch_input_data(cached=True)
+                data = self.fetch_input_data()
                 if isinstance(data, list):
-                    data = merge_data_buffer(data)
+                    raise NotImplementedError("Unable to read list of buffer!")
+                data = data.read()
                 resource = self.build_frictionless_resource(data=data)
 
             resource.infer()
@@ -192,18 +208,19 @@ class FrictionlessRun(Run):
         if self.data_resource.schema is None:
             raise RuntimeError("No validation schema provided!")
 
-        schema = self.fetch_validation_schema(cached=True)
+        schema = self.fetch_validation_schema()
         schema = self.build_frictionless_schema(schema)
 
         if self._direct_access_data:
             resource = self.build_frictionless_resource(from_path=True,
                                                         schema=schema)
         else:
-            data = self.fetch_input_data(cached=True)
+            data = self.fetch_input_data()
             if isinstance(data, list):
-                data = merge_data_buffer(data)
+                raise NotImplementedError("Unable to read list of buffer!")
+            data = data.read()
             resource = self.build_frictionless_resource(data=data,
                                                         schema=schema)
 
-        report = validate_resource(resource)
+        report = frictionless.validate_resource(resource)
         return report

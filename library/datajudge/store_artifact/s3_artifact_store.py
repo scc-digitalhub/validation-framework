@@ -7,7 +7,7 @@ from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.io_utils import wrap_string
 from datajudge.utils.s3_utils import (build_s3_key, build_s3_uri,
                                       check_bucket, get_bucket,
-                                      get_obj, get_s3_path, put_object,
+                                      get_object, get_s3_path, put_object,
                                       s3_client_creator, upload_file,
                                       upload_fileobj)
 from datajudge.utils.uri_utils import check_local_scheme
@@ -73,7 +73,7 @@ class S3ArtifactStore(ArtifactStore):
         Method to fetch an artifact.
         """
         key = get_s3_path(src)
-        return get_obj(self.client, self.bucket, key)
+        return get_object(self.client, self.bucket, key)
 
     def _check_access_to_storage(self) -> None:
         """
