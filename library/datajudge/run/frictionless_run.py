@@ -43,10 +43,6 @@ class FrictionlessRun(Run):
     persist_artifact :
         Method to persist artifacts in the artifact store.
 
-    See also
-    --------
-    Run : Abstract run class.
-
     """
 
     # Run
@@ -64,7 +60,7 @@ class FrictionlessRun(Run):
         """
         Update resource with inferred information.
         """
-        frict_res = self._infer_resource()
+        frict_res = self.infer_resource()
         try:
             for key in ["profile", "format", "encoding"]:
                 setattr(self.data_resource, key, frict_res[key])
@@ -131,7 +127,7 @@ class FrictionlessRun(Run):
         Method that call infer on a frictionless Resource
         and return an inferred schema.
         """
-        resource = self._infer_resource()
+        resource = self.infer_resource()
         if "schema" in resource:
             return resource["schema"]
         # to change
@@ -150,77 +146,71 @@ class FrictionlessRun(Run):
     @staticmethod
     def build_frictionless_schema(schema: dict) -> Schema:
         """
-        Get frictionless schema object.
+        Return a frictionless Schema object.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Arguments to pass to frictionless Schema constructor.
+
+        Returns
+        -------
+        Schema
+
         """
         return Schema(schema)
 
-    def build_frictionless_resource(self,
-                                    from_path: bool = False,
-                                    **kwargs
-                                    ) -> Resource:
+    @staticmethod
+    def build_frictionless_resource(**kwargs: dict) -> Resource:
         """
         Return a frictionless Resource object.
 
         Parameters
         ----------
-        from_path : bool, default = False
-            If True, build a frictionless resource from
-            DataResource path.
-        **kwargs : dict, default = None
-            Arguments to pass to frictionless Resource
-            constructor.
+        **kwargs : dict
+            Arguments to pass to frictionless Resource constructor.
 
         Returns
         -------
         Resource
 
         """
-        if from_path:
-            kwargs["path"] = self.data_resource.path
         return Resource(**kwargs)
 
     # Framework wrapper methods
 
-    def _infer_resource(self) -> Resource:
+    def infer_resource(self) -> Resource:
         """
         Infer on resource.
         """
         if self._inferred is None:
-            if self._direct_access_data:
-                resource = self.build_frictionless_resource(
-                                                from_path=True)
-            else:
-                data = self.fetch_input_data()
-                if isinstance(data, list):
-                    raise NotImplementedError("Unable to read list of buffer!")
-                data = data.read()
-                resource = self.build_frictionless_resource(data=data)
-
+            data = self.fetch_input_data()
+            resource = self.build_frictionless_resource(source=data)
             resource.infer()
             resource.expand()
             self._inferred = resource
         return self._inferred
 
-    def validate_resource(self) -> Report:
+    def validate_resource(self, **kwargs: dict) -> Report:
         """
         Validate a Data Resource.
-        """
-        if self.data_resource.schema is None:
-            raise RuntimeError("No validation schema provided!")
 
+        Parameters
+        ----------
+        **kwargs : dict
+            Keywords args for frictionless.validate_resource
+            method.
+
+        """
         schema = self.fetch_validation_schema()
         schema = self.build_frictionless_schema(schema)
+        if schema is None:
+            raise Warning("No validation schema is provided! " +
+                          "Report will results valid by default.")
 
-        if self._direct_access_data:
-            resource = self.build_frictionless_resource(from_path=True,
-                                                        schema=schema)
-        else:
-            data = self.fetch_input_data()
-            if isinstance(data, list):
-                raise NotImplementedError("Unable to read list of buffer!")
-            data = data.read()
-            resource = self.build_frictionless_resource(data=data,
-                                                        schema=schema)
+        data = self.fetch_input_data()
 
-        report = frictionless.validate_resource(resource)
+        resource = self.build_frictionless_resource(source=data,
+                                                    schema=schema)
+        report = frictionless.validate_resource(resource, **kwargs)
         return report

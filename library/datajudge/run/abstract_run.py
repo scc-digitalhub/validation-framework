@@ -4,17 +4,15 @@ Implementations of a Run abstract class.
 """
 from __future__ import annotations
 
-import json
 import typing
 from abc import ABCMeta, abstractmethod
-from copy import deepcopy
-from io import BytesIO
 from typing import Any, Dict, List, Optional, Union
 
 from datajudge.data import ShortReport, ShortSchema
 from datajudge.utils.constants import FileNames, MetadataType
+from datajudge.utils.file_utils import clean_all
 from datajudge.utils.time_utils import get_time
-from datajudge.utils.uri_utils import get_name_from_uri, test_uri_access
+from datajudge.utils.uri_utils import get_name_from_uri
 from datajudge.utils.utils import data_listify
 
 if typing.TYPE_CHECKING:
@@ -129,15 +127,12 @@ class Run:
 
     # Short report
 
-    def _create_short_report(self,
-                             kwargs: dict) -> ShortReport:
+    @staticmethod
+    def _create_short_report(kwargs: dict) -> ShortReport:
         """
         Return a ShortReport object.
         """
-        return ShortReport(self.run_info.data_resource_uri,
-                           self.run_info.experiment_name,
-                           self.run_info.run_id,
-                           **kwargs)
+        return ShortReport(**kwargs)
 
     @abstractmethod
     def _parse_report(self,
@@ -190,16 +185,25 @@ class Run:
         }
 
         if self._report is not None:
-            parsed = self._parse_report(self._report, report_args)
-            short_schema = self._create_short_report(parsed)
-        else:
-            short_schema = self._create_short_report(report_args)
+            report_args = self._parse_report(self._report, report_args)
+
+        report_args["data_resource"] = self.run_info.data_resource_uri
+        report_args["experiment_name"] = self.run_info.experiment_name
+        report_args["run_id"] = self.run_info.run_id
+
+        short_schema = self._create_short_report(report_args)
 
         metadata = self._get_content(short_schema.to_dict())
-
         self._log_metadata(metadata, self._SHORT_REPORT)
 
     # Short schema
+
+    @abstractmethod
+    def _infer_schema(self) -> Any:
+        """
+        Parse the inferred schema produced by the validation
+        framework.
+        """
 
     @staticmethod
     def _create_short_schema(fields: List[Dict[str, str]]
@@ -217,13 +221,6 @@ class Run:
         framework.
         """
 
-    @abstractmethod
-    def _infer_schema(self) -> Any:
-        """
-        Parse the inferred schema produced by the validation
-        framework.
-        """
-
     def _set_schema(self,
                     schema: Optional[Any] = None,
                     infer: bool = False) -> None:
@@ -236,6 +233,7 @@ class Run:
             else:
                 self._inf_schema = schema
 
+    @abstractmethod
     def _check_schema(self,
                       schema: Any) -> None:
         """
@@ -285,33 +283,26 @@ class Run:
     # Artifact metadata
 
     def _get_artifact_metadata(self,
-                               name: str,
-                               uri: str) -> dict:
+                               uri: str,
+                               name: str) -> dict:
+        """
+        Build artifact metadata.
+        """
         metadata = self._get_content()
         metadata.pop("contents")
-        metadata["name"] = name
         metadata["uri"] = uri
+        metadata["name"] = name
         return metadata
 
     def _log_artifact(self,
-                      src: Any,
                       src_name: Optional[str] = None
                       ) -> None:
         """
-        Method to log artifacts metadata.
+        Method to log artifact metadata.
         """
         uri = self.run_info.run_artifacts_uri
-        names = []
-        if isinstance(src, list):
-            names.extend(src)
-        elif isinstance(src, str):
-            names.append(src)
-        else:
-            names.append(src_name)
-
-        for name in names:
-            metadata = self._get_artifact_metadata(name, uri)
-            self._log_metadata(metadata, self._ARTIFACT_METADATA)
+        metadata = self._get_artifact_metadata(uri, src_name)
+        self._log_metadata(metadata, self._ARTIFACT_METADATA)
 
     # Metadata
 
@@ -342,66 +333,31 @@ class Run:
 
     # Input data
 
-    def fetch_validation_schema(self,
-                                no_cached: bool = False) -> dict:
+    def fetch_validation_schema(self) -> str:
         """
-        Fetch validation schema from backend.
-
-        Parameters
-        ----------
-        no_cached : bool, default = False
-            If True, return validation schema without store it
-            on run.
-
-        Returns
-        -------
-        dict
-
+        Fetch validation schema from backend and return temp file path.
         """
-        if self._val_schema is not None:
-            return deepcopy(self._val_schema)
+        if self.data_resource.schema is None:
+            return
+        if self._val_schema is None:
+            self._val_schema = self.fetch_artifact(
+                                        self.data_resource.schema)
+        return self._val_schema
 
-        obj = self.fetch_artifact(self.data_resource.schema)
-        schema = json.load(obj)
-
-        if no_cached:
-            return schema
-
-        self._val_schema = schema
-        return deepcopy(self._val_schema)
-
-    def fetch_input_data(self,
-                         no_cached: bool = False) -> BytesIO:
+    def fetch_input_data(self) -> str:
         """
-        Fetch data from backend.
-
-        Parameters
-        ----------
-        no_cached : bool, default = False
-            If True, return data without store them
-            on run.
-
-        Returns
-        -------
-        BytesIO
-
+        Fetch data from backend and return temp file path.
         """
-        if self._data is not None:
-            return deepcopy(self._data)
-
-        if isinstance(self.data_resource.path, list):
-            obj = [self.fetch_artifact(i) for i in self.data_resource.path]
-        else:
-            obj = self.fetch_artifact(self.data_resource.path)
-
-        if no_cached:
-            return obj
-
-        self._data = obj
-        return deepcopy(self._data)
+        if self._data is None:
+            path = self.data_resource.path
+            if isinstance(path, list):
+                self._data = [self.fetch_artifact(i) for i in path]
+            else:
+                self._data = self.fetch_artifact(path)
+        return self._data
 
     def fetch_artifact(self,
-                       uri: str) -> BytesIO:
+                       uri: str) -> str:
         """
         Method to fetch artifact from backend.
 
@@ -409,11 +365,6 @@ class Run:
         ----------
         uri : str
             URI of artifact to fetch.
-
-        Returns
-        -------
-        BytesIO
-
         """
         return self._client.fetch_artifact(uri)
 
@@ -433,25 +384,28 @@ class Run:
             Filename for input schema.
 
         """
-        # Data
-        data = self.fetch_input_data(no_cached=True)
-        data, data_name = data_listify(data, data_name)
-        path_list, _ = data_listify(self.data_resource.path, None)
+        #TODO
+        # appiccica metadati
 
-        for idx, path_name in enumerate(path_list):
+        # Data
+        data = self.fetch_input_data()
+        data, data_name = data_listify(data, data_name)
+
+        for idx, path in enumerate(data):
             # try to infer source name if no name is passed
             src_name = data_name[idx] if data_name[idx] is not None \
-                                      else get_name_from_uri(path_name)
+                                      else get_name_from_uri(path)
 
             self.persist_artifact(data[idx], src_name)
 
         # Schema
-        schema = self.fetch_validation_schema(no_cached=True)
-        schema_path = self.data_resource.schema
-        if schema_path is not None:
+        schema = self.fetch_validation_schema()
+        if schema is not None:
             src_name = schema_name if schema_name is not None \
-                                   else get_name_from_uri(schema_path)
+                                   else get_name_from_uri(schema)
             self.persist_artifact(schema, src_name)
+        else:
+            raise Warning("No validation schema is provided!")
 
     def persist_full_report(self,
                             report: dict) -> None:
@@ -465,6 +419,8 @@ class Run:
             A generic report object, specific for the library.
 
         """
+        #TODO
+        # rewrite/rethink this check
         self._check_report(report)
         self.persist_artifact(
                     dict(report),
@@ -484,7 +440,8 @@ class Run:
         """
         if schema is None and self._inf_schema is None:
             return
-        # Maybe to rewrite the check
+        #TODO
+        # rewrite/rethink this check
         self._check_schema(schema)
         self.persist_artifact(dict(self._inf_schema),
                               src_name=self._SCHEMA_INFERRED)
@@ -514,12 +471,12 @@ class Run:
         self._client.persist_artifact(src,
                                       self.run_info.run_artifacts_uri,
                                       src_name=src_name)
-        self._log_artifact(src, src_name)
+        self._log_artifact(src_name)
 
     # Framework wrapper methods
 
     @abstractmethod
-    def _infer_resource(self) -> Any:
+    def infer_resource(self) -> Any:
         """
         Resource inference method.
         """
@@ -529,16 +486,6 @@ class Run:
         """
         Resource validation method.
         """
-
-    # Other
-    def _test_data_access(self) -> None:
-        """
-        Test access to data.
-        """
-        uri = self.data_resource.path
-        if isinstance(uri, list):
-            uri = uri[0]
-        self._direct_access_data = test_uri_access(uri)
 
     # Getter
 
@@ -555,25 +502,10 @@ class Run:
         """
         return self._data_resource
 
-    @property
-    def report(self) -> Any:
-        """
-        Return a report.
-        """
-        return self._report
-
-    @property
-    def inf_schema(self) -> Any:
-        """
-        Return inferred schema.
-        """
-        return self._inf_schema
-
     # Context manager
 
     def __enter__(self) -> Run:
         # Set run status
-        self._test_data_access()
         self.run_info.begin_status = "active"
         self.run_info.started = get_time()
         self._log_run()
@@ -593,6 +525,11 @@ class Run:
             self.run_info.end_status = "failed"
         self.run_info.finished = get_time()
         self._log_run()
+
+        # Cleanup tmp files
+        self._data = None
+        self._val_schema = None
+        clean_all(self._client.tmp_dir)
 
     # Dunders
 

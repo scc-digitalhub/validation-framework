@@ -1,6 +1,6 @@
 from collections import namedtuple
 from json.decoder import JSONDecodeError
-from typing import Optional
+from typing import Optional, Union
 
 from requests.models import Response  # pylint: disable=import-error
 
@@ -104,16 +104,20 @@ class RestMetadataStore(MetadataStore):
                     key = elm.key
 
         dst = self._build_source_destination(dst, src_type, key)
+        auth = self.parse_auth()
 
         if key is None:
             if src_type == self._RUN_METADATA:
                 params = {"overwrite": "true" if overwrite else "false"}
-                response = api_post_call(metadata, dst, self.config, params)
+                response = api_post_call(metadata,
+                                         dst,
+                                         auth=auth,
+                                         params=params)
             else:
-                response = api_post_call(metadata, dst, self.config)
+                response = api_post_call(metadata, dst, auth=auth)
             self._parse_response(response, src_type)
         else:
-            response = api_put_call(metadata, dst, self.config)
+            response = api_put_call(metadata, dst, auth=auth)
 
     def _build_source_destination(self,
                                   dst: str,
@@ -159,3 +163,10 @@ class RestMetadataStore(MetadataStore):
         """
         endpoint = self._endpoints[self._DATA_RESOURCE]
         return parse_url(self.uri_metadata + endpoint)
+
+    def parse_auth(self) -> Union[tuple]:
+        if self.config:
+            if self.config["auth"] == "basic":
+                auth = self.config["user"], self.config["password"]
+            return auth
+        return None

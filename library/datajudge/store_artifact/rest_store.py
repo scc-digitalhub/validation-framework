@@ -1,3 +1,6 @@
+"""
+Implementation of rest artifact store.
+"""
 from typing import Any, IO, Optional, Tuple
 
 from datajudge.store_artifact.artifact_store import ArtifactStore

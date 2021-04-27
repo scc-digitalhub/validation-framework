@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -7,12 +7,11 @@ from requests.models import HTTPError, Response  # pylint: disable=import-error
 
 def api_post_call(data: dict,
                   uri: str,
-                  config: Optional[dict] = None,
+                  auth: Optional[tuple] = None,
                   params: Optional[dict] = None) -> dict:
     """
     REST POST call.
     """
-    auth = parse_auth(config)
     try:
         return requests.post(uri, json=data, auth=auth, params=params)
     except Exception as ex:
@@ -21,11 +20,10 @@ def api_post_call(data: dict,
 
 def api_put_call(data: dict,
                  uri: str,
-                 config: Optional[dict] = None) -> None:
+                 auth: Optional[tuple] = None) -> None:
     """
     REST PUT call.
     """
-    auth = parse_auth(config)
     try:
         return requests.put(uri, json=data, auth=auth)
     except Exception as ex:
@@ -37,14 +35,6 @@ def parse_url(url: str):
     Parse an URL and clean it from double '/' character.
     """
     return urljoin(url, urlparse(url).path.replace('//', '/'))
-
-
-def parse_auth(config: dict) -> Any:
-    if config:
-        if config["auth"] == "basic":
-            auth = config["user"], config["password"]
-        return auth
-    return None
 
 
 def parse_status_code(response: Response) -> None:

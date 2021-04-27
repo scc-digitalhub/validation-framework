@@ -102,6 +102,13 @@ def remove_files(path: str) -> None:
         os.remove(file)
 
 
+def clean_all(path: str):
+    """
+    Remove dir and all it's contents.
+    """
+    shutil.rmtree(path)
+
+
 # Json
 
 def write_json(data: dict,

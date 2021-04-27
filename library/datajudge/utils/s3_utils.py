@@ -3,9 +3,8 @@ Common S3 utils.
 """
 # pylint: disable=invalid-name,import-error,unused-import
 import urllib.parse
-from io import BytesIO
 from pathlib import Path
-from typing import Any, Type
+from typing import Any, IO, Type
 
 import boto3
 import botocore.client as bc
@@ -123,7 +122,7 @@ def put_object(client: s3_client,
 
 
 def upload_fileobj(client: s3_client,
-                   obj: BytesIO,
+                   obj: IO,
                    bucket: str,
                    key: str) -> None:
     """
@@ -135,13 +134,10 @@ def upload_fileobj(client: s3_client,
 
 
 def get_object(client: s3_client,
-            bucket: str,
-            key: str) -> None:
+               bucket: str,
+               key: str) -> None:
     """
-    Download object from S3 into a buffer.
+    Download object from S3.
     """
     obj = client.get_object(Bucket=bucket, Key=key)
-    buff = BytesIO()
-    buff.write(obj['Body'].read())
-    buff.seek(0)
-    return buff
+    return obj['Body'].read()

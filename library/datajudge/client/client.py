@@ -3,12 +3,13 @@ Client module.
 Implementation of a Client object which interact with storages
 and create runs.
 """
+# pylint: disable=import-error,too-many-arguments
 from __future__ import annotations
 
 import typing
-from typing import Any, IO, Optional
+from typing import Any, Optional
 
-from slugify import slugify  # pylint: disable=import-error
+from slugify import slugify
 
 from datajudge.utils.factories import get_store, get_run_flavour
 from datajudge.utils.constants import StoreType
@@ -17,8 +18,6 @@ from datajudge.utils.constants import StoreType
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
     from datajudge.run import Run
-
-# pylint: disable=too-many-arguments
 
 
 class Client:
@@ -48,6 +47,8 @@ class Client:
 
     """
 
+    # add temp folder param
+
     def __init__(self,
                  project_id: Optional[str] = "project",
                  experiment_name: Optional[str] = "experiment",
@@ -56,7 +57,8 @@ class Client:
                  artifact_store_uri: Optional[str] = None,
                  artifact_store_config: Optional[dict] = None,
                  data_store_uri: Optional[str] = None,
-                 data_store_config: Optional[dict] = None
+                 data_store_config: Optional[dict] = None,
+                 tmp_dir: Optional[str] = "./validruns/tmp/"
                  ) -> None:
         """
         Client constructor.
@@ -80,6 +82,8 @@ class Client:
             Data store URI (input data).
         data_store_config : dict, default = None
             Dictionary containing configuration for the store.
+        tmp_dir : str, default = "./validruns/tmp/"
+            Default temporary folder where to download data.
 
         """
 
@@ -88,6 +92,7 @@ class Client:
         self._experiment_id = slugify(experiment_name,
                                       max_length=20,
                                       separator="_")
+        self._tmp_dir = tmp_dir
         self._metadata_store = get_store(StoreType.METADATA.value,
                                          self._project_id,
                                          self._experiment_id,
@@ -200,11 +205,22 @@ class Client:
         self._artifact_store.persist_artifact(src, dst, src_name)
 
     def fetch_artifact(self,
-                       uri: str) -> IO:
+                       uri: str) -> str:
         """
-        Return read data.
+        Fetch artifact from backend and store locally.
+
+        Parameters
+        ----------
+        uri : str
+            URI of artifact to fetch.
+
+        Returns
+        -------
+        str :
+            Path to temp file
+
         """
-        return self._data_store.fetch_artifact(uri)
+        return self._data_store.fetch_artifact(uri, self.tmp_dir)
 
     def get_data_resource_uri(self,
                               run_id: str) -> str:
@@ -213,6 +229,13 @@ class Client:
         metadata store. Return DataResource URI.
         """
         return self._metadata_store.get_data_resource_uri(run_id)
+
+    @property
+    def tmp_dir(self) -> str:
+        """
+        Return temporary dir name.
+        """
+        return self._tmp_dir
 
     def __repr__(self) -> str:
         return str(self.__dict__)

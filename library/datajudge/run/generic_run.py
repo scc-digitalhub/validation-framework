@@ -34,21 +34,14 @@ class GenericRun(Run):
     persist_artifact :
         Method to persist artifacts in the artifact store.
 
-    See also
-    --------
-    Run : Abstract run class.
-
     """
 
     def _update_library_info(self) -> None:
         """
         Update run's info about the validation framework used.
         """
-        self.run_info.validation_library = "-"
-        self.run_info.library_version = "-"
 
-    @staticmethod
-    def _update_data_resource() -> None:
+    def _update_data_resource(self) -> None:
         """
         Update resource with inferred information.
         """
@@ -71,8 +64,8 @@ class GenericRun(Run):
         """
         if report is not None and not isinstance(report, dict):
             raise TypeError("Must be a dictionary!")
-        if report is None and self.report is None:
-            raise TypeError("Must be a dictionary!")
+        elif report is None and self._report is None:
+            raise TypeError("Provide a non empty valid dictionary!")
 
     @staticmethod
     def _infer_schema() -> None:
@@ -98,5 +91,5 @@ class GenericRun(Run):
             raise TypeError("Must be a dictionary!")
         if schema is not None and "fields" not in schema:
             raise KeyError("Malformed dictionary!")
-        if schema is None and self.schema is None:
+        if schema is None and self._schema is None:
             raise TypeError("Provide a non empty valid dictionary!")

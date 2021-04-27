@@ -1,11 +1,13 @@
+"""
+Implementation of local artifact store.
+"""
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, IO, Optional
+from typing import Any, Optional
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import (check_dir, copy_file, get_path,
-                                        make_dir, write_json, write_object,
-                                        open_file)
+                                        make_dir, write_json, write_object)
 from datajudge.utils.uri_utils import check_local_scheme
 
 
@@ -59,14 +61,16 @@ class LocalArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    @staticmethod
-    def fetch_artifact(src: str) -> IO:
+    def fetch_artifact(self, src: str, dst: str) -> str:
         """
         Method to fetch an artifact.
+        For this store, simply returns original file
+        positions.
         """
-        return open_file(src)
+        self._check_temp_dir(dst)
+        return src
 
-    def _check_access_to_storage(self, dst: str) -> None:
+    def _check_access_to_storage(self, dst: str) -> None: # pylint: disable=arguments-differ
         """
         Check if there is access to the storage.
         """

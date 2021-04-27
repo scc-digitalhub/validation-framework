@@ -1,16 +1,20 @@
+"""
+Implementation of S3 artifact store.
+"""
 import json
 from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Any, Optional
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
+from datajudge.utils.file_utils import get_path
 from datajudge.utils.io_utils import wrap_string
 from datajudge.utils.s3_utils import (build_s3_key, build_s3_uri,
                                       check_bucket, get_bucket,
                                       get_object, get_s3_path, put_object,
                                       s3_client_creator, upload_file,
                                       upload_fileobj)
-from datajudge.utils.uri_utils import check_local_scheme
+from datajudge.utils.uri_utils import check_local_scheme, get_name_from_uri
 
 
 class S3ArtifactStore(ArtifactStore):
@@ -48,7 +52,7 @@ class S3ArtifactStore(ArtifactStore):
         """
         Persist an artifact.
         """
-        self._check_access_to_storage(self.bucket)
+        self._check_access_to_storage()
         key = build_s3_key(dst, src_name)
 
         # Local file
@@ -68,12 +72,27 @@ class S3ArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    def fetch_artifact(self, src: str) -> BytesIO:
+    def fetch_artifact(self, src: str, dst: str) -> str:
         """
         Method to fetch an artifact.
         """
+        self._check_temp_dir(dst)
+
         key = get_s3_path(src)
-        return get_object(self.client, self.bucket, key)
+        name = get_name_from_uri(key)
+
+        obj = get_object(self.client, self.bucket, key)
+        filepath = get_path(dst, name)
+        self._store_fetched_artifact(obj, filepath)
+        return filepath
+
+    @staticmethod
+    def _store_fetched_artifact(obj, dst) -> None:
+        """
+        Save artifact locally.
+        """
+        with open(dst, "wb") as file:
+            file.write(obj)
 
     def _check_access_to_storage(self) -> None:
         """
