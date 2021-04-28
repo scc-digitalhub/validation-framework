@@ -3,8 +3,6 @@ GenericRun module.
 Implementation of a Run object that can do basic
 task as logging metrics and persist artifacts.
 """
-from __future__ import annotations
-
 from typing import List, Optional
 
 from datajudge.data import SchemaTuple

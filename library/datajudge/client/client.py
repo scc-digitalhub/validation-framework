@@ -11,8 +11,8 @@ from typing import Any, Optional
 
 from slugify import slugify
 
+from datajudge.utils import config as cfg
 from datajudge.utils.factories import get_store, get_run_flavour
-from datajudge.utils.constants import StoreType
 
 # For type checking -> avoids circular imports
 if typing.TYPE_CHECKING:
@@ -58,7 +58,7 @@ class Client:
                  artifact_store_config: Optional[dict] = None,
                  data_store_uri: Optional[str] = None,
                  data_store_config: Optional[dict] = None,
-                 tmp_dir: Optional[str] = "./validruns/tmp/"
+                 tmp_dir: Optional[str] = cfg.DEFAULT_TMP
                  ) -> None:
         """
         Client constructor.
@@ -93,17 +93,17 @@ class Client:
                                       max_length=20,
                                       separator="_")
         self._tmp_dir = tmp_dir
-        self._metadata_store = get_store(StoreType.METADATA.value,
+        self._metadata_store = get_store(cfg.ST_METADATA,
                                          self._project_id,
                                          self._experiment_id,
                                          metadata_store_uri,
                                          metadata_store_config)
-        self._artifact_store = get_store(StoreType.ARTIFACT.value,
+        self._artifact_store = get_store(cfg.ST_ARTIFACT,
                                          self._project_id,
                                          self._experiment_id,
                                          artifact_store_uri,
                                          artifact_store_config)
-        self._data_store = get_store(StoreType.DATA.value,
+        self._data_store = get_store(cfg.ST_DATA,
                                      self._project_id,
                                      self._experiment_id,
                                      data_store_uri,

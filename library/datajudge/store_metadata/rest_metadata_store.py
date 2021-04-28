@@ -5,7 +5,7 @@ from typing import Optional, Union
 from requests.models import Response  # pylint: disable=import-error
 
 from datajudge.store_metadata.metadata_store import MetadataStore
-from datajudge.utils.constants import ApiEndpoint
+from datajudge.utils import config as cfg
 from datajudge.utils.rest_utils import (api_post_call, api_put_call,
                                         parse_status_code, parse_url)
 
@@ -49,12 +49,12 @@ class RestMetadataStore(MetadataStore):
             self._ARTIFACT_METADATA: []
         }
         self._endpoints = {
-            self._RUN_METADATA: ApiEndpoint.RUN_METADATA.value,
-            self._DATA_RESOURCE: ApiEndpoint.DATA_RESOURCE.value,
-            self._SHORT_REPORT: ApiEndpoint.SHORT_REPORT.value,
-            self._SHORT_SCHEMA: ApiEndpoint.SHORT_SCHEMA.value,
-            self._DATA_PROFILE: ApiEndpoint.DATA_PROFILE.value,
-            self._ARTIFACT_METADATA: ApiEndpoint.ARTIFACT_METADATA.value
+            self._RUN_METADATA: cfg.API_RUN_METADATA,
+            self._DATA_RESOURCE: cfg.API_DATA_RESOURCE,
+            self._SHORT_REPORT: cfg.API_SHORT_REPORT,
+            self._SHORT_SCHEMA: cfg.API_SHORT_SCHEMA,
+            self._DATA_PROFILE: cfg.API_DATA_PROFILE,
+            self._ARTIFACT_METADATA: cfg.API_ARTIFACT_METADATA
         }
 
     def init_run(self,

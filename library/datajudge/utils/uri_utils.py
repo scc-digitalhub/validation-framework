@@ -3,7 +3,7 @@ import urllib.parse
 from pathlib import Path
 from typing import Optional, Tuple
 
-from datajudge.utils.constants import StoreType
+from datajudge.utils import config as cfg
 from datajudge.utils.file_utils import check_file, get_absolute_path
 from datajudge.utils.rest_utils import parse_url
 from datajudge.utils.s3_utils import (build_s3_uri, check_bucket, get_bucket,
@@ -33,7 +33,7 @@ def build_exp_uri(scheme: str,
     """
 
     # Metadata stores
-    if store == StoreType.METADATA.value:
+    if store == cfg.ST_METADATA:
 
         if scheme in LOCAL_SCHEME:
             return get_absolute_path(uri, store, experiment_id)
@@ -46,7 +46,7 @@ def build_exp_uri(scheme: str,
         raise NotImplementedError
 
     # Artifact/data stores
-    elif store in (StoreType.DATA.value, StoreType.ARTIFACT.value):
+    elif store in (cfg.ST_DATA, cfg.ST_ARTIFACT):
 
         if scheme in LOCAL_SCHEME:
             return get_absolute_path(uri, store, experiment_id)
@@ -78,15 +78,6 @@ def get_scheme(uri: str) -> str:
     Get scheme of an URI.
     """
     return parse_uri(uri).scheme
-
-
-def check_local_scheme(uri: str) -> bool:
-    """
-    Check if URI point to local filesystem.
-    """
-    if get_scheme(uri) in LOCAL_SCHEME:
-        return True
-    return False
 
 
 def get_name_from_uri(uri: str) -> str:

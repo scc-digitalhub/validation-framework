@@ -10,8 +10,6 @@ from io import BytesIO
 from pathlib import Path
 from typing import IO, Union
 
-from datajudge.utils.io_utils import wrap_bytes
-
 
 # Directories
 
@@ -19,9 +17,10 @@ def check_dir(path: str) -> bool:
     """
     Check if a directory exists.
     """
-    if Path(path).is_dir():
-        return True
-    return False
+    try:
+        return Path(path).is_dir()
+    except OSError:
+        return False
 
 
 def check_abs_path(path: str) -> bool:
@@ -63,9 +62,20 @@ def check_file(path: str) -> bool:
     """
     Check if the resource is a file.
     """
-    if Path(path).is_file():
-        return True
-    return False
+    try:
+        return Path(path).is_file()
+    except OSError:
+        return False
+
+
+def check_path(path: str) -> bool:
+    """
+    Check if the resource exists.
+    """
+    try:
+        return Path(path).exists()
+    except OSError:
+        return False
 
 
 def check_file_dimension(file_uri: str) -> int:
@@ -102,11 +112,22 @@ def remove_files(path: str) -> None:
         os.remove(file)
 
 
-def clean_all(path: str):
+def clean_all(path: str) -> None:
     """
     Remove dir and all it's contents.
     """
     shutil.rmtree(path)
+
+
+# Text
+
+def write_text(string: str,
+               path: Union[str, Path]) -> None:
+    """
+    Write text on a file.
+    """
+    with open(path, "w") as file:
+        file.write(string)
 
 
 # Json
@@ -137,9 +158,8 @@ def write_object(buff: IO,
     Save a buffer as file.
     """
     buff.seek(0)
-    if isinstance(buff, BytesIO):
-        buff = wrap_bytes(buff)
-    with open(dst, "w") as file:
+    write_mode = "wb" if isinstance(buff, BytesIO) else "w"
+    with open(dst, write_mode) as file:
         shutil.copyfileobj(buff, file)
 
 

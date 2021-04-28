@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Any, Optional
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
-from datajudge.utils.file_utils import (check_dir, copy_file, get_path,
-                                        make_dir, write_json, write_object)
-from datajudge.utils.uri_utils import check_local_scheme
+from datajudge.utils.file_utils import (check_dir, check_path, copy_file,
+                                        get_path, make_dir, write_json,
+                                        write_object)
 
 
 class LocalArtifactStore(ArtifactStore):
@@ -43,12 +43,9 @@ class LocalArtifactStore(ArtifactStore):
         if src_name is not None:
             dst = get_path(dst, src_name)
 
-        # Local file
-        if isinstance(src, (str, Path)):
-            if check_local_scheme(src):
-                copy_file(src, dst)
-            else:
-                raise OSError("Not a local file!")
+        # Local file or dump string
+        if isinstance(src, (str, Path)) and check_path(src):
+            copy_file(src, dst)
 
         # Dictionary
         elif isinstance(src, dict) and src_name is not None:
@@ -70,7 +67,8 @@ class LocalArtifactStore(ArtifactStore):
         self._check_temp_dir(dst)
         return src
 
-    def _check_access_to_storage(self, dst: str) -> None: # pylint: disable=arguments-differ
+    # pylint: disable=arguments-differ
+    def _check_access_to_storage(self, dst: str) -> None:
         """
         Check if there is access to the storage.
         """

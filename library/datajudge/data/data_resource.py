@@ -23,8 +23,7 @@ class DataResource:
     Attributes
     ----------
     path : str
-        Required. An URI (or a list of URI) that point to
-        data to be validated.
+        Required. An URI (or a list of URI) that point to data.
     name : str, default = None
         Name of the Data Resource.
     title : str, default = None

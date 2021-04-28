@@ -11,7 +11,7 @@ from typing import Optional, Tuple, Union
 from datajudge.run import FrictionlessRun, GenericRun, RunInfo
 from datajudge.store_artifact import LocalArtifactStore, S3ArtifactStore
 from datajudge.store_metadata import LocalMetadataStore, RestMetadataStore
-from datajudge.utils.constants import StoreType
+from datajudge.utils import config as cfg
 from datajudge.utils.uri_utils import resolve_uri
 
 if typing.TYPE_CHECKING:
@@ -62,13 +62,17 @@ def get_store(store_type,
                                   project_id)
 
     try:
-        if store_type == StoreType.METADATA.value:
+        if store_type == cfg.ST_METADATA:
             return METADATA_STORE_REGISTRY[scheme](new_uri, config)
-        if store_type == StoreType.ARTIFACT.value:
+
+        if store_type == cfg.ST_ARTIFACT:
             return ARTIFACT_STORE_REGISTRY[scheme](new_uri, config)
-        if store_type == StoreType.DATA.value:
+
+        if store_type == cfg.ST_DATA:
             return DATA_STORE_REGISTRY[scheme](new_uri, config, True)
+
         raise NotImplementedError
+
     except KeyError as k_err:
         raise KeyError from k_err
 
