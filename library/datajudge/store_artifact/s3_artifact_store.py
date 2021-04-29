@@ -48,8 +48,9 @@ class S3ArtifactStore(ArtifactStore):
     def persist_artifact(self,
                          src: Any,
                          dst: str,
-                         src_name: Optional[str] = None,
-                         metadata: dict) -> None:
+                         src_name: str,
+                         metadata: dict
+                         ) -> None:
         """
         Persist an artifact.
         """

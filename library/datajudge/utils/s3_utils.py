@@ -4,7 +4,7 @@ Common S3 utils.
 # pylint: disable=invalid-name,import-error,unused-import
 import urllib.parse
 from pathlib import Path
-from typing import Any, IO, Optional, Type
+from typing import Any, IO, Type
 
 import boto3
 import botocore.client as bc
@@ -106,10 +106,11 @@ def upload_file(client: s3_client,
     """
     Upload file to S3.
     """
+    ex_args = {"Metadata": metadata}
     client.upload_file(Filename=src,
                        Bucket=bucket,
                        Key=key,
-                       Metadata=metadata)
+                       ExtraArgs=ex_args)
 
 
 def put_object(client: s3_client,

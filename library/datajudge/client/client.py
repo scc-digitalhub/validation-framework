@@ -187,7 +187,7 @@ class Client:
     def persist_artifact(self,
                          src: Any,
                          dst: str,
-                         src_name: Optional[str] = None,
+                         src_name: str,
                          metadata: dict
                          ) -> None:
         """

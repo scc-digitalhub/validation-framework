@@ -28,7 +28,8 @@ class RestArtifactStore(ArtifactStore):
     def persist_artifact(self,
                          src: Any,
                          dst: str,
-                         src_name: Optional[str] = None
+                         src_name: str,
+                         metadata: dict
                          ) -> Tuple[str, str]:
         """
         Persist an artifact.
