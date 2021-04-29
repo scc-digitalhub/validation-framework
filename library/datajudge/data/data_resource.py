@@ -84,6 +84,22 @@ class DataResource:
         self.sources = sources
         self.licenses = licenses
 
+    def get_metadata(self) -> dict:
+        """
+        Return metadata for artifacts.
+        """
+        base = {
+            "name": self.name,
+            "profile": self.profile,
+            "title": self.title,
+            "mediatype": self.mediatype,
+            "encoding": self.encoding
+        }
+        metadata = {
+            k: v for k, v in base.items() if v is not None
+        }
+        return metadata
+
     def to_dict(self) -> dict:
         """
         Return dictionary of non null values.

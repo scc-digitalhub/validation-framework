@@ -33,7 +33,8 @@ class LocalArtifactStore(ArtifactStore):
     def persist_artifact(self,
                          src: Any,
                          dst: str,
-                         src_name: Optional[str] = None
+                         src_name: Optional[str] = None,
+                         metadata: dict
                          ) -> None:
         """
         Persist an artifact.

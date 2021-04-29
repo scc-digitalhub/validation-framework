@@ -48,7 +48,8 @@ class S3ArtifactStore(ArtifactStore):
     def persist_artifact(self,
                          src: Any,
                          dst: str,
-                         src_name: Optional[str] = None) -> None:
+                         src_name: Optional[str] = None,
+                         metadata: dict) -> None:
         """
         Persist an artifact.
         """
@@ -57,17 +58,17 @@ class S3ArtifactStore(ArtifactStore):
 
         # Local file
         if isinstance(src, (str, Path)) and check_path(src):
-            upload_file(self.client, src, self.bucket, key)
+            upload_file(self.client, src, self.bucket, key, metadata)
 
         # Dictionary
         elif isinstance(src, dict) and src_name is not None:
             src = json.dumps(src)
-            put_object(self.client, src, self.bucket, key)
+            put_object(self.client, src, self.bucket, key, metadata)
 
         # StringIO/BytesIO buffer
         elif isinstance(src, (BytesIO, StringIO)) and src_name is not None:
             src = wrap_string(src)
-            upload_fileobj(self.client, src, self.bucket, key)
+            upload_fileobj(self.client, src, self.bucket, key, metadata)
 
         else:
             raise NotImplementedError

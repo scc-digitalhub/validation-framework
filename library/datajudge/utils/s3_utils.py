@@ -4,7 +4,7 @@ Common S3 utils.
 # pylint: disable=invalid-name,import-error,unused-import
 import urllib.parse
 from pathlib import Path
-from typing import Any, IO, Type
+from typing import Any, IO, Optional, Type
 
 import boto3
 import botocore.client as bc
@@ -100,37 +100,46 @@ def get_size(src: Any) -> None:
 def upload_file(client: s3_client,
                 src: str,
                 bucket: str,
-                key: str) -> None:
+                key: str,
+                metadata: dict
+                ) -> None:
     """
     Upload file to S3.
     """
     client.upload_file(Filename=src,
                        Bucket=bucket,
-                       Key=key)
+                       Key=key,
+                       Metadata=metadata)
 
 
 def put_object(client: s3_client,
                obj: str,
                bucket: str,
-               key: str) -> None:
+               key: str,
+               metadata: dict
+               ) -> None:
     """
     Upload json to S3.
     """
     client.put_object(Body=obj,
                       Bucket=bucket,
-                      Key=key)
+                      Key=key,
+                      Metadata=metadata)
 
 
 def upload_fileobj(client: s3_client,
                    obj: IO,
                    bucket: str,
-                   key: str) -> None:
+                   key: str,
+                   metadata: dict
+                   ) -> None:
     """
     Upload fileobject to S3.
     """
     client.upload_fileobj(obj,
                           Bucket=bucket,
-                          Key=key)
+                          Key=key,
+                          Metadata=metadata)
 
 
 def get_object(client: s3_client,

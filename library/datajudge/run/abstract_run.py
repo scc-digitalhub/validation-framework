@@ -337,14 +337,12 @@ class Run:
             Parameters for pandas_profiling.ProfileReport.
 
         """
-        if self._profile is None:
-            file_format, pandas_kwargs = self._parse_inference()
-            df = self._read_df(self.fetch_input_data(),
-                            file_format,
-                            **pandas_kwargs)
-            profile = ProfileReport(df, **kwargs)
-            self._profile = profile
-        return self._profile
+        file_format, pandas_kwargs = self._parse_inference()
+        df = self._read_df(self.fetch_input_data(),
+                           file_format,
+                           **pandas_kwargs)
+        profile = ProfileReport(df, **kwargs)
+        self._profile = profile
 
     # Artifact metadata
 
@@ -449,8 +447,7 @@ class Run:
             Filename for input schema.
 
         """
-        # TODO
-        # appiccica metadati
+        metadata = self.data_resource.get_metadata()
 
         # Data
         data = self.fetch_input_data()
@@ -461,14 +458,14 @@ class Run:
             src_name = data_name[idx] if data_name[idx] is not None \
                                       else get_name_from_uri(path)
 
-            self.persist_artifact(data[idx], src_name)
+            self.persist_artifact(data[idx], src_name, metadata)
 
         # Schema
         schema = self.fetch_validation_schema()
         if schema is not None:
             src_name = schema_name if schema_name is not None \
                                    else get_name_from_uri(schema)
-            self.persist_artifact(schema, src_name)
+            self.persist_artifact(schema, src_name, metadata)
         else:
             warnings.warn("No validation schema is provided!")
             return
@@ -520,11 +517,11 @@ class Run:
         Shortcut to persist the profile made with pandas
         profiling.
         """
-        if self._profile is None and profile is None:
+        if self.profile is None and profile is None:
             warnings.warn("No profile provided, skipping!")
             return
         if profile is None:
-            string_html = self._profile.to_html()
+            string_html = self.profile.to_html()
         else:
             if not isinstance(profile, ProfileReport):
                 raise TypeError("Invalid ProfileReport object!")
@@ -535,7 +532,8 @@ class Run:
 
     def persist_artifact(self,
                          src: Any,
-                         src_name: Optional[str] = None
+                         src_name: Optional[str] = None,
+                         metadata: dict = {}
                          ) -> None:
         """
         Method to persist artifacts in the artifact store.
@@ -546,11 +544,14 @@ class Run:
             One or a list of URI described by a string, or a dictionary.
         src_name : str, default = None
             Filename. Required only if src is a dictionary.
+        metadata: dict, default = None
+            Optional metadata to attach on artifact.
 
         """
         self._client.persist_artifact(src,
                                       self.run_info.run_artifacts_uri,
-                                      src_name=src_name)
+                                      src_name=src_name,
+                                      metadata=metadata)
         self._log_artifact(src_name)
 
     # Frameworks wrapper methods
@@ -581,6 +582,13 @@ class Run:
         Return a DataResource.
         """
         return self._data_resource
+
+    @property
+    def profile(self) -> ProfileReport:
+        """
+        Return ProfileReport.
+        """
+        return self._profile
 
     # Context manager
 

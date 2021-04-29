@@ -187,7 +187,8 @@ class Client:
     def persist_artifact(self,
                          src: Any,
                          dst: str,
-                         src_name: Optional[str] = None
+                         src_name: Optional[str] = None,
+                         metadata: dict
                          ) -> None:
         """
         Method to persist artifacts in the artifact store.
@@ -200,9 +201,11 @@ class Client:
             URI destination of artifact.
         src_name : str, default = None
             Filename. Required only if src is a dictionary.
+        metadata: dict, default = None
+            Optional metadata to attach on artifact.
 
         """
-        self._artifact_store.persist_artifact(src, dst, src_name)
+        self._artifact_store.persist_artifact(src, dst, src_name, metadata)
 
     def fetch_artifact(self,
                        uri: str) -> str:

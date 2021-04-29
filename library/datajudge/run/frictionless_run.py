@@ -144,7 +144,7 @@ class FrictionlessRun(Run):
 
         pandas_args = {
             "sep": ",",
-            "encoding": "tf-8"
+            "encoding": "utf-8"
         }
 
         file_format = self._inferred["format"]

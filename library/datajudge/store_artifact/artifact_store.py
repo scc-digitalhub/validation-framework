@@ -46,7 +46,9 @@ class ArtifactStore:
     def persist_artifact(self,
                          src: Any,
                          dst: str,
-                         src_name: str) -> None:
+                         src_name: str,
+                         metadata: dict
+                         ) -> None:
         """
         Method to persist an artifact.
         """
