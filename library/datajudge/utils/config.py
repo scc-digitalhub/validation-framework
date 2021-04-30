@@ -32,12 +32,20 @@ MT_SHORT_SCHEMA = "schema"
 MT_DATA_PROFILE = "profile"
 MT_ARTIFACT_METADATA = "artifact"
 
-
 # STORE TYPE
 ST_METADATA = "metadata"
 ST_ARTIFACT = "artifact"
 ST_DATA = "data"
 
 # DEFAULT FOLDERS
-DEFAULT_LOCAL = "./validruns"
+DEFAULT_LOCAL = "./djruns"
 DEFAULT_TMP = DEFAULT_LOCAL + "/tmp"
+
+# DEFAULT NAMES
+DEFAULT_PROJ = "project"
+DEFAULT_EXP = "experiment"
+
+# SCHEMES
+LOCAL_SCHEME = ["", "file"]
+REST_SCHEME = ["http", "https"]
+S3_SCHEME = ["s3"]

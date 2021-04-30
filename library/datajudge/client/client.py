@@ -1,6 +1,6 @@
 """
 Client module.
-Implementation of a Client object which interact with storages
+Implementation of a Client object to interact with storages
 and create runs.
 """
 # pylint: disable=import-error,too-many-arguments
@@ -28,9 +28,10 @@ class Client:
     It builds three storages, one for metadata and two for artifacts.
 
     Metadata are a collection of data describing runs, data resources/packages,
-    reports, schemas and artifacts metadata.
+    reports, schemas, profiling and artifacts metadata.
 
-    Artifacts are files or objects that are read as buffer or stored as files.
+    Artifacts are files or objects. They can be input data/validation schemas,
+    output file produced by the run, like reports, data profiles, etc.
 
     Methods
     -------
@@ -50,13 +51,13 @@ class Client:
     # add temp folder param
 
     def __init__(self,
-                 project_id: Optional[str] = "project",
-                 experiment_name: Optional[str] = "experiment",
-                 metadata_store_uri: Optional[str] = None,
+                 project_id: Optional[str] = cfg.DEFAULT_PROJ,
+                 experiment_name: Optional[str] = cfg.DEFAULT_EXP,
+                 metadata_store_uri: Optional[str] = cfg.DEFAULT_LOCAL,
                  metadata_store_config: Optional[dict] = None,
-                 artifact_store_uri: Optional[str] = None,
+                 artifact_store_uri: Optional[str] = cfg.DEFAULT_LOCAL,
                  artifact_store_config: Optional[dict] = None,
-                 data_store_uri: Optional[str] = None,
+                 data_store_uri: Optional[str] = cfg.DEFAULT_LOCAL,
                  data_store_config: Optional[dict] = None,
                  tmp_dir: Optional[str] = cfg.DEFAULT_TMP
                  ) -> None:
@@ -65,24 +66,24 @@ class Client:
 
         Parameters
         ----------
-        project_id : str, default = 'project'
+        project_id : str
             The id of the project, needed for the rest metadata store.
-        experiment_name : str, default = 'experiment'
+        experiment_name : str
             Experiment name. An experiment is a logical unit for keeping
             together the validation runs made on a Data Package/Data Resource.
-        metadata_store_uri : str, default = None
+        metadata_store_uri : str
             Metadata store URI.
-        metadata_store_config : dict, default = None
+        metadata_store_config : dict
             Dictionary containing configuration for the store.
-        artifact_store_uri : str, default = None
+        artifact_store_uri : str
             Artifact store URI (output data).
-        artifact_store_config : dict, default = None
+        artifact_store_config : dict
             Dictionary containing configuration for the store.
-        data_store_uri : str, default = None
+        data_store_uri : str
             Data store URI (input data).
-        data_store_config : dict, default = None
+        data_store_config : dict
             Dictionary containing configuration for the store.
-        tmp_dir : str, default = "./validruns/tmp/"
+        tmp_dir : str
             Default temporary folder where to download data.
 
         """

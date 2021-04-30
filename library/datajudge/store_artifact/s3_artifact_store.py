@@ -9,11 +9,10 @@ from typing import Any, Optional
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import check_path, get_path
 from datajudge.utils.io_utils import wrap_string
-from datajudge.utils.s3_utils import (build_s3_key, build_s3_uri,
-                                      check_bucket, get_bucket,
-                                      get_object, get_s3_path, put_object,
-                                      s3_client_creator, upload_file,
-                                      upload_fileobj)
+from datajudge.utils.s3_utils import (build_s3_key, build_s3_uri, check_bucket,
+                                      get_bucket, get_object, get_s3_path,
+                                      put_object, s3_client_creator,
+                                      upload_file, upload_fileobj)
 from datajudge.utils.uri_utils import get_name_from_uri
 
 

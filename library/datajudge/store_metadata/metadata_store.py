@@ -1,3 +1,6 @@
+"""
+Abstract class for metadata store.
+"""
 import uuid
 from abc import ABCMeta, abstractmethod
 from typing import Optional

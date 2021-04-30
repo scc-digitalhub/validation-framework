@@ -137,10 +137,11 @@ def upload_fileobj(client: s3_client,
     """
     Upload fileobject to S3.
     """
+    ex_args = {"Metadata": metadata}
     client.upload_fileobj(obj,
                           Bucket=bucket,
                           Key=key,
-                          Metadata=metadata)
+                          ExtraArgs=ex_args)
 
 
 def get_object(client: s3_client,

@@ -1,6 +1,5 @@
 """
-AbstractRun module.
-Implementations of a Run abstract class.
+Interface for specific library runs.
 """
 # pylint: disable=import-error,invalid-name
 from __future__ import annotations
@@ -16,7 +15,7 @@ from pandas_profiling import ProfileReport
 from datajudge.data import ShortReport, ShortSchema
 from datajudge.utils import config as cfg
 from datajudge.utils.file_utils import clean_all
-from datajudge.utils.io_utils import write_stringio
+from datajudge.utils.io_utils import write_bytesio
 from datajudge.utils.time_utils import get_time
 from datajudge.utils.uri_utils import get_name_from_uri
 from datajudge.utils.utils import data_listify
@@ -551,7 +550,7 @@ class Run:
                 raise TypeError("Invalid ProfileReport object!")
             string_html = profile.to_html()
 
-        stringio = write_stringio(string_html)
+        stringio = write_bytesio(string_html)
         self.persist_artifact(stringio, self._FULL_PROFILE)
 
     def persist_artifact(self,

@@ -1,3 +1,6 @@
+"""
+Common time utils.
+"""
 from datetime import datetime
 
 

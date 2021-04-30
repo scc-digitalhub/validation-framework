@@ -1,3 +1,6 @@
+"""
+Implementation of local metadata store.
+"""
 from typing import Optional
 
 from datajudge.store_metadata.metadata_store import MetadataStore

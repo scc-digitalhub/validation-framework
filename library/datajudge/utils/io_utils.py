@@ -44,9 +44,9 @@ def wrap_string(src: IO) -> BytesIO:
     """
     Wrap a StringIO in a BytesIO.
     """
-    src.seek(0)
     if isinstance(src, StringIO):
         src = BytesIOWrapper(src)
+    src.seek(0)
     return src
 
 
@@ -58,3 +58,13 @@ def write_stringio(src: str) -> StringIO:
     stringio.write(src)
     stringio.seek(0)
     return stringio
+
+
+def write_bytesio(src: str) -> BytesIO:
+    """
+    Write string in ByteStream BytesIO.
+    """
+    bytesio = BytesIO()
+    bytesio.write(src.encode())
+    bytesio.seek(0)
+    return bytesio

@@ -1,3 +1,6 @@
+"""
+Implementation of REST metadata store designed by Digital Society Lab.
+"""
 from collections import namedtuple
 from json.decoder import JSONDecodeError
 from typing import Optional, Union
@@ -61,16 +64,8 @@ class RestMetadataStore(MetadataStore):
                  run_id: str,
                  overwrite: bool) -> None:
         """
-        Check if run id is cached in the store keys vault.
-        Decide then if overwrite or not run metadata.
-
-        Parameters
-        ----------
-        run_id : str
-            A run id.
-        overwrite : bool
-            If True, overwrite run related metadata.
-
+        Check if run id is stored in the keys vault.
+        Decide then if overwrite or not all runs metadata.
         """
         exist = False
         for run in self._key_vault[self._RUN_METADATA]:
@@ -104,7 +99,7 @@ class RestMetadataStore(MetadataStore):
                     key = elm.key
 
         dst = self._build_source_destination(dst, src_type, key)
-        auth = self.parse_auth()
+        auth = self._parse_auth()
 
         if key is None:
             if src_type == self._RUN_METADATA:
@@ -164,8 +159,8 @@ class RestMetadataStore(MetadataStore):
         endpoint = self._endpoints[self._DATA_RESOURCE]
         return parse_url(self.uri_metadata + endpoint)
 
-    def parse_auth(self) -> Union[tuple]:
-        if self.config:
+    def _parse_auth(self) -> Union[tuple]:
+        if self.config is not None:
             if self.config["auth"] == "basic":
                 auth = self.config["user"], self.config["password"]
             return auth

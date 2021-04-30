@@ -1,3 +1,6 @@
+"""
+Common generic utils.
+"""
 from typing import Any, Tuple
 
 
