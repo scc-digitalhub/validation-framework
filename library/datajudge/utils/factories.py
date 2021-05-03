@@ -9,8 +9,10 @@ import typing
 from typing import Optional, Tuple, Union
 
 from datajudge.run import FrictionlessRun, GenericRun, RunInfo
-from datajudge.store_artifact import LocalArtifactStore, S3ArtifactStore
-from datajudge.store_metadata import LocalMetadataStore, RestMetadataStore
+from datajudge.store_artifact import (AzureArtifactStore, LocalArtifactStore,
+                                      RestArtifactStore, S3ArtifactStore)
+from datajudge.store_metadata import (DigitalHubMetadataStore,
+                                      LocalMetadataStore)
 from datajudge.utils import config as cfg
 from datajudge.utils.uri_utils import resolve_uri
 
@@ -25,20 +27,28 @@ if typing.TYPE_CHECKING:
 METADATA_STORE_REGISTRY = {
     "": LocalMetadataStore,
     "file": LocalMetadataStore,
-    "http": RestMetadataStore,
-    "https": RestMetadataStore
+    "http": DigitalHubMetadataStore,
+    "https": DigitalHubMetadataStore,
 }
 
 ARTIFACT_STORE_REGISTRY = {
     "": LocalArtifactStore,
     "file": LocalArtifactStore,
     "s3": S3ArtifactStore,
+    "wasb": AzureArtifactStore,
+    "wasbs": AzureArtifactStore,
+    "http": RestArtifactStore,
+    "https": RestArtifactStore,
 }
 
 DATA_STORE_REGISTRY = {
     "": LocalArtifactStore,
     "file": LocalArtifactStore,
     "s3": S3ArtifactStore,
+    "wasb": AzureArtifactStore,
+    "wasbs": AzureArtifactStore,
+    "http": RestArtifactStore,
+    "https": RestArtifactStore,
 }
 
 RUN_REGISTRY = {
@@ -60,7 +70,6 @@ def get_store(store_type,
                                   experiment_id,
                                   store_type,
                                   project_id)
-
     try:
         if store_type == cfg.ST_METADATA:
             return METADATA_STORE_REGISTRY[scheme](new_uri, config)

@@ -17,10 +17,6 @@ class LocalArtifactStore(ArtifactStore):
 
     Allows the client to interact with local filesystem.
 
-    See also
-    --------
-    ArtifactStore : Abstract artifact store class.
-
     """
 
     def __init__(self,

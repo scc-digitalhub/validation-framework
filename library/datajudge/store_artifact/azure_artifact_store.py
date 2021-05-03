@@ -1,5 +1,5 @@
 """
-Implementation of S3 artifact store.
+Implementation of azure artifact store.
 """
 import json
 from io import BytesIO, StringIO
@@ -7,30 +7,28 @@ from pathlib import Path
 from typing import Any, Optional
 
 # pylint: disable=import-error
-import boto3
-from botocore.client import Config
+from azure.storage.blob import BlobServiceClient
 from datajudge.store_artifact.artifact_store import ArtifactStore
+from datajudge.utils.azure_utils import (check_container, get_object,
+                                         upload_file, upload_fileobj)
 from datajudge.utils.file_utils import check_path, get_path
 from datajudge.utils.io_utils import wrap_string, write_bytesio
-from datajudge.utils.s3_utils import (check_bucket, get_object, upload_file,
-                                      upload_fileobj)
-from datajudge.utils.typing import s3_client
 from datajudge.utils.uri_utils import (get_name_from_uri, get_uri_netloc,
                                        get_uri_path, new_uri_path)
 
 
-class S3ArtifactStore(ArtifactStore):
+class AzureArtifactStore(ArtifactStore):
     """
-    S3 artifact store object.
+    Azure artifact store object.
 
-    Allows the client to interact with S3 based storages.
-    The credentials keys must be the same as the keywords arguments
-    of boto3.client() method.
+    Allows the client to interact with azure based storages.
+    The credentials keys ...
 
     Attributes
     ----------
     client :
-        An S3 client to interact with the storage.
+        An Azure BlobServiceClient client to interact with the
+        storage.
 
     """
 
@@ -39,11 +37,14 @@ class S3ArtifactStore(ArtifactStore):
                  config: Optional[dict] = None,
                  data: bool = False) -> None:
         super().__init__(artifact_uri, config, data)
-
+        # Get BlobService Client
         self.client = self._get_client()
 
-        self.bucket = get_uri_netloc(self.artifact_uri)
+        self.container = get_uri_netloc(self.artifact_uri)
         self._check_access_to_storage()
+
+        # Get container client
+        self.cont_client = self.client.get_container_client(self.container)
 
     def persist_artifact(self,
                          src: Any,
@@ -59,18 +60,18 @@ class S3ArtifactStore(ArtifactStore):
 
         # Local file
         if isinstance(src, (str, Path)) and check_path(src):
-            upload_file(self.client, src, self.bucket, key, metadata)
+            upload_file(self.cont_client, key, src, metadata)
 
         # Dictionary
         elif isinstance(src, dict) and src_name is not None:
             src = json.dumps(src)
             src = write_bytesio(src)
-            upload_fileobj(self.client, src, self.bucket, key, metadata)
+            upload_fileobj(self.cont_client, key, src, metadata)
 
         # StringIO/BytesIO buffer
         elif isinstance(src, (BytesIO, StringIO)) and src_name is not None:
             src = wrap_string(src)
-            upload_fileobj(self.client, src, self.bucket, key, metadata)
+            upload_fileobj(self.cont_client, key, src, metadata)
 
         else:
             raise NotImplementedError
@@ -81,7 +82,7 @@ class S3ArtifactStore(ArtifactStore):
         """
         # Get file from remote
         key = get_uri_path(src)
-        obj = get_object(self.client, self.bucket, key)
+        obj = get_object(self.cont_client, key)
 
         # Store locally
         self._check_temp_dir(dst)
@@ -103,8 +104,8 @@ class S3ArtifactStore(ArtifactStore):
         """
         Check access to storage.
         """
-        if not check_bucket(self.client, self.bucket):
-            raise RuntimeError("No access to s3 bucket!")
+        if not check_container(self.cont_client):
+            raise RuntimeError("No access to Azure container!")
 
     def get_run_artifacts_uri(self, run_id: str) -> str:
         """
@@ -112,11 +113,24 @@ class S3ArtifactStore(ArtifactStore):
         """
         return new_uri_path(self.artifact_uri, run_id)
 
-    def _get_client(self) -> s3_client:
+    def _get_client(self) -> BlobServiceClient:
         """
-        Return boto client.
+        Return BlobServiceClient client.
         """
-        return boto3.client('s3',
-                            config=Config(signature_version='s3v4'),
-                            region_name='us-east-1',
-                            **self.config)
+        if "connection_string" in self.config:
+            client = BlobServiceClient.from_connection_string(
+                conn_str=self.config["connection_string"]
+            )
+        elif ("azure_account_name" in self.config and
+              "azure_access_key" in self.config):
+            name = self.config['azure_account_name']
+            url = f"https://{name}.blob.core.windows.net"
+            client = BlobServiceClient(
+                account_url=url,
+                credential=self.config["azure_access_key"]
+            )
+        else:
+            raise Exception(
+                "You need to provide valid credentials!"
+            )
+        return client

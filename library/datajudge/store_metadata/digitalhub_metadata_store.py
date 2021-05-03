@@ -15,7 +15,7 @@ from datajudge.utils.rest_utils import (api_post_call, api_put_call,
 KeyPairs = namedtuple("KeyPairs", ("run_id", "key"))
 
 
-class RestMetadataStore(MetadataStore):
+class DigitalHubMetadataStore(MetadataStore):
     """
     Rest metadata store object.
 
@@ -32,10 +32,6 @@ class RestMetadataStore(MetadataStore):
     -------
     _parse_response :
         Parse the JSON response from the backend APIs.
-
-    See also
-    --------
-    MetadataStore : Abstract metadata store class.
 
     """
 

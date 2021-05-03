@@ -1,5 +1,5 @@
 """
-Configuration for filenames, endpoints... .
+Configuration for filenames, endpoints, etc.
 """
 
 # FILENAMES METADATA
@@ -17,10 +17,11 @@ FN_INFERRED_SCHEMA = "inferred_schema.json"
 FN_FULL_PROFILE = "profile_report.html"
 
 # API ENDPOINTS
+API_BASE = "/api/project/"
 API_RUN_METADATA = "/run-metadata"
 API_DATA_RESOURCE = "/data-resource"
-API_SHORT_REPORT = "/report-short"
-API_SHORT_SCHEMA = "/schema-short"
+API_SHORT_REPORT = "/short-report"
+API_SHORT_SCHEMA = "/short-schema"
 API_DATA_PROFILE = "/data-profile"
 API_ARTIFACT_METADATA = "/artifact-metadata"
 
@@ -49,3 +50,4 @@ DEFAULT_EXP = "experiment"
 LOCAL_SCHEME = ["", "file"]
 REST_SCHEME = ["http", "https"]
 S3_SCHEME = ["s3"]
+AZURE_SCHEME = ["wasb", "wasbs"]

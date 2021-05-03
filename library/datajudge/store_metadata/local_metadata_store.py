@@ -27,10 +27,6 @@ class LocalMetadataStore(MetadataStore):
     _check_dst_folder :
         Check if run folder already exist, otherwise it creates it.
 
-    See also
-    --------
-    MetadataStore : Abstract metadata store class.
-
     """
 
     def __init__(self,

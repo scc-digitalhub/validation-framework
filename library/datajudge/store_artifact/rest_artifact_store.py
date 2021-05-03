@@ -12,10 +12,6 @@ class RestArtifactStore(ArtifactStore):
 
     Allows the client to interact with remote FTP/HTTP store.
 
-    See also
-    --------
-    ArtifactStore : Abstract artifact store class.
-
     """
 
     def __init__(self,
