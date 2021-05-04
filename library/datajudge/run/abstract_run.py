@@ -16,9 +16,8 @@ from datajudge.data import ShortReport, ShortSchema
 from datajudge.utils import config as cfg
 from datajudge.utils.file_utils import clean_all
 from datajudge.utils.io_utils import write_bytesio
-from datajudge.utils.time_utils import get_time
 from datajudge.utils.uri_utils import get_name_from_uri
-from datajudge.utils.utils import data_listify
+from datajudge.utils.utils import data_listify, get_time
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client

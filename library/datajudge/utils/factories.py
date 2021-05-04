@@ -10,7 +10,8 @@ from typing import Optional, Tuple, Union
 
 from datajudge.run import FrictionlessRun, GenericRun, RunInfo
 from datajudge.store_artifact import (AzureArtifactStore, LocalArtifactStore,
-                                      RestArtifactStore, S3ArtifactStore)
+                                      RestArtifactStore, S3ArtifactStore,
+                                      FTPArtifactStore)
 from datajudge.store_metadata import (DigitalHubMetadataStore,
                                       LocalMetadataStore)
 from datajudge.utils import config as cfg
@@ -39,16 +40,7 @@ ARTIFACT_STORE_REGISTRY = {
     "wasbs": AzureArtifactStore,
     "http": RestArtifactStore,
     "https": RestArtifactStore,
-}
-
-DATA_STORE_REGISTRY = {
-    "": LocalArtifactStore,
-    "file": LocalArtifactStore,
-    "s3": S3ArtifactStore,
-    "wasb": AzureArtifactStore,
-    "wasbs": AzureArtifactStore,
-    "http": RestArtifactStore,
-    "https": RestArtifactStore,
+    "ftp": FTPArtifactStore,
 }
 
 RUN_REGISTRY = {
@@ -78,7 +70,7 @@ def get_store(store_type,
             return ARTIFACT_STORE_REGISTRY[scheme](new_uri, config)
 
         if store_type == cfg.ST_DATA:
-            return DATA_STORE_REGISTRY[scheme](new_uri, config, True)
+            return ARTIFACT_STORE_REGISTRY[scheme](new_uri, config, True)
 
         raise NotImplementedError
 

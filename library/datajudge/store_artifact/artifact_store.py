@@ -78,3 +78,12 @@ class ArtifactStore:
         """
         if not check_dir(uri):
             make_dir(uri)
+
+    @staticmethod
+    def _store_fetched_artifact(obj: bytes,
+                                dst: str) -> None:
+        """
+        Save artifact locally.
+        """
+        with open(dst, "wb") as file:
+            file.write(obj)

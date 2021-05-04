@@ -8,6 +8,13 @@ import requests
 from requests.models import HTTPError, Response  # pylint: disable=import-error
 
 
+def api_get_call():
+    """
+    REST GET call.
+    """
+    pass
+
+
 def api_post_call(data: dict,
                   uri: str,
                   auth: Optional[tuple] = None,

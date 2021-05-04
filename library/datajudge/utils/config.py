@@ -45,9 +45,3 @@ DEFAULT_TMP = DEFAULT_LOCAL + "/tmp"
 # DEFAULT NAMES
 DEFAULT_PROJ = "project"
 DEFAULT_EXP = "experiment"
-
-# SCHEMES
-LOCAL_SCHEME = ["", "file"]
-REST_SCHEME = ["http", "https"]
-S3_SCHEME = ["s3"]
-AZURE_SCHEME = ["wasb", "wasbs"]

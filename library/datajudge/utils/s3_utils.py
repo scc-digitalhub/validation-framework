@@ -2,12 +2,16 @@
 Common S3 utils.
 """
 # pylint: disable=invalid-name
-from typing import IO
+from typing import IO, Type
 
-from datajudge.utils.typing import s3_client
+import botocore.client as bc
 
 
-def check_bucket(client: s3_client, bucket: str) -> bool:
+s3_client = Type["bc.S3"]
+
+
+def check_bucket(client: s3_client,
+                 bucket: str) -> bool:
     """
     Check access to a bucket.
     """

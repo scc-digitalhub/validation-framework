@@ -91,15 +91,6 @@ class AzureArtifactStore(ArtifactStore):
         self._store_fetched_artifact(obj, filepath)
         return filepath
 
-    @staticmethod
-    def _store_fetched_artifact(obj: bytes,
-                                dst: str) -> None:
-        """
-        Save artifact locally.
-        """
-        with open(dst, "wb") as file:
-            file.write(obj)
-
     def _check_access_to_storage(self) -> None:
         """
         Check access to storage.

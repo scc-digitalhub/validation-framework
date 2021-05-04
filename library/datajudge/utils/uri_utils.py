@@ -10,6 +10,14 @@ from datajudge.utils.file_utils import get_absolute_path
 from datajudge.utils.rest_utils import parse_url
 
 
+# SCHEMES
+LOCAL_SCHEME = ["", "file"]
+REST_SCHEME = ["http", "https"]
+S3_SCHEME = ["s3"]
+AZURE_SCHEME = ["wasb", "wasbs"]
+FTP_SCHEME = ["ftp"]
+
+
 def parse_uri(uri: str) -> ParseResult:
     """
     Parse an uri.
@@ -73,10 +81,10 @@ def build_exp_uri(scheme: str,
     # Metadata stores
     if store == cfg.ST_METADATA:
 
-        if scheme in cfg.LOCAL_SCHEME:
+        if scheme in LOCAL_SCHEME:
             return get_absolute_path(uri, store, experiment_id)
 
-        elif scheme in cfg.REST_SCHEME:
+        elif scheme in REST_SCHEME:
             if project_id is not None:
                 url = uri + cfg.API_BASE + project_id
                 return parse_url(url)
@@ -87,13 +95,16 @@ def build_exp_uri(scheme: str,
     # Artifact/data stores
     elif store in (cfg.ST_DATA, cfg.ST_ARTIFACT):
 
-        if scheme in cfg.LOCAL_SCHEME:
+        if scheme in LOCAL_SCHEME:
             return get_absolute_path(uri, store, experiment_id)
 
-        elif scheme in cfg.S3_SCHEME:
+        elif scheme in S3_SCHEME:
             return new_uri_path(uri, store, experiment_id)
 
-        elif scheme in cfg.AZURE_SCHEME:
+        elif scheme in AZURE_SCHEME:
+            return new_uri_path(uri, store, experiment_id)
+
+        elif scheme in FTP_SCHEME:
             return new_uri_path(uri, store, experiment_id)
 
         raise NotImplementedError

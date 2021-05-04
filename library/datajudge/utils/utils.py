@@ -1,7 +1,15 @@
 """
 Common generic utils.
 """
+from datetime import datetime
 from typing import Any, Tuple
+
+
+def get_time() -> str:
+    """
+    Return string of datetime.now().
+    """
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def data_listify(data: Any,

@@ -2,7 +2,7 @@
 RunInfo module.
 Implementation of the basic Run's metadata.
 """
-from datajudge.utils.time_utils import get_time
+from datajudge.utils.utils import get_time
 
 
 class RunInfo:

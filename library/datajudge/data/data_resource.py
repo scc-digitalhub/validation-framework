@@ -44,8 +44,7 @@ class DataResource:
 
     Notes
     -----
-    The following attributes are inferred by the library and
-    should not be setted by users.
+    The following attributes are inferred by the validation framework.
     profile : str, default = None
         A string identifying the profile of Data Resource descriptor
         as per the profiles specification e.g. 'tabular-data-resource'.

@@ -12,9 +12,8 @@ from botocore.client import Config
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import check_path, get_path
 from datajudge.utils.io_utils import wrap_string, write_bytesio
-from datajudge.utils.s3_utils import (check_bucket, get_object, upload_file,
-                                      upload_fileobj)
-from datajudge.utils.typing import s3_client
+from datajudge.utils.s3_utils import (check_bucket, get_object, s3_client,
+                                      upload_file, upload_fileobj)
 from datajudge.utils.uri_utils import (get_name_from_uri, get_uri_netloc,
                                        get_uri_path, new_uri_path)
 
@@ -89,15 +88,6 @@ class S3ArtifactStore(ArtifactStore):
         filepath = get_path(dst, name)
         self._store_fetched_artifact(obj, filepath)
         return filepath
-
-    @staticmethod
-    def _store_fetched_artifact(obj: bytes,
-                                dst: str) -> None:
-        """
-        Save artifact locally.
-        """
-        with open(dst, "wb") as file:
-            file.write(obj)
 
     def _check_access_to_storage(self) -> None:
         """
