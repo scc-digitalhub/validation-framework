@@ -1,81 +1,64 @@
-import urllib.parse
-from pathlib import Path
-from typing import Tuple, Type
+"""
+Common S3 utils.
+"""
+# pylint: disable=invalid-name
+from typing import IO, Type
 
-import boto3
-import botocore.client as bc  # type: ignore
-from botocore.client import Config
+import botocore.client as bc
 
 
-def s3client_creator(**kwargs) -> Type["bc.S3"]:
+s3_client = Type["bc.S3"]
+
+
+def check_bucket(client: s3_client,
+                 bucket: str) -> bool:
     """
-    Return boto client.
+    Check access to a bucket.
     """
     try:
-        return boto3.client('s3',
-                            config=Config(signature_version='s3v4'),
-                            region_name='us-east-1',
-                            **kwargs)
-    except Exception as ex:
-        raise ex
+        client.head_bucket(Bucket=bucket)
+        return True
+    except Exception:
+        return False
 
 
-def parse_s3_uri(uri: str) -> urllib.parse.ParseResult:
+def upload_file(client: s3_client,
+                src: str,
+                bucket: str,
+                key: str,
+                metadata: dict
+                ) -> None:
     """
-    Return parsed URI.
+    Upload file to S3.
     """
-    parsed = urllib.parse.urlparse(uri)
-    if parsed.scheme != "s3":
-        raise Exception("Not an S3 URI: %s" % uri)
-    return parsed
+    ex_args = {"Metadata": metadata}
+    client.upload_file(Filename=src,
+                       Bucket=bucket,
+                       Key=key,
+                       ExtraArgs=ex_args)
 
 
-def build_s3_uri(uri: str, *args) -> str:
+def upload_fileobj(client: s3_client,
+                   obj: IO,
+                   bucket: str,
+                   key: str,
+                   metadata: dict
+                   ) -> None:
     """
-    Return a full S3 path.
+    Upload fileobject to S3.
     """
-    parsed = parse_s3_uri(uri)
-    s3_path = str(Path(parsed.path, *args))
-    s3_new_url = urllib.parse.urlunparse((parsed.scheme,
-                                          parsed.netloc,
-                                          s3_path,
-                                          parsed.params,
-                                          parsed.query,
-                                          parsed.fragment))
-    return s3_new_url
+    ex_args = {"Metadata": metadata}
+    client.upload_fileobj(obj,
+                          Bucket=bucket,
+                          Key=key,
+                          ExtraArgs=ex_args)
 
 
-def build_s3_key(dst: str, src_name: str) -> str:
+def get_object(client: s3_client,
+               bucket: str,
+               key: str) -> bytes:
     """
-    Build key to upload objects.
+    Download object from S3.
     """
-    key = get_s3_path(dst) + "/" + src_name
-    if key.startswith("/"):
-        key = key[1:]
-    return key
-
-
-def get_s3_path(uri: str) -> str:
-    """
-    Return the path portion of S3 URI.
-    """
-    parsed = parse_s3_uri(uri)
-    return parsed.path
-
-
-def get_bucket(uri: str) -> str:
-    """
-    Parse an S3 URI, returning bucket.
-    """
-    parsed = parse_s3_uri(uri)
-    return parsed.netloc
-
-
-def split_path_name(uri: str) -> Tuple[str, str]:
-    """
-    Return uri and key.
-    """
-    key = get_s3_path(uri)
-    # orrendo
-    base_uri = "s3://" + get_bucket(uri)
-    return key, base_uri
+    obj = client.get_object(Bucket=bucket, Key=key)
+    return obj['Body'].read()

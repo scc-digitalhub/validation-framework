@@ -1,3 +1,7 @@
+"""
+ShortReport module.
+Implementation of a Short Report common structure.
+"""
 from datetime import datetime
 from typing import Optional
 

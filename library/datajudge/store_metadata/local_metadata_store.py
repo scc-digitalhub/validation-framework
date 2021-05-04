@@ -1,7 +1,10 @@
+"""
+Implementation of local metadata store.
+"""
 from typing import Optional
 
 from datajudge.store_metadata.metadata_store import MetadataStore
-from datajudge.utils.constants import FileNames
+from datajudge.utils import config as cfg
 from datajudge.utils.file_utils import (check_dir, get_path, make_dir,
                                         remove_files, write_json)
 
@@ -24,10 +27,6 @@ class LocalMetadataStore(MetadataStore):
     _check_dst_folder :
         Check if run folder already exist, otherwise it creates it.
 
-    See also
-    --------
-    MetadataStore : Abstract metadata store class.
-
     """
 
     def __init__(self,
@@ -35,10 +34,12 @@ class LocalMetadataStore(MetadataStore):
                  config:  Optional[dict] = None) -> None:
         super().__init__(uri_metadata, config)
         self._filenames = {
-            self._RUN_METADATA: FileNames.RUN_METADATA.value,
-            self._SHORT_REPORT: FileNames.SHORT_REPORT.value,
-            self._DATA_RESOURCE: FileNames.DATA_RESOURCE.value,
-            self._ARTIFACT_METADATA: FileNames.ARTIFACT_METADATA.value
+            self._RUN_METADATA: cfg.FN_RUN_METADATA,
+            self._DATA_RESOURCE: cfg.FN_DATA_RESOURCE,
+            self._SHORT_REPORT: cfg.FN_SHORT_REPORT,
+            self._SHORT_SCHEMA: cfg.FN_SHORT_SCHEMA,
+            self._DATA_PROFILE: cfg.FN_DATA_PROFILE,
+            self._ARTIFACT_METADATA: cfg.FN_ARTIFACT_METADATA
         }
         self._artifact_count = 0
 

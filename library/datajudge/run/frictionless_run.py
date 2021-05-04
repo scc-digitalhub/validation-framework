@@ -1,43 +1,50 @@
-from __future__ import annotations
-
-import typing
+"""
+FrictionlessRun module.
+Implementation of a Run object that uses Frictionless as
+validation framework.
+"""
+import warnings
 from mimetypes import guess_type
-from typing import Any, List, Optional, Union
+from typing import List, Optional, Tuple
 
-import frictionless
+try:
+    import frictionless
+    from frictionless import Resource
+    from frictionless.report import Report
+    from frictionless.schema import Schema
+except ImportError as ierr:
+    raise ImportError("Please install frictionless!") from ierr
+
+from datajudge.data import SchemaTuple
 from datajudge.run import Run
-from frictionless import Resource
-from frictionless.report import Report
-from frictionless.schema import Schema
-
-if typing.TYPE_CHECKING:
-    from datajudge.client import Client
-    from datajudge.data import DataResource, ShortReport
-    from datajudge.run import RunInfo
 
 
 class FrictionlessRun(Run):
     """
     Frictionless flavoured run.
 
-    See also
-    --------
-    Run : Abstract run class.
+    Methods
+    -------
+    log_data_resource :
+        Method to log data resource.
+    log_short_report :
+        Method to log short report.
+    log_short_schema :
+        Method to log short schema.
+    persist_data :
+        Shortcut to persist data and validation schema.
+    persist_full_report :
+        Shortcut to persist the full report produced by the validation
+        framework as artifact.
+    persist_inferred_schema :
+        Shortcut to persist the inferred schema produced by the
+        validation framework as artifact.
+    persist_artifact :
+        Method to persist artifacts in the artifact store.
 
     """
 
-    def __init__(self,
-                 run_info: RunInfo,
-                 data_resource: DataResource,
-                 client: Client,
-                 overwrite: bool) -> None:
-        super().__init__(run_info,
-                         data_resource,
-                         client,
-                         overwrite)
-        self._log_run()
-        self._update_library_info()
-        self._update_data_resource()
+    # Run
 
     def _update_library_info(self) -> None:
         """
@@ -46,15 +53,19 @@ class FrictionlessRun(Run):
         self.run_info.validation_library = frictionless.__name__
         self.run_info.library_version = frictionless.__version__
 
+    # DataResource
+
     def _update_data_resource(self) -> None:
         """
         Update resource with inferred information.
         """
-        frict_resource = self.get_resource()
-        frict_resource.infer()
+        frict_res = self.infer_resource()
         try:
-            self.data_resource._profile = frict_resource["profile"]
-            self.data_resource._format = frict_resource["format"]
+            for key in ["profile", "format", "encoding"]:
+                setattr(self.data_resource, key, frict_res[key])
+            if "stats" in frict_res:
+                for key in ["bytes", "hash"]:
+                    setattr(self.data_resource, key, frict_res["stats"][key])
             if isinstance(self.data_resource.path, str):
                 mediatype, _ = guess_type(self.data_resource.path)
             else:
@@ -63,163 +74,164 @@ class FrictionlessRun(Run):
                 # e.g. if the first file is a csv and the second a
                 # tsv, for the data resource all of them are csv.
                 mediatype, _ = guess_type(self.data_resource.path[0])
-            mediatype = mediatype if mediatype is not None else ""
-            self.data_resource._mediatype = mediatype
-            self.data_resource._encoding = frict_resource["encoding"]
-            self.data_resource._bytes = frict_resource["stats"]["bytes"]
-            self.data_resource._hash = frict_resource["stats"]["hash"]
+            self.data_resource.mediatype = mediatype
+
         except KeyError as kex:
             raise kex
 
-    def _log_run(self) -> None:
-        """
-        Method to log run's metadata.
-        """
-        metadata = self._get_content(self.run_info.to_dict())
-        self._log_metadata(metadata, self._RUN_METADATA)
+    # Short report
 
-    def log_data_resource(self) -> None:
-        """
-        Method to log data resource.
-        """
-        metadata = self._get_content(self.data_resource.to_dict())
-        self._log_metadata(metadata, self._DATA_RESOURCE)
-
-    def _parse_report(self, report: Report) -> ShortReport:
+    @staticmethod
+    def _parse_report(report: Report, kwargs: dict) -> dict:
         """
         Parse the report produced by frictionless.
         """
-        short_report = self._get_short_report()
-        if len(report.tables) > 0:
-            short_report.time = report.tables[0]["time"]
-            short_report.valid = report.tables[0]["valid"]
-            short_report.errors = report.tables[0]["errors"]
+        if not hasattr(report, "tasks"):
+            return kwargs
+        if len(report.tasks) > 0:
+            for key in kwargs:
+                kwargs[key] = report.tasks[0][key]
+        return kwargs
 
-        return short_report
-
-    def log_short_report(self, report: Report) -> None:
+    def _check_report(self, report: Optional[Report] = None) -> None:
         """
-        Method to log short report.
-
-        Parameters
-        ----------
-        report : Report
-            A frictionless Report object.
-
+        Validate frictionless report before log/persist it.
         """
-        if not isinstance(report, Report):
-            raise TypeError("Only frictionless report accepted.")
+        if report is not None and not isinstance(report, Report):
+            raise TypeError("Expected frictionless Report!")
 
-        report_short = self._parse_report(report)
-        metadata = self._get_content(report_short.to_dict())
-        self._log_metadata(metadata, self._SHORT_REPORT)
+    # Short schema
 
-    def _log_artifact(self,
-                      src: Any,
-                      src_name: Optional[str] = None
-                      ) -> None:
+    @staticmethod
+    def _parse_schema(schema: Schema) -> List[SchemaTuple]:
         """
-        Method to log artifacts metadata.
+        Parse an inferred schema and return a standardized
+        ShortSchema.
         """
-        uri = self.run_info.run_artifacts_uri
-        names = []
-        if isinstance(src, list):
-            names.extend(src)
-        elif isinstance(src, str):
-            names.append(src)
+        if schema is None:
+            new = [SchemaTuple("", "")]
         else:
-            names.append(src_name)
+            new = [SchemaTuple(f["name"], f["type"]) for f in schema["fields"]]
+        return new
 
-        for name in names:
-            metadata = self._get_artifact_metadata(name, uri)
-            self._log_metadata(metadata, self._ARTIFACT_METADATA)
+    def _infer_schema(self) -> Schema:
+        """
+        Method that call infer on a frictionless Resource
+        and return an inferred schema.
+        """
+        resource = self.infer_resource()
+        if "schema" in resource:
+            return resource["schema"]
+        # to change
+        return
 
-    def _log_metadata(self,
-                      metadata: dict,
-                      src_type: str) -> None:
+    @staticmethod
+    def _check_schema(schema: Optional[Schema] = None) -> None:
         """
-        Method to log generic metadata.
+        Validate frictionless schema before log/persist it.
         """
-        self.client.log_metadata(
-                           metadata,
-                           self.run_info.run_metadata_uri,
-                           src_type,
-                           self._overwrite)
+        if schema is not None and not isinstance(schema, Schema):
+            raise TypeError("Expected frictionless schema!")
 
-    def persist_artifact(self,
-                         src: Union[str, List[str], dict],
-                         src_name: Optional[str] = None
-                         ) -> None:
+    # Inferred resource
+
+    def _parse_inference(self) -> Tuple[str, dict]:
         """
-        Method to persist artifacts in the artifact store.
+        Parse frictionless inferred resource.
+        """
+        if self._inferred is None:
+            self.infer_resource()
+
+        pandas_args = {
+            "sep": ",",
+            "encoding": "utf-8"
+        }
+
+        file_format = self._inferred["format"]
+        if file_format == "csv":
+            try:
+                pandas_args["sep"] = self._inferred["dialect"]["delimiter"]
+                pandas_args["encoding"] = self._inferred["encoding"]
+            except KeyError:
+                pass
+        else:
+            pandas_args = {}
+
+        return file_format, pandas_args
+
+    # Build frictionless objects
+
+    @staticmethod
+    def build_frictionless_schema(schema: dict) -> Schema:
+        """
+        Return a frictionless Schema object.
 
         Parameters
         ----------
-        src : str, list or dict
-            One or a list of URI described by a string, or a dictionary.
-        src_name : str, default = None
-            Filename. Required only if src is a dictionary.
+        **kwargs : dict
+            Arguments to pass to frictionless Schema constructor.
+
+        Returns
+        -------
+        Schema
 
         """
-        self.client.persist_artifact(src,
-                                     self.run_info.run_artifacts_uri,
-                                     src_name=src_name)
-        self._log_artifact(src, src_name)
+        return Schema(schema)
 
-    def persist_data(self) -> None:
-        """
-        Shortcut to persist data and validation schema.
-        """
-        self.persist_artifact(self.data_resource.path)
-        if self.data_resource.schema is not None:
-            self.persist_artifact(self.data_resource.schema)
-
-    def persist_full_report(self, report: Report) -> None:
-        """
-        Shortcut to persist the full report produced
-        by frictionless.
-
-        Parameters
-        ----------
-        report : Report
-            A frictionless Report object.
-
-        """
-        self.persist_artifact(
-                    dict(report),
-                    src_name=self._FULL_REPORT)
-
-    def persist_inferred_schema(self, schema: Schema) -> None:
-        """
-        Shortcut to persist the inferred schema produced
-        by frictionless.
-
-        Parameters
-        ----------
-        schema : Schema
-            A frictionless Schema object.
-
-        """
-        self.persist_artifact(
-                    dict(schema),
-                    src_name=self._SCHEMA_INFERRED)
-
-    def get_resource(self, **kwargs) -> Resource:
+    @staticmethod
+    def build_frictionless_resource(**kwargs: dict) -> Resource:
         """
         Return a frictionless Resource object.
 
         Parameters
         ----------
-        kwargs : dict
-            Optional arguments to pass to frictionless Resource
-            constructor.
+        **kwargs : dict
+            Arguments to pass to frictionless Resource constructor.
 
         Returns
         -------
         Resource
 
         """
-        if "path" in kwargs.keys():
-            kwargs.pop("path")
-        return Resource(path=self.data_resource.path,
-                        **kwargs)
+        return Resource(**kwargs)
+
+    # Framework wrapper methods
+
+    def infer_resource(self) -> Resource:
+        """
+        Infer on resource.
+        """
+        data_path = self.fetch_input_data()
+        resource = self.build_frictionless_resource(path=data_path)
+        resource.infer()
+        resource.expand()
+        if self._inferred is None:
+            self._inferred = resource
+        return self._inferred
+
+    def validate_resource(self, **kwargs: dict) -> Report:
+        """
+        Validate a Data Resource.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Keywords args for frictionless.validate_resource
+            method.
+
+        """
+        schema = self.fetch_validation_schema()
+        schema = self.build_frictionless_schema(schema)
+        if schema is None:
+            warnings.warn("No validation schema is provided! " +
+                          "Report will results valid by default.")
+
+        data_path = self.fetch_input_data()
+        resource = self.build_frictionless_resource(path=data_path,
+                                                    schema=schema)
+        report = frictionless.validate_resource(resource, **kwargs)
+
+        if self._report is None:
+            self._report = report
+
+        return report

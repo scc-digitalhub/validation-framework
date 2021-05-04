@@ -1,15 +1,22 @@
+"""
+Factories module.
+Contains registries of Stores and Runs and respective
+factory methods.
+"""
 from __future__ import annotations
 
 import typing
-import urllib.parse
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
-from datajudge.run import FrictionlessRun, RunInfo
-from datajudge.store_artifact import LocalArtifactStore, S3ArtifactStore
-from datajudge.store_metadata import LocalMetadataStore, RestMetadataStore
+from datajudge.run import FrictionlessRun, GenericRun, RunInfo
+from datajudge.store_artifact import (AzureArtifactStore, FTPArtifactStore,
+                                      HTTPArtifactStore, LocalArtifactStore,
+                                      S3ArtifactStore)
+from datajudge.store_metadata import (DigitalHubMetadataStore,
+                                      LocalMetadataStore)
+from datajudge.utils import config as cfg
 from datajudge.utils.file_utils import get_absolute_path
-from datajudge.utils.s3_utils import build_s3_uri
-from datajudge.utils.rest_utils import parse_url
+from datajudge.utils.uri_utils import get_uri_scheme, rebuild_uri
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
@@ -19,61 +26,73 @@ if typing.TYPE_CHECKING:
     from datajudge.store_metadata import MetadataStore
 
 
-METADATA_LOG_TYPE = "metadata"
-ARTIFACT_LOG_TYPE = "artifact"
+# SCHEMES
+LOCAL_SCHEME = ["", "file"]
+HTTP_SCHEME = ["http", "https"]
+S3_SCHEME = ["s3"]
+AZURE_SCHEME = ["wasb", "wasbs"]
+FTP_SCHEME = ["ftp"]
 
-DEFAULT_STORE = "./validruns"
 
 METADATA_STORE_REGISTRY = {
     "": LocalMetadataStore,
     "file": LocalMetadataStore,
-    "http": RestMetadataStore,
-    "https": RestMetadataStore
+    "http": DigitalHubMetadataStore,
+    "https": DigitalHubMetadataStore,
 }
 
 ARTIFACT_STORE_REGISTRY = {
     "": LocalArtifactStore,
     "file": LocalArtifactStore,
     "s3": S3ArtifactStore,
+    "wasb": AzureArtifactStore,
+    "wasbs": AzureArtifactStore,
+    "http": HTTPArtifactStore,
+    "https": HTTPArtifactStore,
+    "ftp": FTPArtifactStore,
 }
 
 RUN_REGISTRY = {
-    "frictionless": FrictionlessRun
+    "frictionless": FrictionlessRun,
+    "generic": GenericRun
 }
 
-LOCAL_SCHEME = ["", "file"]
-REST_SCHEME = ["http", "https"]
-S3_SCHEME = ["s3"]
 
+def build_exp_uri(scheme: str,
+                  uri: str,
+                  experiment_id: str,
+                  store: str,
+                  project_id: Optional[str] = None) -> str:
+    """
+    Build experiment URI.
+    """
 
-def build_exp_metadata_uri(scheme: str,
-                           uri: str,
-                           experiment_id: str,
-                           project_id: str) -> str:
-    """
-    Build experiment URI for metadata.
-    """
-    log_type = METADATA_LOG_TYPE
-    if scheme in LOCAL_SCHEME:
-        return get_absolute_path(uri, log_type, experiment_id)
-    if scheme in REST_SCHEME:
-        base_url = f"/api/project/{project_id}"
-        return parse_url(uri + base_url)
-    raise NotImplementedError
+    # Metadata stores
+    if store == cfg.ST_METADATA:
 
+        if scheme in LOCAL_SCHEME:
+            return get_absolute_path(uri, store, experiment_id)
 
-def build_exp_artifact_uri(scheme: str,
-                           uri: str,
-                           experiment_id: str) -> str:
-    """
-    Build experiment URI for artifact.
-    """
-    log_type = ARTIFACT_LOG_TYPE
-    if scheme in LOCAL_SCHEME:
-        return get_absolute_path(uri, log_type, experiment_id)
-    if scheme in S3_SCHEME:
-        return build_s3_uri(uri, log_type, experiment_id)
-    raise NotImplementedError
+        elif scheme in HTTP_SCHEME:
+            if project_id is not None:
+                url = uri + cfg.API_BASE + project_id
+                return rebuild_uri(url)
+            raise RuntimeError("'project_id' needed!")
+
+        raise NotImplementedError
+
+    # Artifact/data stores
+    elif store in (cfg.ST_DATA, cfg.ST_ARTIFACT):
+
+        if scheme in LOCAL_SCHEME:
+            return get_absolute_path(uri, store, experiment_id)
+        elif scheme in [*AZURE_SCHEME, *S3_SCHEME,
+                        *HTTP_SCHEME, *FTP_SCHEME]:
+            return rebuild_uri(uri, store, experiment_id)
+        raise NotImplementedError
+
+    else:
+        raise RuntimeError("Invalid store.")
 
 
 def resolve_uri(uri: str,
@@ -83,78 +102,39 @@ def resolve_uri(uri: str,
     """
     Return a builded URI and it's scheme.
     """
-    uri = uri if uri is not None else DEFAULT_STORE
-    scheme = urllib.parse.urlparse(uri).scheme
-    if store == "metadata":
-        new_uri = build_exp_metadata_uri(scheme,
-                                         uri,
-                                         experiment_id,
-                                         project_id)
-    elif store == "artifact":
-        new_uri = build_exp_artifact_uri(scheme,
-                                         uri,
-                                         experiment_id)
-    else:
-        raise RuntimeError("Invalid store.")
+    uri = uri if uri is not None else cfg.DEFAULT_LOCAL
+    scheme = get_uri_scheme(uri)
+    new_uri = build_exp_uri(scheme, uri, experiment_id, store, project_id)
     return new_uri, scheme
 
 
-def get_stores(project_id: str,
-               experiment_id: str,
-               metadata_store_uri: str,
-               artifact_store_uri: str,
-               metadata_config: Optional[dict] = None,
-               artifact_config: Optional[dict] = None
-               ) -> Tuple[MetadataStore, ArtifactStore]:
+def get_store(store_type,
+              project_id: str,
+              experiment_id: str,
+              uri: Optional[str] = None,
+              config: Optional[dict] = None
+              ) -> Union[MetadataStore, ArtifactStore]:
     """
     Function that returns metadata and artifact stores.
     """
-    uri_metadata, scheme_metadata = resolve_uri(metadata_store_uri,
-                                                experiment_id,
-                                                "metadata",
-                                                project_id)
-    uri_artifact, scheme_artifact = resolve_uri(artifact_store_uri,
-                                                experiment_id,
-                                                "artifact")
-
-    store_metadata = select_metadata_store(scheme_metadata,
-                                           uri_metadata,
-                                           metadata_config)
-    store_artifact = select_artifact_store(scheme_artifact,
-                                           uri_artifact,
-                                           artifact_config)
-
-    return store_metadata, store_artifact
-
-
-def select_metadata_store(scheme: str,
-                          uri_metadata: str,
-                          config: Optional[dict] = None
-                          ) -> MetadataStore:
-    """
-    Factory method that returns a metadata store object to interact
-    with various backends.
-    """
+    new_uri, scheme = resolve_uri(uri,
+                                  experiment_id,
+                                  store_type,
+                                  project_id)
     try:
-        return METADATA_STORE_REGISTRY[scheme](uri_metadata,
-                                               config)
-    except KeyError as k_err:
-        raise NotImplementedError from k_err
+        if store_type == cfg.ST_METADATA:
+            return METADATA_STORE_REGISTRY[scheme](new_uri, config)
 
+        if store_type == cfg.ST_ARTIFACT:
+            return ARTIFACT_STORE_REGISTRY[scheme](new_uri, config)
 
-def select_artifact_store(scheme: str,
-                          uri_artifact: str,
-                          config: Optional[dict] = None
-                          ) -> ArtifactStore:
-    """
-    Factory method that returns an artifact store object to interact
-    with various backends.
-    """
-    try:
-        return ARTIFACT_STORE_REGISTRY[scheme](uri_artifact,
-                                               config)
+        if store_type == cfg.ST_DATA:
+            return ARTIFACT_STORE_REGISTRY[scheme](new_uri, config, True)
+
+        raise NotImplementedError
+
     except KeyError as k_err:
-        raise NotImplementedError from k_err
+        raise KeyError from k_err
 
 
 def get_run_flavour(run_info_args: Tuple[str],

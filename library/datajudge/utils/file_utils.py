@@ -1,9 +1,13 @@
+"""
+Common file utils.
+"""
 import glob
 import json
 import os
 import shutil
+from io import BytesIO
 from pathlib import Path
-from typing import Tuple, Union
+from typing import IO, Union
 
 
 # Directories
@@ -12,9 +16,10 @@ def check_dir(path: str) -> bool:
     """
     Check if a directory exists.
     """
-    if Path(path).is_dir():
-        return True
-    return False
+    try:
+        return Path(path).is_dir()
+    except OSError:
+        return False
 
 
 def check_abs_path(path: str) -> bool:
@@ -50,23 +55,26 @@ def get_path(*args) -> str:
     return str(Path(*args))
 
 
-def split_path_name(path: str) -> Tuple[str, str]:
-    """
-    Return filename and path.
-    """
-    abs_path = Path(path).absolute()
-    return abs_path.name, abs_path.parent.as_uri()
-
-
 # Files
 
 def check_file(path: str) -> bool:
     """
     Check if the resource is a file.
     """
-    if Path(path).is_file():
-        return True
-    return False
+    try:
+        return Path(path).is_file()
+    except OSError:
+        return False
+
+
+def check_path(path: str) -> bool:
+    """
+    Check if the resource exists.
+    """
+    try:
+        return Path(path).exists()
+    except OSError:
+        return False
 
 
 def check_file_dimension(file_uri: str) -> int:
@@ -103,6 +111,13 @@ def remove_files(path: str) -> None:
         os.remove(file)
 
 
+def clean_all(path: str) -> None:
+    """
+    Remove dir and all it's contents.
+    """
+    shutil.rmtree(path)
+
+
 # Json
 
 def write_json(data: dict,
@@ -121,3 +136,34 @@ def read_json(path: Union[str, Path]) -> dict:
     with open(path) as file:
         json_dict = json.load(file)
     return json_dict
+
+
+# IO
+
+def write_text(string: str,
+               path: Union[str, Path]) -> None:
+    """
+    Write text on a file.
+    """
+    with open(path, "w") as file:
+        file.write(string)
+
+
+def write_bytes(bytes_: bytes,
+                path: Union[str, Path]) -> None:
+    """
+    Write text on a file.
+    """
+    with open(path, "wb") as file:
+        file.write(bytes_)
+
+
+def write_object(buff: IO,
+                 dst: str) -> None:
+    """
+    Save a buffer as file.
+    """
+    buff.seek(0)
+    write_mode = "wb" if isinstance(buff, BytesIO) else "w"
+    with open(dst, write_mode) as file:
+        shutil.copyfileobj(buff, file)

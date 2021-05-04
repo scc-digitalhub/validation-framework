@@ -1,18 +1,22 @@
+"""
+Implementation of REST metadata store designed by Digital Society Lab.
+"""
 from collections import namedtuple
 from json.decoder import JSONDecodeError
-from typing import Optional
+from typing import Optional, Union
 
 from requests.models import Response  # pylint: disable=import-error
 
 from datajudge.store_metadata.metadata_store import MetadataStore
-from datajudge.utils.constants import ApiEndpoint
-from datajudge.utils.rest_utils import (api_post_call, api_put_call,
-                                        parse_status_code, parse_url)
+from datajudge.utils import config as cfg
+from datajudge.utils.rest_utils import api_post_call, api_put_call
+from datajudge.utils.uri_utils import rebuild_uri
+
 
 KeyPairs = namedtuple("KeyPairs", ("run_id", "key"))
 
 
-class RestMetadataStore(MetadataStore):
+class DigitalHubMetadataStore(MetadataStore):
     """
     Rest metadata store object.
 
@@ -30,10 +34,6 @@ class RestMetadataStore(MetadataStore):
     _parse_response :
         Parse the JSON response from the backend APIs.
 
-    See also
-    --------
-    MetadataStore : Abstract metadata store class.
-
     """
 
     def __init__(self,
@@ -42,31 +42,27 @@ class RestMetadataStore(MetadataStore):
         super().__init__(uri_metadata, config)
         self._key_vault = {
             self._RUN_METADATA: [],
-            self._SHORT_REPORT: [],
             self._DATA_RESOURCE: [],
+            self._SHORT_REPORT: [],
+            self._SHORT_SCHEMA: [],
+            self._DATA_PROFILE: [],
             self._ARTIFACT_METADATA: []
         }
         self._endpoints = {
-            self._RUN_METADATA: ApiEndpoint.RUN_METADATA.value,
-            self._SHORT_REPORT: ApiEndpoint.SHORT_REPORT.value,
-            self._DATA_RESOURCE: ApiEndpoint.DATA_RESOURCE.value,
-            self._ARTIFACT_METADATA: ApiEndpoint.ARTIFACT_METADATA.value
+            self._RUN_METADATA: cfg.API_RUN_METADATA,
+            self._DATA_RESOURCE: cfg.API_DATA_RESOURCE,
+            self._SHORT_REPORT: cfg.API_SHORT_REPORT,
+            self._SHORT_SCHEMA: cfg.API_SHORT_SCHEMA,
+            self._DATA_PROFILE: cfg.API_DATA_PROFILE,
+            self._ARTIFACT_METADATA: cfg.API_ARTIFACT_METADATA
         }
 
     def init_run(self,
                  run_id: str,
                  overwrite: bool) -> None:
         """
-        Check if run id is cached in the store keys vault.
-        Decide then if overwrite or not run metadata.
-
-        Parameters
-        ----------
-        run_id : str
-            A run id.
-        overwrite : bool
-            If True, overwrite run related metadata.
-
+        Check if run id is stored in the keys vault.
+        Decide then if overwrite or not all runs metadata.
         """
         exist = False
         for run in self._key_vault[self._RUN_METADATA]:
@@ -100,16 +96,20 @@ class RestMetadataStore(MetadataStore):
                     key = elm.key
 
         dst = self._build_source_destination(dst, src_type, key)
+        kwargs = {
+            "json": metadata,
+            "auth": self._parse_auth(),
+        }
 
         if key is None:
             if src_type == self._RUN_METADATA:
-                params = {"overwrite": "true" if overwrite else "false"}
-                response = api_post_call(metadata, dst, self.config, params)
-            else:
-                response = api_post_call(metadata, dst, self.config)
+                kwargs["params"] = {
+                    "overwrite": "true" if overwrite else "false"
+                    }
+            response = api_post_call(dst, kwargs)
             self._parse_response(response, src_type)
         else:
-            response = api_put_call(metadata, dst, self.config)
+            response = api_put_call(dst, kwargs)
 
     def _build_source_destination(self,
                                   dst: str,
@@ -120,7 +120,8 @@ class RestMetadataStore(MetadataStore):
         Return source destination API based on input source type.
         """
         key = "/" + key if key is not None else "/"
-        return parse_url(dst + self._endpoints[src_type] + key)
+        url = dst + self._endpoints[src_type] + key
+        return rebuild_uri(url)
 
     def _parse_response(self,
                         response: Response,
@@ -128,7 +129,6 @@ class RestMetadataStore(MetadataStore):
         """
         Parse the JSON response from the backend APIs.
         """
-        parse_status_code(response)
         try:
             resp = response.json()
             keys = resp.keys()
@@ -153,5 +153,12 @@ class RestMetadataStore(MetadataStore):
         """
         Return the URL of the data resource for the Run.
         """
-        endpoint = self._endpoints[self._DATA_RESOURCE]
-        return parse_url(self.uri_metadata + endpoint)
+        url = self.uri_metadata + self._endpoints[self._DATA_RESOURCE]
+        return rebuild_uri(url)
+
+    def _parse_auth(self) -> Union[tuple]:
+        if self.config is not None:
+            if self.config["auth"] == "basic":
+                auth = self.config["user"], self.config["password"]
+            return auth
+        return None

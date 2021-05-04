@@ -1,4 +1,12 @@
+"""
+DataResource module.
+Implementation of a DataResource object as defined in frictionless
+specifications.
+"""
 from typing import List, Mapping, Optional, Union
+
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-arguments
 
 
 class DataResource:
@@ -15,8 +23,7 @@ class DataResource:
     Attributes
     ----------
     path : str
-        Required. An URI (or a list of URI) that point to
-        data to be validated.
+        Required. An URI (or a list of URI) that point to data.
     name : str, default = None
         Name of the Data Resource.
     title : str, default = None
@@ -37,8 +44,7 @@ class DataResource:
 
     Notes
     -----
-    The following attributes are inferred by the library and
-    should not be setted by users.
+    The following attributes are inferred by the validation framework.
     profile : str, default = None
         A string identifying the profile of Data Resource descriptor
         as per the profiles specification e.g. 'tabular-data-resource'.
@@ -65,17 +71,33 @@ class DataResource:
                  licenses: Optional[List[Mapping]] = None) -> None:
         self.path = path
         self.name = name
-        self._profile = None
+        self.profile = None
         self.title = title
         self.description = description
-        self._format = None
-        self._mediatype = None
-        self._encoding = None
-        self._bytes = None
-        self._hash = None
+        self.format = None
+        self.mediatype = None
+        self.encoding = None
+        self.bytes = None
+        self.hash = None
         self.schema = schema
         self.sources = sources
         self.licenses = licenses
+
+    def get_metadata(self) -> dict:
+        """
+        Return metadata for artifacts.
+        """
+        base = {
+            "name": self.name,
+            "profile": self.profile,
+            "title": self.title,
+            "mediatype": self.mediatype,
+            "encoding": self.encoding
+        }
+        metadata = {
+            k: v for k, v in base.items() if v is not None
+        }
+        return metadata
 
     def to_dict(self) -> dict:
         """

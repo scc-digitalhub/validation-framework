@@ -1,5 +1,12 @@
+"""
+Abstract class for artifact store.
+"""
 from abc import ABCMeta, abstractmethod
+from io import BytesIO
 from typing import Any, Optional
+
+from datajudge.utils.file_utils import check_dir, make_dir, write_bytes
+from datajudge.utils.uri_utils import rebuild_uri
 
 
 class ArtifactStore:
@@ -30,27 +37,53 @@ class ArtifactStore:
 
     def __init__(self,
                  artifact_uri: str,
-                 config: Optional[dict] = None) -> None:
+                 config: Optional[dict] = None,
+                 data: bool = False) -> None:
         self.artifact_uri = artifact_uri
         self.config = config
+        self.data = data
 
     @abstractmethod
     def persist_artifact(self,
                          src: Any,
                          dst: str,
-                         src_name: str) -> None:
+                         src_name: str,
+                         metadata: dict
+                         ) -> None:
         """
         Method to persist an artifact.
         """
 
     @abstractmethod
-    def _check_access_to_storage(self, args: Any) -> None:
+    def fetch_artifact(self, src: str, dst: str) -> BytesIO:
+        """
+        Method to fetch an artifact.
+        """
+
+    @abstractmethod
+    def _check_access_to_storage(self) -> None:
         """
         Check if there is access to the storage.
         """
 
-    @abstractmethod
     def get_run_artifacts_uri(self, run_id: str) -> str:
         """
-        Return the URI of the artifact store for the Run.
+        Return the path of the artifact store for the Run.
         """
+        return rebuild_uri(self.artifact_uri, run_id)
+
+    @staticmethod
+    def _check_temp_dir(uri: str) -> None:
+        """
+        Check if temp dir already exist, otherwise create it.
+        """
+        if not check_dir(uri):
+            make_dir(uri)
+
+    @staticmethod
+    def _store_fetched_artifact(obj: bytes,
+                                dst: str) -> None:
+        """
+        Save artifact locally.
+        """
+        write_bytes(obj, dst)
