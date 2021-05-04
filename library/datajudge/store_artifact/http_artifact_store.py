@@ -10,7 +10,7 @@ from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import check_path, get_path
 from datajudge.utils.rest_utils import (api_get_call, api_put_call,
                                         check_url_availability)
-from datajudge.utils.uri_utils import get_name_from_uri, rebuild_uri
+from datajudge.utils.uri_utils import check_url, get_name_from_uri, rebuild_uri
 
 
 class HTTPArtifactStore(ArtifactStore):
@@ -38,9 +38,8 @@ class HTTPArtifactStore(ArtifactStore):
         Persist an artifact.
         """
         self._check_access_to_storage()
-        raise NotImplemented
 
-        url = rebuild_uri(dst, src_name)
+        url = check_url(dst, src_name)
 
         kwargs = {
             "auth": self._parse_auth()
@@ -49,17 +48,17 @@ class HTTPArtifactStore(ArtifactStore):
         # Local file
         if isinstance(src, (str, Path)) and check_path(src):
             kwargs["data"] = open(src, "rb").read()
-            api_put_call(url, kwargs)
+            api_put_call(url, **kwargs)
 
         # Dictionary
         elif isinstance(src, dict) and src_name is not None:
             kwargs["data"] = json.dumps(src)
-            api_put_call(url, kwargs)
+            api_put_call(url, **kwargs)
 
         # StringIO/BytesIO buffer
         elif isinstance(src, (BytesIO, StringIO)) and src_name is not None:
             kwargs["data"] = src.read()
-            api_put_call(url, kwargs)
+            api_put_call(url, **kwargs)
 
         else:
             raise NotImplementedError

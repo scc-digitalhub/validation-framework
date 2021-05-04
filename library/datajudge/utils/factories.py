@@ -16,7 +16,7 @@ from datajudge.store_metadata import (DigitalHubMetadataStore,
                                       LocalMetadataStore)
 from datajudge.utils import config as cfg
 from datajudge.utils.file_utils import get_absolute_path
-from datajudge.utils.uri_utils import get_uri_scheme, rebuild_uri
+from datajudge.utils.uri_utils import check_url, get_uri_scheme, rebuild_uri
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
@@ -76,7 +76,7 @@ def build_exp_uri(scheme: str,
         elif scheme in HTTP_SCHEME:
             if project_id is not None:
                 url = uri + cfg.API_BASE + project_id
-                return rebuild_uri(url)
+                return check_url(url)
             raise RuntimeError("'project_id' needed!")
 
         raise NotImplementedError

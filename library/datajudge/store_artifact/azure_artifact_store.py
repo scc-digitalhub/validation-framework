@@ -13,7 +13,7 @@ from datajudge.utils.azure_utils import (check_container, get_object,
                                          upload_file, upload_fileobj)
 from datajudge.utils.file_utils import check_path, get_path
 from datajudge.utils.io_utils import wrap_string, write_bytesio
-from datajudge.utils.uri_utils import (get_name_from_uri, get_uri_netloc,
+from datajudge.utils.uri_utils import (build_key, get_name_from_uri, get_uri_netloc,
                                        get_uri_path, rebuild_uri)
 
 
@@ -39,12 +39,12 @@ class AzureArtifactStore(ArtifactStore):
         super().__init__(artifact_uri, config, data)
         # Get BlobService Client
         self.client = self._get_client()
-
-        self.container = get_uri_netloc(self.artifact_uri)
-        self._check_access_to_storage()
-
+        
         # Get container client
+        self.container = get_uri_netloc(self.artifact_uri)
         self.cont_client = self.client.get_container_client(self.container)
+
+        self._check_access_to_storage()
 
     def persist_artifact(self,
                          src: Any,
@@ -56,7 +56,7 @@ class AzureArtifactStore(ArtifactStore):
         Persist an artifact.
         """
         self._check_access_to_storage()
-        key = rebuild_uri(dst, src_name)
+        key = build_key(dst, src_name)
 
         # Local file
         if isinstance(src, (str, Path)) and check_path(src):

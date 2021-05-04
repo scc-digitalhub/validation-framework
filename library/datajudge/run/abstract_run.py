@@ -61,7 +61,8 @@ class Run:
     _VALID_SCHEMA = cfg.FN_VALID_SCHEMA
     _FULL_REPORT = cfg.FN_FULL_REPORT
     _SCHEMA_INFERRED = cfg.FN_INFERRED_SCHEMA
-    _FULL_PROFILE = cfg.FN_FULL_PROFILE
+    _FULL_PROFILE_HTML = cfg.FN_FULL_PROFILE_HTML
+    _FULL_PROFILE_JSON = cfg.FN_FULL_PROFILE_JSON
 
     def __init__(self,
                  run_info: RunInfo,
@@ -537,20 +538,24 @@ class Run:
                         ) -> None:
         """
         Shortcut to persist the profile made with pandas
-        profiling.
+        profiling, both in JSON and HTML format.
         """
         if self.profile is None and profile is None:
             warnings.warn("No profile provided, skipping!")
             return
         if profile is None:
             string_html = self.profile.to_html()
+            string_json = self.profile.to_json()
         else:
             if not isinstance(profile, ProfileReport):
                 raise TypeError("Invalid ProfileReport object!")
             string_html = profile.to_html()
+            string_json = profile.to_json()
 
-        stringio = write_bytesio(string_html)
-        self.persist_artifact(stringio, self._FULL_PROFILE)
+        strio_html = write_bytesio(string_html)
+        strio_json = write_bytesio(string_json)
+        self.persist_artifact(strio_html, self._FULL_PROFILE_HTML)
+        self.persist_artifact(strio_json, self._FULL_PROFILE_JSON)
 
     def persist_artifact(self,
                          src: Any,

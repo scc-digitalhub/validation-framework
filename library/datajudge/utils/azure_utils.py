@@ -22,7 +22,8 @@ def upload_fileobj(client: ContainerClient,
     """
     client.upload_blob(name=name,
                        data=data,
-                       metadata=metadata)
+                       metadata=metadata,
+                       overwrite=True)
 
 
 def upload_file(client: ContainerClient,
@@ -35,7 +36,8 @@ def upload_file(client: ContainerClient,
     with open(path, "rb") as file:
         client.upload_blob(name=name,
                            data=file,
-                           metadata=metadata)
+                           metadata=metadata,
+                           overwrite=True)
 
 
 def get_object(client: ContainerClient,

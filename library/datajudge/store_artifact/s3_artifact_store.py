@@ -14,7 +14,7 @@ from datajudge.utils.file_utils import check_path, get_path
 from datajudge.utils.io_utils import wrap_string, write_bytesio
 from datajudge.utils.s3_utils import (check_bucket, get_object, s3_client,
                                       upload_file, upload_fileobj)
-from datajudge.utils.uri_utils import (get_name_from_uri, get_uri_netloc,
+from datajudge.utils.uri_utils import (build_key, get_name_from_uri, get_uri_netloc,
                                        get_uri_path, rebuild_uri)
 
 
@@ -54,7 +54,7 @@ class S3ArtifactStore(ArtifactStore):
         Persist an artifact.
         """
         self._check_access_to_storage()
-        key = rebuild_uri(dst, src_name)
+        key = build_key(dst, src_name)
 
         # Local file
         if isinstance(src, (str, Path)) and check_path(src):

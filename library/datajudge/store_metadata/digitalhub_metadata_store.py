@@ -10,7 +10,7 @@ from requests.models import Response  # pylint: disable=import-error
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils import config as cfg
 from datajudge.utils.rest_utils import api_post_call, api_put_call
-from datajudge.utils.uri_utils import rebuild_uri
+from datajudge.utils.uri_utils import check_url, rebuild_uri
 
 
 KeyPairs = namedtuple("KeyPairs", ("run_id", "key"))
@@ -106,10 +106,10 @@ class DigitalHubMetadataStore(MetadataStore):
                 kwargs["params"] = {
                     "overwrite": "true" if overwrite else "false"
                     }
-            response = api_post_call(dst, kwargs)
+            response = api_post_call(dst, **kwargs)
             self._parse_response(response, src_type)
         else:
-            response = api_put_call(dst, kwargs)
+            response = api_put_call(dst, **kwargs)
 
     def _build_source_destination(self,
                                   dst: str,
@@ -119,9 +119,8 @@ class DigitalHubMetadataStore(MetadataStore):
         """
         Return source destination API based on input source type.
         """
-        key = "/" + key if key is not None else "/"
-        url = dst + self._endpoints[src_type] + key
-        return rebuild_uri(url)
+        key = "/" if key is None else key
+        return check_url(dst + self._endpoints[src_type] + key)
 
     def _parse_response(self,
                         response: Response,

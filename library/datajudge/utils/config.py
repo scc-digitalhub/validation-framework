@@ -14,7 +14,8 @@ FN_ARTIFACT_METADATA = "artifact_metadata_{}.json"
 FN_VALID_SCHEMA = "table_schema.json"
 FN_FULL_REPORT = "report_full.json"
 FN_INFERRED_SCHEMA = "inferred_schema.json"
-FN_FULL_PROFILE = "profile_report.html"
+FN_FULL_PROFILE_HTML = "profile_report.html"
+FN_FULL_PROFILE_JSON = "profile_report.json"
 
 # API ENDPOINTS
 API_BASE = "/api/project/"

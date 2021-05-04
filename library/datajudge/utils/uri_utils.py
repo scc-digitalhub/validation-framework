@@ -2,7 +2,7 @@
 Common URI utils.
 """
 from pathlib import Path
-from urllib.parse import ParseResult, urlparse, urlunparse
+from urllib.parse import ParseResult, urljoin, urlparse, urlunparse
 
 
 def parse_uri(uri: str) -> ParseResult:
@@ -54,3 +54,20 @@ def rebuild_uri(uri: str, *args) -> str:
                           parsed.query,
                           parsed.fragment))
     return new_uri
+
+def build_key(dst: str, *args) -> str:
+    """
+    Build key to upload objects.
+    """
+    key = str(Path(get_uri_path(dst), *args))
+    if key.startswith("/"):
+        key = key[1:]
+    return key
+
+
+def check_url(url: str) -> str:
+    """
+    Parse an URL and clean it from double '/' character.
+    """
+    parsed = get_uri_path(url).replace('//', '/')
+    return urljoin(url, parsed)
