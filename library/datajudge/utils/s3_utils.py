@@ -56,7 +56,7 @@ def upload_fileobj(client: s3_client,
 
 def get_object(client: s3_client,
                bucket: str,
-               key: str) -> None:
+               key: str) -> bytes:
     """
     Download object from S3.
     """

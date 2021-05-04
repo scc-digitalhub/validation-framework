@@ -13,7 +13,7 @@ from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import check_path, get_path
 from datajudge.utils.io_utils import wrap_string, write_bytesio
 from datajudge.utils.uri_utils import (get_name_from_uri, get_uri_path,
-                                       new_uri_path, parse_uri)
+                                       parse_uri)
 
 
 class FTPArtifactStore(ArtifactStore):
@@ -112,12 +112,6 @@ class FTPArtifactStore(ArtifactStore):
                     self._mkdir(dst)
                 else:
                     raise ex
-
-    def get_run_artifacts_uri(self, run_id: str) -> str:
-        """
-        Return the path of the artifact store for the Run.
-        """
-        return new_uri_path(self.artifact_uri, run_id)
 
     # Partial readaptation from mlflow repo on GitHub.
     @contextmanager

@@ -71,9 +71,3 @@ class LocalArtifactStore(ArtifactStore):
         """
         if not self.data and not check_dir(dst):
             make_dir(dst)
-
-    def get_run_artifacts_uri(self, run_id: str) -> str:
-        """
-        Return the path of the artifact store for the Run.
-        """
-        return get_path(self.artifact_uri, run_id)

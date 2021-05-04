@@ -9,8 +9,9 @@ from requests.models import Response  # pylint: disable=import-error
 
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils import config as cfg
-from datajudge.utils.rest_utils import (api_post_call, api_put_call,
-                                        parse_status_code, parse_url)
+from datajudge.utils.rest_utils import api_post_call, api_put_call
+from datajudge.utils.uri_utils import rebuild_uri
+
 
 KeyPairs = namedtuple("KeyPairs", ("run_id", "key"))
 
@@ -95,20 +96,20 @@ class DigitalHubMetadataStore(MetadataStore):
                     key = elm.key
 
         dst = self._build_source_destination(dst, src_type, key)
-        auth = self._parse_auth()
+        kwargs = {
+            "json": metadata,
+            "auth": self._parse_auth(),
+        }
 
         if key is None:
             if src_type == self._RUN_METADATA:
-                params = {"overwrite": "true" if overwrite else "false"}
-                response = api_post_call(metadata,
-                                         dst,
-                                         auth=auth,
-                                         params=params)
-            else:
-                response = api_post_call(metadata, dst, auth=auth)
+                kwargs["params"] = {
+                    "overwrite": "true" if overwrite else "false"
+                    }
+            response = api_post_call(dst, kwargs)
             self._parse_response(response, src_type)
         else:
-            response = api_put_call(metadata, dst, auth=auth)
+            response = api_put_call(dst, kwargs)
 
     def _build_source_destination(self,
                                   dst: str,
@@ -119,7 +120,8 @@ class DigitalHubMetadataStore(MetadataStore):
         Return source destination API based on input source type.
         """
         key = "/" + key if key is not None else "/"
-        return parse_url(dst + self._endpoints[src_type] + key)
+        url = dst + self._endpoints[src_type] + key
+        return rebuild_uri(url)
 
     def _parse_response(self,
                         response: Response,
@@ -127,7 +129,6 @@ class DigitalHubMetadataStore(MetadataStore):
         """
         Parse the JSON response from the backend APIs.
         """
-        parse_status_code(response)
         try:
             resp = response.json()
             keys = resp.keys()
@@ -152,8 +153,8 @@ class DigitalHubMetadataStore(MetadataStore):
         """
         Return the URL of the data resource for the Run.
         """
-        endpoint = self._endpoints[self._DATA_RESOURCE]
-        return parse_url(self.uri_metadata + endpoint)
+        url = self.uri_metadata + self._endpoints[self._DATA_RESOURCE]
+        return rebuild_uri(url)
 
     def _parse_auth(self) -> Union[tuple]:
         if self.config is not None:

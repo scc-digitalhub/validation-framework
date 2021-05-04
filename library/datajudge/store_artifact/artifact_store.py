@@ -5,7 +5,8 @@ from abc import ABCMeta, abstractmethod
 from io import BytesIO
 from typing import Any, Optional
 
-from datajudge.utils.file_utils import check_dir, make_dir
+from datajudge.utils.file_utils import check_dir, make_dir, write_bytes
+from datajudge.utils.uri_utils import rebuild_uri
 
 
 class ArtifactStore:
@@ -65,11 +66,11 @@ class ArtifactStore:
         Check if there is access to the storage.
         """
 
-    @abstractmethod
     def get_run_artifacts_uri(self, run_id: str) -> str:
         """
-        Return the URI of the artifact store for the Run.
+        Return the path of the artifact store for the Run.
         """
+        return rebuild_uri(self.artifact_uri, run_id)
 
     @staticmethod
     def _check_temp_dir(uri: str) -> None:
@@ -85,5 +86,4 @@ class ArtifactStore:
         """
         Save artifact locally.
         """
-        with open(dst, "wb") as file:
-            file.write(obj)
+        write_bytes(obj, dst)

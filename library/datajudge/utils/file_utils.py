@@ -2,7 +2,6 @@
 Common file utils.
 """
 import glob
-import gzip
 import json
 import os
 import shutil
@@ -119,17 +118,6 @@ def clean_all(path: str) -> None:
     shutil.rmtree(path)
 
 
-# Text
-
-def write_text(string: str,
-               path: Union[str, Path]) -> None:
-    """
-    Write text on a file.
-    """
-    with open(path, "w") as file:
-        file.write(string)
-
-
 # Json
 
 def write_json(data: dict,
@@ -150,7 +138,25 @@ def read_json(path: Union[str, Path]) -> dict:
     return json_dict
 
 
-# Fileobj
+# IO
+
+def write_text(string: str,
+               path: Union[str, Path]) -> None:
+    """
+    Write text on a file.
+    """
+    with open(path, "w") as file:
+        file.write(string)
+
+
+def write_bytes(bytes_: bytes,
+                path: Union[str, Path]) -> None:
+    """
+    Write text on a file.
+    """
+    with open(path, "wb") as file:
+        file.write(bytes_)
+
 
 def write_object(buff: IO,
                  dst: str) -> None:
@@ -161,18 +167,3 @@ def write_object(buff: IO,
     write_mode = "wb" if isinstance(buff, BytesIO) else "w"
     with open(dst, write_mode) as file:
         shutil.copyfileobj(buff, file)
-
-
-def open_file(path: str) -> IO:
-    """
-    Open file and return a buffer.
-    """
-    buffer = BytesIO()
-    if path.endswith(".gz"):
-        with gzip.open(path, "rb") as file:
-            buffer.write(file.read())
-    else:
-        with open(path, "rb") as file:
-            buffer.write(file.read())
-    buffer.seek(0)
-    return buffer

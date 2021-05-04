@@ -15,7 +15,7 @@ from datajudge.utils.io_utils import wrap_string, write_bytesio
 from datajudge.utils.s3_utils import (check_bucket, get_object, s3_client,
                                       upload_file, upload_fileobj)
 from datajudge.utils.uri_utils import (get_name_from_uri, get_uri_netloc,
-                                       get_uri_path, new_uri_path)
+                                       get_uri_path, rebuild_uri)
 
 
 class S3ArtifactStore(ArtifactStore):
@@ -54,7 +54,7 @@ class S3ArtifactStore(ArtifactStore):
         Persist an artifact.
         """
         self._check_access_to_storage()
-        key = new_uri_path(dst, src_name)
+        key = rebuild_uri(dst, src_name)
 
         # Local file
         if isinstance(src, (str, Path)) and check_path(src):
@@ -95,12 +95,6 @@ class S3ArtifactStore(ArtifactStore):
         """
         if not check_bucket(self.client, self.bucket):
             raise RuntimeError("No access to s3 bucket!")
-
-    def get_run_artifacts_uri(self, run_id: str) -> str:
-        """
-        Return the URI of the artifact store for the Run.
-        """
-        return new_uri_path(self.artifact_uri, run_id)
 
     def _get_client(self) -> s3_client:
         """

@@ -1,55 +1,52 @@
 """
 Common REST utils.
 """
-from typing import Optional
-from urllib.parse import urljoin, urlparse
-
 import requests
 from requests.models import HTTPError, Response  # pylint: disable=import-error
 
 
-def api_get_call():
+def api_get_call(url: str,
+                 **kwargs: dict) -> Response:
     """
     REST GET call.
     """
-    pass
+    try:
+        return requests.get(url, **kwargs)
+    except Exception as ex:
+        raise ex
 
 
-def api_post_call(data: dict,
-                  uri: str,
-                  auth: Optional[tuple] = None,
-                  params: Optional[dict] = None) -> dict:
+def api_post_call(url: str,
+                  **kwargs: dict) -> Response:
     """
     REST POST call.
     """
     try:
-        return requests.post(uri, json=data, auth=auth, params=params)
+        return requests.post(url, **kwargs)
     except Exception as ex:
         raise ex
 
 
-def api_put_call(data: dict,
-                 uri: str,
-                 auth: Optional[tuple] = None) -> None:
+def api_put_call(url: str,
+                 **kwargs: dict) -> Response:
     """
     REST PUT call.
     """
     try:
-        return requests.put(uri, json=data, auth=auth)
+        return requests.put(url, **kwargs)
     except Exception as ex:
         raise ex
 
 
-def parse_url(url: str):
+def check_url_availability(url: str) -> None:
     """
-    Parse an URL and clean it from double '/' character.
+    Check URL availability.
     """
-    return urljoin(url, urlparse(url).path.replace('//', '/'))
-
-
-def parse_status_code(response: Response) -> None:
-    error = str(response.json())
-    if response.status_code == 400:
-        raise HTTPError(error)
-    elif response.status_code == 401:
-        raise HTTPError(error)
+    try:
+        response = requests.head(url)
+        if response.status_code != 200:
+            raise HTTPError("Something wrong, response code ",
+                            f"{response.status_code} for url ",
+                            f"{url}.")
+    except Exception as ex:
+        raise ex

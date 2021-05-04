@@ -14,7 +14,7 @@ from datajudge.utils.azure_utils import (check_container, get_object,
 from datajudge.utils.file_utils import check_path, get_path
 from datajudge.utils.io_utils import wrap_string, write_bytesio
 from datajudge.utils.uri_utils import (get_name_from_uri, get_uri_netloc,
-                                       get_uri_path, new_uri_path)
+                                       get_uri_path, rebuild_uri)
 
 
 class AzureArtifactStore(ArtifactStore):
@@ -56,7 +56,7 @@ class AzureArtifactStore(ArtifactStore):
         Persist an artifact.
         """
         self._check_access_to_storage()
-        key = new_uri_path(dst, src_name)
+        key = rebuild_uri(dst, src_name)
 
         # Local file
         if isinstance(src, (str, Path)) and check_path(src):
@@ -97,12 +97,6 @@ class AzureArtifactStore(ArtifactStore):
         """
         if not check_container(self.cont_client):
             raise RuntimeError("No access to Azure container!")
-
-    def get_run_artifacts_uri(self, run_id: str) -> str:
-        """
-        Return the URI of the artifact store for the Run.
-        """
-        return new_uri_path(self.artifact_uri, run_id)
 
     def _get_client(self) -> BlobServiceClient:
         """
