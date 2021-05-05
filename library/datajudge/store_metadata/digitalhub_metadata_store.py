@@ -22,24 +22,13 @@ class DigitalHubMetadataStore(MetadataStore):
 
     Allows the client to interact with the DigitalHub API backend.
 
-    Attributes
-    ----------
-    _key_vault : dict
-        Mapper to retain object reference presents in the backend.
-    _endpoints : dict
-        Mapper to backend metadata endpoints.
-
-    Methods
-    -------
-    _parse_response :
-        Parse the JSON response from the backend APIs.
-
     """
 
     def __init__(self,
                  uri_metadata: str,
                  config:  Optional[dict] = None) -> None:
         super().__init__(uri_metadata, config)
+        # To memorize runs present in the backend
         self._key_vault = {
             self._RUN_METADATA: [],
             self._DATA_RESOURCE: [],
@@ -48,6 +37,7 @@ class DigitalHubMetadataStore(MetadataStore):
             self._DATA_PROFILE: [],
             self._ARTIFACT_METADATA: []
         }
+        # API endpoints
         self._endpoints = {
             self._RUN_METADATA: cfg.API_RUN_METADATA,
             self._DATA_RESOURCE: cfg.API_DATA_RESOURCE,
@@ -156,6 +146,9 @@ class DigitalHubMetadataStore(MetadataStore):
         return rebuild_uri(url)
 
     def _parse_auth(self) -> Union[tuple]:
+        """
+        Parse auth config.
+        """
         if self.config is not None:
             if self.config["auth"] == "basic":
                 auth = self.config["user"], self.config["password"]

@@ -73,7 +73,7 @@ def build_exp_uri(scheme: str,
         if scheme in LOCAL_SCHEME:
             return get_absolute_path(uri, store, experiment_id)
 
-        elif scheme in HTTP_SCHEME:
+        if scheme in HTTP_SCHEME:
             if project_id is not None:
                 url = uri + cfg.API_BASE + project_id
                 return check_url(url)
@@ -82,17 +82,16 @@ def build_exp_uri(scheme: str,
         raise NotImplementedError
 
     # Artifact/data stores
-    elif store in (cfg.ST_DATA, cfg.ST_ARTIFACT):
+    if store in (cfg.ST_DATA, cfg.ST_ARTIFACT):
 
         if scheme in LOCAL_SCHEME:
             return get_absolute_path(uri, store, experiment_id)
-        elif scheme in [*AZURE_SCHEME, *S3_SCHEME,
-                        *HTTP_SCHEME, *FTP_SCHEME]:
+        if scheme in [*AZURE_SCHEME, *S3_SCHEME,
+                      *HTTP_SCHEME, *FTP_SCHEME]:
             return rebuild_uri(uri, store, experiment_id)
         raise NotImplementedError
 
-    else:
-        raise RuntimeError("Invalid store.")
+    raise RuntimeError("Invalid store.")
 
 
 def resolve_uri(uri: str,

@@ -1,87 +1,80 @@
 """
 GenericRun module.
-Implementation of a Run object that can do basic
-task as logging metrics and persist artifacts.
+Implementation of a Run object that can do basic tasks
+as logging metadata and persist artifacts.
 """
+from collections import namedtuple
 from typing import List, Optional
 
-from datajudge.data import SchemaTuple
 from datajudge.run import Run
+from datajudge.utils.utils import guess_mediatype
 
 
 class GenericRun(Run):
     """
     Generic flavoured run.
-
-    Methods
-    -------
-    log_data_resource :
-        Method to log data resource.
-    log_short_report :
-        Method to log short report.
-    log_short_schema :
-        Method to log short schema.
-    persist_data :
-        Shortcut to persist data and validation schema.
-    persist_full_report :
-        Shortcut to persist the full report produced by the validation
-        framework as artifact.
-    persist_inferred_schema :
-        Shortcut to persist the inferred schema produced by the
-        validation framework as artifact.
-    persist_artifact :
-        Method to persist artifacts in the artifact store.
+    Used for tasks such metadata logging and artifacts persistence.
+    Do not use it without passing reports/profiles/schemas to its
+    methods.
 
     """
+
+    # Run
 
     def _update_library_info(self) -> None:
         """
         Update run's info about the validation framework used.
         """
+        self.run_info.validation_library = "-"
+        self.run_info.library_version = "-"
+
+    # Data Resource
 
     def _update_data_resource(self) -> None:
         """
         Update resource with inferred information.
         """
+        # Mediatype
+        self.data_resource.mediatype = guess_mediatype(self.data_resource.path)
 
-    @staticmethod
-    def _parse_report(report: dict, kwargs: dict) -> dict:
+    # Short Report
+
+    def _parse_report(self,
+                      nmtp: namedtuple) -> namedtuple:
         """
         Parse the report.
         """
-        for key in kwargs:
-            try:
-                kwargs[key] = report[key]
-            except KeyError:
-                continue
-        return kwargs
+        try:
+            valid = self.report["valid"]
+            time = self.report["time"]
+            errors = self.report["errors"]
+        except KeyError:
+            valid, time, errors = None, None, None
+        return nmtp(valid, time, errors)
 
-    def _check_report(self, report: Optional[dict] = None) -> None:
+    def _check_report(self,
+                      report: Optional[dict] = None) -> None:
         """
         Validate report before log/persist it.
         """
         if report is not None and not isinstance(report, dict):
             raise TypeError("Must be a dictionary!")
-        elif report is None and self._report is None:
+        if report is None and self.report is None:
             raise TypeError("Provide a non empty valid dictionary!")
 
-    @staticmethod
-    def _infer_schema() -> None:
-        """
-        Method that call infer on a frictionless Resource
-        and return an inferred schema.
-        """
-        return
+    # Short Schema
 
-    @staticmethod
-    def _parse_schema(schema: dict) -> List[SchemaTuple]:
+    def _parse_schema(self,
+                      nmtp: namedtuple) -> List[namedtuple]:
         """
-        Parse an inferred schema and return a standardized
-        ShortSchema.
+        Parse an inferred schema.
         """
-        return [SchemaTuple(f["name"], f["type"]) for f in schema["fields"]]
+        if self.inf_schema is None:
+            return [nmtp("", "")]
+        return [nmtp(f["name"], f["type"]) for f in self.inf_schema["fields"]]
 
-    def _check_schema(self, schema: Optional[dict] = None) -> None:
+    def _check_schema(self,
+                      schema: Optional[dict] = None) -> None:
         """
         Validate schema before log/persist it.
         """
@@ -89,5 +82,21 @@ class GenericRun(Run):
             raise TypeError("Must be a dictionary!")
         if schema is not None and "fields" not in schema:
             raise KeyError("Malformed dictionary!")
-        if schema is None and self._schema is None:
-            raise TypeError("Provide a non empty valid dictionary!")
+        if "name" not in schema["fields"]:
+            raise KeyError("Malformed dictionary!")
+        if "type" not in schema["fields"]:
+            raise KeyError("Malformed dictionary!")
+
+    # Framework wrapper methods
+
+    def infer_schema(self) -> None:
+        raise TypeError("Cannot perform inference with generic run.")
+
+    def infer_resource(self) -> None:
+        raise TypeError("Cannot perform inference with generic run.")
+
+    def validate_resource(self) -> None:
+        raise TypeError("Cannot perform validation with generic run.")
+
+    def _parse_inference(self) -> None:
+        raise TypeError("Cannot perform inference with generic run.")

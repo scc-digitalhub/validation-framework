@@ -1,5 +1,5 @@
 """
-Common file utils.
+Common filesystem utils.
 """
 import glob
 import json
@@ -149,13 +149,13 @@ def write_text(string: str,
         file.write(string)
 
 
-def write_bytes(bytes_: bytes,
+def write_bytes(byt: bytes,
                 path: Union[str, Path]) -> None:
     """
     Write text on a file.
     """
     with open(path, "wb") as file:
-        file.write(bytes_)
+        file.write(byt)
 
 
 def write_object(buff: IO,

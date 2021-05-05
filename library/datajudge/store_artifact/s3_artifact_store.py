@@ -14,8 +14,8 @@ from datajudge.utils.file_utils import check_path, get_path
 from datajudge.utils.io_utils import wrap_string, write_bytesio
 from datajudge.utils.s3_utils import (check_bucket, get_object, s3_client,
                                       upload_file, upload_fileobj)
-from datajudge.utils.uri_utils import (build_key, get_name_from_uri, get_uri_netloc,
-                                       get_uri_path, rebuild_uri)
+from datajudge.utils.uri_utils import (build_key, get_name_from_uri,
+                                       get_uri_netloc, get_uri_path)
 
 
 class S3ArtifactStore(ArtifactStore):
@@ -23,13 +23,6 @@ class S3ArtifactStore(ArtifactStore):
     S3 artifact store object.
 
     Allows the client to interact with S3 based storages.
-    The credentials keys must be the same as the keywords arguments
-    of boto3.client() method.
-
-    Attributes
-    ----------
-    client :
-        An S3 client to interact with the storage.
 
     """
 

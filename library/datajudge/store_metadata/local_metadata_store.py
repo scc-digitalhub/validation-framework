@@ -15,18 +15,6 @@ class LocalMetadataStore(MetadataStore):
 
     Allows the client to interact with local filesystem.
 
-    Attributes
-    ----------
-    _filenames : dict
-        Mapper for output filenames.
-    _artifact_count : int
-        Counter to number artifact stored metadata.
-
-    Methods
-    -------
-    _check_dst_folder :
-        Check if run folder already exist, otherwise it creates it.
-
     """
 
     def __init__(self,

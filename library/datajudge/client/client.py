@@ -48,8 +48,6 @@ class Client:
 
     """
 
-    # add temp folder param
-
     def __init__(self,
                  project_id: Optional[str] = cfg.DEFAULT_PROJ,
                  experiment_name: Optional[str] = cfg.DEFAULT_EXP,

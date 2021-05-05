@@ -1,23 +1,24 @@
 """
-Interface for specific library runs.
+Interface for Run objects.
 """
 # pylint: disable=import-error,invalid-name
 from __future__ import annotations
 
 import json
 import typing
-import warnings
 from abc import ABCMeta, abstractmethod
+from collections import namedtuple
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 from pandas_profiling import ProfileReport
-from datajudge.data import ShortReport, ShortSchema
+from datajudge.data import (ShortReport, ShortSchema,
+                            SchemaTuple, ReportTuple)
 from datajudge.utils import config as cfg
 from datajudge.utils.file_utils import clean_all
 from datajudge.utils.io_utils import write_bytesio
 from datajudge.utils.uri_utils import get_name_from_uri
-from datajudge.utils.utils import data_listify, get_time
+from datajudge.utils.utils import data_listify, get_time, warn
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
@@ -29,23 +30,48 @@ if typing.TYPE_CHECKING:
 
 class Run:
     """
-    Run abstract object.
-    The run is the main interface to interact with data and metadata.
+    Run object.
+    The Run is the main interface to interact with data and metadata.
     It interacts both with the Client and the Data Resource/Package.
-
-    Attributes
-    ----------
-    run_info : RunInfo
-        The metadata info of the run.
-    data_resource : DataResource
-        A DataResource object.
-    client : Client
-        A Client object that interact with the storages.
 
     Methods
     -------
+    log_data_resource :
+        Log data resource.
+    log_short_report :
+        Log short report.
+    log_short_schema :
+        Log short schema.
+    log_profile :
+        Log short version of pandas_profiling profile.
+    persist_artifact :
+        Persist an artifact in the artifact store.
+    persist_data :
+        Persist input data and validation schema.
+    persist_full_report :
+        Persist a full report produced by the validation
+        framework as artifact.
+    persist_inferred_schema :
+        Persist an inferred schema produced by the
+        validation framework as artifact.
+    persist_profile :
+        Persist pandas_profiling JSON and HTML profile.
+    fetch_artifact :
+        Fetch an artifact from data store.
+    fetch_input_data :
+        Fetch input data from data store.
+    fetch_validation_schema :
+        Fetch validation schema from data store.
+    infer_profile :
+        Generate a pandas_profiling profile.
+    infer_schema :
+        Infer schema from resource
+    infer_resource :
+        Do some inference on the input resource.
+    validate_resource :
+        Validate a resource based on validaton framework.
     get_run :
-        Return Run Info as dictionary.
+        Get run info.
 
     """
 
@@ -70,7 +96,7 @@ class Run:
                  client: Client,
                  overwrite: bool) -> None:
 
-        self._data_resource = data_resource
+        self.data_resource = data_resource
         self._client = client
         self.run_info = run_info
         self._overwrite = overwrite
@@ -80,15 +106,15 @@ class Run:
         self._val_schema = None
 
         # Cahcing results of inference/validation/profiling
-        self._inferred = None
-        self._inf_schema = None
-        self._report = None
-        self._profile = None
+        self.inferred = None
+        self.inf_schema = None
+        self.report = None
+        self.profile = None
 
         self._update_library_info()
         self._log_run()
 
-    # Run metadata
+    # Run
 
     @abstractmethod
     def _update_library_info(self) -> None:
@@ -98,12 +124,12 @@ class Run:
 
     def _log_run(self) -> None:
         """
-        Method to log run's metadata.
+        Log run's metadata.
         """
         metadata = self._get_content(self.run_info.to_dict())
         self._log_metadata(metadata, self._RUN_METADATA)
 
-    # DataResource
+    # Data Resource
 
     @abstractmethod
     def _update_data_resource(self) -> None:
@@ -112,14 +138,14 @@ class Run:
         """
 
     def log_data_resource(self,
-                          infer: bool = False) -> None:
+                          infer: bool = True) -> None:
         """
-        Method to log data resource.
+        Log data resource.
 
         Parameters
         ----------
-        infer : bool, default = False
-            Options to make inference on data resource.
+        infer : bool, default = True
+            If True, make inference on resource.
 
         """
         if infer:
@@ -133,7 +159,7 @@ class Run:
                                                 self.run_info.run_id)
             self.run_info.data_resource_uri = uri_resource
 
-    # Short report
+    # Short Report
 
     @staticmethod
     def _create_short_report(kwargs: dict) -> ShortReport:
@@ -144,22 +170,22 @@ class Run:
 
     @abstractmethod
     def _parse_report(self,
-                      report: Any, kwargs: dict) -> dict:
+                      nmtp: namedtuple) -> namedtuple:
         """
         Parse the report produced by the validation framework.
         """
 
     def _set_report(self,
                     report: Optional[Any] = None,
-                    infer: bool = False) -> None:
+                    infer: bool = True) -> None:
         """
         Set private attribute 'report'.
         """
-        if self._report is None:
+        if self.report is None:
             if report is None and infer:
-                self._report = self.validate_resource()
+                self.report = self.validate_resource()
             else:
-                self._report = report
+                self.report = report
 
     @abstractmethod
     def _check_report(self,
@@ -170,9 +196,9 @@ class Run:
 
     def log_short_report(self,
                          report: Optional[dict] = None,
-                         infer: bool = False) -> None:
+                         infer: bool = True) -> None:
         """
-        Method to log short report.
+        Log short report.
 
         Parameters
         ----------
@@ -180,38 +206,30 @@ class Run:
             A report object to be logged. If it is not
             provided, the run will check its own report attribute.
         infer : bool, default = True
-            If True, try to infer schema from resource.
+            If True, try to validate the resource.
 
         """
         self._check_report(report)
         self._set_report(report, infer)
 
+        if self.report is None:
+            warn("No report provided! Skipped log.")
+            return
+
+        args = self._parse_report(ReportTuple)
         report_args = {
-            "time": None,
-            "valid": None,
-            "errors": None
+            "time": args.time,
+            "valid": args.valid,
+            "errors": args.errors,
+            "data_resource": self.run_info.data_resource_uri,
+            "experiment_name": self.run_info.experiment_name,
+            "run_id": self.run_info.run_id
         }
-
-        if self._report is not None:
-            report_args = self._parse_report(self._report, report_args)
-
-        report_args["data_resource"] = self.run_info.data_resource_uri
-        report_args["experiment_name"] = self.run_info.experiment_name
-        report_args["run_id"] = self.run_info.run_id
-
-        short_schema = self._create_short_report(report_args)
-
-        metadata = self._get_content(short_schema.to_dict())
+        short_report = self._create_short_report(report_args)
+        metadata = self._get_content(short_report.to_dict())
         self._log_metadata(metadata, self._SHORT_REPORT)
 
-    # Short schema
-
-    @abstractmethod
-    def _infer_schema(self) -> Any:
-        """
-        Parse the inferred schema produced by the validation
-        framework.
-        """
+    # Short Schema
 
     @staticmethod
     def _create_short_schema(fields: List[Dict[str, str]]
@@ -223,7 +241,7 @@ class Run:
 
     @abstractmethod
     def _parse_schema(self,
-                      schema: Any) -> ShortSchema:
+                      nmtp: namedtuple) -> namedtuple:
         """
         Parse the inferred schema produced by the validation
         framework.
@@ -231,15 +249,15 @@ class Run:
 
     def _set_schema(self,
                     schema: Optional[Any] = None,
-                    infer: bool = False) -> None:
+                    infer: bool = True) -> None:
         """
-        Set private attribute 'inferred schema'.
+        Set private attribute 'inf_schema'.
         """
-        if self._inf_schema is None:
+        if self.inf_schema is None:
             if schema is None and infer:
-                self._inf_schema = self._infer_schema()
+                self.inf_schema = self.infer_schema()
             else:
-                self._inf_schema = schema
+                self.inf_schema = schema
 
     @abstractmethod
     def _check_schema(self,
@@ -250,9 +268,9 @@ class Run:
 
     def log_short_schema(self,
                          schema: Optional[dict] = None,
-                         infer: bool = False) -> dict:
+                         infer: bool = True) -> dict:
         """
-        Method to log short schema.
+        Log short schema.
 
         Parameters
         ----------
@@ -266,59 +284,16 @@ class Run:
         self._check_schema(schema)
         self._set_schema(schema, infer)
 
-        if self._inf_schema is not None:
-            parsed = self._parse_schema(self._inf_schema)
+        if self.inf_schema is None:
+            warn("No schema provided! Skipped log.")
+            return
 
-            short_schema = self._create_short_schema(parsed)
-            metadata = self._get_content(short_schema.to_dict())
+        parsed = self._parse_schema(SchemaTuple)
+        short_schema = self._create_short_schema(parsed)
+        metadata = self._get_content(short_schema.to_dict())
+        self._log_metadata(metadata, self._SHORT_SCHEMA)
 
-            self._log_metadata(metadata, self._SHORT_SCHEMA)
-
-    # Data profile
-
-    @staticmethod
-    def _parse_profile(profile: ProfileReport) -> dict:
-        """
-        Parse the profile generated by pandas profiling.
-        """
-        dict_ = json.loads(profile.to_json())
-        keys = [k for k in ["analysis", "table", "package"] if k in dict_]
-        short_profile = {k: dict_[k] for k in keys}
-        return short_profile
-
-    def _check_profile(self,
-                       profile: Optional[ProfileReport] = None
-                       ) -> ProfileReport:
-        """
-        Check validity of profile.
-        """
-        if profile is None:
-            if self.profile is None:
-                raise RuntimeError("No profile provided, skipping!")
-            return self.profile
-
-        if profile is not None and not isinstance(profile, ProfileReport):
-            raise TypeError("Expected frictionless Report!")
-
-        return profile
-
-    def log_profile(self,
-                    profile: Optional[ProfileReport] = None
-                    ) -> None:
-        """
-        Method to log a pandas profile.
-        """
-        to_parse = self._check_profile(profile)
-        parsed = self._parse_profile(to_parse)
-        metadata = self._get_content(parsed)
-        self._log_metadata(metadata, self._DATA_PROFILE)
-
-    @abstractmethod
-    def _parse_inference(self) -> Tuple[str, dict]:
-        """
-        Method to parse inference from specific
-        validation framework.
-        """
+    # Short Profile
 
     @staticmethod
     def _read_df(path: Union[str, List[str]],
@@ -349,10 +324,10 @@ class Run:
 
         return df
 
-    def generate_profile(self,
-                         **kwargs: dict) -> None:
+    def infer_profile(self,
+                      **kwargs: dict) -> ProfileReport:
         """
-        Method to generate profile.
+        Generate pandas_profiling profile.
 
         Parameters
         ----------
@@ -365,7 +340,64 @@ class Run:
                            file_format,
                            **pandas_kwargs)
         profile = ProfileReport(df, **kwargs)
-        self._profile = profile
+        return profile
+
+    def _parse_profile(self) -> dict:
+        """
+        Parse the profile generated by pandas profiling.
+        """
+        dict_ = json.loads(self.profile.to_json())
+        keys = [k for k in ["analysis", "table", "package"] if k in dict_]
+        short_profile = {k: dict_[k] for k in keys}
+        return short_profile
+
+    def _set_profile(self,
+                     profile: Optional[ProfileReport] = None,
+                     infer: bool = True) -> None:
+        """
+        Set private attribute 'profile'.
+        """
+        if self.profile is None:
+            if profile is None and infer:
+                self.profile = self.infer_profile()
+            else:
+                self.profile = profile
+
+    @staticmethod
+    def _check_profile(profile: Optional[ProfileReport] = None
+                       ) -> None:
+        """
+        Check validity of profile.
+        """
+        if profile is not None and not isinstance(profile, ProfileReport):
+            raise TypeError("Expected frictionless Report!")
+
+    def log_profile(self,
+                    profile: Optional[ProfileReport] = None,
+                    infer: bool = True
+                    ) -> None:
+        """
+        Log a pandas_profiling profile.
+
+        Parameters
+        ----------
+        profile : ProfileReport, default = None
+            An pandas_profiling report to be logged. If it is not
+            provided, the run will check its own profile attribute.
+        infer : bool, default = True
+            If True, profile the resource.
+
+        """
+        self._check_profile(profile)
+        self._set_profile(profile, infer)
+
+        if self.profile is None:
+            warn("No profile provided! Skipped log.")
+            return
+
+        parsed = self._parse_profile()
+        metadata = self._get_content(parsed)
+        self._log_metadata(metadata, self._DATA_PROFILE)
 
     # Artifact metadata
 
@@ -385,7 +417,7 @@ class Run:
                       src_name: Optional[str] = None
                       ) -> None:
         """
-        Method to log artifact metadata.
+        Log artifact metadata.
         """
         uri = self.run_info.run_artifacts_uri
         metadata = self._get_artifact_metadata(uri, src_name)
@@ -410,7 +442,7 @@ class Run:
                       metadata: dict,
                       src_type: str) -> None:
         """
-        Method to log generic metadata.
+        Log generic metadata.
         """
         self._client.log_metadata(
                            metadata,
@@ -445,7 +477,7 @@ class Run:
     def fetch_artifact(self,
                        uri: str) -> str:
         """
-        Method to fetch artifact from backend.
+        Fetch artifact from backend.
 
         Parameters
         ----------
@@ -460,7 +492,7 @@ class Run:
                      data_name: Optional[Union[str, list]] = None,
                      schema_name: Optional[str] = None) -> None:
         """
-        Shortcut to persist data and validation schema.
+        Persist data and validation schema.
 
         Parameters
         ----------
@@ -489,15 +521,13 @@ class Run:
             src_name = schema_name if schema_name is not None \
                                    else get_name_from_uri(schema)
             self.persist_artifact(schema, src_name)
-        else:
-            warnings.warn("No validation schema is provided!")
             return
+        warn("No validation schema is provided!")
 
     def persist_full_report(self,
                             report: Optional[Any] = None) -> None:
         """
-        Shortcut to persist a report produced by a validation
-        framework.
+        Persist a report produced by a validation framework.
 
         Parameters
         ----------
@@ -505,19 +535,18 @@ class Run:
             An report object produced by a validation library.
 
         """
-        if report is None and self._report is None:
-            warnings.warn("No report provided, skipping!")
+        if report is None and self.report is None:
+            warn("No report provided, skipping!")
             return
         if report is None:
-            report = self._report
+            report = self.report
         self.persist_artifact(dict(report),
                               src_name=self._FULL_REPORT)
 
     def persist_inferred_schema(self,
                                 schema: Optional[Any] = None) -> None:
         """
-        Shortcut to persist an inferred schema produced by a validation
-        framework.
+        Persist an inferred schema produced by a validation framework.
 
         Parameters
         ----------
@@ -525,11 +554,11 @@ class Run:
             An inferred schema object produced by a validation library.
 
         """
-        if schema is None and self._inf_schema is None:
-            warnings.warn("No schema provided, skipping!")
+        if schema is None and self.inf_schema is None:
+            warn("No schema provided, skipping!")
             return
         if schema is None:
-            schema = self._inf_schema
+            schema = self.inf_schema
         self.persist_artifact(dict(schema),
                               src_name=self._SCHEMA_INFERRED)
 
@@ -537,11 +566,11 @@ class Run:
                         profile: Optional[ProfileReport] = None
                         ) -> None:
         """
-        Shortcut to persist the profile made with pandas
-        profiling, both in JSON and HTML format.
+        Persist the profile made with pandas_profiling,
+        both in JSON and HTML format.
         """
         if self.profile is None and profile is None:
-            warnings.warn("No profile provided, skipping!")
+            warn("No profile provided, skipping!")
             return
         if profile is None:
             string_html = self.profile.to_html()
@@ -563,7 +592,7 @@ class Run:
                          metadata: Optional[dict] = None,
                          ) -> None:
         """
-        Method to persist artifacts in the artifact store.
+        Persist artifacts in the artifact store.
 
         Parameters
         ----------
@@ -586,6 +615,13 @@ class Run:
     # Frameworks wrapper methods
 
     @abstractmethod
+    def infer_schema(self) -> Any:
+        """
+        Parse the inferred schema produced by the validation
+        framework.
+        """
+
+    @abstractmethod
     def infer_resource(self) -> Any:
         """
         Resource inference method.
@@ -597,6 +633,13 @@ class Run:
         Resource validation method.
         """
 
+    @abstractmethod
+    def _parse_inference(self) -> Tuple[str, dict]:
+        """
+        Parse inference from specific validation framework.
+        Used by profiling.
+        """
+
     # Getter
 
     def get_run(self) -> dict:
@@ -604,20 +647,6 @@ class Run:
         Return a dictionary of run info attributes.
         """
         return self.run_info.to_dict()
-
-    @property
-    def data_resource(self) -> DataResource:
-        """
-        Return a DataResource.
-        """
-        return self._data_resource
-
-    @property
-    def profile(self) -> ProfileReport:
-        """
-        Return ProfileReport.
-        """
-        return self._profile
 
     # Context manager
 

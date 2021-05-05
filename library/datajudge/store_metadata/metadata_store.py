@@ -18,23 +18,21 @@ class MetadataStore:
     metadata_uri : str
         An URI string that points to the storage.
     config : dict, default = None
-        A dictionary containing the credential needed to performs
-        actions on the storage.
+        A dictionary with the credentials/configurations
+        for the backend storage.
 
     Methods
     -------
     init_run :
         Check run enviroment existence.
-    persist_metadata :
-        Method that persist metadata.
+    log_metadata :
+        Log metadata to backend.
     get_run_metadata_uri :
         Return the URI of the metadata store for the Run.
     get_data_resource_uri :
         Return the URI of the data resource for the Run.
-    _build_source_destination :
-        Return source destination based on source type.
     get_run_id :
-        Return a string UID for a Run.
+        Return a string UUID for a Run.
 
     """
 

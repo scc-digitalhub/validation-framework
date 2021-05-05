@@ -1,8 +1,9 @@
 """
 Common REST utils.
 """
+# pylint: disable=import-error
 import requests
-from requests.models import HTTPError, Response  # pylint: disable=import-error
+from requests.models import HTTPError, Response
 
 
 def api_get_call(url: str,

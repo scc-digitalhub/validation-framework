@@ -3,7 +3,11 @@ ShortReport module.
 Implementation of a Short Report common structure.
 """
 from datetime import datetime
+from collections import namedtuple
 from typing import Optional
+
+
+ReportTuple = namedtuple("ReportTuple", ("time", "valid", "errors"))
 
 
 class ShortReport:

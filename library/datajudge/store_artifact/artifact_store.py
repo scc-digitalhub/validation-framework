@@ -19,15 +19,19 @@ class ArtifactStore:
     artifact_uri : str
         An URI string that points to the storage.
     config : dict, default = None
-        A dictionary containing the credential needed to performs
-        actions on the storage.
+        A dictionary with the credentials/configurations
+        for the backend storage.
+    data : bool, default = False
+        If True, Run uses ArtifactStore only to fetch artifact
+        from backend. If False, Run uses ArtifactStore only to
+        persist data into the backend.
 
     Methods
     -------
     persist_artifact :
         Method to persist an artifact.
-    _check_access_to_storage :
-        Check if there is access to the storage.
+    fetch_artifact :
+        Method to fetch an artifact.
     get_run_artifacts_uri :
         Return the URI of the artifact store for the Run.
 

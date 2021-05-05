@@ -13,7 +13,7 @@ class BytesIOWrapper(BufferedReader):
     """
 
     def __init__(self, text_io_buffer, encoding=None, errors=None, **kwargs):
-        super(BytesIOWrapper, self).__init__(text_io_buffer, **kwargs)
+        super().__init__(text_io_buffer, **kwargs)
         self.encoding = encoding or text_io_buffer.encoding or 'utf-8'
         self.errors = errors or text_io_buffer.errors or 'strict'
 
@@ -36,8 +36,9 @@ def wrap_bytes(src: IO) -> StringIO:
     """
     Wrap a BytesIO in a StringIO.
     """
-    src.seek(0)
-    return TextIOWrapper(src)
+    if isinstance(src, BytesIO):
+        return TextIOWrapper(src)
+    return src
 
 
 def wrap_string(src: IO) -> BytesIO:
@@ -45,8 +46,7 @@ def wrap_string(src: IO) -> BytesIO:
     Wrap a StringIO in a BytesIO.
     """
     if isinstance(src, StringIO):
-        src = BytesIOWrapper(src)
-    src.seek(0)
+        return BytesIOWrapper(src)
     return src
 
 

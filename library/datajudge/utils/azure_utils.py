@@ -1,6 +1,7 @@
 """
 Common Azure utils.
 """
+# pylint: disable=import-error
 from typing import IO
 
 from azure.storage.blob import ContainerClient

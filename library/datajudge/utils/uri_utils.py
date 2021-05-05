@@ -55,6 +55,7 @@ def rebuild_uri(uri: str, *args) -> str:
                           parsed.fragment))
     return new_uri
 
+
 def build_key(dst: str, *args) -> str:
     """
     Build key to upload objects.

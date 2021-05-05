@@ -42,6 +42,9 @@ class DataResource:
     to_dict :
         Transform the object in a dictionary.
 
+    get_metadata :
+        Return some metadata to attach to artifacts.
+
     Notes
     -----
     The following attributes are inferred by the validation framework.

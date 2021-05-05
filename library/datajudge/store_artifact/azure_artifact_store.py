@@ -13,8 +13,8 @@ from datajudge.utils.azure_utils import (check_container, get_object,
                                          upload_file, upload_fileobj)
 from datajudge.utils.file_utils import check_path, get_path
 from datajudge.utils.io_utils import wrap_string, write_bytesio
-from datajudge.utils.uri_utils import (build_key, get_name_from_uri, get_uri_netloc,
-                                       get_uri_path, rebuild_uri)
+from datajudge.utils.uri_utils import (build_key, get_name_from_uri,
+                                       get_uri_netloc, get_uri_path)
 
 
 class AzureArtifactStore(ArtifactStore):
@@ -22,13 +22,6 @@ class AzureArtifactStore(ArtifactStore):
     Azure artifact store object.
 
     Allows the client to interact with azure based storages.
-    The credentials keys ...
-
-    Attributes
-    ----------
-    client :
-        An Azure BlobServiceClient client to interact with the
-        storage.
 
     """
 
@@ -39,7 +32,7 @@ class AzureArtifactStore(ArtifactStore):
         super().__init__(artifact_uri, config, data)
         # Get BlobService Client
         self.client = self._get_client()
-        
+
         # Get container client
         self.container = get_uri_netloc(self.artifact_uri)
         self.cont_client = self.client.get_container_client(self.container)

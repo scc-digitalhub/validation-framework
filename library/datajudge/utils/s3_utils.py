@@ -1,13 +1,13 @@
 """
 Common S3 utils.
 """
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name,import-error,unused-import
 from typing import IO, Type
 
-import botocore.client as bc
+import botocore.client
 
 
-s3_client = Type["bc.S3"]
+s3_client = Type["botocore.client.S3"]
 
 
 def check_bucket(client: s3_client,
