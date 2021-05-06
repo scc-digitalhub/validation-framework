@@ -34,7 +34,7 @@ class FTPArtifactStore(ArtifactStore):
             self.config = {
                 "host": parsed.hostname,
                 "port": 21 if parsed.port is None else parsed.port,
-                "username": parsed.username,
+                "user": parsed.username,
                 "password": parsed.password,
                 }
 
@@ -118,7 +118,7 @@ class FTPArtifactStore(ArtifactStore):
     def _get_client(self):
         ftp = FTP()
         ftp.connect(self.config["host"], self.config["port"])
-        ftp.login(self.config["username"], self.config["password"])
+        ftp.login(self.config["user"], self.config["password"])
         yield ftp
         ftp.close()
 

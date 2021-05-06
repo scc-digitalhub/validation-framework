@@ -93,7 +93,6 @@ class S3ArtifactStore(ArtifactStore):
         """
         Return boto client.
         """
-        return boto3.client('s3',
-                            config=Config(signature_version='s3v4'),
-                            region_name='us-east-1',
-                            **self.config)
+        if "config" not in self.config:
+            self.config["config"] = Config(signature_version='s3v4')
+        return boto3.client('s3', **self.config)
