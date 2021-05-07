@@ -1,7 +1,7 @@
 # Authentication
 
-*Datajudge* allows to pass credential to a backend storages through the `Client`.
-When a `Client` is istantiated, you can set credential for three `store` objects:
+*Datajudge* allows passing credential to backend storage through the `Client`.
+When a `Client` is instantiated, you can set the credentials for three `store` objects:
 
 - `Metadata store`
 - `Artifact store`
@@ -10,9 +10,9 @@ When a `Client` is istantiated, you can set credential for three `store` objects
 ## Metadata store
 
 The `Client` uses this store to log metadata to the backend.
-At the moment there are two backend supported, the *local filesystem* and the *DigitalHub API backend*.
+At the moment there are two backends supported, the *local filesystem* and the *DigitalHub API backend*.
 
-The *DigitalHub API backend* implements a basic authentication method. An user is enabled to execute runs in the context of a specific `project`. The user must provides to the `Client` an three things:
+The *DigitalHub API backend* implements a basic authentication method. You can execute runs in the context of a specific `project`. You must provides to the `Client` three things:
 
 - Project id
 - Endpoint of DigitalHub API
@@ -40,14 +40,14 @@ client = dj.Client(project_id=PROJECT_ID,
 ## Artifact/Data store
 
 The `Client` uses these objects to persist/fetch data into/from the backend storage.
-*Datajudge* offers five plugin out-of-th-box for *Artifact/Data store*, and four of them may require authentication:
+*Datajudge* offers five plugin out-of-the-box for *Artifact/Data store*, and four of them may require authentication:
 
 - Azure
 - S3
 - FTP
 - HTTP
 
-Similarly ot the *Metadata store*, the way of passing credentials to the `Client` is the following:
+Similarly to the *Metadata store*, the way of passing credentials to the `Client` is the following:
 
 ```python
 import datajudge as dj
@@ -70,8 +70,8 @@ ENDPOINT = "wasbs://container/partition(s)"
 ```
 
 **Credentials**</br>
-The credentials can be provided inside a `dict`.
-There are two ways to authenticate the user, through *connection string* or through *access key* and *account name*.
+The credentials must be provided inside a `dict`.
+There are two ways of authentication, through *connection string* or through *access key* and *account name*.
 
 - *connection string*
 
@@ -101,8 +101,8 @@ ENDPOINT = "s3://container/partition(s)"
 ```
 
 **Credentials**</br>
-The credentials can be provided inside a `dict`.
-The keys are the `**kwargs` passed to a `boto3.client` constructor.
+The credentials must be provided inside a `dict`.
+The parameters are the `**kwargs` passed to a `boto3.client` constructor.
 
 ```python
 CREDENTIALS = {
@@ -124,7 +124,7 @@ ENDPOINT = "ftp://host:port/path"
 ```
 
 **Credentials**</br>
-The credentials can be provided in a `dict` or directly in the *endpoint*.
+The credentials can be provided in a `dict` or directly in the *endpoint path*.
 
 - *endpoint*
 
@@ -155,7 +155,7 @@ ENDPOINT = "http://host:port/path"
 ```
 
 **Credentials**</br>
-The credentials can be provided inside a `dict`.
+The credentials must be provided inside a `dict`
 
 ```python
 CREDENTIALS = {

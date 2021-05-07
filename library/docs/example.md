@@ -20,7 +20,7 @@ data = dj.DataResource(PATH_DATA,
                        description=DESC)
 ```
 
-We then instantiate a `Client` object. With a `Client` we can interact with the storagesa and create `Run`.
+We then instantiate a `Client` object. With a `Client` we can interact with the storages and create runs.
 We can provide an `experment_name` parameter to the constructor.
 
 ```python
@@ -38,7 +38,7 @@ The run requires two mandatory parameters, `data_resource` and `validation_libra
 run = client.create_run(data, "frictionless")
 ```
 
-The first parameter is a `DataResource` object, the second is a `str` indicating the name of the desired validation framework.
+The first parameter is a `DataResource` object, the second is a `str` identifying a desired validation framework.
 We can use the `Run` as *context manager*. First, we log the *Data Resource*:
 
 ```python
@@ -48,7 +48,7 @@ with run:
 
 *Datajudge* make in the background some inference on data and update the *Data Resource* object with information like file extension, hashing, media type, etc.
 
-When we log the short report, the library executes the validation process with `fricionless` method `validate_resource`.
+When we log the short report, the library executes the validation process with the `fricionless` method `validate_resource`.
 
 ```python
     run.log_short_report()

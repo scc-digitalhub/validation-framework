@@ -10,9 +10,9 @@
 - `Short Report`
   - A concise and anonymized version of the report created by the validation framework.
 - `Short Schema`
-  - A simple representation of the input data schema, describing name and type of the columns.
+  - A simple representation of the input data schema, describing columns names and types.
 - `Short Profile`
-  - A reduced and anonymized version of the report produce by `pandas profiling` package.
+  - A reduced and anonymized version of the report produced by `pandas profiling` package.
 - `Artifact metadata`
   - A series of metadata that associate the artifacts persisted by the user with a run and indicate their location.
 
