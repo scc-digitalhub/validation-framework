@@ -7,6 +7,8 @@ from collections import namedtuple
 from typing import Optional
 
 
+# pylint: disable=too-many-arguments
+
 ReportTuple = namedtuple("ReportTuple", ("time", "valid", "errors"))
 
 

@@ -59,8 +59,8 @@ class FrictionlessRun(Run):
                     setattr(self.data_resource, key, inferred["stats"][key])
 
             # Mediatype
-            mt = guess_mediatype(self.data_resource.path)
-            self.data_resource.mediatype = mt
+            medtype = guess_mediatype(self.data_resource.path)
+            self.data_resource.mediatype = medtype
 
         except KeyError as kex:
             raise kex
@@ -121,6 +121,7 @@ class FrictionlessRun(Run):
         resource = self.infer_resource()
         if "schema" in resource:
             return resource["schema"]
+        warn("Unable to infer schema.")
         return None
 
     def infer_resource(self) -> Resource:

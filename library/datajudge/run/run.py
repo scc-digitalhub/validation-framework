@@ -675,7 +675,10 @@ class Run:
         # Cleanup tmp files
         self._data = None
         self._val_schema = None
-        clean_all(self._client.tmp_dir)
+        try:
+            clean_all(self._client.tmp_dir)
+        except FileNotFoundError:
+            pass
 
     # Dunders
 

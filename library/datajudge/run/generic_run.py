@@ -79,13 +79,19 @@ class GenericRun(Run):
         Validate schema before log/persist it.
         """
         if schema is not None and not isinstance(schema, dict):
-            raise TypeError("Must be a dictionary!")
+            raise TypeError("Must be a dict!")
+
+        # Basically we accept a frictionless like schema
         if schema is not None and "fields" not in schema:
-            raise KeyError("Malformed dictionary!")
-        if "name" not in schema["fields"]:
-            raise KeyError("Malformed dictionary!")
-        if "type" not in schema["fields"]:
-            raise KeyError("Malformed dictionary!")
+            raise KeyError("Provide a dict with 'fields' key.")
+
+        if isinstance(schema["fields"], list):
+            for i in schema["fields"]:
+                if "name" not in i and "type" not in i:
+                    raise KeyError("Provide a dict with 'name' ",
+                                   "and 'type' keys.")
+        else:
+            raise TypeError("Must be a list of dict!")
 
     # Framework wrapper methods
 

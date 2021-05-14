@@ -5,6 +5,8 @@ Implementation of the basic Run's metadata.
 from datajudge.utils.utils import get_time
 
 
+# pylint: disable=too-many-instance-attributes,too-many-arguments
+
 class RunInfo:
     """
     Run's metadata.

@@ -37,9 +37,9 @@ class HTTPArtifactStore(ArtifactStore):
         """
         Persist an artifact.
         """
-        self._check_access_to_storage()
+        self._check_access_to_storage(dst)
 
-        url = check_url(dst, src_name)
+        url = check_url(dst)
 
         kwargs = {
             "auth": self._parse_auth()
@@ -79,6 +79,7 @@ class HTTPArtifactStore(ArtifactStore):
         self._store_fetched_artifact(obj, filepath)
         return filepath
 
+    # pylint: disable=arguments-differ
     def _check_access_to_storage(self, dst: str) -> None:
         """
         Check if there is access to the storage.
