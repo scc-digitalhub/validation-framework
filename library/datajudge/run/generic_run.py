@@ -78,6 +78,9 @@ class GenericRun(Run):
         """
         Validate schema before log/persist it.
         """
+        if schema is None:
+            return
+
         if schema is not None and not isinstance(schema, dict):
             raise TypeError("Must be a dict!")
 
