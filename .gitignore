@@ -1,5 +1,6 @@
 server/HELP.md
 server/target/
+server/src/main/resources/application-local.yml
 !server/.mvn/wrapper/maven-wrapper.jar
 !**/server/src/main/**/target/
 !**/server/src/test/**/target/
