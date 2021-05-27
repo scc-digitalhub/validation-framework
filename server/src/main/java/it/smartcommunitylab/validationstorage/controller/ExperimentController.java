@@ -18,52 +18,51 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
-import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
-import it.smartcommunitylab.validationstorage.model.dto.ArtifactMetadataDTO;
-import it.smartcommunitylab.validationstorage.service.ArtifactMetadataService;
+import it.smartcommunitylab.validationstorage.model.Experiment;
+import it.smartcommunitylab.validationstorage.model.dto.ExperimentDTO;
+import it.smartcommunitylab.validationstorage.service.ExperimentService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(value = "/api/project")
 @RequiredArgsConstructor
 @PreAuthorize(ValidationStorageUtils.PREAUTH_PROJECTID)
-public class ArtifactMetadataController {
-	private final ArtifactMetadataService documentService;
+public class ExperimentController {
 	
-	@GetMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA + "/{id}")
-	public ResponseEntity<ArtifactMetadata> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
+	private final ExperimentService documentService;
+	
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{id}")
+	public ResponseEntity<Experiment> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
 		return ResponseEntity.ok(documentService.findDocumentById(projectId, id));
 	}
 	
-	@GetMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA)
-	public ResponseEntity<List<ArtifactMetadata>> findDocuments(@PathVariable String projectId,
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT)
+	public ResponseEntity<List<Experiment>> findDocuments(@PathVariable String projectId,
 															@RequestParam("experiment_id") Optional<String> experimentId,
-															@RequestParam("run_id") Optional<String> runId,
 															@RequestParam("search") Optional<String> search) {
-		return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
+		return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, search));
 	}
 	
-	@PostMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA)
-	public ResponseEntity<ArtifactMetadata> createDocument(@PathVariable String projectId, @RequestBody @Valid ArtifactMetadataDTO request) {
+	@PostMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT)
+	public ResponseEntity<Experiment> createDocument(@PathVariable String projectId, @RequestBody @Valid ExperimentDTO request) {
 		return ResponseEntity.ok(documentService.createDocument(projectId, request));
 	}
 	
-	@PutMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA + "/{id}")
-	public ResponseEntity<ArtifactMetadata> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid ArtifactMetadataDTO request) {
+	@PutMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{id}")
+	public ResponseEntity<Experiment> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid ExperimentDTO request) {
 		return ResponseEntity.ok(documentService.updateDocument(projectId, id, request));
 	}
 	
-	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA + "/{id}")
+	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{id}")
 	public ResponseEntity<Void> deleteDocumentById(@PathVariable String projectId, @PathVariable String id) {
 		documentService.deleteDocumentById(projectId, id);
 		return ResponseEntity.ok().build();
 	}
 	
-	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA)
+	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT)
 	public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
-												@RequestParam("experiment_id") Optional<String> experimentId,
-												@RequestParam("run_id") Optional<String> runId) {
-		documentService.deleteDocumentsByProjectId(projectId, experimentId, runId);
+												@RequestParam("experiment_id") Optional<String> experimentId) {
+		documentService.deleteDocumentsByProjectId(projectId, experimentId);
 		return ResponseEntity.ok().build();
 	}
 }

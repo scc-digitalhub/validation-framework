@@ -9,19 +9,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.server.ResponseStatusException;
 
-import it.smartcommunitylab.validationstorage.auth.SecurityAccessor;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 import it.smartcommunitylab.validationstorage.model.dto.ArtifactMetadataDTO;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
+import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
+import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class ArtifactMetadataService {
 	private final ArtifactMetadataRepository documentRepository;
-	private final SecurityAccessor securityAccessor;
 	
+	private final ProjectRepository projectRepository;
+	private final ExperimentRepository experimentRepository;
+	
+	/**
+	 * Given an ID, returns the corresponding document, or null if it can't be found.
+	 * @param id ID of the document to retrieve.
+	 * @return The document if found, null otherwise.
+	 */
 	private ArtifactMetadata getDocument(String id) {
 		if (ObjectUtils.isEmpty(id))
 			return null;
@@ -34,6 +42,12 @@ public class ArtifactMetadataService {
 		return null;
 	}
 	
+	/**
+	 * Filters a list by a term.
+	 * @param items List to filter.
+	 * @param search A term to filter results by.
+	 * @return A new list, with only the results that found a match.
+	 */
 	private List<ArtifactMetadata> filterBySearch(List<ArtifactMetadata> items, String search) {
 		if (ObjectUtils.isEmpty(search))
 			return items;
@@ -42,7 +56,7 @@ public class ArtifactMetadataService {
 		
 		List<ArtifactMetadata> results = new ArrayList<ArtifactMetadata>();
 		for (ArtifactMetadata item : items) {
-			if (item.getExperimentName().contains(normalized) || (item.getName().contains(normalized)))
+			if (item.getExperimentName().toLowerCase().contains(normalized) || (item.getName().toLowerCase().contains(normalized)))
 				results.add(item);
 		}
 		
@@ -53,7 +67,8 @@ public class ArtifactMetadataService {
 	public ArtifactMetadata createDocument(String projectId, ArtifactMetadataDTO request) {
 		if (ObjectUtils.isEmpty(projectId))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project ID is missing or blank.");
-		securityAccessor.checkUserHasPermissions(projectId);
+		
+		ValidationStorageUtils.checkProjectExists(projectRepository, projectId);
 		
 		String experimentId = request.getExperimentId();
 		String runId = request.getRunId();
@@ -67,13 +82,14 @@ public class ArtifactMetadataService {
 		
 		documentToSave.setExperimentName(request.getExperimentName());
 		
+		// Create experiment document automatically.
+		ValidationStorageUtils.createExperiment(experimentRepository, projectId, experimentId, request.getExperimentName());
+		
 		return documentRepository.save(documentToSave);
 	}
 	
 	// Read
 	public List<ArtifactMetadata> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
-		securityAccessor.checkUserHasPermissions(projectId);
-		
 		List<ArtifactMetadata> repositoryResults;
 		
 		if (experimentId.isPresent() && runId.isPresent())
@@ -95,8 +111,6 @@ public class ArtifactMetadataService {
 	public ArtifactMetadata findDocumentById(String projectId, String id) {
 		ArtifactMetadata document = getDocument(id);
 		if (document != null) {
-			securityAccessor.checkUserHasPermissions(document.getProjectId());
-			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
 			return document;
@@ -113,8 +127,6 @@ public class ArtifactMetadataService {
 		if (document == null)
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
 		
-		securityAccessor.checkUserHasPermissions(document.getProjectId());
-		
 		ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 		
 		document.setExperimentId(request.getExperimentId());
@@ -130,8 +142,6 @@ public class ArtifactMetadataService {
 	public void deleteDocumentById(String projectId, String id) {
 		ArtifactMetadata document = getDocument(id);
 		if (document != null) {
-			securityAccessor.checkUserHasPermissions(document.getProjectId());
-			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
 			documentRepository.deleteById(id);
@@ -142,8 +152,6 @@ public class ArtifactMetadataService {
 	
 	// Delete
 	public void deleteDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId) {
-		securityAccessor.checkUserHasPermissions(projectId);
-		
 		if (experimentId.isPresent() && runId.isPresent())
 			documentRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId.get(), runId.get());
 		else if (experimentId.isPresent())

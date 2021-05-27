@@ -2,6 +2,7 @@ package it.smartcommunitylab.validationstorage.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
@@ -10,6 +11,7 @@ public interface RunMetadataRepository extends MongoRepository<RunMetadata, Stri
 	List<RunMetadata> findByProjectId(String projectId);
 	
 	List<RunMetadata> findByProjectIdAndExperimentId(String projectId, String experimentId);
+	List<RunMetadata> findByProjectIdAndExperimentId(String projectId, String experimentId, Pageable pageable);
 	
 	List<RunMetadata> findByProjectIdAndRunId(String projectId, String runId);
 	

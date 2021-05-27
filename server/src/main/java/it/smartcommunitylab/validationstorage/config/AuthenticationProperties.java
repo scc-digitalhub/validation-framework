@@ -7,13 +7,18 @@ import org.springframework.stereotype.Component;
 
 import lombok.Data;
 
+/**
+ * Contains various configurations related to authentication.
+ */
 @Data
 @Component
 @ConfigurationProperties(prefix = "auth")
 public class AuthenticationProperties {
-    private String type;
+	private boolean enabled;
 	
 	private String projectAuthorityPrefix;
+	private String aacClaim;
+	private String aacClaimProjects;
 	
     private List<User> users;
     

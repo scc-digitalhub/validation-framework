@@ -9,10 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.server.ResponseStatusException;
 
-import it.smartcommunitylab.validationstorage.auth.SecurityAccessor;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.ShortSchema;
 import it.smartcommunitylab.validationstorage.model.dto.ShortSchemaDTO;
+import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
+import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -20,8 +21,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ShortSchemaService {
 	private final ShortSchemaRepository documentRepository;
-	private final SecurityAccessor securityAccessor;
 	
+	private final ProjectRepository projectRepository;
+	private final ExperimentRepository experimentRepository;
+	
+	/**
+	 * Given an ID, returns the corresponding document, or null if it can't be found.
+	 * @param id ID of the document to retrieve.
+	 * @return The document if found, null otherwise.
+	 */
 	private ShortSchema getDocument(String id) {
 		if (ObjectUtils.isEmpty(id))
 			return null;
@@ -34,6 +42,12 @@ public class ShortSchemaService {
 		return null;
 	}
 	
+	/**
+	 * Filters a list by a term.
+	 * @param items List to filter.
+	 * @param search A term to filter results by.
+	 * @return A new list, with only the results that found a match.
+	 */
 	private List<ShortSchema> filterBySearch(List<ShortSchema> items, String search) {
 		if (ObjectUtils.isEmpty(search))
 			return items;
@@ -42,7 +56,7 @@ public class ShortSchemaService {
 		
 		List<ShortSchema> results = new ArrayList<ShortSchema>();
 		for (ShortSchema item : items) {
-			if (item.getExperimentName().contains(normalized))
+			if (item.getExperimentName().toLowerCase().contains(normalized))
 				results.add(item);
 		}
 		
@@ -53,7 +67,7 @@ public class ShortSchemaService {
 	public ShortSchema createDocument(String projectId, ShortSchemaDTO request) {
 		if (ObjectUtils.isEmpty(projectId))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project ID is missing or blank.");
-		securityAccessor.checkUserHasPermissions(projectId);
+		ValidationStorageUtils.checkProjectExists(projectRepository, projectId);
 		
 		String experimentId = request.getExperimentId();
 		String runId = request.getRunId();
@@ -69,13 +83,14 @@ public class ShortSchemaService {
 		documentToSave.setExperimentName(request.getExperimentName());
 		documentToSave.setContents(request.getContents());
 		
+		// Create experiment document automatically.
+		ValidationStorageUtils.createExperiment(experimentRepository, projectId, experimentId, request.getExperimentName());
+		
 		return documentRepository.save(documentToSave);
 	}
 	
 	// Read
 	public List<ShortSchema> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
-		securityAccessor.checkUserHasPermissions(projectId);
-		
 		List<ShortSchema> repositoryResults;
 		
 		if (experimentId.isPresent() && runId.isPresent())
@@ -97,8 +112,6 @@ public class ShortSchemaService {
 	public ShortSchema findDocumentById(String projectId, String id) {
 		ShortSchema document = getDocument(id);
 		if (document != null) {
-			securityAccessor.checkUserHasPermissions(document.getProjectId());
-			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
 			return document;
@@ -114,8 +127,6 @@ public class ShortSchemaService {
 		ShortSchema document = getDocument(id);
 		if (document == null)
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
-		
-		securityAccessor.checkUserHasPermissions(document.getProjectId());
 		
 		ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 		
@@ -134,8 +145,6 @@ public class ShortSchemaService {
 	public void deleteDocumentById(String projectId, String id) {
 		ShortSchema document = getDocument(id);
 		if (document != null) {
-			securityAccessor.checkUserHasPermissions(document.getProjectId());
-			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
 			documentRepository.deleteById(id);
@@ -146,8 +155,6 @@ public class ShortSchemaService {
 	
 	// Delete
 	public void deleteDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId) {
-		securityAccessor.checkUserHasPermissions(projectId);
-		
 		if (experimentId.isPresent() && runId.isPresent())
 			documentRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId.get(), runId.get());
 		else if (experimentId.isPresent())

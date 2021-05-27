@@ -1,6 +1,9 @@
 package it.smartcommunitylab.validationstorage.service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,13 +12,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.server.ResponseStatusException;
 
-import it.smartcommunitylab.validationstorage.auth.SecurityAccessor;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
 import it.smartcommunitylab.validationstorage.model.dto.RunMetadataDTO;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.DataProfileRepository;
 import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
+import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
+import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
@@ -26,14 +30,19 @@ import lombok.RequiredArgsConstructor;
 public class RunMetadataService {
 	private final RunMetadataRepository documentRepository;
 	
+	private final ProjectRepository projectRepository;
+	private final ExperimentRepository experimentRepository;
 	private final ArtifactMetadataRepository artifactMetadataRepository;
-	private final DataResourceRepository dataResourceRepository;
 	private final DataProfileRepository dataProfileRepository;
+	private final DataResourceRepository dataResourceRepository;
 	private final ShortReportRepository shortReportRepository;
 	private final ShortSchemaRepository shortSchemaRepository;
 	
-	private final SecurityAccessor securityAccessor;
-	
+	/**
+	 * Given an ID, returns the corresponding document, or null if it can't be found.
+	 * @param id ID of the document to retrieve.
+	 * @return The document if found, null otherwise.
+	 */
 	private RunMetadata getDocument(String id) {
 		if (ObjectUtils.isEmpty(id))
 			return null;
@@ -46,6 +55,12 @@ public class RunMetadataService {
 		return null;
 	}
 	
+	/**
+	 * Filters a list by a term.
+	 * @param items List to filter.
+	 * @param search A term to filter results by.
+	 * @return A new list, with only the results that found a match.
+	 */
 	private List<RunMetadata> filterBySearch(List<RunMetadata> items, String search) {
 		if (ObjectUtils.isEmpty(search))
 			return items;
@@ -54,7 +69,7 @@ public class RunMetadataService {
 		
 		List<RunMetadata> results = new ArrayList<RunMetadata>();
 		for (RunMetadata item : items) {
-			if (item.getExperimentName().contains(normalized))
+			if (item.getExperimentName().toLowerCase().contains(normalized))
 				results.add(item);
 		}
 		
@@ -62,10 +77,19 @@ public class RunMetadataService {
 	}
 	
 	// Create
+	/**
+	 * Create a RunMetadata document. If overwriteParam is specified and equal to true, it will delete the
+	 * previous (if present) RunMetadata document that matches the same projectId, experimentId and runId.
+	 * All documents of other types under it will also be deleted.
+	 * @param projectId ID of the project the document belongs to.
+	 * @param request Request object describing the document.
+	 * @param overwriteParam If 'true', completely overwrites a previous RunMetadata identified by (projectId, experimentId, runId).
+	 * @return The created document.
+	 */
 	public RunMetadata createDocument(String projectId, RunMetadataDTO request, Optional<String> overwriteParam) {
 		if (ObjectUtils.isEmpty(projectId))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project ID is missing or blank.");
-		securityAccessor.checkUserHasPermissions(projectId);
+		ValidationStorageUtils.checkProjectExists(projectRepository, projectId);
 		
 		String experimentId = request.getExperimentId();
 		String runId = request.getRunId();
@@ -73,6 +97,7 @@ public class RunMetadataService {
 		if ((ObjectUtils.isEmpty(experimentId)) || (ObjectUtils.isEmpty(runId)))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fields 'experiment_id', 'run_id' are required and cannot be blank.");
 		
+		// The overwrite operation is only performed if 'overwriteParam' is present and equal to 'true'.
 		Boolean overwrite = false;
 		if (overwriteParam.isPresent() && !(ObjectUtils.isEmpty(overwriteParam.get())) && (overwriteParam.get().equals("true")))
 			overwrite = true;
@@ -80,6 +105,7 @@ public class RunMetadataService {
 		if ((!overwrite) && (!(documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId).isEmpty())))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") already exists.");
 		else if (overwrite) {
+			// Deletes all documents under the RunMetadata document identified by (projectId, experimentId, runId).
 			documentRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
 			
 			artifactMetadataRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
@@ -91,16 +117,27 @@ public class RunMetadataService {
 		
 		RunMetadata documentToSave = new RunMetadata(projectId, experimentId, runId);
 		
+		// If the 'contents' field contains a 'created' field, it will also be stored in a dedicated field.
+		// Otherwise, it will take the current timestamp.
+		Date ts;
+		try {
+			ts = new SimpleDateFormat(ValidationStorageUtils.DATE_FORMAT).parse(request.getContents().get(ValidationStorageUtils.FIELD_RUN_METADATA_TS).toString());
+		} catch (NullPointerException | ParseException e) {
+			ts = new Date(System.currentTimeMillis());
+		}
+		documentToSave.setCreated(ts);	
+		
 		documentToSave.setExperimentName(request.getExperimentName());
 		documentToSave.setContents(request.getContents());
+		
+		// Create experiment document automatically.
+		ValidationStorageUtils.createExperiment(experimentRepository, projectId, experimentId, request.getExperimentName());
 		
 		return documentRepository.save(documentToSave);
 	}
 	
 	// Read
 	public List<RunMetadata> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
-		securityAccessor.checkUserHasPermissions(projectId);
-		
 		List<RunMetadata> repositoryResults;
 		
 		if (experimentId.isPresent() && runId.isPresent())
@@ -121,8 +158,6 @@ public class RunMetadataService {
 	public RunMetadata findDocumentById(String projectId, String id) {
 		RunMetadata document = getDocument(id);
 		if (document != null) {
-			securityAccessor.checkUserHasPermissions(document.getProjectId());
-			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
 			return document;
@@ -138,8 +173,6 @@ public class RunMetadataService {
 		RunMetadata document = getDocument(id);
 		if (document == null)
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
-		
-		securityAccessor.checkUserHasPermissions(document.getProjectId());
 		
 		ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 		
@@ -158,8 +191,6 @@ public class RunMetadataService {
 	public void deleteDocumentById(String projectId, String id) {
 		RunMetadata document = getDocument(id);
 		if (document != null) {
-			securityAccessor.checkUserHasPermissions(document.getProjectId());
-			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
 			documentRepository.deleteById(id);
@@ -170,8 +201,6 @@ public class RunMetadataService {
 	
 	// Delete
 	public void deleteDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId) {
-		securityAccessor.checkUserHasPermissions(projectId);
-		
 		if (experimentId.isPresent() && runId.isPresent())
 			documentRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId.get(), runId.get());
 		else if (experimentId.isPresent())

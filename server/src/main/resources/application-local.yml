@@ -1,0 +1,21 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://admin:password@localhost:27017/validation?authSource=admin
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://example.com
+          jwk-set-uri: https://example.com/jwk
+        client-id: 12345-12345-12345-12345-12345
+
+auth:
+  enabled: false
+  users:
+    - username: admin
+      password: password
+      authorities: PROJECT_proj1, PROJECT_proj2, PROJECT_proj4
+    - username: other
+      password: password
+      authorities: PROJECT_proj1, PROJECT_proj3

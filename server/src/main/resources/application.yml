@@ -6,15 +6,18 @@ server:
 spring:
   data:
     mongodb:
-      uri: ${VALST_SPRING_DATA_MONGODB_URI:mongodb://admin:password@localhost:27017/validation?authSource=admin}
+      uri: ${VALST_SPRING_DATA_MONGODB_URI}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri:
+          jwk-set-uri:
+        client-id:
 
 auth:
-  type: ${VALST_AUTH_TYPE:basic}
+  enabled: ${VALST_AUTH_ENABLED:true}
   project-authority-prefix: ${VALST_AUTH_PROJECT_AUTHORITY_PREFIX:PROJECT_}
+  aac-claim: ${VALST_AUTH_AAC_VALIDATION_CLAIM:validation}
+  aac-claim-projects: ${VALST_AUTH_AAC_VALIDATION_PROJECTS_LIST:projects}
   users:
-    - username: admin
-      password: password
-      authorities: PROJECT_proj1, PROJECT_proj2
-    - username: other
-      password: password
-      authorities: PROJECT_proj1, PROJECT_proj3

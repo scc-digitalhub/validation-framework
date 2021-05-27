@@ -3,7 +3,10 @@ package it.smartcommunitylab.validationstorage.controller;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(value = "/api/project")
 @RequiredArgsConstructor
+@PreAuthorize(ValidationStorageUtils.PREAUTH_PROJECTID)
 public class ShortSchemaController {
 	private final ShortSchemaService documentService;
 	
@@ -32,20 +36,20 @@ public class ShortSchemaController {
 	}
 	
 	@GetMapping("/{projectId}/" + ValidationStorageUtils.SHORT_SCHEMA)
-    public ResponseEntity<List<ShortSchema>> findDocuments(@PathVariable String projectId,
-    														@RequestParam("experiment_id") Optional<String> experimentId,
-    														@RequestParam("run_id") Optional<String> runId,
-    														@RequestParam("search") Optional<String> search) {
-        return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
-    }
+	public ResponseEntity<List<ShortSchema>> findDocuments(@PathVariable String projectId,
+															@RequestParam("experiment_id") Optional<String> experimentId,
+															@RequestParam("run_id") Optional<String> runId,
+															@RequestParam("search") Optional<String> search) {
+	return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
+	}
 	
 	@PostMapping("/{projectId}/" + ValidationStorageUtils.SHORT_SCHEMA)
-	public ResponseEntity<ShortSchema> createDocument(@PathVariable String projectId, @RequestBody ShortSchemaDTO request) {
+	public ResponseEntity<ShortSchema> createDocument(@PathVariable String projectId, @RequestBody @Valid ShortSchemaDTO request) {
 		return ResponseEntity.ok(documentService.createDocument(projectId, request));
 	}
 	
 	@PutMapping("/{projectId}/" + ValidationStorageUtils.SHORT_SCHEMA + "/{id}")
-	public ResponseEntity<ShortSchema> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody ShortSchemaDTO request) {
+	public ResponseEntity<ShortSchema> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid ShortSchemaDTO request) {
 		return ResponseEntity.ok(documentService.updateDocument(projectId, id, request));
 	}
 	
@@ -56,10 +60,10 @@ public class ShortSchemaController {
 	}
 	
 	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.SHORT_SCHEMA)
-    public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
-    											@RequestParam("experiment_id") Optional<String> experimentId,
-    											@RequestParam("run_id") Optional<String> runId) {
+	public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
+												@RequestParam("experiment_id") Optional<String> experimentId,
+												@RequestParam("run_id") Optional<String> runId) {
 		documentService.deleteDocumentsByProjectId(projectId, experimentId, runId);
-        return ResponseEntity.ok().build();
-    }
+	return ResponseEntity.ok().build();
+	}
 }

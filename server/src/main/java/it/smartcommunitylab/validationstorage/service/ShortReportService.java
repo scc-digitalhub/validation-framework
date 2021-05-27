@@ -9,10 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.server.ResponseStatusException;
 
-import it.smartcommunitylab.validationstorage.auth.SecurityAccessor;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.ShortReport;
 import it.smartcommunitylab.validationstorage.model.dto.ShortReportDTO;
+import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
+import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -20,8 +21,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ShortReportService {
 	private final ShortReportRepository documentRepository;
-	private final SecurityAccessor securityAccessor;
 	
+	private final ProjectRepository projectRepository;
+	private final ExperimentRepository experimentRepository;
+	
+	/**
+	 * Given an ID, returns the corresponding document, or null if it can't be found.
+	 * @param id ID of the document to retrieve.
+	 * @return The document if found, null otherwise.
+	 */
 	private ShortReport getDocument(String id) {
 		if (ObjectUtils.isEmpty(id))
 			return null;
@@ -34,6 +42,12 @@ public class ShortReportService {
 		return null;
 	}
 	
+	/**
+	 * Filters a list by a term.
+	 * @param items List to filter.
+	 * @param search A term to filter results by.
+	 * @return A new list, with only the results that found a match.
+	 */
 	private List<ShortReport> filterBySearch(List<ShortReport> items, String search) {
 		if (ObjectUtils.isEmpty(search))
 			return items;
@@ -42,7 +56,7 @@ public class ShortReportService {
 		
 		List<ShortReport> results = new ArrayList<ShortReport>();
 		for (ShortReport item : items) {
-			if (item.getExperimentName().contains(normalized))
+			if (item.getExperimentName().toLowerCase().contains(normalized))
 				results.add(item);
 		}
 		
@@ -53,7 +67,7 @@ public class ShortReportService {
 	public ShortReport createDocument(String projectId, ShortReportDTO request) {
 		if (ObjectUtils.isEmpty(projectId))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project ID is missing or blank.");
-		securityAccessor.checkUserHasPermissions(projectId);
+		ValidationStorageUtils.checkProjectExists(projectRepository, projectId);
 		
 		String experimentId = request.getExperimentId();
 		String runId = request.getRunId();
@@ -69,13 +83,14 @@ public class ShortReportService {
 		documentToSave.setExperimentName(request.getExperimentName());
 		documentToSave.setContents(request.getContents());
 		
+		// Create experiment document automatically.
+		ValidationStorageUtils.createExperiment(experimentRepository, projectId, experimentId, request.getExperimentName());
+		
 		return documentRepository.save(documentToSave);
 	}
 	
 	// Read
 	public List<ShortReport> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
-		securityAccessor.checkUserHasPermissions(projectId);
-		
 		List<ShortReport> repositoryResults;
 		
 		if (experimentId.isPresent() && runId.isPresent())
@@ -97,8 +112,6 @@ public class ShortReportService {
 	public ShortReport findDocumentById(String projectId, String id) {
 		ShortReport document = getDocument(id);
 		if (document != null) {
-			securityAccessor.checkUserHasPermissions(document.getProjectId());
-			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
 			return document;
@@ -114,8 +127,6 @@ public class ShortReportService {
 		ShortReport document = getDocument(id);
 		if (document == null)
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
-		
-		securityAccessor.checkUserHasPermissions(document.getProjectId());
 		
 		ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 		
@@ -134,8 +145,6 @@ public class ShortReportService {
 	public void deleteDocumentById(String projectId, String id) {
 		ShortReport document = getDocument(id);
 		if (document != null) {
-			securityAccessor.checkUserHasPermissions(document.getProjectId());
-			
 			ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 			
 			documentRepository.deleteById(id);
@@ -146,8 +155,6 @@ public class ShortReportService {
 	
 	// Delete
 	public void deleteDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId) {
-		securityAccessor.checkUserHasPermissions(projectId);
-		
 		if (experimentId.isPresent() && runId.isPresent())
 			documentRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId.get(), runId.get());
 		else if (experimentId.isPresent())

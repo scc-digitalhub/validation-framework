@@ -2,6 +2,7 @@ package it.smartcommunitylab.validationstorage.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
@@ -14,6 +15,7 @@ public interface ArtifactMetadataRepository extends MongoRepository<ArtifactMeta
 	List<ArtifactMetadata> findByProjectIdAndRunId(String projectId, String runId);
 	
 	List<ArtifactMetadata> findByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
+	List<ArtifactMetadata> findByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId, Pageable pageable);
 	
 	void deleteByProjectId(String projectId);
 	

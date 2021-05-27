@@ -1,7 +1,5 @@
 package it.smartcommunitylab.validationstorage.model;
 
-import java.util.Map;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -12,11 +10,11 @@ import lombok.Data;
 import lombok.NonNull;
 
 /**
- * Profile for the data.
+ * Details an experiment.
  */
 @Data
 @Document
-public class DataProfile {
+public class Experiment {
 	/**
 	 * Unique ID of this document.
 	 */
@@ -32,7 +30,7 @@ public class DataProfile {
 	private String projectId;
 	
 	/**
-	 * ID of the experiment this document belongs to.
+	 * ID of the experiment. Only unique within the project it belongs to.
 	 */
 	@NonNull
 	@JsonProperty("experiment_id")
@@ -40,22 +38,9 @@ public class DataProfile {
 	private String experimentId;
 	
 	/**
-	 * ID of the run this document belongs to.
-	 */
-	@NonNull
-	@JsonProperty("run_id")
-	@Field("run_id")
-	private String runId;
-	
-	/**
-	 * Name of the experiment this document belongs to.
+	 * Name of the experiment.
 	 */
 	@JsonProperty("experiment_name")
 	@Field("experiment_name")
 	private String experimentName;
-	
-	/**
-	 * May contain extra information.
-	 */
-	private Map<String, ?> contents;
 }
