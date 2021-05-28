@@ -44,13 +44,9 @@ class GenericRun(Run):
         """
         Parse the report.
         """
-        try:
-            valid = self.report["valid"]
-            time = self.report["time"]
-            errors = self.report["errors"]
-        except KeyError:
-            valid, time, errors = None, None, None
-        return nmtp(valid, time, errors)
+        return nmtp(self.report.get("valid"),
+                    self.report.get("time"),
+                    self.report.get("errors"))
 
     def _check_report(self,
                       report: Optional[dict] = None) -> None:
@@ -60,7 +56,7 @@ class GenericRun(Run):
         if report is not None and not isinstance(report, dict):
             raise TypeError("Must be a dictionary!")
         if report is None and self.report is None:
-            raise TypeError("Provide a non empty valid dictionary!")
+            raise TypeError("Provide a dictionary!")
 
     # Short Schema
 

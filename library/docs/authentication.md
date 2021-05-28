@@ -16,7 +16,7 @@ The *DigitalHub API backend* implements a basic authentication method. You can e
 
 - Project id
 - Endpoint of DigitalHub API
-- Credentials dictionary with authentication type, username and a password.
+- Credentials dictionary with authentication type (Basic with username/password, OAuth2 with bearer token provided by user).
 
 The way to build arguments for the `Client` is the following:
 
@@ -25,12 +25,30 @@ import datajudge as dj
 
 PROJECT_ID = "projId"
 API_ENDPOINT = "http://ip_address:port"
+```
+
+For the authentication there are two options, *Basic*
+
+```python
 API_CREDENTIALS = {
-    "auth": "basic",
+    "auth": "Basic",
     "user": "username",
     "password": "password"
 }
+```
 
+or *OAuth2* with a token provided by user.
+
+```python
+API_CREDENTIALS = {
+    "auth": "OAuth2",
+    "token": "token"
+}
+```
+
+Setted the variables, the `Client` can be created.
+
+```python
 client = dj.Client(project_id=PROJECT_ID,
                    metadata_store_uri=API_ENDPOINT,
                    metadata_store_config=API_CREDENTIALS)
@@ -155,12 +173,21 @@ ENDPOINT = "http://host:port/path"
 ```
 
 **Credentials**</br>
-The credentials must be provided inside a `dict`
+The credentials must be provided inside a `dict`. We support *basic* and *bearer token* authentication.
 
 ```python
 CREDENTIALS = {
-    "auth": "basic",
+    "auth": "Basic",
     "user": "username",
     "password": "password"
+}
+```
+
+or
+
+```python
+CREDENTIALS = {
+    "auth": "OAuth2",
+    "token": "token"
 }
 ```

@@ -47,23 +47,20 @@ class FrictionlessRun(Run):
         Update resource with inferred information.
         """
         inferred = self.infer_resource()
-        try:
 
-            # Profile, format, encoding
-            for key in ["profile", "format", "encoding"]:
-                setattr(self.data_resource, key, inferred[key])
+        # Profile, format, encoding
+        for key in ["profile", "format", "encoding"]:
+            value = inferred.get(key)
+            setattr(self.data_resource, key, value)
 
-            # Bytes, MD5 Hash
-            if "stats" in inferred:
-                for key in ["bytes", "hash"]:
-                    setattr(self.data_resource, key, inferred["stats"][key])
+        # Bytes, MD5 Hash
+        for key in ["bytes", "hash"]:
+            value = inferred.get("inferred", {}).get(key)
+            setattr(self.data_resource, key, value)
 
-            # Mediatype
-            medtype = guess_mediatype(self.data_resource.path)
-            self.data_resource.mediatype = medtype
-
-        except KeyError as kex:
-            raise kex
+        # Mediatype
+        medtype = guess_mediatype(self.data_resource.path)
+        self.data_resource.mediatype = medtype
 
     # Short Report
 
@@ -119,10 +116,10 @@ class FrictionlessRun(Run):
         and return an inferred schema.
         """
         resource = self.infer_resource()
-        if "schema" in resource:
-            return resource["schema"]
-        warn("Unable to infer schema.")
-        return None
+        schema = resource.get("schema")
+        if schema is None:
+            warn("Unable to infer schema.")
+        return schema
 
     def infer_resource(self) -> Resource:
         """
@@ -159,25 +156,20 @@ class FrictionlessRun(Run):
 
     def _parse_inference(self) -> Tuple[str, dict]:
         """
-        Parse frictionless inferred resource.
+        Parse frictionless inferred resource and return file
+        format and optional arguments for pandas.
         """
+
+        pandas_args = {}
+        
         if self.inferred is None:
             self.inferred = self.infer_resource()
 
-        pandas_args = {
-            "sep": ",",
-            "encoding": "utf-8"
-        }
-
-        file_format = self.inferred["format"]
+        file_format = self.inferred.get("format")
         if file_format == "csv":
-            try:
-                pandas_args["sep"] = self.inferred["dialect"]["delimiter"]
-                pandas_args["encoding"] = self.inferred["encoding"]
-            except KeyError:
-                pass
-        else:
-            pandas_args = {}
+            pandas_args["sep"] = self.inferred.get("dialect", {})\
+                                              .get("delimiter", ",")
+            pandas_args["encoding"] = self.inferred.get("encoding", "utf-8")
 
         return file_format, pandas_args
 

@@ -3,7 +3,7 @@ Implementation of REST metadata store designed by Digital Society Lab.
 """
 from collections import namedtuple
 from json.decoder import JSONDecodeError
-from typing import Optional, Union
+from typing import Optional
 
 from requests.models import Response  # pylint: disable=import-error
 
@@ -84,12 +84,11 @@ class DigitalHubMetadataStore(MetadataStore):
             for elm in self._key_vault[src_type]:
                 if elm.run_id == metadata["run_id"]:
                     key = elm.key
-
         dst = self._build_source_destination(dst, src_type, key)
         kwargs = {
-            "json": metadata,
-            "auth": self._parse_auth(),
+            "json": metadata
         }
+        kwargs = self._parse_auth(kwargs)
 
         if key is None:
             if src_type == self._RUN_METADATA:
@@ -100,6 +99,7 @@ class DigitalHubMetadataStore(MetadataStore):
             self._parse_response(response, src_type)
         else:
             response = api_put_call(dst, **kwargs)
+            self._parse_response(response, src_type)
 
     def _build_source_destination(self,
                                   dst: str,
@@ -109,7 +109,7 @@ class DigitalHubMetadataStore(MetadataStore):
         """
         Return source destination API based on input source type.
         """
-        key = "/" if key is None else key
+        key = "/" if key is None else "/" + key
         return check_url(dst + self._endpoints[src_type] + key)
 
     def _parse_response(self,
@@ -118,17 +118,28 @@ class DigitalHubMetadataStore(MetadataStore):
         """
         Parse the JSON response from the backend APIs.
         """
+        if not response.ok:
+            raise Exception(response.text)
+
+        # Jsonify
         try:
             resp = response.json()
-            keys = resp.keys()
-            if "run_id" in keys and "id" in keys:
-                new_pair = KeyPairs(resp["run_id"], resp["id"])
-                if new_pair not in self._key_vault[src_type]:
-                    self._key_vault[src_type].append(new_pair)
         except JSONDecodeError as j_err:
             raise j_err
-        except Exception as ex:
-            raise ex
+
+        # Get ids (run id + id stored in backend)
+        run_id = resp.get("run_id")
+        id_ = resp.get("id")
+
+        # Check and store key pairs in key_vault
+        if run_id is not None and id_ is not None:
+            new_pair = KeyPairs(run_id, id_)
+            if new_pair not in self._key_vault[src_type]:
+                self._key_vault[src_type].append(new_pair)
+            return
+
+        # Exception
+        raise Exception("Something wrong with JSON response!")
 
     def get_run_metadata_uri(self,
                              run_id: Optional[str] = None) -> str:
@@ -145,12 +156,14 @@ class DigitalHubMetadataStore(MetadataStore):
         url = self.uri_metadata + self._endpoints[self._DATA_RESOURCE]
         return rebuild_uri(url)
 
-    def _parse_auth(self) -> Union[tuple]:
+    def _parse_auth(self, kwargs: dict) -> dict:
         """
         Parse auth config.
         """
         if self.config is not None:
-            if self.config["auth"] == "basic":
-                auth = self.config["user"], self.config["password"]
-            return auth
-        return None
+            if self.config["auth"] == "Basic":
+                kwargs["auth"] = self.config["user"], self.config["password"]
+            if self.config["auth"] == "OAuth2":
+                kwargs["headers"] = {
+                    "Authorization": f"Bearer {self.config['token']}"}
+        return kwargs
