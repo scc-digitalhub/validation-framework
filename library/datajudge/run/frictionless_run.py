@@ -161,11 +161,13 @@ class FrictionlessRun(Run):
         """
 
         pandas_args = {}
-        
+
         if self.inferred is None:
             self.inferred = self.infer_resource()
 
         file_format = self.inferred.get("format")
+
+        # Default args for read_csv: sep ",", encoding "utf-8"
         if file_format == "csv":
             pandas_args["sep"] = self.inferred.get("dialect", {})\
                                               .get("delimiter", ",")
