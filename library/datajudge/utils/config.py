@@ -46,3 +46,10 @@ DEFAULT_TMP = DEFAULT_LOCAL + "/tmp"
 # DEFAULT NAMES
 DEFAULT_PROJ = "project"
 DEFAULT_EXP = "experiment"
+
+# COLUMNS/FIELDS TO PARSE FROM PROFILE
+PROFILE_COLUMNS = ["analysis", "table", "package", "variables"]
+PROFILE_FIELDS = ["n_distinct", "p_distinct", "is_unique",
+                  "n_unique", "p_unique", "type", "hashable",
+                  "n_missing", "n", "p_missing", "count",
+                  "memory_size"]

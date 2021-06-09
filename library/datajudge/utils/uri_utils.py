@@ -37,8 +37,7 @@ def get_name_from_uri(uri: str) -> str:
     """
     Return filename from uri.
     """
-    parsed = parse_uri(uri).path
-    return Path(parsed).name
+    return Path(uri).name
 
 
 def rebuild_uri(uri: str, *args) -> str:

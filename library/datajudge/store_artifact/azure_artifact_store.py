@@ -95,20 +95,20 @@ class AzureArtifactStore(ArtifactStore):
         """
         Return BlobServiceClient client.
         """
-        if "connection_string" in self.config:
-            client = BlobServiceClient.from_connection_string(
-                conn_str=self.config["connection_string"]
-            )
-        elif ("azure_account_name" in self.config and
-              "azure_access_key" in self.config):
-            name = self.config['azure_account_name']
-            url = f"https://{name}.blob.core.windows.net"
-            client = BlobServiceClient(
-                account_url=url,
-                credential=self.config["azure_access_key"]
-            )
-        else:
-            raise Exception(
-                "You need to provide valid credentials!"
-            )
-        return client
+        if self.config is not None:
+            conn_string = self.config.get("connection_string")
+            acc_name = self.config.get("azure_account_name")
+            acc_key = self.config.get("azure_access_key")
+
+            # Check connection string
+            if conn_string is not None:
+                return BlobServiceClient.from_connection_string(
+                                                  conn_str=conn_string)
+
+            # Otherwise account name + key
+            if acc_name is not None and acc_key is not None:
+                url = f"https://{acc_name}.blob.core.windows.net"
+                return BlobServiceClient(account_url=url,
+                                         credential=acc_key)
+
+        raise Exception("You must provide credentials!")

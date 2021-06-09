@@ -4,7 +4,7 @@ Implementation of REST artifact store.
 import json
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import IO, Any, Optional, Tuple, Union
+from typing import IO, Any, Optional, Tuple
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import check_path, get_path
@@ -41,9 +41,7 @@ class HTTPArtifactStore(ArtifactStore):
 
         url = check_url(dst)
 
-        kwargs = {
-            "auth": self._parse_auth()
-        }
+        kwargs = self._parse_auth({})
 
         # Local file
         if isinstance(src, (str, Path)) and check_path(src):
@@ -69,7 +67,8 @@ class HTTPArtifactStore(ArtifactStore):
         """
         # Get file from remote
         key = rebuild_uri(src)
-        res = api_get_call(key)
+        kwargs = self._parse_auth({})
+        res = api_get_call(key, **kwargs)
         obj = res.content
 
         # Store locally
@@ -95,9 +94,14 @@ class HTTPArtifactStore(ArtifactStore):
         """
         return rebuild_uri(self.artifact_uri, run_id)
 
-    def _parse_auth(self) -> Union[tuple]:
+    def _parse_auth(self, kwargs: dict) -> dict:
+        """
+        Parse auth config.
+        """
         if self.config is not None:
-            if self.config["auth"] == "basic":
-                auth = self.config["user"], self.config["password"]
-            return auth
-        return None
+            if self.config["auth"] == "Basic":
+                kwargs["auth"] = self.config["user"], self.config["password"]
+            if self.config["auth"] == "OAuth2":
+                kwargs["headers"] = {
+                    "Authorization": f"Bearer {self.config['token']}"}
+        return kwargs

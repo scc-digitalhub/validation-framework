@@ -128,7 +128,7 @@ def get_store(store_type,
             return ARTIFACT_STORE_REGISTRY[scheme](new_uri, config)
 
         if store_type == cfg.ST_DATA:
-            return ARTIFACT_STORE_REGISTRY[scheme](new_uri, config, True)
+            return ARTIFACT_STORE_REGISTRY[scheme](new_uri, config, data=True)
 
         raise NotImplementedError
 

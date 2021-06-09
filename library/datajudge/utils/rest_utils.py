@@ -45,7 +45,7 @@ def check_url_availability(url: str) -> None:
     """
     try:
         response = requests.head(url)
-        if response.status_code != 200:
+        if not response.ok:
             raise HTTPError("Something wrong, response code ",
                             f"{response.status_code} for url ",
                             f"{url}.")
