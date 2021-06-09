@@ -1,10 +1,5 @@
 package it.smartcommunitylab.validationstorage.config;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -13,10 +8,7 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
@@ -33,6 +25,12 @@ public class ApiConfigurerAdapter extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private AuthenticationProperties authenticationProperties;
 	
+	/**
+	 * JWT converter for OAuth2.
+	 */
+	@Autowired
+	private Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter;
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		if (authenticationProperties.isEnabled()) {
@@ -47,7 +45,7 @@ public class ApiConfigurerAdapter extends WebSecurityConfigurerAdapter {
 				.requestCache((requestCache) -> requestCache.disable())
 				.oauth2ResourceServer()
 	            .jwt()
-	            .jwtAuthenticationConverter(getJwtAuthenticationConverter());
+	            .jwtAuthenticationConverter(jwtAuthenticationConverter);
 		} else {
 			http.cors().and().csrf().disable()
 				.requestMatcher(getRequestMatcher())
@@ -68,42 +66,5 @@ public class ApiConfigurerAdapter extends WebSecurityConfigurerAdapter {
 	private RequestMatcher getRequestMatcher() {
         return new AntPathRequestMatcher("/api/**");
     }
-	
-	/**
-	 * Get JWT converter for OAuth2.
-	 * @return
-	 */
-	private Converter<Jwt, AbstractAuthenticationToken> getJwtAuthenticationConverter() {
-	    JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-	    converter.setJwtGrantedAuthoritiesConverter(getConverter());
-	    return converter;
-	}
-	
-	/**
-	 * Extract from the JWT the collection of projects the user has access to.
-	 * @return
-	 */
-	private Converter<Jwt, Collection<GrantedAuthority>> getConverter() {
-		return new Converter<Jwt, Collection<GrantedAuthority>>() {
-			@Override
-			public Collection<GrantedAuthority> convert(Jwt source) {
-				if (source == null)
-					return null;
-				
-				Map<String, Object> validationMap = source.getClaimAsMap(authenticationProperties.getAacClaim());
-				if (validationMap == null)
-					return null;
-				
-				if (validationMap.get(authenticationProperties.getAacClaimProjects()) instanceof List<?>) {
-					List<?> projects = (List<?>) validationMap.get(authenticationProperties.getAacClaimProjects());
-					if (projects != null)
-						return projects.stream().map(p -> new SimpleGrantedAuthority(authenticationProperties.getProjectAuthorityPrefix() + p)).collect(Collectors.toList());
-					return null;
-				} else
-					return null;
-			}
-    		
-    	};
-	}
 	
 }

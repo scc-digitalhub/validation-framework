@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.server.ResponseStatusException;
 
+import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
+import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.dto.ExperimentDTO;
@@ -74,22 +74,23 @@ public class ExperimentService {
 	}
 	
 	// Create
-	public Experiment createDocument(String projectId, ExperimentDTO request) {
+	public Experiment createDocument(String projectId, ExperimentDTO request, String author) {
 		if (ObjectUtils.isEmpty(projectId))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project ID is missing or blank.");
+			throw new IllegalArgumentException("Project ID is missing or blank.");
 		ValidationStorageUtils.checkProjectExists(projectRepository, projectId);
 		
 		String experimentId = request.getExperimentId();
 		
 		if (ObjectUtils.isEmpty(experimentId))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Field 'experiment_id' is required and cannot be blank.");
+			throw new IllegalArgumentException("Field 'experiment_id' is required and cannot be blank.");
 		
 		if (!(documentRepository.findByProjectIdAndExperimentId(projectId, experimentId).isEmpty()))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document (project_id=" + projectId + ", experiment_id=" + experimentId + ") already exists.");
+			throw new DocumentAlreadyExistsException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ") already exists.");
 		
 		Experiment documentToSave = new Experiment(projectId, experimentId);
 		
 		documentToSave.setExperimentName(request.getExperimentName());
+		documentToSave.setAuthor(author);
 		
 		return documentRepository.save(documentToSave);
 	}
@@ -117,23 +118,23 @@ public class ExperimentService {
 			
 			return document;
 		}
-		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+		throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 	}
 	
 	// Update
 	public Experiment updateDocument(String projectId, String id, ExperimentDTO request) {
 		if (ObjectUtils.isEmpty(id))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document ID is missing or blank.");
+			throw new IllegalArgumentException("Document ID is missing or blank.");
 		
 		Experiment document = getDocument(id);
 		if (document == null)
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+			throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 		
 		ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 		
 		String experimentId = request.getExperimentId();
 		if (experimentId != null && !(experimentId.equals(document.getExperimentId())))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A value was specified for experiment_id, but does not match the value in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
+			throw new IllegalArgumentException("A value was specified for experiment_id, but does not match the value in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
 		
 		document.setExperimentName(request.getExperimentName());
 		
@@ -157,7 +158,7 @@ public class ExperimentService {
 			documentRepository.deleteById(id);
 			return;
 		}
-		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+		throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 	}
 	
 	// Delete

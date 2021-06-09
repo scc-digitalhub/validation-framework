@@ -55,6 +55,11 @@ public class ShortSchema {
 	private String experimentName;
 	
 	/**
+	 * Creator of this document.
+	 */
+	private String author;
+	
+	/**
 	 * May contain extra information.
 	 */
 	private Map<String, ?> contents;

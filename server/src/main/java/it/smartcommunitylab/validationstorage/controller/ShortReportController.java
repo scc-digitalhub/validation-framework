@@ -1,5 +1,6 @@
 package it.smartcommunitylab.validationstorage.controller;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,8 +45,8 @@ public class ShortReportController {
 	}
 	
 	@PostMapping("/{projectId}/" + ValidationStorageUtils.SHORT_REPORT)
-	public ResponseEntity<ShortReport> createDocument(@PathVariable String projectId, @RequestBody @Valid ShortReportDTO request) {
-		return ResponseEntity.ok(documentService.createDocument(projectId, request));
+	public ResponseEntity<ShortReport> createDocument(@PathVariable String projectId, @RequestBody @Valid ShortReportDTO request, Principal principal) {
+		return ResponseEntity.ok(documentService.createDocument(projectId, request, ValidationStorageUtils.getPrincipalName(principal)));
 	}
 	
 	@PutMapping("/{projectId}/" + ValidationStorageUtils.SHORT_REPORT + "/{id}")

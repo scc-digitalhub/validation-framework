@@ -43,4 +43,9 @@ public class Experiment {
 	@JsonProperty("experiment_name")
 	@Field("experiment_name")
 	private String experimentName;
+	
+	/**
+	 * Creator of this document.
+	 */
+	private String author;
 }

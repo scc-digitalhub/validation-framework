@@ -3,12 +3,12 @@ package it.smartcommunitylab.validationstorage.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.server.ResponseStatusException;
 
+import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
+import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.dto.ProjectDTO;
@@ -53,19 +53,20 @@ public class ProjectService {
 	}
 	
 	// Create
-	public Project createDocument(ProjectDTO request) {
+	public Project createDocument(ProjectDTO request, String author) {
 		String projectId = request.getId();
 		
 		if (ObjectUtils.isEmpty(projectId))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Field 'id' is required and cannot be blank.");
+			throw new IllegalArgumentException("Field 'id' is required and cannot be blank.");
 		
 		if (getDocument(projectId) != null)
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document (id=" + projectId + ") already exists.");
+			throw new DocumentAlreadyExistsException("Document (id=" + projectId + ") already exists.");
 		
 		Project documentToSave = new Project();
 		
 		documentToSave.setId(projectId);
 		documentToSave.setName(request.getName());
+		documentToSave.setAuthor(author);
 		
 		return documentRepository.save(documentToSave);
 	}
@@ -76,7 +77,7 @@ public class ProjectService {
 		if (document != null)
 			return document;
 		
-		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+		throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 	}
 	
 	// Read
@@ -88,15 +89,15 @@ public class ProjectService {
 	// Update
 	public Project updateDocument(String id, ProjectDTO request) {
 		if (ObjectUtils.isEmpty(id))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document ID is missing or blank.");
+			throw new IllegalArgumentException("Document ID is missing or blank.");
 		
 		Project document = getDocument(id);
 		if (document == null)
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+			throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 		
 		String requestProjectId = request.getId();
 		if (requestProjectId != null && !(id.equals(requestProjectId)))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A value for the project ID was specified in the request, but it does not match the project ID in the path. Are you sure you are trying to update the correct document?");
+			throw new IllegalArgumentException("A value for the project ID was specified in the request, but it does not match the project ID in the path. Are you sure you are trying to update the correct document?");
 		
 		document.setName(request.getName());
 		
@@ -121,6 +122,6 @@ public class ProjectService {
 			
 			return;
 		}
-		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+		throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 	}
 }

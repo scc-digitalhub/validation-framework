@@ -7,11 +7,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.server.ResponseStatusException;
 
+import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
+import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
 import it.smartcommunitylab.validationstorage.model.dto.RunMetadataDTO;
@@ -86,16 +86,16 @@ public class RunMetadataService {
 	 * @param overwriteParam If 'true', completely overwrites a previous RunMetadata identified by (projectId, experimentId, runId).
 	 * @return The created document.
 	 */
-	public RunMetadata createDocument(String projectId, RunMetadataDTO request, Optional<String> overwriteParam) {
+	public RunMetadata createDocument(String projectId, RunMetadataDTO request, Optional<String> overwriteParam, String author) {
 		if (ObjectUtils.isEmpty(projectId))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project ID is missing or blank.");
+			throw new IllegalArgumentException("Project ID is missing or blank.");
 		ValidationStorageUtils.checkProjectExists(projectRepository, projectId);
 		
 		String experimentId = request.getExperimentId();
 		String runId = request.getRunId();
 		
 		if ((ObjectUtils.isEmpty(experimentId)) || (ObjectUtils.isEmpty(runId)))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fields 'experiment_id', 'run_id' are required and cannot be blank.");
+			throw new IllegalArgumentException("Fields 'experiment_id', 'run_id' are required and cannot be blank.");
 		
 		// The overwrite operation is only performed if 'overwriteParam' is present and equal to 'true'.
 		Boolean overwrite = false;
@@ -103,7 +103,7 @@ public class RunMetadataService {
 			overwrite = true;
 		
 		if ((!overwrite) && (!(documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId).isEmpty())))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") already exists.");
+			throw new DocumentAlreadyExistsException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") already exists.");
 		else if (overwrite) {
 			// Deletes all documents under the RunMetadata document identified by (projectId, experimentId, runId).
 			documentRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
@@ -128,6 +128,7 @@ public class RunMetadataService {
 		documentToSave.setCreated(ts);	
 		
 		documentToSave.setExperimentName(request.getExperimentName());
+		documentToSave.setAuthor(author);
 		documentToSave.setContents(request.getContents());
 		
 		// Create experiment document automatically.
@@ -162,24 +163,24 @@ public class RunMetadataService {
 			
 			return document;
 		}
-		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+		throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 	}
 	
 	// Update
 	public RunMetadata updateDocument(String projectId, String id, RunMetadataDTO request) {
 		if (ObjectUtils.isEmpty(id))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document ID is missing or blank.");
+			throw new IllegalArgumentException("Document ID is missing or blank.");
 		
 		RunMetadata document = getDocument(id);
 		if (document == null)
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+			throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 		
 		ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 		
 		String experimentId = request.getExperimentId();
 		String runId = request.getRunId();
 		if ((experimentId != null && !(experimentId.equals(document.getExperimentId()))) || (runId != null && (!runId.equals(document.getRunId()))))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A value was specified for experiment_id and/or run_id, but they do not match the values in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
+			throw new IllegalArgumentException("A value was specified for experiment_id and/or run_id, but they do not match the values in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
 		
 		document.setExperimentName(request.getExperimentName());
 		document.setContents(request.getContents());
@@ -196,7 +197,7 @@ public class RunMetadataService {
 			documentRepository.deleteById(id);
 			return;
 		}
-		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+		throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 	}
 	
 	// Delete

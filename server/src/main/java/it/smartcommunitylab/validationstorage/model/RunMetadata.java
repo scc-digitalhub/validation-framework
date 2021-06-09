@@ -61,6 +61,11 @@ public class RunMetadata {
 	private Date created;
 	
 	/**
+	 * Creator of this document.
+	 */
+	private String author;
+	
+	/**
 	 * May contain extra information.
 	 */
 	private Map<String, ?> contents;
