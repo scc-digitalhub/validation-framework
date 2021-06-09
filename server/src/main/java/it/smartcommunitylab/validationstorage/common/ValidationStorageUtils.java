@@ -1,13 +1,12 @@
 package it.smartcommunitylab.validationstorage.common;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.server.ResponseStatusException;
 
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 
+import java.security.Principal;
 import java.text.Normalizer;
 
 /**
@@ -22,6 +21,11 @@ public class ValidationStorageUtils {
 	public static final String DATA_PROFILE = "data-profile";
 	public static final String SHORT_REPORT = "short-report";
 	public static final String SHORT_SCHEMA = "short-schema";
+	
+	// RunMetadata documents act as representatives for the run they refer to. This is especially true for the UI,
+	// where all data related to a run is nested within the RunMetadata document. To make this nesting more explicit,
+	// UI end-points will use this constant for the portion of the path that identifies a run.
+	public static final String RUN = "run";
 	
 	// Date format and contents field for dates in RunMetadata documents
 	public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -45,7 +49,7 @@ public class ValidationStorageUtils {
 	 */
 	public static void checkProjectIdMatch(String id, String documentProjectId, String projectId) {
 		if (!documentProjectId.equals(projectId))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document with ID " + id + " has project ID " + documentProjectId + ", which does not match the specified project ID " + projectId + ".");
+			throw new IllegalArgumentException("Document with ID " + id + " has project ID " + documentProjectId + ", which does not match the specified project ID " + projectId + ".");
 	}
 	
 	/**
@@ -63,7 +67,7 @@ public class ValidationStorageUtils {
 	 */
 	public static void checkProjectExists(ProjectRepository repository, String id) {
 		if (!repository.findById(id).isPresent())
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project with ID " + id + " does not exist.");
+			throw new DocumentNotFoundException("Project with ID " + id + " does not exist.");
 	}
 	
 	/**
@@ -79,5 +83,11 @@ public class ValidationStorageUtils {
 				experimentToSave.setExperimentName(experimentName);
 			repository.save(experimentToSave);
 		}
+	}
+	
+	public static String getPrincipalName(Principal principal) {
+		if (principal != null)
+			return principal.getName();
+		return null;
 	}
 }

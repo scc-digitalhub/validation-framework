@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.server.ResponseStatusException;
 
+import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
+import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.DataProfile;
 import it.smartcommunitylab.validationstorage.model.dto.DataProfileDTO;
@@ -64,9 +64,9 @@ public class DataProfileService {
 	}
 	
 	// Create
-	public DataProfile createDocument(String projectId, DataProfileDTO request) {
+	public DataProfile createDocument(String projectId, DataProfileDTO request, String author) {
 		if (ObjectUtils.isEmpty(projectId))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project ID is missing or blank.");
+			throw new IllegalArgumentException("Project ID is missing or blank.");
 		
 		ValidationStorageUtils.checkProjectExists(projectRepository, projectId);
 		
@@ -74,14 +74,15 @@ public class DataProfileService {
 		String runId = request.getRunId();
 		
 		if ((ObjectUtils.isEmpty(experimentId)) || (ObjectUtils.isEmpty(runId)))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fields 'experiment_id', 'run_id' are required and cannot be blank.");
+			throw new IllegalArgumentException("Fields 'experiment_id', 'run_id' are required and cannot be blank.");
 		
 		if (!(documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId).isEmpty()))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") already exists.");
+			throw new DocumentAlreadyExistsException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") already exists.");
 		
 		DataProfile documentToSave = new DataProfile(projectId, experimentId, runId);
 		
 		documentToSave.setExperimentName(request.getExperimentName());
+		documentToSave.setAuthor(author);
 		documentToSave.setContents(request.getContents());
 		
 		// Create experiment document automatically.
@@ -117,24 +118,24 @@ public class DataProfileService {
 			
 			return document;
 		}
-		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+		throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 	}
 	
 	// Update
 	public DataProfile updateDocument(String projectId, String id, DataProfileDTO request) {
 		if (ObjectUtils.isEmpty(id))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document ID is missing or blank.");
+			throw new IllegalArgumentException("Document ID is missing or blank.");
 		
 		DataProfile document = getDocument(id);
 		if (document == null)
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+			throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 		
 		ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 		
 		String experimentId = request.getExperimentId();
 		String runId = request.getRunId();
 		if ((experimentId != null && !(experimentId.equals(document.getExperimentId()))) || (runId != null && (!runId.equals(document.getRunId()))))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A value was specified for experiment_id and/or run_id, but they do not match the values in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
+			throw new IllegalArgumentException("A value was specified for experiment_id and/or run_id, but they do not match the values in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
 		
 		document.setExperimentName(request.getExperimentName());
 		document.setContents(request.getContents());
@@ -151,7 +152,7 @@ public class DataProfileService {
 			documentRepository.deleteById(id);
 			return;
 		}
-		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+		throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 	}
 	
 	// Delete

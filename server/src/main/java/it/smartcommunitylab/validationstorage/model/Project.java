@@ -21,4 +21,9 @@ public class Project {
 	 * Name of the project.
 	 */
 	private String name;
+	
+	/**
+	 * Creator of this document.
+	 */
+	private String author;
 }

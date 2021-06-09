@@ -1,5 +1,6 @@
 package it.smartcommunitylab.validationstorage.controller;
 
+import java.security.Principal;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -41,8 +42,8 @@ public class ProjectController {
 	
 	@PreAuthorize(ValidationStorageUtils.PREAUTH_REQUEST_ID)
 	@PostMapping
-	public ResponseEntity<Project> createDocument(@RequestBody @Valid ProjectDTO request) {
-		return ResponseEntity.ok(documentService.createDocument(request));
+	public ResponseEntity<Project> createDocument(@RequestBody @Valid ProjectDTO request, Principal principal) {
+		return ResponseEntity.ok(documentService.createDocument(request, ValidationStorageUtils.getPrincipalName(principal)));
 	}
 	
 	@PutMapping("/{id}")

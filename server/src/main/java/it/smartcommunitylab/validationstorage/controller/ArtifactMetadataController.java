@@ -1,5 +1,6 @@
 package it.smartcommunitylab.validationstorage.controller;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,8 +45,8 @@ public class ArtifactMetadataController {
 	}
 	
 	@PostMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA)
-	public ResponseEntity<ArtifactMetadata> createDocument(@PathVariable String projectId, @RequestBody @Valid ArtifactMetadataDTO request) {
-		return ResponseEntity.ok(documentService.createDocument(projectId, request));
+	public ResponseEntity<ArtifactMetadata> createDocument(@PathVariable String projectId, @RequestBody @Valid ArtifactMetadataDTO request, Principal principal) {
+		return ResponseEntity.ok(documentService.createDocument(projectId, request, ValidationStorageUtils.getPrincipalName(principal)));
 	}
 	
 	@PutMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA + "/{id}")

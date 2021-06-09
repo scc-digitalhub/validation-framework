@@ -1,7 +1,7 @@
 package it.smartcommunitylab.validationstorage.controller;
 
+import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
@@ -74,8 +73,8 @@ public class UiController {
 	
 	@PreAuthorize(ValidationStorageUtils.PREAUTH_REQUEST_ID)
 	@PostMapping
-	public ResponseEntity<Project> createDocument(@RequestBody @Valid ProjectDTO request) {
-		return ResponseEntity.ok(projectService.createDocument(request));
+	public ResponseEntity<Project> createDocument(@RequestBody @Valid ProjectDTO request, Principal principal) {
+		return ResponseEntity.ok(projectService.createDocument(request, ValidationStorageUtils.getPrincipalName(principal)));
 	}
 	
 	@PreAuthorize(ValidationStorageUtils.PREAUTH_ID)
@@ -93,25 +92,34 @@ public class UiController {
 	
 	// Experiment
 	@GetMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT)
-	public ResponseEntity<List<Experiment>> findExperiments(@PathVariable String projectId,
-														@RequestParam("experiment_id") Optional<String> experimentId,
-														Pageable pageable) {
-		return ResponseEntity.ok(uiService.findExperiments(projectId, experimentId, pageable));
+	public ResponseEntity<List<Experiment>> findExperiments(@PathVariable String projectId, Pageable pageable) {
+		return ResponseEntity.ok(uiService.findExperiments(projectId, pageable));
+	}
+	
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{experimentId}")
+	public ResponseEntity<Experiment> findExperimentByExperimentId(@PathVariable String projectId,
+																@PathVariable String experimentId) {
+		return ResponseEntity.ok(uiService.findExperimentByExperimentId(projectId, experimentId));
 	}
 	
 	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{id}")
-	public ResponseEntity<Void> deleteExperimentById(@PathVariable String projectId, @PathVariable String id) {
+	public ResponseEntity<Void> deleteExperimentById(@PathVariable String projectId,
+													@PathVariable String id) {
 		experimentService.deleteDocumentById(projectId, id);
 		return ResponseEntity.ok().build();
 	}
 	
 	// RunMetadata
-	@GetMapping("/{projectId}/" + ValidationStorageUtils.RUN_METADATA)
-	public ResponseEntity<List<RunMetadata>> findRunMetadata(@PathVariable String projectId,
-														@RequestParam("experiment_id") String experimentId,
-														@RequestParam("run_id") Optional<String> runId,
-														Pageable pageable) {
-		return ResponseEntity.ok(uiService.findRunMetadata(projectId, experimentId, runId, pageable));
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{experimentId}/" + ValidationStorageUtils.RUN)
+	public ResponseEntity<List<RunMetadata>> findRunMetadata(@PathVariable String projectId, @PathVariable String experimentId, Pageable pageable) {
+		return ResponseEntity.ok(uiService.findRunMetadata(projectId, experimentId, pageable));
+	}
+	
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{experimentId}/" + ValidationStorageUtils.RUN + "/{runId}")
+	public ResponseEntity<RunMetadata> findRunMetadataByRunId(@PathVariable String projectId,
+															@PathVariable String experimentId,
+															@PathVariable String runId) {
+		return ResponseEntity.ok(uiService.findRunMetadataByRunId(projectId, experimentId, runId));
 	}
 	
 	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.RUN_METADATA + "/{id}")
@@ -121,11 +129,11 @@ public class UiController {
 	}
 	
 	// ArtifactMetadata
-	@GetMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA)
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{experimentId}/" + ValidationStorageUtils.RUN + "/{runId}/" + ValidationStorageUtils.ARTIFACT_METADATA)
 	public ResponseEntity<List<ArtifactMetadata>> findArtifactMetadata(@PathVariable String projectId,
-															@RequestParam("experiment_id") String experimentId,
-															@RequestParam("run_id") String runId,
-															Pageable pageable) {
+																	@PathVariable String experimentId,
+																	@PathVariable String runId,
+																	Pageable pageable) {
 		return ResponseEntity.ok(uiService.findArtifactMetadata(projectId, experimentId, runId, pageable));
 	}
 	
@@ -136,12 +144,11 @@ public class UiController {
 	}
 	
 	// DataProfile
-	@GetMapping("/{projectId}/" + ValidationStorageUtils.DATA_PROFILE)
-	public ResponseEntity<List<DataProfile>> findDataProfile(@PathVariable String projectId,
-															@RequestParam("experiment_id") Optional<String> experimentId,
-															@RequestParam("run_id") Optional<String> runId,
-															@RequestParam("search") Optional<String> search) {
-		return ResponseEntity.ok(dataProfileService.findDocumentsByProjectId(projectId, experimentId, runId, search));
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{experimentId}/" + ValidationStorageUtils.RUN + "/{runId}/" + ValidationStorageUtils.DATA_PROFILE)
+	public ResponseEntity<DataProfile> findDataProfileByRunId(@PathVariable String projectId,
+													@PathVariable String experimentId,
+													@PathVariable String runId) {
+		return ResponseEntity.ok(uiService.findDataProfileByRunId(projectId, experimentId, runId));
 	}
 	
 	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.DATA_PROFILE + "/{id}")
@@ -151,12 +158,11 @@ public class UiController {
 	}
 	
 	// DataResource
-	@GetMapping("/{projectId}/" + ValidationStorageUtils.DATA_RESOURCE)
-	public ResponseEntity<List<DataResource>> findDataResource(@PathVariable String projectId,
-															@RequestParam("experiment_id") Optional<String> experimentId,
-															@RequestParam("run_id") Optional<String> runId,
-															@RequestParam("search") Optional<String> search) {
-		return ResponseEntity.ok(dataResourceService.findDocumentsByProjectId(projectId, experimentId, runId, search));
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{experimentId}/" + ValidationStorageUtils.RUN + "/{runId}/" + ValidationStorageUtils.DATA_RESOURCE)
+	public ResponseEntity<DataResource> findDataResourceByRunId(@PathVariable String projectId,
+													@PathVariable String experimentId,
+													@PathVariable String runId) {
+		return ResponseEntity.ok(uiService.findDataResourceByRunId(projectId, experimentId, runId));
 	}
 	
 	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.DATA_RESOURCE + "/{id}")
@@ -166,12 +172,11 @@ public class UiController {
 	}
 	
 	// ShortReport
-	@GetMapping("/{projectId}/" + ValidationStorageUtils.SHORT_REPORT)
-	public ResponseEntity<List<ShortReport>> findShortReport(@PathVariable String projectId,
-															@RequestParam("experiment_id") Optional<String> experimentId,
-															@RequestParam("run_id") Optional<String> runId,
-															@RequestParam("search") Optional<String> search) {
-		return ResponseEntity.ok(shortReportService.findDocumentsByProjectId(projectId, experimentId, runId, search));
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{experimentId}/" + ValidationStorageUtils.RUN + "/{runId}/" + ValidationStorageUtils.SHORT_REPORT)
+	public ResponseEntity<ShortReport> findShortReportByRunId(@PathVariable String projectId,
+													@PathVariable String experimentId,
+													@PathVariable String runId) {
+		return ResponseEntity.ok(uiService.findShortReportByRunId(projectId, experimentId, runId));
 	}
 	
 	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.SHORT_REPORT + "/{id}")
@@ -181,12 +186,11 @@ public class UiController {
 	}
 	
 	// ShortSchema
-	@GetMapping("/{projectId}/" + ValidationStorageUtils.SHORT_SCHEMA)
-	public ResponseEntity<List<ShortSchema>> findShortSchema(@PathVariable String projectId,
-															@RequestParam("experiment_id") Optional<String> experimentId,
-															@RequestParam("run_id") Optional<String> runId,
-															@RequestParam("search") Optional<String> search) {
-	return ResponseEntity.ok(shortSchemaService.findDocumentsByProjectId(projectId, experimentId, runId, search));
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{experimentId}/" + ValidationStorageUtils.RUN + "/{runId}/" + ValidationStorageUtils.SHORT_SCHEMA)
+	public ResponseEntity<ShortSchema> findShortSchemaByRunId(@PathVariable String projectId,
+													@PathVariable String experimentId,
+													@PathVariable String runId) {
+		return ResponseEntity.ok(uiService.findShortSchemaByRunId(projectId, experimentId, runId));
 	}
 	
 	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.SHORT_SCHEMA + "/{id}")

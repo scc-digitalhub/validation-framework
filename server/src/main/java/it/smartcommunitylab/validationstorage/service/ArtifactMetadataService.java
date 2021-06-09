@@ -4,11 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.server.ResponseStatusException;
 
+import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 import it.smartcommunitylab.validationstorage.model.dto.ArtifactMetadataDTO;
@@ -64,9 +63,9 @@ public class ArtifactMetadataService {
 	}
 	
 	// Create
-	public ArtifactMetadata createDocument(String projectId, ArtifactMetadataDTO request) {
+	public ArtifactMetadata createDocument(String projectId, ArtifactMetadataDTO request, String author) {
 		if (ObjectUtils.isEmpty(projectId))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project ID is missing or blank.");
+			throw new IllegalArgumentException("Project ID is missing or blank.");
 		
 		ValidationStorageUtils.checkProjectExists(projectRepository, projectId);
 		
@@ -76,11 +75,12 @@ public class ArtifactMetadataService {
 		String uri = request.getUri();
 		
 		if ((ObjectUtils.isEmpty(experimentId)) || (ObjectUtils.isEmpty(runId)) || (ObjectUtils.isEmpty(name)) || (ObjectUtils.isEmpty(uri)))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fields 'experiment_id', 'run_id', 'name', 'uri' are required and cannot be blank.");
+			throw new IllegalArgumentException("Fields 'experiment_id', 'run_id', 'name', 'uri' are required and cannot be blank.");
 		
 		ArtifactMetadata documentToSave = new ArtifactMetadata(projectId, experimentId, runId, name, uri);
 		
 		documentToSave.setExperimentName(request.getExperimentName());
+		documentToSave.setAuthor(author);
 		
 		// Create experiment document automatically.
 		ValidationStorageUtils.createExperiment(experimentRepository, projectId, experimentId, request.getExperimentName());
@@ -115,17 +115,17 @@ public class ArtifactMetadataService {
 			
 			return document;
 		}
-		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+		throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 	}
 	
 	// Update
 	public ArtifactMetadata updateDocument(String projectId, String id, ArtifactMetadataDTO request) {
 		if (ObjectUtils.isEmpty(id))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document ID is missing or blank.");
+			throw new IllegalArgumentException("Document ID is missing or blank.");
 		
 		ArtifactMetadata document = getDocument(id);
 		if (document == null)
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+			throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 		
 		ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
 		
@@ -147,7 +147,7 @@ public class ArtifactMetadataService {
 			documentRepository.deleteById(id);
 			return;
 		}
-		throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document with ID " + id + " was not found.");
+		throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 	}
 	
 	// Delete

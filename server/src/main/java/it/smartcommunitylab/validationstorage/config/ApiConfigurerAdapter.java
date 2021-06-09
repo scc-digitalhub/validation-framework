@@ -29,7 +29,7 @@ public class ApiConfigurerAdapter extends WebSecurityConfigurerAdapter {
 	 * JWT converter for OAuth2.
 	 */
 	@Autowired
-	private Converter<Jwt, AbstractAuthenticationToken> jwtConverter;
+	private Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter;
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -45,7 +45,7 @@ public class ApiConfigurerAdapter extends WebSecurityConfigurerAdapter {
 				.requestCache((requestCache) -> requestCache.disable())
 				.oauth2ResourceServer()
 	            .jwt()
-	            .jwtAuthenticationConverter(jwtConverter);
+	            .jwtAuthenticationConverter(jwtAuthenticationConverter);
 		} else {
 			http.cors().and().csrf().disable()
 				.requestMatcher(getRequestMatcher())

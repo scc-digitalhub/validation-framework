@@ -36,7 +36,7 @@ public class UiConfigurerAdapter extends WebSecurityConfigurerAdapter {
 	private AuthenticationProperties authenticationProperties;
 	
 	@Autowired
-	private PasswordEncoder encoder;
+	private PasswordEncoder passwordEncoder;
 	
 	@Autowired
 	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
@@ -44,7 +44,7 @@ public class UiConfigurerAdapter extends WebSecurityConfigurerAdapter {
 		
 		for (AuthenticationProperties.User user : authenticationProperties.getUsers()) {
 			configurer.withUser(user.getUsername())
-					.password(encoder.encode(user.getPassword()))
+					.password(passwordEncoder.encode(user.getPassword()))
 					.authorities(user.getAuthorities().toArray(new String[0]));
 		}
 	}
@@ -61,7 +61,7 @@ public class UiConfigurerAdapter extends WebSecurityConfigurerAdapter {
 				.and()
 				.oauth2ResourceServer()
 	            .jwt()
-	            .jwtAuthenticationConverter(getJwtAuthenticationConverter());
+	            .jwtAuthenticationConverter(jwtAuthenticationConverter());
 		} else {
 			http.cors().and().csrf().disable()
 			.authorizeRequests()
@@ -80,7 +80,7 @@ public class UiConfigurerAdapter extends WebSecurityConfigurerAdapter {
 	 * @return
 	 */
 	@Bean
-	public Converter<Jwt, AbstractAuthenticationToken> getJwtAuthenticationConverter() {
+	public Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
 	    JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 	    converter.setJwtGrantedAuthoritiesConverter(
 	    		new Converter<Jwt, Collection<GrantedAuthority>>() {

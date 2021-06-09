@@ -1,5 +1,6 @@
 package it.smartcommunitylab.validationstorage.controller;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,8 +45,8 @@ public class DataResourceController {
 	}
 	
 	@PostMapping("/{projectId}/" + ValidationStorageUtils.DATA_RESOURCE)
-	public ResponseEntity<DataResource> createDocument(@PathVariable String projectId, @RequestBody @Valid DataResourceDTO request) {
-		return ResponseEntity.ok(documentService.createDocument(projectId, request));
+	public ResponseEntity<DataResource> createDocument(@PathVariable String projectId, @RequestBody @Valid DataResourceDTO request, Principal principal) {
+		return ResponseEntity.ok(documentService.createDocument(projectId, request, ValidationStorageUtils.getPrincipalName(principal)));
 	}
 	
 	@PutMapping("/{projectId}/" + ValidationStorageUtils.DATA_RESOURCE + "/{id}")

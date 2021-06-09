@@ -1,21 +1,29 @@
 package it.smartcommunitylab.validationstorage.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 
+import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
+import it.smartcommunitylab.validationstorage.model.DataProfile;
+import it.smartcommunitylab.validationstorage.model.DataResource;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
+import it.smartcommunitylab.validationstorage.model.ShortReport;
+import it.smartcommunitylab.validationstorage.model.ShortSchema;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
+import it.smartcommunitylab.validationstorage.repository.DataProfileRepository;
+import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
+import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
+import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -28,6 +36,10 @@ public class UiService {
 	private final ExperimentRepository experimentRepository;
 	private final RunMetadataRepository runMetadataRepository;
 	private final ArtifactMetadataRepository artifactMetadataRepository;
+	private final DataProfileRepository dataProfileRepository;
+	private final DataResourceRepository dataResourceRepository;
+	private final ShortReportRepository shortReportRepository;
+	private final ShortSchemaRepository shortSchemaRepository;
 	
 	// Project
 	@PostFilter(ValidationStorageUtils.POSTFILTER_ID)
@@ -36,23 +48,63 @@ public class UiService {
 	}
 	
 	// Experiment
-	public List<Experiment> findExperiments(String projectId, Optional<String> experimentId, Pageable pageable) {
-		if (experimentId.isPresent())
-			return experimentRepository.findByProjectIdAndExperimentId(projectId, experimentId.get());
-		else
-			return experimentRepository.findByProjectId(projectId, pageable);
+	public List<Experiment> findExperiments(String projectId, Pageable pageable) {
+		return experimentRepository.findByProjectId(projectId, pageable);
+	}
+	
+	public Experiment findExperimentByExperimentId(String projectId, String experimentId) {
+		List<Experiment> documents = experimentRepository.findByProjectIdAndExperimentId(projectId, experimentId);
+		if (!documents.isEmpty())
+			return documents.get(0);
+		throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ") was not found.");
 	}
 	
 	// RunMetadata
-	public List<RunMetadata> findRunMetadata(String projectId, String experimentId, Optional<String> runId, Pageable pageable) {
-		if (runId.isPresent())
-			return runMetadataRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId.get());
-		else
-			return runMetadataRepository.findByProjectIdAndExperimentId(projectId, experimentId, pageable);
+	public List<RunMetadata> findRunMetadata(String projectId, String experimentId, Pageable pageable) {
+		return runMetadataRepository.findByProjectIdAndExperimentId(projectId, experimentId, pageable);
+	}
+	
+	public RunMetadata findRunMetadataByRunId(String projectId, String experimentId, String runId) {
+		List<RunMetadata> documents = runMetadataRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+		if (!documents.isEmpty())
+			return documents.get(0);
+		throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") was not found.");
 	}
 	
 	// ArtifactMetadata
 	public List<ArtifactMetadata> findArtifactMetadata(String projectId, String experimentId, String runId, Pageable pageable) {
 		return artifactMetadataRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId, pageable);
+	}
+	
+	// DataProfile
+	public DataProfile findDataProfileByRunId(String projectId, String experimentId, String runId) {
+		List<DataProfile> documents = dataProfileRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+		if (!documents.isEmpty())
+			return documents.get(0);
+		throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") was not found.");
+	}
+	
+	// DataResource
+	public DataResource findDataResourceByRunId(String projectId, String experimentId, String runId) {
+		List<DataResource> documents = dataResourceRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+		if (!documents.isEmpty())
+			return documents.get(0);
+		throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") was not found.");
+	}
+	
+	// ShortReport
+	public ShortReport findShortReportByRunId(String projectId, String experimentId, String runId) {
+		List<ShortReport> documents = shortReportRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+		if (!documents.isEmpty())
+			return documents.get(0);
+		throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") was not found.");
+	}
+	
+	// ShortSchema
+	public ShortSchema findShortSchemaByRunId(String projectId, String experimentId, String runId) {
+		List<ShortSchema> documents = shortSchemaRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+		if (!documents.isEmpty())
+			return documents.get(0);
+		throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") was not found.");
 	}
 }
