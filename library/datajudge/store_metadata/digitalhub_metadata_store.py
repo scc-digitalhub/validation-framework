@@ -35,7 +35,8 @@ class DigitalHubMetadataStore(MetadataStore):
             self._SHORT_REPORT: [],
             self._SHORT_SCHEMA: [],
             self._DATA_PROFILE: [],
-            self._ARTIFACT_METADATA: []
+            self._ARTIFACT_METADATA: [],
+            self._RUN_ENV: []
         }
         # API endpoints
         self._endpoints = {
@@ -44,7 +45,8 @@ class DigitalHubMetadataStore(MetadataStore):
             self._SHORT_REPORT: cfg.API_SHORT_REPORT,
             self._SHORT_SCHEMA: cfg.API_SHORT_SCHEMA,
             self._DATA_PROFILE: cfg.API_DATA_PROFILE,
-            self._ARTIFACT_METADATA: cfg.API_ARTIFACT_METADATA
+            self._ARTIFACT_METADATA: cfg.API_ARTIFACT_METADATA,
+            self._RUN_ENV: cfg.API_RUN_ENV
         }
 
     def init_run(self,
@@ -94,7 +96,7 @@ class DigitalHubMetadataStore(MetadataStore):
             if src_type == self._RUN_METADATA:
                 kwargs["params"] = {
                     "overwrite": "true" if overwrite else "false"
-                    }
+                }
             response = api_post_call(dst, **kwargs)
             self._parse_response(response, src_type)
         else:

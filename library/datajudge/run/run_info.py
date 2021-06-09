@@ -49,8 +49,11 @@ class RunInfo:
 
         self.data_resource_uri = None
 
-        self.validation_library = None
-        self.library_version = None
+        self.validation_library_name = None
+        self.validation_library_version = None
+
+        self.profiling_library_name = None
+        self.profiling_library_version = None
 
         self.created = get_time()
         self.begin_status = None

@@ -3,7 +3,7 @@ ShortSchema module.
 Implementation of a Short Schema common structure.
 """
 from collections import namedtuple
-from typing import List, Optional
+from typing import List
 
 
 SchemaTuple = namedtuple("SchemaTuple", ("name", "type",

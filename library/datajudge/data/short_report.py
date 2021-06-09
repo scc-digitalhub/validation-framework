@@ -3,7 +3,6 @@ ShortReport module.
 Implementation of a Short Report common structure.
 """
 from collections import namedtuple
-from typing import Optional
 
 
 # pylint: disable=too-many-arguments

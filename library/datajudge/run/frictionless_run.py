@@ -37,8 +37,8 @@ class FrictionlessRun(Run):
         """
         Update run's info about the validation framework used.
         """
-        self.run_info.validation_library = frictionless.__name__
-        self.run_info.library_version = frictionless.__version__
+        self.run_info.validation_library_name = frictionless.__name__
+        self.run_info.validation_library_version = frictionless.__version__
 
     # Data Resource
 

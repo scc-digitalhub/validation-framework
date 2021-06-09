@@ -44,6 +44,7 @@ class MetadataStore:
     _SHORT_SCHEMA = cfg.MT_SHORT_SCHEMA
     _DATA_PROFILE = cfg.MT_DATA_PROFILE
     _ARTIFACT_METADATA = cfg.MT_ARTIFACT_METADATA
+    _RUN_ENV = cfg.MT_RUN_ENV
 
     def __init__(self,
                  uri_metadata: str,

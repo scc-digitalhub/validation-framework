@@ -27,7 +27,8 @@ class LocalMetadataStore(MetadataStore):
             self._SHORT_REPORT: cfg.FN_SHORT_REPORT,
             self._SHORT_SCHEMA: cfg.FN_SHORT_SCHEMA,
             self._DATA_PROFILE: cfg.FN_DATA_PROFILE,
-            self._ARTIFACT_METADATA: cfg.FN_ARTIFACT_METADATA
+            self._ARTIFACT_METADATA: cfg.FN_ARTIFACT_METADATA,
+            self._RUN_ENV: cfg.FN_RUN_ENV,
         }
         self._artifact_count = 0
 

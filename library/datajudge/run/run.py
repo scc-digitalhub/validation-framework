@@ -5,6 +5,8 @@ Base class for Run objects.
 from __future__ import annotations
 
 import json
+import os
+import platform
 import time
 import typing
 from abc import ABCMeta, abstractmethod
@@ -12,14 +14,17 @@ from collections import namedtuple
 from typing import Any, List, Optional, Tuple, Union
 
 import pandas as pd
+import pandas_profiling
 from pandas_profiling import ProfileReport
-from datajudge.data import (ShortReport, ShortSchema,
-                            SchemaTuple, ReportTuple)
+from psutil import virtual_memory
+
+from datajudge.data import (ReportTuple, SchemaTuple, ShortProfile,
+                            ShortReport, ShortSchema)
 from datajudge.utils import config as cfg
 from datajudge.utils.file_utils import clean_all
 from datajudge.utils.io_utils import write_bytesio
 from datajudge.utils.uri_utils import get_name_from_uri
-from datajudge.utils.utils import data_listify, get_time, warn
+from datajudge.utils.utils import data_listify, get_time, time_to_sec, warn
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
@@ -84,6 +89,7 @@ class Run:
     _SHORT_SCHEMA = cfg.MT_SHORT_SCHEMA
     _DATA_PROFILE = cfg.MT_DATA_PROFILE
     _ARTIFACT_METADATA = cfg.MT_ARTIFACT_METADATA
+    _RUN_ENV = cfg.MT_RUN_ENV
 
     _VALID_SCHEMA = cfg.FN_VALID_SCHEMA
     _FULL_REPORT = cfg.FN_FULL_REPORT
@@ -114,6 +120,7 @@ class Run:
         self.profile = None
 
         self._update_library_info()
+        self._update_profiler_info()
         self._log_run()
 
     # Run
@@ -124,12 +131,33 @@ class Run:
         Update run's info about the validation framework used.
         """
 
+    def _update_profiler_info(self) -> None:
+        """
+        Update run's info about the profiling framework used.
+        """
+        # Maybe to remove in the future? Multiple profiling libraries support?
+        self.run_info.profiling_library_name = pandas_profiling.__name__
+        self.run_info.profiling_library_version = pandas_profiling.__version__
+
     def _log_run(self) -> None:
         """
         Log run's metadata.
         """
         metadata = self._get_content(self.run_info.to_dict())
         self._log_metadata(metadata, self._RUN_METADATA)
+
+    def _log_env(self) -> None:
+        """
+        Log run's enviroment details.
+        """
+        env_data = {
+            "platform": platform.platform(),
+            "python_version": platform.python_version(),
+            "cpu_core": os.cpu_count(),
+            "ram": virtual_memory().total
+        }
+        metadata = self._get_content(env_data)
+        self._log_metadata(metadata, self._RUN_ENV)
 
     # Data Resource
 
@@ -162,13 +190,6 @@ class Run:
             self.run_info.data_resource_uri = uri_resource
 
     # Short Report
-
-    @staticmethod
-    def _create_short_report(kwargs: dict) -> ShortReport:
-        """
-        Return a ShortReport object.
-        """
-        return ShortReport(**kwargs)
 
     @abstractmethod
     def _parse_report(self,
@@ -226,18 +247,11 @@ class Run:
             "errors": args.errors,
         }
 
-        short_report = self._create_short_report(report_args)
+        short_report = ShortReport(**report_args)
         metadata = self._get_content(short_report.to_dict())
         self._log_metadata(metadata, self._SHORT_REPORT)
 
     # Short Schema
-
-    @staticmethod
-    def _create_short_schema(kwargs: dict) -> ShortSchema:
-        """
-        Return a ShortSchema object.
-        """
-        return ShortSchema(**kwargs)
 
     @abstractmethod
     def _parse_schema(self,
@@ -297,7 +311,7 @@ class Run:
             "duration": self._inf_schema_duration,
         }
 
-        short_schema = self._create_short_schema(schema_args)
+        short_schema = ShortSchema(**schema_args)
         metadata = self._get_content(short_schema.to_dict())
         self._log_metadata(metadata, self._SHORT_SCHEMA)
 
@@ -322,7 +336,7 @@ class Run:
                 df = pd.read_csv(path, **kwargs)
             return df
 
-        if file_format in ["xls", "xlsx"]:
+        if file_format in ["xls", "xlsx", "ods", "odf"]:
             if is_list:
                 list_df = [pd.read_excel(i, **kwargs) for i in path]
                 df = pd.concat(list_df)
@@ -361,17 +375,29 @@ class Run:
         json_str = json_str.replace("NaN", "null")
         full_profile = json.loads(json_str)
 
-        # Short profile
-        short_profile = {
-            k: full_profile.get(k, {}) for k in cfg.PROFILE_COLUMNS}
+        # Short profile args
+        args = {
+            k: full_profile.get(k, {}) for k in cfg.PROFILE_COLUMNS
+        }
 
         # Variables overwriting by filtering
-        var = short_profile.get("variables")
+        var = args.get("variables")
         for key in var:
-            short_profile["variables"][key] = {
-                k: var[key][k] for k in cfg.PROFILE_FIELDS}
+            args["variables"][key] = {
+                k: var[key][k] for k in cfg.PROFILE_FIELDS
+            }
 
-        return short_profile
+        # "Rename" variables with fields and tables with stats
+        args["fields"] = args.pop("variables")
+        args["stats"] = args.pop("table")
+
+        # Extract duration from analysis and set as key
+        # and pop analysis
+        duration = args.get("analysis", {}).get("duration")
+        args["duration"] = time_to_sec(duration)
+        args.pop("analysis")
+
+        return args
 
     def _set_profile(self,
                      profile: Optional[ProfileReport] = None,
@@ -392,7 +418,7 @@ class Run:
         Check validity of profile.
         """
         if profile is not None and not isinstance(profile, ProfileReport):
-            raise TypeError("Expected frictionless Report!")
+            raise TypeError("Expected pandas_profiling Profile!")
 
     def log_profile(self,
                     profile: Optional[ProfileReport] = None,
@@ -418,7 +444,9 @@ class Run:
             return
 
         parsed = self._parse_profile()
-        metadata = self._get_content(parsed)
+        parsed["data_resource_uri"] = self.run_info.data_resource_uri
+        short_profile = ShortProfile(**parsed)
+        metadata = self._get_content(short_profile.to_dict())
         self._log_metadata(metadata, self._DATA_PROFILE)
 
     # Artifact metadata
@@ -680,6 +708,7 @@ class Run:
         self.run_info.begin_status = "active"
         self.run_info.started = get_time()
         self._log_run()
+        self._log_env()
         return self
 
     def __exit__(self,

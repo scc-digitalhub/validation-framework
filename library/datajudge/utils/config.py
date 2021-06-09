@@ -9,6 +9,7 @@ FN_SHORT_REPORT = "report_short.json"
 FN_SHORT_SCHEMA = "schema_short.json"
 FN_DATA_PROFILE = "data_profile.json"
 FN_ARTIFACT_METADATA = "artifact_metadata_{}.json"
+FN_RUN_ENV = "run_env.json"
 
 # FILENAMES ARTIFACTS
 FN_VALID_SCHEMA = "table_schema.json"
@@ -25,6 +26,7 @@ API_SHORT_REPORT = "/short-report"
 API_SHORT_SCHEMA = "/short-schema"
 API_DATA_PROFILE = "/data-profile"
 API_ARTIFACT_METADATA = "/artifact-metadata"
+API_RUN_ENV = "/run-env"
 
 # METADATA TYPE
 MT_RUN_METADATA = "run"
@@ -33,6 +35,7 @@ MT_SHORT_REPORT = "report"
 MT_SHORT_SCHEMA = "schema"
 MT_DATA_PROFILE = "profile"
 MT_ARTIFACT_METADATA = "artifact"
+MT_RUN_ENV = "run_env"
 
 # STORE TYPE
 ST_METADATA = "metadata"
@@ -48,7 +51,7 @@ DEFAULT_PROJ = "project"
 DEFAULT_EXP = "experiment"
 
 # COLUMNS/FIELDS TO PARSE FROM PROFILE
-PROFILE_COLUMNS = ["analysis", "table", "package", "variables"]
+PROFILE_COLUMNS = ["analysis", "table", "variables"]
 PROFILE_FIELDS = ["n_distinct", "p_distinct", "is_unique",
                   "n_unique", "p_unique", "type", "hashable",
                   "n_missing", "n", "p_missing", "count",
