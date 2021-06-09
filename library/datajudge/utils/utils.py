@@ -10,9 +10,9 @@ from typing import Any, Tuple
 
 def get_time() -> str:
     """
-    Return string of datetime.now().
+    Return ISO 8601 time with timezone info.
     """
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.now().astimezone().isoformat(timespec="milliseconds")
 
 
 def data_listify(data: Any,

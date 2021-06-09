@@ -16,7 +16,7 @@ The *DigitalHub API backend* implements a basic authentication method. You can e
 
 - Project id
 - Endpoint of DigitalHub API
-- Credentials dictionary with authentication type (Basic with username/password, OAuth2 with bearer token provided by user).
+- Credentials dictionary with authentication type (basic with username/password, oauth with bearer token provided by user).
 
 The way to build arguments for the `Client` is the following:
 
@@ -27,21 +27,21 @@ PROJECT_ID = "projId"
 API_ENDPOINT = "http://ip_address:port"
 ```
 
-For the authentication there are two options, *Basic*
+For the authentication there are two options, *basic*
 
 ```python
 API_CREDENTIALS = {
-    "auth": "Basic",
+    "auth": "basic",
     "user": "username",
     "password": "password"
 }
 ```
 
-or *OAuth2* with a token provided by user.
+or *oauth* with a token provided by user.
 
 ```python
 API_CREDENTIALS = {
-    "auth": "OAuth2",
+    "auth": "oauth",
     "token": "token"
 }
 ```
@@ -142,13 +142,14 @@ ENDPOINT = "ftp://host:port/path"
 ```
 
 **Credentials**</br>
-The credentials can be provided in a `dict` or directly in the *endpoint path*.
+The credentials can be provided in a `dict` or directly in the *endpoint path*. In any case, a valid *endpoint* must be provided.
 
 - *endpoint*
 
 ```python
 
 ENDPOINT = "ftp://user:password@host:port/path"
+CREDENTIALS = None
 ```
 
 - *dict*
@@ -177,7 +178,7 @@ The credentials must be provided inside a `dict`. We support *basic* and *bearer
 
 ```python
 CREDENTIALS = {
-    "auth": "Basic",
+    "auth": "basic",
     "user": "username",
     "password": "password"
 }
@@ -187,7 +188,7 @@ or
 
 ```python
 CREDENTIALS = {
-    "auth": "OAuth2",
+    "auth": "oauth",
     "token": "token"
 }
 ```

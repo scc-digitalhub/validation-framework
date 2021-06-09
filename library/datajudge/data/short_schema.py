@@ -3,10 +3,11 @@ ShortSchema module.
 Implementation of a Short Schema common structure.
 """
 from collections import namedtuple
-from typing import List
+from typing import List, Optional
 
 
-SchemaTuple = namedtuple("SchemaTuple", ("name", "type"))
+SchemaTuple = namedtuple("SchemaTuple", ("name", "type",
+                                         "valid_type", "description"))
 
 
 class ShortSchema:
@@ -17,37 +18,47 @@ class ShortSchema:
 
     Attributes
     ----------
+    data_resource_uri : str
+        URI that point to the resource.
+    duration : float
+        Time required by the inference process.
     fields : list
-        A list of SchemaTuples with values 'name' & 'type'
+        A list of SchemaTuples with values 'name' & 'type'.
 
     Methods
     -------
     to_dict :
         Return a dictionary schema.
     """
-    def __init__(self, fields: List[SchemaTuple]) -> None:
-        self._validate_fields(fields)
+    def __init__(self,
+                 data_resource_uri: str,
+                 duration: float,
+                 fields: List[SchemaTuple]) -> None:
+        self.data_resource_uri = data_resource_uri
+        self.duration = duration
         self.fields = fields
 
-    @staticmethod
-    def _validate_fields(fields: List[SchemaTuple]) -> None:
-        """
-        Check if a non empty field list is made by
-        SchemaTuples. If not, raise error.
-        """
-        for field in fields:
-            if not isinstance(field, SchemaTuple):
-                raise TypeError("Not a SchemaTuple!")
 
     def to_dict(self) -> dict:
         """
         Return a dictionary of inferred schema.
         """
-        schema = {"fields": []}
+        fields = []
         for field in self.fields:
-            data = {"name": field.name,
-                    "type": field.type}
-            schema["fields"].append(data)
+            data = {
+                "name": field.name,
+                "type": field.type,
+                "valid_type": field.valid_type,
+                "description": field.description
+            }
+            fields.append(data)
+
+        schema = {
+            "data_resource_uri": self.data_resource_uri,
+            "duration": self.duration,
+            "fields": fields,
+        }
+
         return schema
 
     def __repr__(self) -> str:

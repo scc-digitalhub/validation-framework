@@ -2,7 +2,6 @@
 ShortReport module.
 Implementation of a Short Report common structure.
 """
-from datetime import datetime
 from collections import namedtuple
 from typing import Optional
 
@@ -19,19 +18,15 @@ class ShortReport:
 
     Attributes
     ----------
-    data_resource : str
+    data_resource_uri : str
         URI that point to the resource.
-    experiment_name : str
-        Name of the experiment.
-    run_id : str
-        Run id.
-    time : datetime, default = None
+    duration : float
         Time required by the validation process.
         Derived from the validation report.
-    valid : bool, default = None
-        Validation result.
+    valid : bool
+        Validation outcome.
         Derived from the validation report.
-    errors : list, default = None
+    errors : list
         List of errors found by validation process.
         Derived from the validation report.
 
@@ -43,16 +38,12 @@ class ShortReport:
     """
 
     def __init__(self,
-                 data_resource: str,
-                 experiment_name: str,
-                 run_id: str,
-                 time: Optional[datetime] = None,
-                 valid: Optional[bool] = None,
-                 errors: Optional[list] = None) -> None:
-        self.data_resource = data_resource
-        self.experiment_name = experiment_name
-        self.run_id = run_id
-        self.time = time
+                 data_resource_uri: str,
+                 duration: float,
+                 valid: bool,
+                 errors: list) -> None:
+        self.data_resource_uri = data_resource_uri
+        self.duration = duration
         self.valid = valid
         self.errors = errors
 
@@ -60,7 +51,13 @@ class ShortReport:
         """
         Return a dictionary of the attributes.
         """
-        return self.__dict__
+        report = {
+            "data_resource_uri": self.data_resource_uri,
+            "duration": self.duration,
+            "valid": self.valid,
+            "errors": self.errors,
+        }
+        return report
 
     def __repr__(self) -> str:
-        return str(self.__dict__)
+        return str(self.to_dict())

@@ -161,9 +161,10 @@ class DigitalHubMetadataStore(MetadataStore):
         Parse auth config.
         """
         if self.config is not None:
-            if self.config["auth"] == "Basic":
+            if self.config["auth"] == "basic":
                 kwargs["auth"] = self.config["user"], self.config["password"]
-            if self.config["auth"] == "OAuth2":
+            if self.config["auth"] == "oauth":
                 kwargs["headers"] = {
-                    "Authorization": f"Bearer {self.config['token']}"}
+                    "Authorization": f"Bearer {self.config['token']}"
+                }
         return kwargs

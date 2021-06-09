@@ -1,14 +1,15 @@
 """
-Interface for Run objects.
+Base class for Run objects.
 """
 # pylint: disable=import-error,invalid-name
 from __future__ import annotations
 
 import json
+import time
 import typing
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import pandas as pd
 from pandas_profiling import ProfileReport
@@ -108,6 +109,7 @@ class Run:
         # Cahcing results of inference/validation/profiling
         self.inferred = None
         self.inf_schema = None
+        self._inf_schema_duration = None
         self.report = None
         self.profile = None
 
@@ -218,13 +220,12 @@ class Run:
 
         args = self._parse_report(ReportTuple)
         report_args = {
-            "time": args.time,
+            "data_resource_uri": self.run_info.data_resource_uri,
+            "duration": args.time,
             "valid": args.valid,
             "errors": args.errors,
-            "data_resource": self.run_info.data_resource_uri,
-            "experiment_name": self.run_info.experiment_name,
-            "run_id": self.run_info.run_id
         }
+
         short_report = self._create_short_report(report_args)
         metadata = self._get_content(short_report.to_dict())
         self._log_metadata(metadata, self._SHORT_REPORT)
@@ -232,12 +233,11 @@ class Run:
     # Short Schema
 
     @staticmethod
-    def _create_short_schema(fields: List[Dict[str, str]]
-                             ) -> ShortSchema:
+    def _create_short_schema(kwargs: dict) -> ShortSchema:
         """
         Return a ShortSchema object.
         """
-        return ShortSchema(fields)
+        return ShortSchema(**kwargs)
 
     @abstractmethod
     def _parse_schema(self,
@@ -255,7 +255,9 @@ class Run:
         """
         if self.inf_schema is None:
             if schema is None and infer:
+                start = time.perf_counter()
                 self.inf_schema = self.infer_schema()
+                self._inf_schema_duration = round(time.perf_counter() - start, 4)
             else:
                 self.inf_schema = schema
 
@@ -288,8 +290,14 @@ class Run:
             warn("No schema provided! Skipped log.")
             return
 
-        parsed = self._parse_schema(SchemaTuple)
-        short_schema = self._create_short_schema(parsed)
+        parsed_fields = self._parse_schema(SchemaTuple)
+        schema_args = {
+            "data_resource_uri": self.run_info.data_resource_uri,
+            "fields": parsed_fields,
+            "duration": self._inf_schema_duration,
+        }
+
+        short_schema = self._create_short_schema(schema_args)
         metadata = self._get_content(short_schema.to_dict())
         self._log_metadata(metadata, self._SHORT_SCHEMA)
 

@@ -55,7 +55,7 @@ class FrictionlessRun(Run):
 
         # Bytes, MD5 Hash
         for key in ["bytes", "hash"]:
-            value = inferred.get("inferred", {}).get(key)
+            value = inferred.get("stats", {}).get(key)
             setattr(self.data_resource, key, value)
 
         # Mediatype
@@ -97,8 +97,31 @@ class FrictionlessRun(Run):
         ShortSchema.
         """
         if self.inf_schema is None:
-            return [nmtp("", "")]
-        return [nmtp(i["name"], i["type"]) for i in self.inf_schema["fields"]]
+            return [nmtp("", "", "")]
+
+        # Can be empty dict!
+        self.fetch_validation_schema()
+        schema = self.build_frictionless_schema(descriptor=self._val_schema)
+        column_list = schema.get("fields", [])
+
+        fields_list = []
+        for field in self.inf_schema.get("fields", {}):
+
+            name = field.get("name", "")
+            type_ = field.get("type", "")
+
+            for i in column_list:
+                if name == i.get("name"):
+                    valid_type = i.get("type", "")
+                    desc = i.get("description", "")
+                    break
+            else:
+                valid_type = ""
+                desc = ""
+
+            fields_list.append(nmtp(name, type_, valid_type, desc))
+
+        return fields_list
 
     def _check_schema(self,
                       schema: Optional[Schema] = None) -> None:
@@ -127,7 +150,7 @@ class FrictionlessRun(Run):
         """
         data_path = self.fetch_input_data()
         resource = self.build_frictionless_resource(path=data_path)
-        resource.infer()
+        resource.infer(stats=True)
         resource.expand()
         return resource
 
