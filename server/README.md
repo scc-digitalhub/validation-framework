@@ -75,7 +75,7 @@ A list of available endpoints and their use should now be hosted at http://local
 
 ## Endpoints
 
-8 kinds of documents are handled and each of them has end-points for creating, reading, updating and deleting: `artifact-metadata`, `data-profile`, `data-resource`, `experiment`, `project`, `run-metadata`, `short-report`, `short-schema`.
+Several kinds of documents are handled and each of them has end-points for creating, reading, updating and deleting: `artifact-metadata`, `data-profile`, `data-resource`, `experiment`, `project`, `run-environment`, `run-metadata`, `short-report`, `short-schema`.
 
 `project` end-points have the most different behavior, so a dedicated section is presented first.
 
@@ -160,7 +160,7 @@ Some differences may be present, in which case they will be described, but other
 This end-point involves the most significant differences depending on the kind of document, so it contains a number of sub-sections to ease explanation.
 
 #### experiment
-You do not actually need to create `experiment` documents. When documents of types under `experiment` (`artifact-metadata`, `data-profile`, `data-resource`, `run-metadata`, `short-report`, `short-schema` ) are created, the back-end will automatically create the `experiment` with the information it receives.
+You do not actually need to create `experiment` documents. When documents of types under `experiment` (`artifact-metadata`, `data-profile`, `data-resource`, `run-environment`, `run-metadata`, `short-report`, `short-schema` ) are created, the back-end will automatically create the `experiment` with the information it receives.
 
 For completeness, there is still an end-point for this, which you can use as follows if you'd like.
 
@@ -240,12 +240,12 @@ Example:
 
 No error will occur for `artifact-metadata` if other documents contain the same combination of values.
 
-#### data-profile, data-resource, short-report, short-schema
+#### data-profile, data-resource, run-environment, short-report, short-schema
 ```
 localhost:8200/api/project/<project_id>/<document_type>
 ```
 * `project_id` - Path variable, ID of the project.
-* `document_type` - Path variable, `data-profile`, `data-resource`, `short-report` or `short-schema`. These documents behave identically.
+* `document_type` - Path variable, `data-profile`, `data-resource`, `run-environment`, `short-report` or `short-schema`. These documents behave identically.
 
 Contents of the body:
 * `experiment_id` - **Mandatory**, ID of the experiment.
