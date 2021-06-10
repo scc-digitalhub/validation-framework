@@ -17,6 +17,7 @@ import it.smartcommunitylab.validationstorage.repository.DataProfileRepository;
 import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
+import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
@@ -31,6 +32,7 @@ public class ExperimentService {
 	private final DataProfileRepository dataProfileRepository;
 	private final DataResourceRepository dataResourceRepository;
 	private final ProjectRepository projectRepository;
+	private final RunEnvironmentRepository runEnvironmentRepository;
 	private final RunMetadataRepository runMetadataRepository;
 	private final ShortReportRepository shortReportRepository;
 	private final ShortSchemaRepository shortSchemaRepository;
@@ -151,6 +153,7 @@ public class ExperimentService {
 			artifactMetadataRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
 			dataProfileRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
 			dataResourceRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
+			runEnvironmentRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
 			runMetadataRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
 			shortReportRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
 			shortSchemaRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
@@ -169,6 +172,7 @@ public class ExperimentService {
 			artifactMetadataRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
 			dataProfileRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
 			dataResourceRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
+			runEnvironmentRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
 			runMetadataRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
 			shortReportRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
 			shortSchemaRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
@@ -179,6 +183,7 @@ public class ExperimentService {
 			artifactMetadataRepository.deleteByProjectId(projectId);
 			dataProfileRepository.deleteByProjectId(projectId);
 			dataResourceRepository.deleteByProjectId(projectId);
+			runEnvironmentRepository.deleteByProjectId(projectId);
 			runMetadataRepository.deleteByProjectId(projectId);
 			shortReportRepository.deleteByProjectId(projectId);
 			shortSchemaRepository.deleteByProjectId(projectId);

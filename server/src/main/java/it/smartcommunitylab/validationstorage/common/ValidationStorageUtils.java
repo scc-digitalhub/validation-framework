@@ -14,11 +14,12 @@ import java.text.Normalizer;
  */
 public class ValidationStorageUtils {
 	// Constants used to determine the path of certain end-points
-	public static final String EXPERIMENT = "experiment";
-	public static final String RUN_METADATA = "run-metadata";
 	public static final String ARTIFACT_METADATA = "artifact-metadata";
 	public static final String DATA_RESOURCE = "data-resource";
 	public static final String DATA_PROFILE = "data-profile";
+	public static final String EXPERIMENT = "experiment";
+	public static final String RUN_ENVIRONMENT = "run-environment";
+	public static final String RUN_METADATA = "run-metadata";
 	public static final String SHORT_REPORT = "short-report";
 	public static final String SHORT_SCHEMA = "short-schema";
 	
@@ -28,7 +29,7 @@ public class ValidationStorageUtils {
 	public static final String RUN = "run";
 	
 	// Date format and contents field for dates in RunMetadata documents
-	public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
 	public static final String FIELD_RUN_METADATA_TS = "created";
 	
 	// Conditions for PreAuthorize and similar annotations

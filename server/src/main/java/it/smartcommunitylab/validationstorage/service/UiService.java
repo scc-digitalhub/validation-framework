@@ -13,6 +13,7 @@ import it.smartcommunitylab.validationstorage.model.DataProfile;
 import it.smartcommunitylab.validationstorage.model.DataResource;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Project;
+import it.smartcommunitylab.validationstorage.model.RunEnvironment;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
 import it.smartcommunitylab.validationstorage.model.ShortReport;
 import it.smartcommunitylab.validationstorage.model.ShortSchema;
@@ -21,6 +22,7 @@ import it.smartcommunitylab.validationstorage.repository.DataProfileRepository;
 import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
+import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
@@ -38,6 +40,7 @@ public class UiService {
 	private final ArtifactMetadataRepository artifactMetadataRepository;
 	private final DataProfileRepository dataProfileRepository;
 	private final DataResourceRepository dataResourceRepository;
+	private final RunEnvironmentRepository runEnvironmentRepository;
 	private final ShortReportRepository shortReportRepository;
 	private final ShortSchemaRepository shortSchemaRepository;
 	
@@ -87,6 +90,14 @@ public class UiService {
 	// DataResource
 	public DataResource findDataResourceByRunId(String projectId, String experimentId, String runId) {
 		List<DataResource> documents = dataResourceRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+		if (!documents.isEmpty())
+			return documents.get(0);
+		throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") was not found.");
+	}
+	
+	// RunEnvironment
+	public RunEnvironment findRunEnvironmentByRunId(String projectId, String experimentId, String runId) {
+		List<RunEnvironment> documents = runEnvironmentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
 		if (!documents.isEmpty())
 			return documents.get(0);
 		throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") was not found.");

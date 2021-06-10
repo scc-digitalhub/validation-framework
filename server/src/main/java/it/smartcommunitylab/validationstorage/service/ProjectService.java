@@ -17,6 +17,7 @@ import it.smartcommunitylab.validationstorage.repository.DataProfileRepository;
 import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
+import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
@@ -31,6 +32,7 @@ public class ProjectService {
 	private final ArtifactMetadataRepository artifactMetadataRepository;
 	private final DataProfileRepository dataProfileRepository;
 	private final DataResourceRepository dataResourceRepository;
+	private final RunEnvironmentRepository runEnvironmentRepository;
 	private final RunMetadataRepository runMetadataRepository;
 	private final ShortReportRepository shortReportRepository;
 	private final ShortSchemaRepository shortSchemaRepository;
@@ -112,6 +114,7 @@ public class ProjectService {
 			artifactMetadataRepository.deleteByProjectId(id);
 			dataProfileRepository.deleteByProjectId(id);
 			dataResourceRepository.deleteByProjectId(id);
+			runEnvironmentRepository.deleteByProjectId(id);
 			runMetadataRepository.deleteByProjectId(id);
 			shortReportRepository.deleteByProjectId(id);
 			shortSchemaRepository.deleteByProjectId(id);

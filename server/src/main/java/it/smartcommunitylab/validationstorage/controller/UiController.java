@@ -23,6 +23,7 @@ import it.smartcommunitylab.validationstorage.model.DataProfile;
 import it.smartcommunitylab.validationstorage.model.DataResource;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Project;
+import it.smartcommunitylab.validationstorage.model.RunEnvironment;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
 import it.smartcommunitylab.validationstorage.model.ShortReport;
 import it.smartcommunitylab.validationstorage.model.ShortSchema;
@@ -32,6 +33,7 @@ import it.smartcommunitylab.validationstorage.service.DataProfileService;
 import it.smartcommunitylab.validationstorage.service.DataResourceService;
 import it.smartcommunitylab.validationstorage.service.ExperimentService;
 import it.smartcommunitylab.validationstorage.service.ProjectService;
+import it.smartcommunitylab.validationstorage.service.RunEnvironmentService;
 import it.smartcommunitylab.validationstorage.service.RunMetadataService;
 import it.smartcommunitylab.validationstorage.service.ShortReportService;
 import it.smartcommunitylab.validationstorage.service.ShortSchemaService;
@@ -54,6 +56,7 @@ public class UiController {
 	private final DataProfileService dataProfileService;
 	private final DataResourceService dataResourceService;
 	private final ProjectService projectService;
+	private final RunEnvironmentService runEnvironmentService;
 	private final RunMetadataService runMetadataService;
 	private final ShortReportService shortReportService;
 	private final ShortSchemaService shortSchemaService;
@@ -168,6 +171,20 @@ public class UiController {
 	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.DATA_RESOURCE + "/{id}")
 	public ResponseEntity<Void> deleteDataResourceById(@PathVariable String projectId, @PathVariable String id) {
 		dataResourceService.deleteDocumentById(projectId, id);
+		return ResponseEntity.ok().build();
+	}
+	
+	// RunEnvironment
+	@GetMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{experimentId}/" + ValidationStorageUtils.RUN + "/{runId}/" + ValidationStorageUtils.RUN_ENVIRONMENT)
+	public ResponseEntity<RunEnvironment> findRunEnvironmentByRunId(@PathVariable String projectId,
+													@PathVariable String experimentId,
+													@PathVariable String runId) {
+		return ResponseEntity.ok(uiService.findRunEnvironmentByRunId(projectId, experimentId, runId));
+	}
+	
+	@DeleteMapping("/{projectId}/" + ValidationStorageUtils.RUN_ENVIRONMENT + "/{id}")
+	public ResponseEntity<Void> deleteRunEnvironmentById(@PathVariable String projectId, @PathVariable String id) {
+		runEnvironmentService.deleteDocumentById(projectId, id);
 		return ResponseEntity.ok().build();
 	}
 	
