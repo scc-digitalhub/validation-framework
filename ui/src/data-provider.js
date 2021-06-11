@@ -27,7 +27,6 @@ export class DataProvider extends React.Component {
     }
     
     getList(resource, params) {
-        console.log(apiUrl);
         const page = params.pagination.page;
         const size = params.pagination.perPage;
         const sort = params.sort.field + ',' + params.sort.order;

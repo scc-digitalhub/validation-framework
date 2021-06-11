@@ -54,7 +54,7 @@ export const formatBytes = (bytes, decimals = 2) => {
 }
 
 export const formatDuration = (duration, msDecimals = 2) => {
-    if (duration == null || duration < 0)
+    if (!duration || duration < 0)
         return null;
     
     const dm = msDecimals < 0 ? 2 : msDecimals;
