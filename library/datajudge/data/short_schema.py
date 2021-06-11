@@ -38,7 +38,6 @@ class ShortSchema:
         self.duration = duration
         self.fields = fields
 
-
     def to_dict(self) -> dict:
         """
         Return a dictionary of inferred schema.

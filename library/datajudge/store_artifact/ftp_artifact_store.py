@@ -32,14 +32,13 @@ class FTPArtifactStore(ArtifactStore):
         if self.config is None:
             parsed = parse_uri(self.artifact_uri)
             self.config = {
-                "host": parsed.hostname,
-                "port": 21 if parsed.port is None else parsed.port,
+                "host": "localhost" if parsed.hostname is None
+                        else parsed.hostname,
+                "port": 21 if parsed.port is None
+                        else parsed.port,
                 "user": parsed.username,
                 "password": parsed.password,
-                }
-
-        if self.config["host"] is None:
-            self.config["host"] = "localhost"
+            }
 
         self.path = parsed.path
         self._check_access_to_storage(self.path)
@@ -116,6 +115,9 @@ class FTPArtifactStore(ArtifactStore):
     # Partial readaptation from mlflow repo on GitHub.
     @contextmanager
     def _get_client(self):
+        """
+        Yield an FTP client.
+        """
         ftp = FTP()
         ftp.connect(self.config["host"], self.config["port"])
         ftp.login(self.config["user"], self.config["password"])
@@ -123,6 +125,9 @@ class FTPArtifactStore(ArtifactStore):
         ftp.close()
 
     def _mkdir(self, path):
+        """
+        Make directory in FTP storage.
+        """
         with self._get_client() as ftp:
             try:
                 ftp.mkd(path)

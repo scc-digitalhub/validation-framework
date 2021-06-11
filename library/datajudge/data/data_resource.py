@@ -109,4 +109,4 @@ class DataResource:
         return {k: v for k, v in self.__dict__.items() if v is not None}
 
     def __repr__(self) -> str:
-        return str(self.__dict__)
+        return str(self.to_dict())

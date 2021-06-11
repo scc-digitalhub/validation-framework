@@ -271,7 +271,8 @@ class Run:
             if schema is None and infer:
                 start = time.perf_counter()
                 self.inf_schema = self.infer_schema()
-                self._inf_schema_duration = round(time.perf_counter() - start, 4)
+                self._inf_schema_duration = round(
+                            time.perf_counter() - start, 4)
             else:
                 self.inf_schema = schema
 
@@ -557,12 +558,10 @@ class Run:
         # Data
         data = self.fetch_input_data()
         data, data_name = data_listify(data, data_name)
-
         for idx, path in enumerate(data):
             # try to infer source name if no name is passed
             src_name = data_name[idx] if data_name[idx] is not None \
                                       else get_name_from_uri(path)
-
             self.persist_artifact(data[idx], src_name, metadata)
 
         # Schema
@@ -572,7 +571,6 @@ class Run:
                                    else get_name_from_uri(schema)
             self.persist_artifact(schema, src_name)
             return
-
         warn("No validation schema is provided!")
 
     def persist_full_report(self,

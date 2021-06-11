@@ -3,6 +3,7 @@ ShortProfile module.
 Implementation of a Short Profile common structure.
 """
 
+
 class ShortProfile:
     """
     ShortProfile object consisting in a succint
@@ -35,7 +36,6 @@ class ShortProfile:
         self.duration = duration
         self.stats = stats
         self.fields = fields
-
 
     def to_dict(self) -> dict:
         """

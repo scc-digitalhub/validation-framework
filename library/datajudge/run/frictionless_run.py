@@ -69,16 +69,13 @@ class FrictionlessRun(Run):
         """
         Parse the report produced by frictionless.
         """
-        if not hasattr(self.report, "tasks"):
-            return nmtp(None, None, None)
-
-        time = self.report.time
-        valid = self.report.valid
+        duration = self.report.get("time")
+        valid = self.report.get("valid")
         spec = ["fieldName", "rowNumber", "code", "note", "description"]
         flat_report = self.report.flatten(spec=spec)
         errors = [dict(zip(spec, err)) for err in flat_report]
 
-        return nmtp(time, valid, errors)
+        return nmtp(duration, valid, errors)
 
     def _check_report(self,
                       report: Optional[Report] = None) -> None:
