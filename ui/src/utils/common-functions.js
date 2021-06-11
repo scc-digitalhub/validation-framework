@@ -41,11 +41,8 @@ export const GetCurrentRun = () => {
 }
 
 export const formatBytes = (bytes, decimals = 2) => {
-    if (bytes < 0)
-        return 'Error';
-    
-    if (bytes === 0)
-        return '0 Bytes';
+    if (bytes == null || bytes < 0)
+        return null;
 
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
@@ -56,11 +53,17 @@ export const formatBytes = (bytes, decimals = 2) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-export const formatDuration = (duration, msDecimals = 3) => {
-    const dm = msDecimals < 0 ? 0 : msDecimals;
+export const formatDuration = (duration, msDecimals = 2) => {
+    if (duration == null || duration < 0)
+        return null;
+    
+    const dm = msDecimals < 0 ? 2 : msDecimals;
+    
+    if (duration < 10)
+        return duration.toFixed(dm) + ' ms';
     
     if (duration < 1000)
-        return duration.toFixed(dm) + ' ms';
+        return parseInt(duration) + ' ms';
         
     const ms = parseInt((duration % 1000) / 100);
     let s = Math.floor((duration / 1000) % 60);
@@ -75,6 +78,9 @@ export const formatDuration = (duration, msDecimals = 3) => {
 }
 
 export const displayAsPercentage = (value, decimals = 2) => {
+    if (value == null)
+        return null;
+    
     let dm = decimals < 0 ? 0 : decimals;
     if (value === 1 || value === 0)
         dm = 0;

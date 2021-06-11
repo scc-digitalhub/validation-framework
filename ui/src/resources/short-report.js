@@ -84,8 +84,11 @@ export const ShortReportDetail = props => {
     });
     
     if (loading) return <Loading />;
-    if (error) return <Error />;
+    if (error) return <Error error={error} />;
     if (!data) return null;
+    
+    if (!data.contents)
+        data.contents = {};
     
     return (
         <React.Fragment>
@@ -98,7 +101,7 @@ export const ShortReportDetail = props => {
                         <TextField source="contents.valid" label="Valid" />
                         <FunctionField label="Number of errors" render={data => data.contents.errors.length} />
                         <TextField source="contents.data_resource_uri" label="Data resource URI" />
-                        <FunctionField label="Duration" render={data => formatDuration(data.contents.duration)} />
+                        <FunctionField label="Duration" render={data => formatDuration(data.contents.duration*1000)} />
                         <FunctionField label="Errors" render={errorsRender} />
                     </SimpleShowLayout>
                 </CardContent>

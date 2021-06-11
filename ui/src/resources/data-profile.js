@@ -41,6 +41,9 @@ const getListOfMeasurementFields = (stats) => {
 }
 
 const measurements = (data) => {
+    if (!data.contents.stats)
+        return null;
+    
     const listOfMeasurementFields = getListOfMeasurementFields(data.contents.stats);
     
     return (
@@ -62,6 +65,9 @@ const measurements = (data) => {
 }
 
 const columnTypeCounts = (data) => {
+    if (!data.contents.stats || !data.contents.stats.types)
+        return null;
+    
     const types = data.contents.stats.types;
     if (!types)
         return null;
@@ -169,8 +175,11 @@ export const DataProfileDetail = props => {
     });
     
     if (loading) return <Loading />;
-    if (error) return <Error />;
+    if (error) return <Error error={error} />;
     if (!data) return null;
+    
+    if (!data.contents)
+        data.contents = {};
     
     return (
         <React.Fragment>
@@ -180,7 +189,7 @@ export const DataProfileDetail = props => {
             <Card>
                 <CardContent>
                     <SimpleShowLayout record={data} resource={resource}>
-                        <FunctionField label="Duration" render={data => formatDuration(data.contents.duration)} />
+                        <FunctionField label="Duration" render={data => formatDuration(data.contents.duration*1000)} />
                         <TextField source="contents.data_resource_uri" label="Data resource URI" />
                         <FunctionField label="Statistics" render={fullStatistics} />
                         <FunctionField label="Fields" render={fieldStatistics} />

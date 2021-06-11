@@ -6,6 +6,7 @@ import { Create, Edit, SimpleForm } from 'react-admin';
 import { useRedirect, useQuery, Loading, Error } from 'react-admin';
 import { Title, Toolbar, TopToolbar, MenuItemLink, SimpleShowLayout } from 'react-admin';
 import { required, regex } from 'react-admin';
+import { CreateButton } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -22,16 +23,17 @@ const validateId = [required(), regex(/^[a-zA-Z0-9_-]+$/, 'Allowed characters ar
 const validateName = regex(/^[a-zA-Z0-9 _-]+$/, 'Allowed characters are lowercase letters, numbers, underscore (_), hyphen (-) and space ( ).');
 
 const clearIcon = <ClearIcon />
+
 const ListActions = (props) => {
     return (
         <TopToolbar>
-            <BackButton key='back-button' resource='project' label='Cancel' icon={clearIcon} />
+            <CreateButton key='create-button' />
         </TopToolbar>
     );
 }
 
 export const ProjectList = (props) => (
-    <List {...props} perPage={50} pagination={false}>
+    <List {...props} perPage={50} pagination={false} actions={<ListActions />} >
         <Datagrid rowClick="">
             <TextField source="id" label="ID" />
             <TextField source="name" />
@@ -41,8 +43,16 @@ export const ProjectList = (props) => (
     </List>
 );
 
+const CreateActions = (props) => {
+    return (
+        <TopToolbar>
+            <BackButton key='back-button' resource='project' label='Cancel' icon={clearIcon} />
+        </TopToolbar>
+    );
+}
+
 export const ProjectCreate = ({ ...props }) => (
-    <Create {...props} actions={<ListActions />}>
+    <Create {...props} actions={<CreateActions />}>
         <SimpleForm redirect="list">
             <TextInput source="id" label="ID" validate={validateId} />
             <TextInput source="name" validate={validateName} />
@@ -76,7 +86,7 @@ export const ProjectOverview = props => {
     });
 
     if (loading) return <Loading />;
-    if (error) return <Error />;
+    if (error) return <Error error={error} />;
     if (!data) return null;
     
     return (

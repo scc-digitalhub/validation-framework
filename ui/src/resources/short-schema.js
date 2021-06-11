@@ -56,8 +56,11 @@ export const ShortSchemaDetail = props => {
     });
     
     if (loading) return <Loading />;
-    if (error) return <Error />;
+    if (error) return <Error error={error} />;
     if (!data) return null;
+    
+    if (!data.contents)
+        data.contents = {};
     
     return (
         <React.Fragment>
@@ -67,7 +70,7 @@ export const ShortSchemaDetail = props => {
             <Card>
                 <CardContent>
                     <SimpleShowLayout record={data} resource={resource}>
-                        <FunctionField label="Duration" render={data => formatDuration(data.contents.duration)} />
+                        <FunctionField label="Duration" render={data => formatDuration(data.contents.duration*1000)} />
                         <TextField source="contents.data_resource_uri" label="Data resource URI" />
                         <FunctionField label="Schema" render={renderSchema} />
                     </SimpleShowLayout>

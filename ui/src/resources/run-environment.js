@@ -23,8 +23,11 @@ export const RunEnvironmentDetail = props => {
     });
     
     if (loading) return <Loading />;
-    if (error) return <Error />;
+    if (error) return <Error error={error} />;
     if (!data) return null;
+    
+    if (!data.contents)
+        data.contents = {};
     
     return (
         <React.Fragment>

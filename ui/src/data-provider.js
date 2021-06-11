@@ -4,7 +4,7 @@ import { fetchUtils } from 'react-admin';
 
 import { authProvider } from './auth/auth-provider';
 
-const apiUrl = 'http://localhost:8200';
+const apiUrl = process.env.REACT_APP_BACKEND_ADDRESS;
 
 const httpClient = (url, options = {}) => {
     // if (!options.headers) {
@@ -27,6 +27,7 @@ export class DataProvider extends React.Component {
     }
     
     getList(resource, params) {
+        console.log(apiUrl);
         const page = params.pagination.page;
         const size = params.pagination.perPage;
         const sort = params.sort.field + ',' + params.sort.order;

@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { List, Datagrid, TextField, FunctionField } from 'react-admin';
 import { useRedirect, useQuery, Loading, Error } from 'react-admin';
-import { Title, Toolbar, TopToolbar, ExportButton, MenuItemLink, SimpleShowLayout } from 'react-admin';
+import { Title, Toolbar, TopToolbar, MenuItemLink, SimpleShowLayout } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -18,7 +18,6 @@ import { CheckProjectAndExperiment } from '../utils/common-functions';
 const ListActions = (props) => {
     return (
         <TopToolbar>
-            <ExportButton key='export-button' />
             <BackButton key='back-button' resource='experiment'/>
         </TopToolbar>
     );
@@ -58,7 +57,7 @@ export const ExperimentOverview = props => {
     });
 
     if (loading) return <Loading />;
-    if (error) return <Error />;
+    if (error) return <Error error={error} />;
     if (!data) return null;
     
     return (

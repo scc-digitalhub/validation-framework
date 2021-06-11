@@ -32,3 +32,8 @@ server/build/
 
 ### VS Code ###
 server/.vscode/
+
+
+### UI ###
+ui/node_modules
+ui/.env

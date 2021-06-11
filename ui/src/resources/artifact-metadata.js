@@ -39,7 +39,7 @@ export const ArtifactMetadataList = (props) => {
     });
 
     if (loading) return <Loading />;
-    if (error) return <Error />;
+    if (error) return <Error error={error} />;
     if (!data) return null;
     
     const basePath = '/run/' + props.match.params.run_id + '/artifact-metadata';
@@ -64,7 +64,5 @@ export const ArtifactMetadataList = (props) => {
                 </ListContextProvider >
             </Card>
         </React.Fragment>
-        
-        
     )
 };

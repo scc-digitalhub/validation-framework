@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { List, Datagrid, TextField, DateField, FunctionField } from 'react-admin';
 import { useQuery, Loading, Error } from 'react-admin';
-import { Title, Toolbar, TopToolbar, ExportButton, MenuItemLink, SimpleShowLayout } from 'react-admin';
+import { Title, Toolbar, TopToolbar, MenuItemLink, SimpleShowLayout } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -17,7 +17,6 @@ import { CheckProjectAndExperiment, formatDuration } from '../utils/common-funct
 const ListActions = (props) => {
     return (
         <TopToolbar>
-            <ExportButton key='export-button' />
             <BackButton key='back-button' resource='run' />
         </TopToolbar>
     );
@@ -30,6 +29,9 @@ const getStatus = (data) => {
 }
 
 const getDuration = (data) => {
+    if (!data.contents.created)
+        return null;
+    
     const created = new Date(data.contents.created);
     
     let upTo = null;
@@ -71,8 +73,11 @@ export const RunMetadataOverview = props => {
     });
 
     if (loading) return <Loading />;
-    if (error) return <Error />;
+    if (error) return <Error error={error} />;
     if (!data) return null;
+    
+    if (!data.contents)
+        data.contents = {};
     
     return (
         <React.Fragment>
