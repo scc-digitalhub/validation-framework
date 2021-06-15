@@ -39,7 +39,7 @@ export const authProvider = {
     */
     // Remove stale states, this is 
     userManager.clearStaleState();
-    var user = await userManager.signinRedirectCallback();
+    await userManager.signinRedirectCallback();
     
     return Promise.resolve();
   },

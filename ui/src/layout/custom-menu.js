@@ -39,7 +39,7 @@ const CustomMenu = ({ onMenuClick, logout }) => {
     
     let menuContent = [];
     
-    menuContent.push(<DashboardMenuItem onClick={clearProject} />)
+    menuContent.push(<DashboardMenuItem onClick={clearProject} key='dashboard' />)
     menuContent.push(<Divider key='project-list-divider' />);
     
     menuContent.push(<MenuItemLink
@@ -171,7 +171,7 @@ const CustomMenu = ({ onMenuClick, logout }) => {
                 );
                 
                 const runSubMenu = (
-                    <div style={{ "padding-left": LEFT_PADDING }}>
+                    <div style={{ "padding-left": LEFT_PADDING }} key='run-sub-menu' >
                         { runSubMenuContents }
                     </div>
                 );
@@ -180,7 +180,7 @@ const CustomMenu = ({ onMenuClick, logout }) => {
             }
             
             const experimentSubMenu = (
-                <div style={{ "padding-left": LEFT_PADDING }}>
+                <div style={{ "padding-left": LEFT_PADDING }} key='experiment-sub-menu' >
                     { experimentSubMenuContents }
                 </div>
             );
@@ -189,7 +189,7 @@ const CustomMenu = ({ onMenuClick, logout }) => {
         }
         
         const projectSubMenu = (
-            <div style={{ "padding-left": LEFT_PADDING }}>
+            <div style={{ "padding-left": LEFT_PADDING }} key='project-sub-menu' >
                 { projectSubMenuContents }
             </div>
         );

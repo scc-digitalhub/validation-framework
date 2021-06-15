@@ -53,7 +53,7 @@ export const RunMetadataList = (props) => {
                 <TextField source="run_id" label="Run ID"/>
                 <DateField source="created" showTime={true} />
                 <TextField source="contents.end_status" label="End status" />
-                <TextField source="contents.validation_library" label="Validation library" />
+                <TextField source="contents.validation_library_name" label="Validation library" />
                 <SelectButton />
             </Datagrid>
         </List>
@@ -104,7 +104,6 @@ export const RunMetadataOverview = props => {
                             <TextField source="contents.started" label="started" />
                             <TextField source="contents.end_status" label="end_status" />
                             <TextField source="contents.finished" label="finished" />
-                            <TextField source="id" label="Document ID" />
                         </SimpleShowLayout>
                     </React.Fragment>
                 </CardContent>
