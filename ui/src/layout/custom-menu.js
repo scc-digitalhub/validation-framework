@@ -17,7 +17,7 @@ import Divider from '@material-ui/core/Divider';
 
 import { AppContext } from '../contexts/app-context';
 
-const LEFT_PADDING = "20px";
+const LEFT_PADDING = "18px";
 
 const CustomMenu = ({ onMenuClick, logout }) => {
     const currentProject = React.useContext(AppContext).getProject();
