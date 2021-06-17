@@ -12,6 +12,10 @@ class ShortProfile:
 
     Attributes
     ----------
+    pro_lib_name : str
+        Profiling library name.
+    pro_lib_version : str
+        Profiling library version.
     data_resource_uri : str
         URI that point to the resource.
     duration : float
@@ -27,11 +31,15 @@ class ShortProfile:
         Return a dictionary schema.
     """
     def __init__(self,
+                 pro_lib_name: str,
+                 pro_lib_version: str,
                  data_resource_uri: str,
                  duration: float,
                  stats: dict,
                  fields: dict,
                  ) -> None:
+        self.pro_lib_name = pro_lib_name
+        self.pro_lib_version = pro_lib_version
         self.data_resource_uri = data_resource_uri
         self.duration = duration
         self.stats = stats
@@ -42,6 +50,8 @@ class ShortProfile:
         Return a dictionary of inferred schema.
         """
         schema = {
+            "profiling_library_name": self.pro_lib_name,
+            "profiling_library_version": self.pro_lib_version,
             "data_resource_uri": self.data_resource_uri,
             "duration": self.duration,
             "stats": self.stats,
