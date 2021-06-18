@@ -492,6 +492,7 @@ class Run:
             "run_id": self.run_info.run_id,
             "experiment_id": self.run_info.experiment_id,
             "experiment_name": self.run_info.experiment_name,
+            "datajudge_version": cfg.DATAJUDGE_VERSION,
             "contents": cont
         }
         return content
