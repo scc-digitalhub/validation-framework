@@ -4,6 +4,7 @@ server/src/main/resources/application-local.yml
 !server/.mvn/wrapper/maven-wrapper.jar
 !**/server/src/main/**/target/
 !**/server/src/test/**/target/
+server/src/main/resources/public
 
 ### STS ###
 server/.apt_generated
@@ -37,3 +38,4 @@ server/.vscode/
 ### UI ###
 ui/node_modules
 ui/.env
+ui/build

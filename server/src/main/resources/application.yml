@@ -9,6 +9,7 @@ spring:
       uri: ${VALST_SPRING_DATA_MONGODB_URI}
   security:
     oauth2:
+      client:
       resourceserver:
         jwt:
           issuer-uri:

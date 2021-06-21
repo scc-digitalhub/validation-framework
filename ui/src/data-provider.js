@@ -2,20 +2,9 @@ import * as React from 'react';
 
 import { fetchUtils } from 'react-admin';
 
-import { authProvider } from './auth/auth-provider';
-
-const apiUrl = process.env.REACT_APP_BACKEND_ADDRESS;
+const backendUrl = process.env.REACT_APP_BACKEND_ADDRESS;
 
 const httpClient = (url, options = {}) => {
-    // if (!options.headers) {
-        // options.headers = new Headers({ Accept: 'application/json' });
-    // }
-    
-    // return authProvider.getAuth().then((token) => {
-        // options.headers.set('Authorization', `Bearer ${token}`);
-        // return fetchUtils.fetchJson(url, options);
-    // });
-    
     return fetchUtils.fetchJson(url, options);
 };
 
@@ -32,7 +21,7 @@ export class DataProvider extends React.Component {
         const sort = params.sort.field + ',' + params.sort.order;
         const query = 'page=' + (page-1) + '&size=' + size + '&sort=' + sort;
         
-        let url = `${apiUrl}/project`;
+        let url = `${backendUrl}/project`;
         
         switch(resource) {
             case 'project':
@@ -66,7 +55,7 @@ export class DataProvider extends React.Component {
     }
     
     getOne(resource, params) {
-        let url = `${apiUrl}/project`;
+        let url = `${backendUrl}/project`;
         switch (resource) {
             case 'project':
                 url += `/${params.id}`;
@@ -98,7 +87,7 @@ export class DataProvider extends React.Component {
     
     create(resource, params) {
         if (resource === 'project') {
-            return httpClient(`${apiUrl}/${resource}`, {
+            return httpClient(`${backendUrl}/${resource}`, {
                 method: 'POST',
                 body: JSON.stringify(params.data),
             }).then(({ json }) => ({
@@ -113,7 +102,7 @@ export class DataProvider extends React.Component {
         if (resource === 'project') {
             if (!params.id)
                 return Promise.reject(new Error('Project ID is null.'));
-            return httpClient(`${apiUrl}/project/${params.id}`, {
+            return httpClient(`${backendUrl}/project/${params.id}`, {
                 method: 'PUT',
                 body: JSON.stringify(params.data),
             }).then(({ json }) => ({ data: json }));
@@ -123,7 +112,7 @@ export class DataProvider extends React.Component {
     }
     
     delete(resource, params) {
-        let url = `${apiUrl}/project`;
+        let url = `${backendUrl}/project`;
         if (resource !== 'project')
             url += `/${this.getProject()}/${resource}`;
         
@@ -135,7 +124,7 @@ export class DataProvider extends React.Component {
     }
     
     deleteMany(resource, params) {
-        let url = `${apiUrl}/project`;
+        let url = `${backendUrl}/project`;
         if (resource !== 'project')
             url += `/${this.getProject()}/${resource}`;
         

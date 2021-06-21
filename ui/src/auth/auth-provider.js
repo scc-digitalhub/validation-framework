@@ -1,128 +1,63 @@
-import { UserManager, WebStorageStateStore } from 'oidc-client';
+import { fetchUtils } from 'react-admin';
 
-const issuer = 'https://aac.kube-test.smartcommunitylab.it';
-const clientId = '1fe78b68-de8e-448b-9591-e74587a3d543';
-let redirectUri = '/login';
-const scopes = 'openid, profile, user.roles.me';
+const backendUrl = process.env.REACT_APP_BACKEND_ADDRESS;
+const logoutUrl = backendUrl + '/logout';
 
-if (!redirectUri.startsWith("http")) {
-    redirectUri = window.location.origin + redirectUri;
+let userUri = '/user';
+if (!userUri.startsWith("http")) {
+    userUri = window.location.origin + userUri;
 }
 
-const userManager = new UserManager({
-    authority: issuer,
-    client_id: clientId,
-    redirect_uri: redirectUri,
-    userStore: new WebStorageStateStore({ store: window.localStorage }),
-    response_type: 'code',
-    scope: scopes
-});
+const httpClient = (url, options = {}) => {
+    return fetchUtils.fetchJson(url, options);
+};
 
-export const authProvider = {
+export const AuthProvider = {
+    logout: async () => {
+        const options = {
+            method: 'POST',
+            headers: new Headers({ 'Content-Type': 'application/json' })
+        };
+        
+        await httpClient(logoutUrl, options);
+        window.location.replace(logoutUrl);
+    },
     
-  login: async (params = {}) => {
-    /*
-    * Step 1. ask auth code via redirect flow
-    */
-
-    // We need to check that a params object is actually passed otherwise it will fail.
-    if (!params || !params.code || !params.state) {
-      //redirect for auth flow
-      userManager.signinRedirect();
-      // Here we reject the request because there is no notification shown, but we can add an object if we want to add logic in the login call.
-      return Promise.reject({ message: 'Retrieving code from authentication service.', code: 'oauthRedirect' });
-    }
-
-
-    /*
-    * Step 2. exchange auth code for token
-    */
-    // Remove stale states, this is 
-    userManager.clearStaleState();
-    await userManager.signinRedirectCallback();
+    getIdentity: async () => {
+        const options = {
+            method: 'GET',
+            headers: new Headers({ 'Accept': 'application/json' })
+        };
+        
+        return httpClient(userUri, options).then( ({ json }) => {
+            let id = null;
+            let fullName = null;
+            let avatar = null;
+            
+            if (json.principal && json.principal.attributes && json.principal.attributes.sub)
+                id = json.principal.attributes.sub;
+            
+            if (json.principal && json.principal.attributes && json.principal.attributes.preferred_username)
+                fullName = json.principal.attributes.preferred_username;
+            
+            return Promise.resolve({id, fullName, avatar});
+        });
+        
+    },
     
-    return Promise.resolve();
-  },
+    login: (params) => {
+        return Promise.resolve();
+    },
   
-  logout: async () => {
-    //remove user info
-    await userManager.removeUser();
-
-    return Promise.resolve();
-  },
+    checkError: (error) => {
+        return Promise.resolve();
+    },
   
-  checkError: (error) => {
-    const { status } = error;
-
-    if (status && (status === 401 || status === 403)) {
-      return Promise.reject();
-    }
-    return Promise.resolve(error);
-  },
-  
-  checkAuth: async () => {
-    //lookup user
-    const user = await userManager.getUser();
-
-    if (!user || !user.hasOwnProperty("access_token")) {
-      //missing or invalid user
-      await userManager.removeUser();
-      return Promise.reject()
-    }
-    //extract jwt and validate locally for expiration
-    const jwt = user.access_token;
-    const now = new Date();
+    checkAuth: (params) => {
+        return Promise.resolve();
+    },
     
-    if (!jwt || !user.expires_at) {
-      return Promise.reject();
-    }
-    
-    if (now.getTime() > (user.expires_at * 1000)) {
-        return Promise.reject();
-    }
-    return Promise.resolve();
-  },
-  
-  getPermissions: async (params = {}) => {
-    //lookup user
-    const user = await userManager.getUser();
-
-    if (!user || !user.hasOwnProperty("access_token")) {
-      //missing or invalid user
-      await userManager.removeUser();
-      return Promise.reject()
-    }
-    
-    return {
-      "user": user
-    }
-  },
-  
-  getAuth: async () => {
-    //lookup user
-    const user = await userManager.getUser();
-
-    if (!user || !user.hasOwnProperty("access_token")) {
-      //missing or invalid user
-      await userManager.removeUser();
-      return Promise.reject()
-    }
-
-    //extract jwt
-    const jwt = user.access_token;
-    return Promise.resolve(jwt);
-  },
-  
-  getUser: async () => {
-    //lookup user
-    const user = await userManager.getUser();
-
-    if (!user || !user.hasOwnProperty("access_token")) {
-      //missing or invalid user
-      await userManager.removeUser();
-      return Promise.reject()
-    }
-
-    return user;
-  },
+    getPermissions: (params) => {
+        return Promise.resolve();
+    },
 };

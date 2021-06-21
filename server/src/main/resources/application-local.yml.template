@@ -4,11 +4,21 @@ spring:
       uri: mongodb://admin:password@localhost:27017/validation?authSource=admin
   security:
     oauth2:
+      client:
+        registration:
+          aac:
+            client-id: put_client_id_here
+            client-secret: put_client_secret_here
+        provider:
+          aac:
+            issuer-uri: https://example.com
+            jwk-set-uri: https://example.com
+            user-name-attribute: preferred_username
       resourceserver:
         jwt:
           issuer-uri: https://example.com
-          jwk-set-uri: https://example.com/jwk
-        client-id: 12345-12345-12345-12345-12345
+          jwk-set-uri: https://example.com
+        client-id: put_client_id_here
 
 auth:
   enabled: false

@@ -6,6 +6,7 @@ import { Admin, Resource } from 'react-admin';
 import Work from '@material-ui/icons/Work';
 
 import customLayout from './layout/custom-layout';
+import { AuthProvider } from './auth/auth-provider';
 import { DataProvider } from './data-provider';
 import dashboard from './dashboard';
 import { ProjectList, ProjectCreate, ProjectEdit, ProjectOverview } from './resources/project';
@@ -17,11 +18,7 @@ import { DataResourceDetail } from './resources/data-resource';
 import { RunEnvironmentDetail } from './resources/run-environment';
 import { ShortReportDetail } from './resources/short-report';
 import { ShortSchemaDetail } from './resources/short-schema';
-
 import { AppContext } from './contexts/app-context';
-
-import { authProvider } from './auth/auth-provider';
-import { LoginPage } from './auth/login-page';
 
 const customRoutes = [
     <Route exact path="/project/overview" component={ProjectOverview} />,
@@ -73,11 +70,10 @@ export default class App extends React.Component {
             <AppContext.Provider value={context}>
                 <Admin
                     dataProvider = {dp}
-                    // authProvider = { authProvider }
-                    // loginPage={ LoginPage }
                     layout = {customLayout}
                     dashboard = {dashboard}
                     customRoutes = {customRoutes}
+                    authProvider = {AuthProvider}
                 >
                     <Resource key="project" name="project" options={{ label: 'Projects' }} icon={Work} list={ProjectList} create={ProjectCreate} edit={ProjectEdit} />
                     <Resource key="experiment" name="experiment" options={{ label: 'Experiments' }} list={ExperimentList} />
