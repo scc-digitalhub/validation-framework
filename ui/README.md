@@ -1,11 +1,19 @@
 # UI
+To enable the UI, it has to be configured and built. Then, the resulting files must be moved to the appropriate path.
 
-## Install dependencies
-Run `npm install` in this folder to install all dependencies. It may take several minutes.
+Change directory to the `ui` sub-folder, then run the following to install the necessary modules (may take several minutes):
+```
+npm install
+```
 
-## Configuration
-Rename the `.env.template` file to `.env`. Inside is the configuration for the UI app:
-* `REACT_APP_BACKEND_ADDRESS`: The address of the backend.
+Duplicate the `.env.template` file and rename the new one to simply `.env`. Inside is the configuration of the UI:
+* `REACT_APP_BACKEND_ADDRESS`: The address of the backend. Make sure the port corresponds to the same as the value indicated in `application.yml` under `server.port`.
 
-## Starting the app
-Run `npm start` to start the app. It will automatically open a new tab in your browser at `http://localhost:3000`.
+Next, run the following command. It will create a new folder named `build`.
+```
+npm run-script build
+```
+
+Move the `build` folder you just obtained to the server, under `validation-framework\server\src\main\resources`. Once it's there, rename `build` to `public`.
+
+When the server is run, the UI will be available at `localhost:8200`.
