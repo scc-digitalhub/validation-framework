@@ -7,7 +7,9 @@ from collections import namedtuple
 
 # pylint: disable=too-many-arguments
 
-ReportTuple = namedtuple("ReportTuple", ("time", "valid", "errors"))
+ReportTuple = namedtuple("ReportTuple",
+                         ("val_lib_name", "val_lib_version",
+                          "time", "valid", "errors"))
 
 
 class ShortReport:
@@ -17,6 +19,10 @@ class ShortReport:
 
     Attributes
     ----------
+    val_lib_name : str
+        Validation library name.
+    val_lib_version : str
+        Validation library version.
     data_resource_uri : str
         URI that point to the resource.
     duration : float
@@ -37,10 +43,14 @@ class ShortReport:
     """
 
     def __init__(self,
+                 val_lib_name: str,
+                 val_lib_version: str,
                  data_resource_uri: str,
                  duration: float,
                  valid: bool,
                  errors: list) -> None:
+        self.val_lib_name = val_lib_name
+        self.val_lib_version = val_lib_version
         self.data_resource_uri = data_resource_uri
         self.duration = duration
         self.valid = valid
@@ -51,6 +61,8 @@ class ShortReport:
         Return a dictionary of the attributes.
         """
         report = {
+            "validation_library_name": self.val_lib_name,
+            "validation_library_version": self.val_lib_version,
             "data_resource_uri": self.data_resource_uri,
             "duration": self.duration,
             "valid": self.valid,

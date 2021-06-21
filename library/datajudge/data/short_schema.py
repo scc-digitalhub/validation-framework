@@ -18,6 +18,10 @@ class ShortSchema:
 
     Attributes
     ----------
+    val_lib_name : str
+        Validation library name.
+    val_lib_version : str
+        Validation library version.
     data_resource_uri : str
         URI that point to the resource.
     duration : float
@@ -31,9 +35,13 @@ class ShortSchema:
         Return a dictionary schema.
     """
     def __init__(self,
+                 val_lib_name: str,
+                 val_lib_version: str,
                  data_resource_uri: str,
                  duration: float,
                  fields: List[SchemaTuple]) -> None:
+        self.val_lib_name = val_lib_name
+        self.val_lib_version = val_lib_version
         self.data_resource_uri = data_resource_uri
         self.duration = duration
         self.fields = fields
@@ -53,6 +61,8 @@ class ShortSchema:
             fields.append(data)
 
         schema = {
+            "validation_library_name": self.val_lib_name,
+            "validation_library_version": self.val_lib_version,
             "data_resource_uri": self.data_resource_uri,
             "duration": self.duration,
             "fields": fields,

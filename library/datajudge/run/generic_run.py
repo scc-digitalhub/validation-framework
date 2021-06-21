@@ -4,10 +4,14 @@ Implementation of a Run object that can do basic tasks
 as logging metadata and persist artifacts.
 """
 from collections import namedtuple
-from typing import List, Optional
+from typing import Optional
 
 from datajudge.run import Run
 from datajudge.utils.utils import guess_mediatype
+
+
+LIB_NAME = "-"
+LIB_VERSION = "-"
 
 
 class GenericRun(Run):
@@ -25,8 +29,8 @@ class GenericRun(Run):
         """
         Update run's info about the validation framework used.
         """
-        self.run_info.validation_library = "-"
-        self.run_info.library_version = "-"
+        self.run_info.validation_library_name = LIB_NAME
+        self.run_info.validation_library_version = LIB_VERSION
 
     # Data Resource
 
@@ -44,7 +48,9 @@ class GenericRun(Run):
         """
         Parse the report.
         """
-        return nmtp(self.report.get("valid"),
+        return nmtp(LIB_NAME,
+                    LIB_VERSION,
+                    self.report.get("valid"),
                     self.report.get("time"),
                     self.report.get("errors"))
 
@@ -61,13 +67,15 @@ class GenericRun(Run):
     # Short Schema
 
     def _parse_schema(self,
-                      nmtp: namedtuple) -> List[namedtuple]:
+                      nmtp: namedtuple) -> list:
         """
         Parse an inferred schema.
         """
         if self.inf_schema is None:
             return [nmtp("", "")]
-        return [nmtp(f["name"], f["type"]) for f in self.inf_schema["fields"]]
+        tp_list = [nmtp(f["name"], f["type"])
+                   for f in self.inf_schema["fields"]]
+        return tp_list, LIB_NAME, LIB_VERSION
 
     def _check_schema(self,
                       schema: Optional[dict] = None) -> None:

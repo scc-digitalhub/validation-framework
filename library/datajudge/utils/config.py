@@ -2,6 +2,9 @@
 Configuration for filenames, endpoints, etc.
 """
 
+# DATAJUDGE VERSION
+DATAJUDGE_VERSION = "1.0.0"
+
 # FILENAMES METADATA
 FN_RUN_METADATA = "run_metadata.json"
 FN_DATA_RESOURCE = "data_resource.json"

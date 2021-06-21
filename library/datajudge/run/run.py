@@ -153,8 +153,9 @@ class Run:
         env_data = {
             "platform": platform.platform(),
             "python_version": platform.python_version(),
+            "cpu_model": platform.processor(),
             "cpu_core": os.cpu_count(),
-            "ram": virtual_memory().total
+            "ram": str(round(virtual_memory().total / (1024.0 **3)))+" GB"
         }
         metadata = self._get_content(env_data)
         self._log_metadata(metadata, self._RUN_ENV)
@@ -241,6 +242,8 @@ class Run:
 
         args = self._parse_report(ReportTuple)
         report_args = {
+            "val_lib_name": args.val_lib_name,
+            "val_lib_version": args.val_lib_version,
             "data_resource_uri": self.run_info.data_resource_uri,
             "duration": args.time,
             "valid": args.valid,
@@ -305,8 +308,10 @@ class Run:
             warn("No schema provided! Skipped log.")
             return
 
-        parsed_fields = self._parse_schema(SchemaTuple)
+        parsed_fields, lib_name, lib_vrs = self._parse_schema(SchemaTuple)
         schema_args = {
+            "val_lib_name": lib_name,
+            "val_lib_version": lib_vrs,
             "data_resource_uri": self.run_info.data_resource_uri,
             "fields": parsed_fields,
             "duration": self._inf_schema_duration,
@@ -446,6 +451,8 @@ class Run:
 
         parsed = self._parse_profile()
         parsed["data_resource_uri"] = self.run_info.data_resource_uri
+        parsed["pro_lib_name"] = pandas_profiling.__name__
+        parsed["pro_lib_version"] = pandas_profiling.__version__
         short_profile = ShortProfile(**parsed)
         metadata = self._get_content(short_profile.to_dict())
         self._log_metadata(metadata, self._DATA_PROFILE)
@@ -485,6 +492,7 @@ class Run:
             "run_id": self.run_info.run_id,
             "experiment_id": self.run_info.experiment_id,
             "experiment_name": self.run_info.experiment_name,
+            "datajudge_version": cfg.DATAJUDGE_VERSION,
             "contents": cont
         }
         return content

@@ -4,7 +4,7 @@ Implementation of a Run object that uses Frictionless as
 validation framework.
 """
 from collections import namedtuple
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 try:
     import frictionless
@@ -16,6 +16,10 @@ except ImportError as ierr:
 
 from datajudge.run import Run
 from datajudge.utils.utils import guess_mediatype, warn
+
+
+LIB_NAME = frictionless.__name__
+LIB_VERSION = frictionless.__version__
 
 
 class FrictionlessRun(Run):
@@ -37,8 +41,8 @@ class FrictionlessRun(Run):
         """
         Update run's info about the validation framework used.
         """
-        self.run_info.validation_library_name = frictionless.__name__
-        self.run_info.validation_library_version = frictionless.__version__
+        self.run_info.validation_library_name = LIB_NAME
+        self.run_info.validation_library_version = LIB_VERSION
 
     # Data Resource
 
@@ -75,7 +79,7 @@ class FrictionlessRun(Run):
         flat_report = self.report.flatten(spec=spec)
         errors = [dict(zip(spec, err)) for err in flat_report]
 
-        return nmtp(duration, valid, errors)
+        return nmtp(LIB_NAME, LIB_VERSION, duration, valid, errors)
 
     def _check_report(self,
                       report: Optional[Report] = None) -> None:
@@ -88,7 +92,7 @@ class FrictionlessRun(Run):
     # Short Schema
 
     def _parse_schema(self,
-                      nmtp: namedtuple) -> List[namedtuple]:
+                      nmtp: namedtuple) -> list:
         """
         Parse an inferred schema and return a standardized
         ShortSchema.
@@ -116,9 +120,10 @@ class FrictionlessRun(Run):
                 valid_type = ""
                 desc = ""
 
-            fields_list.append(nmtp(name, type_, valid_type, desc))
+            fields_list.append(nmtp(name, type_,
+                                    valid_type, desc))
 
-        return fields_list
+        return fields_list, LIB_NAME, LIB_VERSION
 
     def _check_schema(self,
                       schema: Optional[Schema] = None) -> None:
