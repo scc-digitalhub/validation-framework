@@ -26,9 +26,16 @@ Notable settings you likely need to change are:
 ---
 
 These are only meaningful if authentication is enabled:
-* `security.oauth2.resourceserver.jwt.issuer-uri` - For **OAuth2** auth. Address of JWT issuer.
-* `security.oauth2.resourceserver.jwt.jwk-set-uri` - For **OAuth2** auth. Full path to end-point for setting JWK.
-* `security.oauth2.resourceserver.client-id` - For **OAuth2** auth. Client ID of this application in AAC.
+* `spring.security.oauth2.client.registration.aac.client-id` - For **OAuth2** auth. Client ID of this application in AAC.
+* `spring.security.oauth2.client.registration.aac.client-secret` - For **OAuth2** auth. Client secret of this application in AAC.
+* `spring.security.oauth2.client.provider.aac.issuer-uri` - For **OAuth2** auth. Address of JWT issuer.
+* `spring.security.oauth2.client.provider.aac.jwk-set-uri` - For **OAuth2** auth. Full path to end-point for setting JWK.
+* `spring.security.oauth2.client.provider.aac.user-name-attribute` - For **OAuth2** auth. AAC attribute to use for the user name (you probably don't need to change this).
+
+* `spring.security.oauth2.resourceserver.jwt.issuer-uri` - For **OAuth2** auth. Address of JWT issuer (same value as `...client.provider.aac.issuer-uri`).
+* `spring.security.oauth2.resourceserver.jwt.jwk-set-uri` - For **OAuth2** auth. Full path to end-point for setting JWK (same value as `...client.provider.aac.jwk-set-uri`).
+* `spring.security.oauth2.resourceserver.client-id` - For **OAuth2** auth. Client ID of this application in AAC (same value as `...registration.aac.client-id`).
+
 * `auth.users` - For **Basic** auth. A list of users, identified by `username` and `password`. The `authorities` element lists projects the user is allowed to work on. Each project is presented as a string made by the same value as `auth.project-authority-prefix` followed by the project ID.
 
 For example:
@@ -54,21 +61,36 @@ Other settings (which you can probably ignore) are described here. Some of them 
 * `auth.aac-claim-projects` - For **OAuth2** auth. The name of the list which contains the projects the user has authority over.
 
 
+## Enabling the UI
+To enable the UI, it has to be configured and built. Then, the resulting files must be moved to the appropriate path.
+
+Change directory to the `ui` sub-folder, then run the following to install the necessary modules (may take several minutes):
+```
+npm install
+```
+
+Duplicate the `.env.template` file and rename the new one to simply `.env`. Inside is the configuration of the UI:
+* `REACT_APP_BACKEND_ADDRESS`: The address of the backend. Make sure the port corresponds to the same as the value indicated in `application.yml` under `server.port`.
+
+Next, run the following command. It will create a new folder named `build`.
+```
+npm run-script build
+```
+
+Move the `build` folder you just obtained to the server, under `validation-framework\server\src\main\resources`. Once it's there, rename `build` to `public`.
+
+When the server is run, the UI will be available at `localhost:8200`.
+
 ## Installing and running
 
-To install and run the back-end, change directory to the `server` sub-folder:
-```
-cd server
-```
-
-Compile with Maven (the extra parameter loads the `application-local.yml` file):
+To install and run the back-end, change directory to the `server` sub-folder, then compile with Maven (the extra parameter loads the `application-local.yml` file):
 ```
 mvn clean install -Dspring.profiles.active=local
 ```
 
 Run:
 ```
-mvn exec:java -Dexec.mainClass="it.smartcommunitylab.validationstorage.ValidationStorageApplication" -Dspring.profiles.active=local
+mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
 A list of available endpoints and their use should now be hosted at http://localhost:8200/swagger-ui.html.
