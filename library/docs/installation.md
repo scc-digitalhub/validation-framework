@@ -9,14 +9,14 @@ Change directory to the `library` folder:
 cd library
 ```
 
-And then install it either with `pip` or `python`
+And then install it either with `pip` or `python`. You can install all the validation plugins with `[all]` argument, or a specifc one, e.g. `[frictionless]`.
 
 ```bash
-pip install .
+pip install .[all/frictionless/...]
 ```
 
 or
 
 ```bash
-python setup.py install
+python setup.py install easy_install datajudge[all/frictionless/...]
 ```
