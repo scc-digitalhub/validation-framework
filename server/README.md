@@ -1,8 +1,38 @@
-# Back-end to store validation-related documents
-
 ## Requirements
 
 The back-end needs access to a *MongoDB* database to store documents into. Make sure you have an instance available, either locally or remotely.
+
+## Running with Docker
+Docker is the easiest way to launch an instance that contains both the back-end and the UI. If you do not have access to Docker, skip this section and move to [Configuration](#configuration).
+
+In the root folder is a `server.env.template` file: make a duplicate and rename it to just `server.env`.
+Within are some environment variables you need to change:
+
+`MONGODB_URI`: URI to the MongoDB instance. It has to follow the format `mongodb://<username>:<password>@<address>:<port>/<database>?authSource=<authentication_database>`
+* `<username>`: User name
+* `<password>`: Password
+* `<address>`: Address of the MongoDB instance
+* `<port>`: Port of the MongoDB instance (usually `27017`)
+* `<database>`: The database to use
+* `<authentication_database>`: The database for user credentials within MongoDB (usually `admin`)
+
+`CLIENT_ID`: Client ID within AAC for this app.
+
+`CLIENT_SECRET`: Client secret within AAC for this app.
+
+`ISSUER_URI`: The AAC instance you intend to use for OAuth2.
+
+Build the image:
+```
+docker build -t validation .
+```
+
+Run a container:
+```
+docker run --name validation --env-file server.env -p 8200:8200 -t validation
+```
+
+The UI can now be accessed at `localhost:8200`.
 
 ## Configuration
 
@@ -62,7 +92,7 @@ Other settings (which you can probably ignore) are described here. Some of them 
 
 
 ## Enabling the UI
-To enable the UI, it has to be configured and built. Then, the resulting files must be moved to the appropriate path.
+The UI can also be packaged with the back-end, provided it is configured, built and the resulting files are moved to the appropriate path.
 
 Change directory to the `ui` sub-folder, then run the following to install the necessary modules (may take several minutes):
 ```
