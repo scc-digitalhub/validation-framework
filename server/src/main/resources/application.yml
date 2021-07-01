@@ -1,23 +1,31 @@
 server:
-  port: ${VALST_SERVER_PORT:8200}
+  port: ${SERVER_PORT:8200}
   error:
-    include-message: ${VALST_SERVER_ERROR_INCLUDE_MESSAGE:always}
+    include-message: ${ERROR_INCLUDE_MESSAGE:always}
 
 spring:
   data:
     mongodb:
-      uri: ${VALST_SPRING_DATA_MONGODB_URI}
+      uri: ${MONGODB_URI}
   security:
     oauth2:
       client:
+        registration:
+          aac:
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
+        provider:
+          aac:
+            issuer-uri: ${ISSUER_URI}
+            user-name-attribute: ${USER_NAME_ATTRIBUTE:preferred_username}
       resourceserver:
         jwt:
-          issuer-uri:
-        client-id:
+          issuer-uri: ${ISSUER_URI}
+        client-id: ${CLIENT_ID}
 
 auth:
-  enabled: ${VALST_AUTH_ENABLED:true}
-  project-authority-prefix: ${VALST_AUTH_PROJECT_AUTHORITY_PREFIX:PROJECT_}
-  aac-claim: ${VALST_AUTH_AAC_VALIDATION_CLAIM:validation}
-  aac-claim-projects: ${VALST_AUTH_AAC_VALIDATION_PROJECTS_LIST:projects}
+  enabled: ${AUTH_ENABLED:true}
+  project-authority-prefix: ${PROJECT_AUTHORITY_PREFIX:PROJECT_}
+  aac-claim: ${AAC_CLAIM:validation}
+  aac-claim-projects: ${AAC_CLAIM_PROJECTS:projects}
   users:

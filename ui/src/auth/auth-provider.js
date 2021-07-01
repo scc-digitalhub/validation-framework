@@ -30,10 +30,9 @@ export const AuthProvider = {
         };
         
         return httpClient(userUri, options).then( ({ json }) => {
-            const username = json.username;
             const identity = {
                 id: "",
-                fullName: username,
+                fullName: json.username,
                 avatar: null,
 
             };
