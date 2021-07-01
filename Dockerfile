@@ -1,13 +1,13 @@
 FROM node:16 as front
-COPY ui /build/
+COPY ui /build
+COPY ui/.env.template /build/.env
 WORKDIR /build
-RUN mv .env.template .env
 RUN npm install && npm run build
 
 FROM maven:3-jdk-11 as mvn
-COPY server /build/
+COPY server /build
 WORKDIR /build
-COPY --from=front /build/ui/build/* /build/src/main/resources/public/
+COPY --from=front /build/build /build/src/main/resources/public
 RUN mvn package -DskipTests
 
 FROM adoptopenjdk/openjdk11:alpine
