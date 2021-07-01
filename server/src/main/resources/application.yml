@@ -13,7 +13,6 @@ spring:
       resourceserver:
         jwt:
           issuer-uri:
-          jwk-set-uri:
         client-id:
 
 auth:

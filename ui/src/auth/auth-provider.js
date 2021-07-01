@@ -30,17 +30,9 @@ export const AuthProvider = {
         };
         
         return httpClient(userUri, options).then( ({ json }) => {
-            let id = null;
-            let fullName = null;
-            let avatar = null;
+            const username = json.username;
             
-            if (json.principal && json.principal.attributes && json.principal.attributes.sub)
-                id = json.principal.attributes.sub;
-            
-            if (json.principal && json.principal.attributes && json.principal.attributes.preferred_username)
-                fullName = json.principal.attributes.preferred_username;
-            
-            return Promise.resolve({id, fullName, avatar});
+            return Promise.resolve({null, fullName, null});
         });
         
     },

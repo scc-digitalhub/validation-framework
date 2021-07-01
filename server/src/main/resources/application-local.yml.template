@@ -12,12 +12,10 @@ spring:
         provider:
           aac:
             issuer-uri: https://example.com
-            jwk-set-uri: https://example.com
             user-name-attribute: preferred_username
       resourceserver:
         jwt:
           issuer-uri: https://example.com
-          jwk-set-uri: https://example.com
         client-id: put_client_id_here
 
 auth:

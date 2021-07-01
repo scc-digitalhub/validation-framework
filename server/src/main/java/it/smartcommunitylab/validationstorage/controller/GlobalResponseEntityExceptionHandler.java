@@ -45,22 +45,22 @@ public class GlobalResponseEntityExceptionHandler extends ResponseEntityExceptio
 	}
 	
 	@ExceptionHandler(value = { IllegalArgumentException.class })
-	protected ResponseEntity<Object> handleIllegalArgument(RuntimeException ex, WebRequest request) {
+	protected ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
 		return buildResponse(ex, HttpStatus.BAD_REQUEST, request);
 	}
 	
 	@ExceptionHandler(value = { DocumentAlreadyExistsException.class })
-	protected ResponseEntity<Object> handleDocumentAlreadyExists(RuntimeException ex, WebRequest request) {
+	protected ResponseEntity<Object> handleDocumentAlreadyExists(DocumentAlreadyExistsException ex, WebRequest request) {
 		return buildResponse(ex, HttpStatus.CONFLICT, request);
 	}
 	
 	@ExceptionHandler(value = { DocumentNotFoundException.class })
-	protected ResponseEntity<Object> handleDocumentNotFound(RuntimeException ex, WebRequest request) {
+	protected ResponseEntity<Object> handleDocumentNotFound(DocumentNotFoundException ex, WebRequest request) {
 		return buildResponse(ex, HttpStatus.NOT_FOUND, request);
 	}
 	
 	@ExceptionHandler(value = { AccessDeniedException.class })
-	protected ResponseEntity<Object> handleAccessDenied(RuntimeException ex, WebRequest request) {
+	protected ResponseEntity<Object> handleAccessDenied(AccessDeniedException ex, WebRequest request) {
 		return buildResponse(ex, HttpStatus.FORBIDDEN, request);
 	}
 }
