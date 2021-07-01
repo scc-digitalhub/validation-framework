@@ -31,8 +31,13 @@ export const AuthProvider = {
         
         return httpClient(userUri, options).then( ({ json }) => {
             const username = json.username;
-            
-            return Promise.resolve({null, fullName, null});
+            const identity = {
+                id: "",
+                fullName: username,
+                avatar: null,
+
+            };
+            return Promise.resolve(identity);
         });
         
     },
