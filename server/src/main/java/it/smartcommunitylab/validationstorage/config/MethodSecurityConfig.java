@@ -9,8 +9,9 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
-/** 
- * This class is used to override the methodSecurityInterceptor method, to bypass PreAuthorize and similar annotations when auth is disabled.
+/**
+ * This class is used to override the methodSecurityInterceptor method, to bypass
+ * PreAuthorize and similar annotations when auth is disabled.
  */
 @Configuration
 @EnableWebSecurity
@@ -18,7 +19,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
 
     @Value("${auth.enabled}")
-    private boolean authEnabled;  
+    private boolean authEnabled;
 
     /**
      * Overriding this method allows the application to bypass PreAuthorize and similar annotations when auth is disabled.

@@ -20,47 +20,48 @@ import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsExcept
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 
 @ControllerAdvice
-public class GlobalResponseEntityExceptionHandler extends ResponseEntityExceptionHandler  {
-	
-	private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS+00:00").withZone(ZoneOffset.UTC);
-	
-	/**
-	 * Builds a ResponseEntity with a detailed body.
-	 * @param ex Exception.
-	 * @param status HTTP status.
-	 * @param request Web request.
-	 * @return ResponseEntity with a detailed body.
-	 */
-	private ResponseEntity<Object> buildResponse(RuntimeException ex, HttpStatus status, WebRequest request) {
-		Map<String, Object> body = new LinkedHashMap<>();
-		body.put("timestamp", formatter.format(Instant.now()));
-		body.put("status", status.value());
-		body.put("error", status.getReasonPhrase());
-		body.put("message", ex.getMessage());
-		
-		if (request instanceof ServletWebRequest)
-			body.put("path", ((ServletWebRequest) request).getRequest().getRequestURI());
-		
-		return handleExceptionInternal(ex, body, new HttpHeaders(), status, request);
-	}
-	
-	@ExceptionHandler(value = { IllegalArgumentException.class })
-	protected ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
-		return buildResponse(ex, HttpStatus.BAD_REQUEST, request);
-	}
-	
-	@ExceptionHandler(value = { DocumentAlreadyExistsException.class })
-	protected ResponseEntity<Object> handleDocumentAlreadyExists(DocumentAlreadyExistsException ex, WebRequest request) {
-		return buildResponse(ex, HttpStatus.CONFLICT, request);
-	}
-	
-	@ExceptionHandler(value = { DocumentNotFoundException.class })
-	protected ResponseEntity<Object> handleDocumentNotFound(DocumentNotFoundException ex, WebRequest request) {
-		return buildResponse(ex, HttpStatus.NOT_FOUND, request);
-	}
-	
-	@ExceptionHandler(value = { AccessDeniedException.class })
-	protected ResponseEntity<Object> handleAccessDenied(AccessDeniedException ex, WebRequest request) {
-		return buildResponse(ex, HttpStatus.FORBIDDEN, request);
-	}
+public class GlobalResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS+00:00").withZone(ZoneOffset.UTC);
+
+    /**
+     * Builds a ResponseEntity with a detailed body.
+     * 
+     * @param ex      Exception.
+     * @param status  HTTP status.
+     * @param request Web request.
+     * @return ResponseEntity with a detailed body.
+     */
+    private ResponseEntity<Object> buildResponse(RuntimeException ex, HttpStatus status, WebRequest request) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", formatter.format(Instant.now()));
+        body.put("status", status.value());
+        body.put("error", status.getReasonPhrase());
+        body.put("message", ex.getMessage());
+
+        if (request instanceof ServletWebRequest)
+            body.put("path", ((ServletWebRequest) request).getRequest().getRequestURI());
+
+        return handleExceptionInternal(ex, body, new HttpHeaders(), status, request);
+    }
+
+    @ExceptionHandler(value = { IllegalArgumentException.class })
+    protected ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
+        return buildResponse(ex, HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler(value = { DocumentAlreadyExistsException.class })
+    protected ResponseEntity<Object> handleDocumentAlreadyExists(DocumentAlreadyExistsException ex, WebRequest request) {
+        return buildResponse(ex, HttpStatus.CONFLICT, request);
+    }
+
+    @ExceptionHandler(value = { DocumentNotFoundException.class })
+    protected ResponseEntity<Object> handleDocumentNotFound(DocumentNotFoundException ex, WebRequest request) {
+        return buildResponse(ex, HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(value = { AccessDeniedException.class })
+    protected ResponseEntity<Object> handleAccessDenied(AccessDeniedException ex, WebRequest request) {
+        return buildResponse(ex, HttpStatus.FORBIDDEN, request);
+    }
 }

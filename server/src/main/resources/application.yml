@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT:8200}
+  port: 8200
   error:
     include-message: ${ERROR_INCLUDE_MESSAGE:always}
 

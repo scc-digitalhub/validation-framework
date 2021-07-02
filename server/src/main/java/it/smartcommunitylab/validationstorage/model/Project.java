@@ -11,19 +11,19 @@ import lombok.Data;
 @Data
 @Document
 public class Project {
-	/**
-	 * Unique ID.
-	 */
-	@Id
-	private String id;
-	
-	/**
-	 * Name of the project.
-	 */
-	private String name;
-	
-	/**
-	 * Creator of this document.
-	 */
-	private String author;
+    /**
+     * Unique ID.
+     */
+    @Id
+    private String id;
+
+    /**
+     * Name of the project.
+     */
+    private String name;
+
+    /**
+     * Creator of this document.
+     */
+    private String author;
 }

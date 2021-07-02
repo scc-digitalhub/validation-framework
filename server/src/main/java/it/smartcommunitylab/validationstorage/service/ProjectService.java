@@ -26,105 +26,106 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
-	private final ProjectRepository documentRepository;
-	
-	private final ExperimentRepository experimentRepository;
-	private final ArtifactMetadataRepository artifactMetadataRepository;
-	private final DataProfileRepository dataProfileRepository;
-	private final DataResourceRepository dataResourceRepository;
-	private final RunEnvironmentRepository runEnvironmentRepository;
-	private final RunMetadataRepository runMetadataRepository;
-	private final ShortReportRepository shortReportRepository;
-	private final ShortSchemaRepository shortSchemaRepository;
-	
-	/**
-	 * Given an ID, returns the corresponding document, or null if it can't be found.
-	 * @param id ID of the document to retrieve.
-	 * @return The document if found, null otherwise.
-	 */
-	private Project getDocument(String id) {
-		if (ObjectUtils.isEmpty(id))
-			return null;
-		
-		Optional<Project> o = documentRepository.findById(id);
-		if (o.isPresent()) {
-			Project document = o.get();
-			return document;
-		}
-		return null;
-	}
-	
-	// Create
-	public Project createDocument(ProjectDTO request, String author) {
-		String projectId = request.getId();
-		
-		if (ObjectUtils.isEmpty(projectId))
-			throw new IllegalArgumentException("Field 'id' is required and cannot be blank.");
-		
-		if (getDocument(projectId) != null)
-			throw new DocumentAlreadyExistsException("Document (id=" + projectId + ") already exists.");
-		
-		Project documentToSave = new Project();
-		
-		documentToSave.setId(projectId);
-		documentToSave.setName(request.getName());
-		documentToSave.setAuthor(author);
-		
-		return documentRepository.save(documentToSave);
-	}
-	
-	// Read
-	public Project findDocumentById(String id) {
-		Project document = getDocument(id);
-		if (document != null)
-			return document;
-		
-		throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
-	}
-	
-	// Read
-	@PostFilter(ValidationStorageUtils.POSTFILTER_ID)
-	public List<Project> findDocuments() {
-		return documentRepository.findAll();
-	}
-	
-	// Update
-	public Project updateDocument(String id, ProjectDTO request) {
-		if (ObjectUtils.isEmpty(id))
-			throw new IllegalArgumentException("Document ID is missing or blank.");
-		
-		Project document = getDocument(id);
-		if (document == null)
-			throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
-		
-		String requestProjectId = request.getId();
-		if (requestProjectId != null && !(id.equals(requestProjectId)))
-			throw new IllegalArgumentException("A value for the project ID was specified in the request, but it does not match the project ID in the path. Are you sure you are trying to update the correct document?");
-		
-		document.setName(request.getName());
-		
-		return documentRepository.save(document);
-	}
-	
-	// Delete
-	public void deleteDocumentById(String id) {
-		Project document = getDocument(id);
-		if (document != null) {
-			// When a project is deleted, all other documents under it are deleted.
-			artifactMetadataRepository.deleteByProjectId(id);
-			dataProfileRepository.deleteByProjectId(id);
-			dataResourceRepository.deleteByProjectId(id);
-			runEnvironmentRepository.deleteByProjectId(id);
-			runMetadataRepository.deleteByProjectId(id);
-			shortReportRepository.deleteByProjectId(id);
-			shortSchemaRepository.deleteByProjectId(id);
-			
-			experimentRepository.deleteByProjectId(id);
-			
-			documentRepository.deleteById(id);
-			
-			return;
-		}
-		throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
-	}
+    private final ProjectRepository documentRepository;
+
+    private final ExperimentRepository experimentRepository;
+    private final ArtifactMetadataRepository artifactMetadataRepository;
+    private final DataProfileRepository dataProfileRepository;
+    private final DataResourceRepository dataResourceRepository;
+    private final RunEnvironmentRepository runEnvironmentRepository;
+    private final RunMetadataRepository runMetadataRepository;
+    private final ShortReportRepository shortReportRepository;
+    private final ShortSchemaRepository shortSchemaRepository;
+
+    /**
+     * Given an ID, returns the corresponding document, or null if it can't be found.
+     * 
+     * @param id ID of the document to retrieve.
+     * @return The document if found, null otherwise.
+     */
+    private Project getDocument(String id) {
+        if (ObjectUtils.isEmpty(id))
+            return null;
+
+        Optional<Project> o = documentRepository.findById(id);
+        if (o.isPresent()) {
+            Project document = o.get();
+            return document;
+        }
+        return null;
+    }
+
+    // Create
+    public Project createDocument(ProjectDTO request, String author) {
+        String projectId = request.getId();
+
+        if (ObjectUtils.isEmpty(projectId))
+            throw new IllegalArgumentException("Field 'id' is required and cannot be blank.");
+
+        if (getDocument(projectId) != null)
+            throw new DocumentAlreadyExistsException("Document (id=" + projectId + ") already exists.");
+
+        Project documentToSave = new Project();
+
+        documentToSave.setId(projectId);
+        documentToSave.setName(request.getName());
+        documentToSave.setAuthor(author);
+
+        return documentRepository.save(documentToSave);
+    }
+
+    // Read
+    public Project findDocumentById(String id) {
+        Project document = getDocument(id);
+        if (document != null)
+            return document;
+
+        throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
+    }
+
+    // Read
+    @PostFilter(ValidationStorageUtils.POSTFILTER_ID)
+    public List<Project> findDocuments() {
+        return documentRepository.findAll();
+    }
+
+    // Update
+    public Project updateDocument(String id, ProjectDTO request) {
+        if (ObjectUtils.isEmpty(id))
+            throw new IllegalArgumentException("Document ID is missing or blank.");
+
+        Project document = getDocument(id);
+        if (document == null)
+            throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
+
+        String requestProjectId = request.getId();
+        if (requestProjectId != null && !(id.equals(requestProjectId)))
+            throw new IllegalArgumentException("A value for the project ID was specified in the request, but it does not match the project ID in the path. Are you sure you are trying to update the correct document?");
+
+        document.setName(request.getName());
+
+        return documentRepository.save(document);
+    }
+
+    // Delete
+    public void deleteDocumentById(String id) {
+        Project document = getDocument(id);
+        if (document != null) {
+            // When a project is deleted, all other documents under it are deleted.
+            artifactMetadataRepository.deleteByProjectId(id);
+            dataProfileRepository.deleteByProjectId(id);
+            dataResourceRepository.deleteByProjectId(id);
+            runEnvironmentRepository.deleteByProjectId(id);
+            runMetadataRepository.deleteByProjectId(id);
+            shortReportRepository.deleteByProjectId(id);
+            shortSchemaRepository.deleteByProjectId(id);
+
+            experimentRepository.deleteByProjectId(id);
+
+            documentRepository.deleteById(id);
+
+            return;
+        }
+        throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
+    }
 }

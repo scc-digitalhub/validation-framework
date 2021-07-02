@@ -27,33 +27,33 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @PreAuthorize(ValidationStorageUtils.PREAUTH_ID)
 public class ProjectController {
-	private final ProjectService documentService;
-	
-	@PreAuthorize("permitAll()")
-	@GetMapping
-	public ResponseEntity<List<Project>> findDocuments() {
-		return ResponseEntity.ok(documentService.findDocuments());
-	}
-	
-	@GetMapping("/{id}")
-	public ResponseEntity<Project> findDocumentById(@PathVariable String id) {
-		return ResponseEntity.ok(documentService.findDocumentById(id));
-	}
-	
-	@PreAuthorize(ValidationStorageUtils.PREAUTH_REQUEST_ID)
-	@PostMapping
-	public ResponseEntity<Project> createDocument(@RequestBody @Valid ProjectDTO request, Principal principal) {
-		return ResponseEntity.ok(documentService.createDocument(request, ValidationStorageUtils.getPrincipalName(principal)));
-	}
-	
-	@PutMapping("/{id}")
-	public ResponseEntity<Project> updateDocument(@PathVariable String id, @RequestBody @Valid ProjectDTO request) {
-		return ResponseEntity.ok(documentService.updateDocument(id, request));
-	}
-	
-	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteDocumentById(@PathVariable String id) {
-		documentService.deleteDocumentById(id);
-		return ResponseEntity.ok().build();
-	}
+    private final ProjectService documentService;
+
+    @PreAuthorize("permitAll()")
+    @GetMapping
+    public ResponseEntity<List<Project>> findDocuments() {
+        return ResponseEntity.ok(documentService.findDocuments());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Project> findDocumentById(@PathVariable String id) {
+        return ResponseEntity.ok(documentService.findDocumentById(id));
+    }
+
+    @PreAuthorize(ValidationStorageUtils.PREAUTH_REQUEST_ID)
+    @PostMapping
+    public ResponseEntity<Project> createDocument(@RequestBody @Valid ProjectDTO request, Principal principal) {
+        return ResponseEntity.ok(documentService.createDocument(request, ValidationStorageUtils.getPrincipalName(principal)));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Project> updateDocument(@PathVariable String id, @RequestBody @Valid ProjectDTO request) {
+        return ResponseEntity.ok(documentService.updateDocument(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDocumentById(@PathVariable String id) {
+        documentService.deleteDocumentById(id);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -15,18 +15,18 @@ import lombok.Data;
 @Data
 @Valid
 public class ExperimentDTO {
-	/**
-	 * ID of the experiment. Only unique within the project it belongs to.
-	 */
-	@JsonProperty("experiment_id")
-	@NotBlank
-	@Pattern(regexp=ValidationStorageUtils.ID_PATTERN)
-	private String experimentId;
-	
-	/**
-	 * Name of the experiment.
-	 */
-	@JsonProperty("experiment_name")
-	@Pattern(regexp=ValidationStorageUtils.NAME_PATTERN)
-	private String experimentName;
+    /**
+     * ID of the experiment. Only unique within the project it belongs to.
+     */
+    @JsonProperty("experiment_id")
+    @NotBlank
+    @Pattern(regexp = ValidationStorageUtils.ID_PATTERN)
+    private String experimentId;
+
+    /**
+     * Name of the experiment.
+     */
+    @JsonProperty("experiment_name")
+    @Pattern(regexp = ValidationStorageUtils.NAME_PATTERN)
+    private String experimentName;
 }

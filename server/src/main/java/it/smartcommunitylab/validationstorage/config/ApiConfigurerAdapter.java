@@ -21,87 +21,88 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-/** 
+/**
  * Adapter for end-points not meant for the UI.
  */
 @Configuration
 @Order(5)
 public class ApiConfigurerAdapter extends WebSecurityConfigurerAdapter {
-	
-	/**
-	 * Contains various configurations for authentication.
-	 */
-	@Autowired
-	private AuthenticationProperties authenticationProperties;
-	
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-		if (authenticationProperties.isEnabled()) {
-			http.cors().and().csrf().disable()
-				.requestMatcher(getRequestMatcher())
-				.authorizeRequests()
-				.anyRequest()
-				.authenticated()
-				.and()
-				.httpBasic()
-				.and()
-				.requestCache((requestCache) -> requestCache.disable())
-				.oauth2ResourceServer()
-	            .jwt()
-	            .jwtAuthenticationConverter(jwtAuthenticationConverter());
-		} else {
-			http.cors().and().csrf().disable()
-				.requestMatcher(getRequestMatcher())
-				.authorizeRequests()
-				.anyRequest()
-				.permitAll()
-				.and()
-				.requestCache((requestCache) -> requestCache.disable());
-		}
-		
-		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-	}
-	
-	/**
-	 * Get matcher for the end-points not meant for the UI.
-	 * @return
-	 */
-	private RequestMatcher getRequestMatcher() {
+
+    /**
+     * Contains various configurations for authentication.
+     */
+    @Autowired
+    private AuthenticationProperties authenticationProperties;
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        if (authenticationProperties.isEnabled()) {
+            http.cors().and().csrf().disable()
+                    .requestMatcher(getRequestMatcher())
+                    .authorizeRequests()
+                    .anyRequest()
+                    .authenticated()
+                    .and()
+                    .httpBasic()
+                    .and()
+                    .requestCache((requestCache) -> requestCache.disable())
+                    .oauth2ResourceServer()
+                    .jwt()
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter());
+        } else {
+            http.cors().and().csrf().disable()
+                    .requestMatcher(getRequestMatcher())
+                    .authorizeRequests()
+                    .anyRequest()
+                    .permitAll()
+                    .and()
+                    .requestCache((requestCache) -> requestCache.disable());
+        }
+
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+    }
+
+    /**
+     * Get matcher for the end-points not meant for the UI.
+     * 
+     * @return
+     */
+    private RequestMatcher getRequestMatcher() {
         return new AntPathRequestMatcher("/api/**");
     }
-	
-	/**
-	 * Get JWT converter for OAuth2.
-	 * 
-	 * @return
-	 */
-	@Bean
-	public Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
-		JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-		converter.setJwtGrantedAuthoritiesConverter(new Converter<Jwt, Collection<GrantedAuthority>>() {
-			@Override
-			public Collection<GrantedAuthority> convert(Jwt source) {
-				if (source == null)
-					return null;
 
-				Map<String, Object> validationMap = source.getClaimAsMap(authenticationProperties.getAacClaim());
-				if (validationMap == null)
-					return null;
+    /**
+     * Get JWT converter for OAuth2.
+     * 
+     * @return
+     */
+    @Bean
+    public Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(new Converter<Jwt, Collection<GrantedAuthority>>() {
+            @Override
+            public Collection<GrantedAuthority> convert(Jwt source) {
+                if (source == null)
+                    return null;
 
-				if (validationMap.get(authenticationProperties.getAacClaimProjects()) instanceof List<?>) {
-					List<?> projects = (List<?>) validationMap.get(authenticationProperties.getAacClaimProjects());
-					if (projects != null)
-						return projects.stream()
-								.map(p -> new SimpleGrantedAuthority(
-										authenticationProperties.getProjectAuthorityPrefix() + p))
-								.collect(Collectors.toList());
-					return null;
-				} else
-					return null;
-			}
+                Map<String, Object> validationMap = source.getClaimAsMap(authenticationProperties.getAacClaim());
+                if (validationMap == null)
+                    return null;
 
-		});
-		return converter;
-	}
-	
+                if (validationMap.get(authenticationProperties.getAacClaimProjects()) instanceof List<?>) {
+                    List<?> projects = (List<?>) validationMap.get(authenticationProperties.getAacClaimProjects());
+                    if (projects != null)
+                        return projects.stream()
+                                .map(p -> new SimpleGrantedAuthority(
+                                        authenticationProperties.getProjectAuthorityPrefix() + p))
+                                .collect(Collectors.toList());
+                    return null;
+                } else
+                    return null;
+            }
+
+        });
+        return converter;
+    }
+
 }

@@ -13,16 +13,16 @@ import lombok.Data;
 @Data
 @Valid
 public class ProjectDTO {
-	/**
-	 * Unique ID.
-	 */
-	@Pattern(regexp=ValidationStorageUtils.ID_PATTERN)
-	@NotBlank
-	private String id;
-	
-	/**
-	 * Name of the project.
-	 */
-	@Pattern(regexp=ValidationStorageUtils.NAME_PATTERN)
-	private String name;
+    /**
+     * Unique ID.
+     */
+    @Pattern(regexp = ValidationStorageUtils.ID_PATTERN)
+    @NotBlank
+    private String id;
+
+    /**
+     * Name of the project.
+     */
+    @Pattern(regexp = ValidationStorageUtils.NAME_PATTERN)
+    private String name;
 }

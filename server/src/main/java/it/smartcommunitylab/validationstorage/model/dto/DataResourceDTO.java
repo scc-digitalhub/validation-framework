@@ -18,31 +18,31 @@ import lombok.Data;
 @Data
 @Valid
 public class DataResourceDTO {
-	/**
-	 * ID of the experiment this document belongs to.
-	 */
-	@JsonProperty("experiment_id")
-	@NotBlank
-	@Pattern(regexp=ValidationStorageUtils.ID_PATTERN)
-	private String experimentId;
-	
-	/**
-	 * Name of the experiment this document belongs to.
-	 */
-	@JsonProperty("experiment_name")
-	@Pattern(regexp=ValidationStorageUtils.NAME_PATTERN)
-	private String experimentName;
-	
-	/**
-	 * ID of the run this document belongs to.
-	 */
-	@JsonProperty("run_id")
-	@NotBlank
-	@Pattern(regexp=ValidationStorageUtils.ID_PATTERN)
-	private String runId;
-	
-	/**
-	 * May contain extra information.
-	 */
-	private Map<String, Serializable> contents;
+    /**
+     * ID of the experiment this document belongs to.
+     */
+    @JsonProperty("experiment_id")
+    @NotBlank
+    @Pattern(regexp = ValidationStorageUtils.ID_PATTERN)
+    private String experimentId;
+
+    /**
+     * Name of the experiment this document belongs to.
+     */
+    @JsonProperty("experiment_name")
+    @Pattern(regexp = ValidationStorageUtils.NAME_PATTERN)
+    private String experimentName;
+
+    /**
+     * ID of the run this document belongs to.
+     */
+    @JsonProperty("run_id")
+    @NotBlank
+    @Pattern(regexp = ValidationStorageUtils.ID_PATTERN)
+    private String runId;
+
+    /**
+     * May contain extra information.
+     */
+    private Map<String, Serializable> contents;
 }

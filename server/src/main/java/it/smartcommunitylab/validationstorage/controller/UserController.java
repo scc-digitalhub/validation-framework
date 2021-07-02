@@ -14,22 +14,22 @@ import lombok.NonNull;
 
 @RestController
 public class UserController {
-	@GetMapping("/user")
-	public ResponseEntity<UserDTO> getUser(Authentication authentication) {
-		if (authentication == null)
-			throw new InsufficientAuthenticationException("Missing authentication.");
-		
-		return ResponseEntity.ok(new UserDTO(authentication.getName()));
-	}
-	
-	@ExceptionHandler(value = { InsufficientAuthenticationException.class })
-	protected ResponseEntity<Void> handleAccessDenied(InsufficientAuthenticationException ex, WebRequest request) {
-		return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-	}
-	
-	@Data
-	public class UserDTO {
-		@NonNull
-		private String username;
-	}
+    @GetMapping("/user")
+    public ResponseEntity<UserDTO> getUser(Authentication authentication) {
+        if (authentication == null)
+            throw new InsufficientAuthenticationException("Missing authentication.");
+
+        return ResponseEntity.ok(new UserDTO(authentication.getName()));
+    }
+
+    @ExceptionHandler(value = { InsufficientAuthenticationException.class })
+    protected ResponseEntity<Void> handleAccessDenied(InsufficientAuthenticationException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    @Data
+    public class UserDTO {
+        @NonNull
+        private String username;
+    }
 }

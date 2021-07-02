@@ -14,18 +14,18 @@ import lombok.Data;
 @Component
 @ConfigurationProperties(prefix = "auth")
 public class AuthenticationProperties {
-	private boolean enabled;
-	
-	private String projectAuthorityPrefix;
-	private String aacClaim;
-	private String aacClaimProjects;
-	
+    private boolean enabled;
+
+    private String projectAuthorityPrefix;
+    private String aacClaim;
+    private String aacClaimProjects;
+
     private List<User> users;
-    
+
     @Data
     public static class User {
-    	private String username;
-    	private String password;
-    	private List<String> authorities;
+        private String username;
+        private String password;
+        private List<String> authorities;
     }
 }
