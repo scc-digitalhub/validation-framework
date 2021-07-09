@@ -29,7 +29,7 @@ API_SHORT_REPORT = "/short-report"
 API_SHORT_SCHEMA = "/short-schema"
 API_DATA_PROFILE = "/data-profile"
 API_ARTIFACT_METADATA = "/artifact-metadata"
-API_RUN_ENV = "/run-enviroment"
+API_RUN_ENV = "/run-environment"
 
 # METADATA TYPE
 MT_RUN_METADATA = "run"
