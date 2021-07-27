@@ -41,6 +41,9 @@ export const GetCurrentRun = () => {
 }
 
 export const formatBytes = (bytes, decimals = 2) => {
+    if (typeof(bytes) == 'string')
+        return bytes;
+    
     if (bytes == null || bytes < 0)
         return null;
 
