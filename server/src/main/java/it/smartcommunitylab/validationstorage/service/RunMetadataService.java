@@ -138,7 +138,7 @@ public class RunMetadataService {
         documentToSave.setContents(request.getContents());
 
         // Create experiment document automatically.
-        ValidationStorageUtils.createExperiment(experimentRepository, projectId, experimentId, request.getExperimentName());
+        ValidationStorageUtils.createExperiment(experimentRepository, projectId, experimentId, request.getExperimentName(), author);
 
         return documentRepository.save(documentToSave);
     }

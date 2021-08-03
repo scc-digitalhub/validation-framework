@@ -81,11 +81,13 @@ public class ValidationStorageUtils {
      * @param experimentId   ID of the experiment.
      * @param experimentName Name of the experiment.
      */
-    public static void createExperiment(ExperimentRepository repository, String projectId, String experimentId, String experimentName) {
+    public static void createExperiment(ExperimentRepository repository, String projectId, String experimentId, String experimentName, String author) {
         if (repository.findByProjectIdAndExperimentId(projectId, experimentId).size() == 0) {
             Experiment experimentToSave = new Experiment(projectId, experimentId);
             if (!ObjectUtils.isEmpty(experimentName))
                 experimentToSave.setExperimentName(experimentName);
+            if (!ObjectUtils.isEmpty(author))
+                experimentToSave.setAuthor(author);
             repository.save(experimentToSave);
         }
     }

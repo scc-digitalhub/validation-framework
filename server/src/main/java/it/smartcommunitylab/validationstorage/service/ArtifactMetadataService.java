@@ -85,7 +85,7 @@ public class ArtifactMetadataService {
         documentToSave.setAuthor(author);
 
         // Create experiment document automatically.
-        ValidationStorageUtils.createExperiment(experimentRepository, projectId, experimentId, request.getExperimentName());
+        ValidationStorageUtils.createExperiment(experimentRepository, projectId, experimentId, request.getExperimentName(), author);
 
         return documentRepository.save(documentToSave);
     }
