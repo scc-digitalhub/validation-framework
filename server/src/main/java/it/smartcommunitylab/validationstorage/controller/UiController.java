@@ -1,6 +1,5 @@
 package it.smartcommunitylab.validationstorage.controller;
 
-import java.security.Principal;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -8,6 +7,7 @@ import javax.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -76,8 +76,8 @@ public class UiController {
 
     @PreAuthorize(ValidationStorageUtils.PREAUTH_REQUEST_ID)
     @PostMapping
-    public ResponseEntity<Project> createDocument(@RequestBody @Valid ProjectDTO request, Principal principal) {
-        return ResponseEntity.ok(projectService.createDocument(request, ValidationStorageUtils.getPrincipalName(principal)));
+    public ResponseEntity<Project> createDocument(@RequestBody @Valid ProjectDTO request, Authentication authentication) {
+        return ResponseEntity.ok(projectService.createDocument(request, ValidationStorageUtils.getAuthorName(authentication)));
     }
 
     @PreAuthorize(ValidationStorageUtils.PREAUTH_ID)

@@ -1,6 +1,5 @@
 package it.smartcommunitylab.validationstorage.controller;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +7,7 @@ import javax.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,8 +48,8 @@ public class RunMetadataController {
     public ResponseEntity<RunMetadata> createDocument(@PathVariable String projectId,
             @RequestParam("overwrite") Optional<String> overwrite,
             @RequestBody @Valid RunMetadataDTO request,
-            Principal principal) {
-        return ResponseEntity.ok(documentService.createDocument(projectId, request, overwrite, ValidationStorageUtils.getPrincipalName(principal)));
+            Authentication authentication) {
+        return ResponseEntity.ok(documentService.createDocument(projectId, request, overwrite, ValidationStorageUtils.getAuthorName(authentication)));
     }
 
     @PutMapping("/{projectId}/" + ValidationStorageUtils.RUN_METADATA + "/{id}")

@@ -1,12 +1,12 @@
 package it.smartcommunitylab.validationstorage.common;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.util.ObjectUtils;
 
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 
-import java.security.Principal;
 import java.text.Normalizer;
 
 /**
@@ -90,9 +90,9 @@ public class ValidationStorageUtils {
         }
     }
 
-    public static String getPrincipalName(Principal principal) {
-        if (principal != null)
-            return principal.getName();
+    public static String getAuthorName(Authentication authentication) {
+        if (authentication != null)
+            return authentication.getName();
         return null;
     }
 }

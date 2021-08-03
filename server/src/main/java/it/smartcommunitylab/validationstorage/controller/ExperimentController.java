@@ -1,6 +1,5 @@
 package it.smartcommunitylab.validationstorage.controller;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +7,7 @@ import javax.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,8 +45,8 @@ public class ExperimentController {
     }
 
     @PostMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT)
-    public ResponseEntity<Experiment> createDocument(@PathVariable String projectId, @RequestBody @Valid ExperimentDTO request, Principal principal) {
-        return ResponseEntity.ok(documentService.createDocument(projectId, request, ValidationStorageUtils.getPrincipalName(principal)));
+    public ResponseEntity<Experiment> createDocument(@PathVariable String projectId, @RequestBody @Valid ExperimentDTO request, Authentication authentication) {
+        return ResponseEntity.ok(documentService.createDocument(projectId, request, ValidationStorageUtils.getAuthorName(authentication)));
     }
 
     @PutMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT + "/{id}")
