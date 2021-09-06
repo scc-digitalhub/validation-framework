@@ -55,14 +55,14 @@ class ShortSchema:
             data = {
                 "name": field.name,
                 "type": field.type,
-                "valid_type": field.valid_type,
+                "validType": field.valid_type,
                 "description": field.description
             }
             fields.append(data)
 
         schema = {
-            "validation_library_name": self.val_lib_name,
-            "validation_library_version": self.val_lib_version,
+            "validationLibraryName": self.val_lib_name,
+            "validationLibraryVersion": self.val_lib_version,
             "data_resource_uri": self.data_resource_uri,
             "duration": self.duration,
             "fields": fields,

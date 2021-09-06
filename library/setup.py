@@ -14,9 +14,9 @@ setup(
             "pandas>=1.2.4",
             "pandas-profiling>=2.11.0",
             "azure-storage-blob>=12.8.1"],
-    extras_require = {
-        "all": ["frictionless>=4.9.0",],
-        "frictionless": ["frictionless>=4.9.0",],
+    extras_require={
+        "all": ["frictionless>=4.9.0"],
+        "frictionless": ["frictionless>=4.9.0"],
     },
     packages=find_packages()
 )

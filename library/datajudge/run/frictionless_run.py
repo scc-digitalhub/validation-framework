@@ -79,6 +79,8 @@ class FrictionlessRun(Run):
         flat_report = self.report.flatten(spec=spec)
         errors = [dict(zip(spec, err)) for err in flat_report]
 
+        # error severity mapping
+
         return nmtp(LIB_NAME, LIB_VERSION, duration, valid, errors)
 
     def _check_report(self,

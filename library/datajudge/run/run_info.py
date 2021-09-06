@@ -65,7 +65,24 @@ class RunInfo:
         """
         Return a dictionary of attributes.
         """
-        return self.__dict__
+        run_dict = {
+            "experimentName": self.experiment_name,
+            "experimentId": self.experiment_id,
+            "runId": self.run_id,
+            "runMetadataUri": self.run_metadata_uri,
+            "runArtifactsUri": self.run_artifacts_uri,
+            "dataResourceUri": self.data_resource_uri,
+            "validationLibraryName": self.validation_library_name,
+            "validationLibraryVersion": self.validation_library_version,
+            "profilingLibraryName": self.profiling_library_name,
+            "profilingLibraryVersion": self.profiling_library_version,
+            "created": self.created,
+            "beginStatus": self.begin_status,
+            "started": self.started,
+            "endStatus": self.end_status,
+            "finished": self.finished
+        }
+        return run_dict
 
     def __repr__(self) -> str:
         return str(self.to_dict())

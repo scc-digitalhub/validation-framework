@@ -48,11 +48,15 @@ class GenericRun(Run):
         """
         Parse the report.
         """
+        errors = self.report.get("errors")
+
+        # error severity mapping
+
         return nmtp(LIB_NAME,
                     LIB_VERSION,
                     self.report.get("valid"),
                     self.report.get("time"),
-                    self.report.get("errors"))
+                    errors)
 
     def _check_report(self,
                       report: Optional[dict] = None) -> None:
