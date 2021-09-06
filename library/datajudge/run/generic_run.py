@@ -48,6 +48,8 @@ class GenericRun(Run):
         """
         Parse the report.
         """
+        # Because we can't do any validation with a generic run,
+        # no errors mapping can be applied
         return nmtp(LIB_NAME,
                     LIB_VERSION,
                     self.report.get("valid"),

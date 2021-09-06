@@ -79,6 +79,19 @@ class FrictionlessRun(Run):
         flat_report = self.report.flatten(spec=spec)
         errors = [dict(zip(spec, err)) for err in flat_report]
 
+        # Error severity mapping.
+        # See documentation for the validation schema integration.
+        schema_path = self.fetch_validation_schema()
+        if schema_path is not None:
+            schema = self.build_frictionless_schema(descriptor=schema_path)
+            val_fields = schema.get("fields")
+            for err in errors:
+                error_field = err.get("fieldName")
+                for field in val_fields:
+                    if field.get("name") == error_field:
+                        err["severity"] = field.get("errors", {})\
+                                               .get("severity", 5)
+
         return nmtp(LIB_NAME, LIB_VERSION, duration, valid, errors)
 
     def _check_report(self,

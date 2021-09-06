@@ -3,6 +3,7 @@ ShortReport module.
 Implementation of a Short Report common structure.
 """
 from collections import namedtuple
+from typing import List, Mapping
 
 
 # pylint: disable=too-many-arguments
@@ -48,7 +49,7 @@ class ShortReport:
                  data_resource_uri: str,
                  duration: float,
                  valid: bool,
-                 errors: list) -> None:
+                 errors: List[Mapping]) -> None:
         self.val_lib_name = val_lib_name
         self.val_lib_version = val_lib_version
         self.data_resource_uri = data_resource_uri
@@ -61,9 +62,9 @@ class ShortReport:
         Return a dictionary of the attributes.
         """
         report = {
-            "validation_library_name": self.val_lib_name,
-            "validation_library_version": self.val_lib_version,
-            "data_resource_uri": self.data_resource_uri,
+            "validationLibraryName": self.val_lib_name,
+            "validationLibraryVersion": self.val_lib_version,
+            "dataResourceUri": self.data_resource_uri,
             "duration": self.duration,
             "valid": self.valid,
             "errors": self.errors,

@@ -50,9 +50,9 @@ class ShortProfile:
         Return a dictionary of inferred schema.
         """
         schema = {
-            "profiling_library_name": self.pro_lib_name,
-            "profiling_library_version": self.pro_lib_version,
-            "data_resource_uri": self.data_resource_uri,
+            "profilingLibraryName": self.pro_lib_name,
+            "profilingLibraryVersion": self.pro_lib_version,
+            "dataResourceUri": self.data_resource_uri,
             "duration": self.duration,
             "stats": self.stats,
             "fields": self.fields,

@@ -152,10 +152,10 @@ class Run:
         """
         env_data = {
             "platform": platform.platform(),
-            "python_version": platform.python_version(),
-            "cpu_model": platform.processor(),
-            "cpu_core": os.cpu_count(),
-            "ram": str(round(virtual_memory().total / (1024.0 **3)))+" GB"
+            "pythonVersion": platform.python_version(),
+            "cpuModel": platform.processor(),
+            "cpuCore": os.cpu_count(),
+            "ram": str(round(virtual_memory().total / (1024.0 ** 3)))+" GB"
         }
         metadata = self._get_content(env_data)
         self._log_metadata(metadata, self._RUN_ENV)
@@ -484,18 +484,18 @@ class Run:
     # Metadata
 
     def _get_content(self,
-                     cont: Optional[dict] = None) -> dict:
+                     content: Optional[dict] = None) -> dict:
         """
         Return structured content to log.
         """
-        content = {
-            "run_id": self.run_info.run_id,
-            "experiment_id": self.run_info.experiment_id,
-            "experiment_name": self.run_info.experiment_name,
-            "datajudge_version": cfg.DATAJUDGE_VERSION,
-            "contents": cont
+        metadata = {
+            "runId": self.run_info.run_id,
+            "experimentId": self.run_info.experiment_id,
+            "experimentName": self.run_info.experiment_name,
+            "datajudgeVersion": cfg.DATAJUDGE_VERSION,
+            "contents": content
         }
-        return content
+        return metadata
 
     def _log_metadata(self,
                       metadata: dict,
