@@ -90,3 +90,11 @@ export const displayAsPercentage = (value, decimals = 2) => {
     
     return (value * 100).toFixed(dm) + '%';
 }
+
+export const makeFieldObject = (index, label, value) => {
+    return {
+        'index': index,
+        'label': label,
+        'value': value
+    }
+}

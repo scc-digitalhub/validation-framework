@@ -11,15 +11,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 
 import { BackButton } from '../fields/back-button';
-import { CheckProjectAndExperiment, displayAsPercentage, formatBytes, formatDuration } from '../utils/common-functions';
-
-const makeFieldObject = (index, label, value) => {
-    return {
-        'index': index,
-        'label': label,
-        'value': value
-    }
-}
+import { CheckProjectAndExperiment, displayAsPercentage, formatBytes, formatDuration, makeFieldObject } from '../utils/common-functions';
 
 const getListOfMeasurementFields = (stats) => {
     let results = [];

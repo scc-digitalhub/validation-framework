@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import keyBy from 'lodash/keyBy'
 
-import { Datagrid, TextField, NumberField, FunctionField } from 'react-admin';
+import { Datagrid, TextField, NumberField, FunctionField, Button } from 'react-admin';
 import { useQuery, Loading, Error } from 'react-admin';
 import { TopToolbar, SimpleShowLayout, ListContextProvider } from 'react-admin';
 
@@ -11,22 +11,61 @@ import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 
 import { BackButton } from '../fields/back-button';
-import { CheckProjectAndExperiment, formatDuration } from '../utils/common-functions';
+import { CheckProjectAndExperiment, formatDuration, makeFieldObject } from '../utils/common-functions';
 
-const errorsRender = (data) => {
+const errorStatisticsRender = (data) => {
+    if (!data.contents.errors || data.contents.errors.length === 0)
+        return "No errors to compute statistics for.";
+    
+    let errorSeverityCounters = {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0
+    };
+    
+    data.contents.errors.forEach (e => {
+        if (e['severity'] in errorSeverityCounters)
+            errorSeverityCounters[e['severity']]++;
+    });
+    
+    let severityList = [];
+    for (let e in errorSeverityCounters)
+        severityList.push(makeFieldObject(e-1, e, errorSeverityCounters[e]));
+    
+    return (
+        <Card>
+            <ListContextProvider value={{
+                    data: keyBy(severityList, 'index'),
+                    ids: severityList.map(({ index }) => index),
+                    page: 1,
+                    perPage: 50,
+                    currentSort: { field: 'index', order: 'ASC' }
+            }}>
+                <Datagrid>
+                    <TextField source="label" label="Severity level" />
+                    <TextField source="value" label="Count" />
+                </Datagrid>
+            </ListContextProvider>
+        </Card>
+    );
+}
+
+const errorsRenderByCode = (data) => {
     if (!data.contents.errors)
         return null;
     
-    let errorCodeDict = {};
+    let errorDict = {};
     
     data.contents.errors.forEach (e => {
-        if (e['code'] in errorCodeDict) {
-            e['index'] = errorCodeDict[e['code']].count;
-            errorCodeDict[e['code']].count++;
-            errorCodeDict[e['code']].items.push(e);
+        if (e['code'] in errorDict) {
+            e['index'] = errorDict[e['code']].count;
+            errorDict[e['code']].count++;
+            errorDict[e['code']].items.push(e);
         } else {
             e['index'] = 0;
-            errorCodeDict[e['code']] = {
+            errorDict[e['code']] = {
                 count: 1,
                 items: [e]
             }
@@ -34,7 +73,7 @@ const errorsRender = (data) => {
     });
     
     let errorLists = [];
-    for (let e in errorCodeDict) {
+    for (let e in errorDict) {
         errorLists.push(
             <Card>
                 <CardContent>
@@ -45,8 +84,8 @@ const errorsRender = (data) => {
                     <Card>
                         <CardContent>
                             <ListContextProvider value={{
-                                    data: keyBy(errorCodeDict[e].items, 'index'),
-                                    ids: errorCodeDict[e].items.map(({ index }) => index),
+                                    data: keyBy(errorDict[e].items, 'index'),
+                                    ids: errorDict[e].items.map(({ index }) => index),
                                     page: 1,
                                     perPage: 50,
                                     currentSort: { field: 'index', order: 'ASC' }
@@ -64,12 +103,102 @@ const errorsRender = (data) => {
         );
     }
     
-    return (
-        <Card>
-            {errorLists}
+    return (errorLists);
+};
+
+const errorsRenderBySeverity = (data) => {
+    const severityColors = ["00a1ff", "00ff00", "ffff00", "ffb600", "ff0000"];
+    
+    if (!data.contents.errors)
+        return null;
+    
+    let errorDict = {};
+    
+    data.contents.errors.forEach (e => {
+        if (e['severity'] in errorDict) {
+            e['index'] = errorDict[e['severity']].count;
+            errorDict[e['severity']].count++;
+            errorDict[e['severity']].items.push(e);
+        } else {
+            e['index'] = 0;
+            errorDict[e['severity']] = {
+                count: 1,
+                items: [e]
+            }
+        }
+    });
+    
+    let errorLists = [];
+    
+    let i = 5;
+    while (i > 0) {
+        if (i in errorDict) {
+            errorLists.push(
+                <Card style={{ "border": "2px solid #" + severityColors[i-1] }}>
+                    <CardContent>
+                        <Typography class='MuiFormLabel-root' >
+                            Severity: {i}
+                        </Typography>
+                        
+                        <Card>
+                            <CardContent>
+                                <ListContextProvider value={{
+                                        data: keyBy(errorDict[i].items, 'index'),
+                                        ids: errorDict[i].items.map(({ index }) => index),
+                                        page: 1,
+                                        perPage: 50,
+                                        currentSort: { field: 'index', order: 'ASC' }
+                                }}>
+                                    <Datagrid>
+                                        <NumberField label="Record number" source="rowNumber" />
+                                        <TextField source="fieldName" />
+                                        <FunctionField label="Description" render={data => `${data.note}: ${data.description}`} />
+                                    </Datagrid>
+                                </ListContextProvider >
+                            </CardContent>
+                        </Card>
+                    </CardContent>
+                </Card>
+            );
+        }
+        
+        i--;
+    }
+    
+    return (errorLists);
+}
+
+const swapErrorsDisplay = () => {
+    let divBySeverity = document.getElementById("by_severity");
+    let divByCode = document.getElementById("by_code");
+    
+    if (divBySeverity && divByCode) {
+        let display = divBySeverity.style.display;
+        divBySeverity.style.display = divByCode.style.display;
+        divByCode.style.display = display;
+    }
+}
+
+const errorsRender = (data) => {
+    let bySeverity = (
+        <Card id={"by_severity"} style={{ "display": "inline" }}>
+            {errorsRenderBySeverity(data)}
         </Card>
     );
-};
+    let byCode = (
+        <Card id={"by_code"} style={{ "display": "none" }}>
+            {errorsRenderByCode(data)}
+        </Card>
+    );
+    
+    return (
+        <React.Fragment>
+            <Button label="Change display" onClick={swapErrorsDisplay} style={{"margin-bottom": "12px"}}/>
+            {bySeverity}
+            {byCode}
+        </React.Fragment>
+    );
+}
 
 export const ShortReportDetail = props => {
     CheckProjectAndExperiment();
@@ -100,6 +229,7 @@ export const ShortReportDetail = props => {
                     <SimpleShowLayout record={data} resource={resource}>
                         <TextField source="contents.valid" label="Valid" />
                         <FunctionField label="Number of errors" render={data => data.contents.errors.length} />
+                        <FunctionField label="Error statistics" render={errorStatisticsRender} />
                         <TextField source="contents.data_resource_uri" label="Data resource URI" />
                         <FunctionField label="Duration" render={data => formatDuration(data.contents.duration*1000)} />
                         <FunctionField label="Errors" render={errorsRender} />
