@@ -63,7 +63,7 @@ class ShortSchema:
         schema = {
             "validationLibraryName": self.val_lib_name,
             "validationLibraryVersion": self.val_lib_version,
-            "data_resource_uri": self.data_resource_uri,
+            "dataResourceUri": self.data_resource_uri,
             "duration": self.duration,
             "fields": fields,
         }

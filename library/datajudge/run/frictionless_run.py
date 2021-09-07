@@ -91,6 +91,7 @@ class FrictionlessRun(Run):
                     if field.get("name") == error_field:
                         err["severity"] = field.get("errors", {})\
                                                .get("severity", 5)
+                        break
 
         return nmtp(LIB_NAME, LIB_VERSION, duration, valid, errors)
 
