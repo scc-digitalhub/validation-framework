@@ -18,7 +18,7 @@ export const DataResourceDetail = props => {
         type: 'getOne',
         resource: resource,
         payload: {
-            id: props.match.params.run_id
+            id: props.match.params.runId
         }
     });
     

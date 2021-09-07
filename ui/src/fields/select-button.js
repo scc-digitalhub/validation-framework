@@ -29,11 +29,11 @@ export const SelectButton = ({
                 redirect('/project/overview');
                 break;
             case 'experiment':
-                setExperiment(record.experiment_id);
+                setExperiment(record.experimentId);
                 redirect('/experiment/overview');
                 break;
             case 'run':
-                redirect('/run/' + record.run_id + '/overview');
+                redirect('/run/' + record.runId + '/overview');
                 break;
             default:
         }

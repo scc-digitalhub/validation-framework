@@ -18,7 +18,7 @@ export const RunEnvironmentDetail = props => {
         type: 'getOne',
         resource: resource,
         payload: {
-            id: props.match.params.run_id
+            id: props.match.params.runId
         }
     });
     
@@ -38,8 +38,9 @@ export const RunEnvironmentDetail = props => {
                 <CardContent>
                     <SimpleShowLayout record={data} resource={resource}>
                         <TextField source="contents.platform" label="Platform" />
-                        <TextField source="contents.python_version" label="Python version" />
-                        <TextField source="contents.cpu_core" label="Number of CPU cores" />
+                        <TextField source="contents.pythonVersion" label="Python version" />
+                        <TextField source="contents.cpuModel" label="CPU model" />
+                        <TextField source="contents.cpuCore" label="Number of CPU cores" />
                         <FunctionField label="RAM" render={data => formatBytes(data.contents.ram)} />
                     </SimpleShowLayout>
                 </CardContent>

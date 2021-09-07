@@ -59,7 +59,7 @@ public class UiService {
         List<Experiment> documents = experimentRepository.findByProjectIdAndExperimentId(projectId, experimentId);
         if (!documents.isEmpty())
             return documents.get(0);
-        throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ") was not found.");
+        throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ") was not found.");
     }
 
     // RunMetadata
@@ -71,7 +71,7 @@ public class UiService {
         List<RunMetadata> documents = runMetadataRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
-        throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") was not found.");
+        throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");
     }
 
     // ArtifactMetadata
@@ -84,7 +84,7 @@ public class UiService {
         List<DataProfile> documents = dataProfileRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
-        throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") was not found.");
+        throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");
     }
 
     // DataResource
@@ -92,7 +92,7 @@ public class UiService {
         List<DataResource> documents = dataResourceRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
-        throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") was not found.");
+        throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");
     }
 
     // RunEnvironment
@@ -100,7 +100,7 @@ public class UiService {
         List<RunEnvironment> documents = runEnvironmentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
-        throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") was not found.");
+        throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");
     }
 
     // ShortReport
@@ -108,7 +108,7 @@ public class UiService {
         List<ShortReport> documents = shortReportRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
-        throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") was not found.");
+        throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");
     }
 
     // ShortSchema
@@ -116,6 +116,6 @@ public class UiService {
         List<ShortSchema> documents = shortSchemaRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
-        throw new DocumentNotFoundException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") was not found.");
+        throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");
     }
 }

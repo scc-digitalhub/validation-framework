@@ -23,9 +23,9 @@ const ListActions = (props) => {
 }
 
 const getStatus = (data) => {
-    if (data.contents.end_status)
-        return data.contents.end_status;
-    return data.contents.begin_status;
+    if (data.contents.endStatus)
+        return data.contents.endStatus;
+    return data.contents.beginStatus;
 }
 
 const getDuration = (data) => {
@@ -50,10 +50,10 @@ export const RunMetadataList = (props) => {
     return (
         <List {...props} perPage={50} pagination={false} actions={<ListActions />}>
             <Datagrid rowClick="">
-                <TextField source="run_id" label="Run ID"/>
+                <TextField source="runId" label="Run ID"/>
                 <DateField source="created" showTime={true} />
-                <TextField source="contents.end_status" label="End status" />
-                <TextField source="contents.validation_library_name" label="Validation library" />
+                <TextField source="contents.endStatus" label="End status" />
+                <TextField source="contents.validationLibraryName" label="Validation library" />
                 <SelectButton />
             </Datagrid>
         </List>
@@ -68,7 +68,7 @@ export const RunMetadataOverview = props => {
         type: 'getOne',
         resource: resource,
         payload: {
-            id: props.match.params.run_id
+            id: props.match.params.runId
         }
     });
 
@@ -81,7 +81,7 @@ export const RunMetadataOverview = props => {
     
     return (
         <React.Fragment>
-            <Title title={data.run_id} />
+            <Title title={data.runId} />
             <TopToolbar>
                 <BackButton resource={resource} clear={true} />
             </TopToolbar>
@@ -89,20 +89,20 @@ export const RunMetadataOverview = props => {
                 <CardContent>
                     <React.Fragment>
                         <SimpleShowLayout record={data} resource={resource}>
-                            <FunctionField label="Run ID" render={data => <h1> {data.run_id} </h1>} />
+                            <FunctionField label="Run ID" render={data => <h1> {data.runId} </h1>} />
                             <FunctionField label="Status" render={getStatus} />
                             <FunctionField label="Duration" render={getDuration} />
-                            <TextField source="contents.run_metadata_uri" label="Run metadata URI" />
-                            <TextField source="contents.run_artifacts_uri" label="Run artifacts URI " />
-                            <TextField source="contents.data_resource_uri" label="Data resource URI" />
-                            <TextField source="contents.validation_library_name" label="Validation library" />
-                            <TextField source="contents.validation_library_version" label="Validation library version" />
-                            <TextField source="contents.profiling_library_name" label="Profiling library version" />
-                            <TextField source="contents.profiling_library_version" label="Profiling library version" />
+                            <TextField source="contents.runMetadataUri" label="Run metadata URI" />
+                            <TextField source="contents.runArtifactsUri" label="Run artifacts URI " />
+                            <TextField source="contents.dataResourceUri" label="Data resource URI" />
+                            <TextField source="contents.validationLibraryName" label="Validation library" />
+                            <TextField source="contents.validationLibraryVersion" label="Validation library version" />
+                            <TextField source="contents.profilingLibraryName" label="Profiling library version" />
+                            <TextField source="contents.profilingLibraryVersion" label="Profiling library version" />
                             <TextField source="contents.created" label="created" />
-                            <TextField source="contents.begin_status" label="begin_status" />
+                            <TextField source="contents.beginStatus" label="beginStatus" />
                             <TextField source="contents.started" label="started" />
-                            <TextField source="contents.end_status" label="end_status" />
+                            <TextField source="contents.endStatus" label="endStatus" />
                             <TextField source="contents.finished" label="finished" />
                         </SimpleShowLayout>
                     </React.Fragment>
@@ -111,7 +111,7 @@ export const RunMetadataOverview = props => {
                 <Toolbar>
                     <MenuItemLink
                         key='artifact-metadata'
-                        to={`/run/${data.run_id}/artifact-metadata`}
+                        to={`/run/${data.runId}/artifact-metadata`}
                         primaryText='ArtifactMetadata'
                         leftIcon={<ListIcon />}
                         //onClick={onMenuClick}
@@ -119,7 +119,7 @@ export const RunMetadataOverview = props => {
                     />
                     <MenuItemLink
                         key='data-profile'
-                        to={`/run/${data.run_id}/data-profile`}
+                        to={`/run/${data.runId}/data-profile`}
                         primaryText='Data profile'
                         leftIcon={<ShortTextIcon />}
                         //onClick={onMenuClick}
@@ -127,7 +127,7 @@ export const RunMetadataOverview = props => {
                     />
                     <MenuItemLink
                         key='data-resource'
-                        to={`/run/${data.run_id}/data-resource`}
+                        to={`/run/${data.runId}/data-resource`}
                         primaryText='Data resource'
                         leftIcon={<ShortTextIcon />}
                         //onClick={onMenuClick}
@@ -135,7 +135,7 @@ export const RunMetadataOverview = props => {
                     />
                     <MenuItemLink
                         key='run-environment'
-                        to={`/run/${data.run_id}/run-environment`}
+                        to={`/run/${data.runId}/run-environment`}
                         primaryText='Run environment'
                         leftIcon={<ShortTextIcon />}
                         //onClick={onMenuClick}
@@ -143,7 +143,7 @@ export const RunMetadataOverview = props => {
                     />
                     <MenuItemLink
                         key='short-report'
-                        to={`/run/${data.run_id}/short-report`}
+                        to={`/run/${data.runId}/short-report`}
                         primaryText='Short report'
                         leftIcon={<ShortTextIcon />}
                         //onClick={onMenuClick}
@@ -151,7 +151,7 @@ export const RunMetadataOverview = props => {
                     />
                     <MenuItemLink
                         key='short-report'
-                        to={`/run/${data.run_id}/short-schema`}
+                        to={`/run/${data.runId}/short-schema`}
                         primaryText='Short schema'
                         leftIcon={<ShortTextIcon />}
                         //onClick={onMenuClick}

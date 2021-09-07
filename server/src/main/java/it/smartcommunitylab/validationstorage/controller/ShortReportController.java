@@ -38,8 +38,8 @@ public class ShortReportController {
 
     @GetMapping("/{projectId}/" + ValidationStorageUtils.SHORT_REPORT)
     public ResponseEntity<List<ShortReport>> findDocuments(@PathVariable String projectId,
-            @RequestParam("experiment_id") Optional<String> experimentId,
-            @RequestParam("run_id") Optional<String> runId,
+            @RequestParam("experimentId") Optional<String> experimentId,
+            @RequestParam("runId") Optional<String> runId,
             @RequestParam("search") Optional<String> search) {
         return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
     }
@@ -62,8 +62,8 @@ public class ShortReportController {
 
     @DeleteMapping("/{projectId}/" + ValidationStorageUtils.SHORT_REPORT)
     public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
-            @RequestParam("experiment_id") Optional<String> experimentId,
-            @RequestParam("run_id") Optional<String> runId) {
+            @RequestParam("experimentId") Optional<String> experimentId,
+            @RequestParam("runId") Optional<String> runId) {
         documentService.deleteDocumentsByProjectId(projectId, experimentId, runId);
         return ResponseEntity.ok().build();
     }

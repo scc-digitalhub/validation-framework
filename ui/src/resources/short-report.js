@@ -208,7 +208,7 @@ export const ShortReportDetail = props => {
         type: 'getOne',
         resource: resource,
         payload: {
-            id: props.match.params.run_id
+            id: props.match.params.runId
         }
     });
     
@@ -230,7 +230,7 @@ export const ShortReportDetail = props => {
                         <TextField source="contents.valid" label="Valid" />
                         <FunctionField label="Number of errors" render={data => data.contents.errors.length} />
                         <FunctionField label="Error statistics" render={errorStatisticsRender} />
-                        <TextField source="contents.data_resource_uri" label="Data resource URI" />
+                        <TextField source="contents.dataResourceUri" label="Data resource URI" />
                         <FunctionField label="Duration" render={data => formatDuration(data.contents.duration*1000)} />
                         <FunctionField label="Errors" render={errorsRender} />
                     </SimpleShowLayout>

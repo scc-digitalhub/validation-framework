@@ -39,7 +39,7 @@ public class ExperimentController {
 
     @GetMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT)
     public ResponseEntity<List<Experiment>> findDocuments(@PathVariable String projectId,
-            @RequestParam("experiment_id") Optional<String> experimentId,
+            @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("search") Optional<String> search) {
         return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, search));
     }
@@ -62,7 +62,7 @@ public class ExperimentController {
 
     @DeleteMapping("/{projectId}/" + ValidationStorageUtils.EXPERIMENT)
     public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
-            @RequestParam("experiment_id") Optional<String> experimentId) {
+            @RequestParam("experimentId") Optional<String> experimentId) {
         documentService.deleteDocumentsByProjectId(projectId, experimentId);
         return ResponseEntity.ok().build();
     }

@@ -38,8 +38,8 @@ public class RunEnvironmentController {
 
     @GetMapping("/{projectId}/" + ValidationStorageUtils.RUN_ENVIRONMENT)
     public ResponseEntity<List<RunEnvironment>> findDocuments(@PathVariable String projectId,
-            @RequestParam("experiment_id") Optional<String> experimentId,
-            @RequestParam("run_id") Optional<String> runId,
+            @RequestParam("experimentId") Optional<String> experimentId,
+            @RequestParam("runId") Optional<String> runId,
             @RequestParam("search") Optional<String> search) {
         return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
     }
@@ -62,8 +62,8 @@ public class RunEnvironmentController {
 
     @DeleteMapping("/{projectId}/" + ValidationStorageUtils.RUN_ENVIRONMENT)
     public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
-            @RequestParam("experiment_id") Optional<String> experimentId,
-            @RequestParam("run_id") Optional<String> runId) {
+            @RequestParam("experimentId") Optional<String> experimentId,
+            @RequestParam("runId") Optional<String> runId) {
         documentService.deleteDocumentsByProjectId(projectId, experimentId, runId);
         return ResponseEntity.ok().build();
     }

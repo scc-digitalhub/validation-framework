@@ -77,7 +77,7 @@ public class ArtifactMetadataService {
         String uri = request.getUri();
 
         if ((ObjectUtils.isEmpty(experimentId)) || (ObjectUtils.isEmpty(runId)) || (ObjectUtils.isEmpty(name)) || (ObjectUtils.isEmpty(uri)))
-            throw new IllegalArgumentException("Fields 'experiment_id', 'run_id', 'name', 'uri' are required and cannot be blank.");
+            throw new IllegalArgumentException("Fields 'experimentId', 'runId', 'name', 'uri' are required and cannot be blank.");
 
         ArtifactMetadata documentToSave = new ArtifactMetadata(projectId, experimentId, runId, name, uri);
 

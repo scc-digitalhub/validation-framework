@@ -38,8 +38,8 @@ public class DataResourceController {
 
     @GetMapping("/{projectId}/" + ValidationStorageUtils.DATA_RESOURCE)
     public ResponseEntity<List<DataResource>> findDocuments(@PathVariable String projectId,
-            @RequestParam("experiment_id") Optional<String> experimentId,
-            @RequestParam("run_id") Optional<String> runId,
+            @RequestParam("experimentId") Optional<String> experimentId,
+            @RequestParam("runId") Optional<String> runId,
             @RequestParam("search") Optional<String> search) {
         return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
     }
@@ -62,8 +62,8 @@ public class DataResourceController {
 
     @DeleteMapping("/{projectId}/" + ValidationStorageUtils.DATA_RESOURCE)
     public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
-            @RequestParam("experiment_id") Optional<String> experimentId,
-            @RequestParam("run_id") Optional<String> runId) {
+            @RequestParam("experimentId") Optional<String> experimentId,
+            @RequestParam("runId") Optional<String> runId) {
         documentService.deleteDocumentsByProjectId(projectId, experimentId, runId);
         return ResponseEntity.ok().build();
     }

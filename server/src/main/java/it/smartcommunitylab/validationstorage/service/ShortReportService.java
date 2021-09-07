@@ -75,10 +75,10 @@ public class ShortReportService {
         String runId = request.getRunId();
 
         if ((ObjectUtils.isEmpty(experimentId)) || (ObjectUtils.isEmpty(runId)))
-            throw new IllegalArgumentException("Fields 'experiment_id', 'run_id' are required and cannot be blank.");
+            throw new IllegalArgumentException("Fields 'experimentId', 'runId' are required and cannot be blank.");
 
         if (!(documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId).isEmpty()))
-            throw new DocumentAlreadyExistsException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ", run_id=" + runId + ") already exists.");
+            throw new DocumentAlreadyExistsException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") already exists.");
 
         ShortReport documentToSave = new ShortReport(projectId, experimentId, runId);
 
@@ -136,7 +136,7 @@ public class ShortReportService {
         String experimentId = request.getExperimentId();
         String runId = request.getRunId();
         if ((experimentId != null && !(experimentId.equals(document.getExperimentId()))) || (runId != null && (!runId.equals(document.getRunId()))))
-            throw new IllegalArgumentException("A value was specified for experiment_id and/or run_id, but they do not match the values in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
+            throw new IllegalArgumentException("A value was specified for experimentId and/or runId, but they do not match the values in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
 
         document.setExperimentName(request.getExperimentName());
         document.setContents(request.getContents());

@@ -26,7 +26,7 @@ export const ArtifactMetadataList = (props) => {
         type: 'getList',
         resource: resource,
         payload: {
-            id: props.match.params.run_id,
+            id: props.match.params.runId,
             pagination: {
                 page: 1,
                 perPage: 50
@@ -42,7 +42,7 @@ export const ArtifactMetadataList = (props) => {
     if (error) return <Error error={error} />;
     if (!data) return null;
     
-    const basePath = '/run/' + props.match.params.run_id + '/artifact-metadata';
+    const basePath = '/run/' + props.match.params.runId + '/artifact-metadata';
     
     return (
         <React.Fragment>

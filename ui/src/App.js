@@ -23,13 +23,13 @@ import { AppContext } from './contexts/app-context';
 const customRoutes = [
     <Route exact path="/project/overview" component={ProjectOverview} />,
     <Route exact path="/experiment/overview" component={ExperimentOverview} />,
-    <Route exact path="/run/:run_id/overview" component={RunMetadataOverview} />,
-    <Route exact path="/run/:run_id/artifact-metadata" component={ArtifactMetadataList} />,
-    <Route exact path="/run/:run_id/data-profile" component={DataProfileDetail} />,
-    <Route exact path="/run/:run_id/data-resource" component={DataResourceDetail} />,
-    <Route exact path="/run/:run_id/run-environment" component={RunEnvironmentDetail} />,
-    <Route exact path="/run/:run_id/short-report" component={ShortReportDetail} />,
-    <Route exact path="/run/:run_id/short-schema" component={ShortSchemaDetail} />
+    <Route exact path="/run/:runId/overview" component={RunMetadataOverview} />,
+    <Route exact path="/run/:runId/artifact-metadata" component={ArtifactMetadataList} />,
+    <Route exact path="/run/:runId/data-profile" component={DataProfileDetail} />,
+    <Route exact path="/run/:runId/data-resource" component={DataResourceDetail} />,
+    <Route exact path="/run/:runId/run-environment" component={RunEnvironmentDetail} />,
+    <Route exact path="/run/:runId/short-report" component={ShortReportDetail} />,
+    <Route exact path="/run/:runId/short-schema" component={ShortSchemaDetail} />
 ]
 
 let currentProject = null;

@@ -34,8 +34,8 @@ export const ExperimentList = (props) => {
     return (
         <List {...props} perPage={50} pagination={false} actions={<ListActions />}>
             <Datagrid rowClick="">
-                <TextField source="experiment_id" label="Experiment ID" />
-                <TextField source="experiment_name" label="Name" />
+                <TextField source="experimentId" label="Experiment ID" />
+                <TextField source="experimentName" label="Name" />
                 <SelectButton />
             </Datagrid>
         </List>
@@ -62,7 +62,7 @@ export const ExperimentOverview = props => {
     
     return (
         <div>
-            <Title title={data.experiment_name} />
+            <Title title={data.experimentName} />
             <TopToolbar>
                 <BackButton resource='experiment' clear={true} />
             </TopToolbar>
@@ -70,8 +70,8 @@ export const ExperimentOverview = props => {
                 <CardContent>
                     <React.Fragment>
                         <SimpleShowLayout record={data} resource={resource}>
-                            <FunctionField label="Name" render={data => <h1> {data.experiment_name} </h1>} />
-                            <TextField source="experiment_id" label="Experiment ID" />
+                            <FunctionField label="Name" render={data => <h1> {data.experimentName} </h1>} />
+                            <TextField source="experimentId" label="Experiment ID" />
                             <TextField source="id" label="ID" />
                         </SimpleShowLayout>
                     </React.Fragment>

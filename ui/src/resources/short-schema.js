@@ -51,7 +51,7 @@ export const ShortSchemaDetail = props => {
         type: 'getOne',
         resource: resource,
         payload: {
-            id: props.match.params.run_id
+            id: props.match.params.runId
         }
     });
     
@@ -71,7 +71,7 @@ export const ShortSchemaDetail = props => {
                 <CardContent>
                     <SimpleShowLayout record={data} resource={resource}>
                         <FunctionField label="Duration" render={data => formatDuration(data.contents.duration*1000)} />
-                        <TextField source="contents.data_resource_uri" label="Data resource URI" />
+                        <TextField source="contents.dataResourceUri" label="Data resource URI" />
                         <FunctionField label="Schema" render={renderSchema} />
                     </SimpleShowLayout>
                 </CardContent>

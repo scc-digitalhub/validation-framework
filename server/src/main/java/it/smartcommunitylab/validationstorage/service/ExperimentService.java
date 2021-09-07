@@ -89,7 +89,7 @@ public class ExperimentService {
             throw new IllegalArgumentException("Field 'experiment_id' is required and cannot be blank.");
 
         if (!(documentRepository.findByProjectIdAndExperimentId(projectId, experimentId).isEmpty()))
-            throw new DocumentAlreadyExistsException("Document (project_id=" + projectId + ", experiment_id=" + experimentId + ") already exists.");
+            throw new DocumentAlreadyExistsException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ") already exists.");
 
         Experiment documentToSave = new Experiment(projectId, experimentId);
 
@@ -138,7 +138,7 @@ public class ExperimentService {
 
         String experimentId = request.getExperimentId();
         if (experimentId != null && !(experimentId.equals(document.getExperimentId())))
-            throw new IllegalArgumentException("A value was specified for experiment_id, but does not match the value in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
+            throw new IllegalArgumentException("A value was specified for experimentId, but does not match the value in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
 
         document.setExperimentName(request.getExperimentName());
 
