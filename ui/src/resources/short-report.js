@@ -134,7 +134,7 @@ const errorsRenderBySeverity = (data) => {
     while (i > 0) {
         if (i in errorDict) {
             errorLists.push(
-                <Card style={{ "border": "2px solid #" + severityColors[i-1] }}>
+                <Card style={{ "margin-bottom": "20px", "border": "2px solid #" + severityColors[i-1] }}>
                     <CardContent>
                         <Typography class='MuiFormLabel-root' >
                             Severity: {i}
