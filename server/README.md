@@ -167,20 +167,20 @@ Lists all projects, but if authentication is enabled, only those the authenticat
 
 #### Get project by ID (GET):
 ```
-localhost:8200/api/project/<project_id>
+localhost:8200/api/project/<projectId>
 ```
-* `project_id` - Path variable, ID of the project.
+* `projectId` - Path variable, ID of the project.
 
 ---
 
 #### Update a project (PUT):
 ```
-localhost:8200/api/project/<project_id>
+localhost:8200/api/project/<projectId>
 ```
-* `project_id` - Path variable, ID of the project.
+* `projectId` - Path variable, ID of the project.
 
 Contents of the body:
-* `id` -*Optional*, ID of the project. This value can't actually be updated. If specified, the back-end will check that it matches the `project_id` specified as path variable. Consider this an extra measure to ensure you're updating the correct document.
+* `id` -*Optional*, ID of the project. This value can't actually be updated. If specified, the back-end will check that it matches the `projectId` specified as path variable. Consider this an extra measure to ensure you're updating the correct document.
 * `name` - *Optional*, updated name of the project.
 
 Example:
@@ -195,9 +195,9 @@ Example:
 
 #### Delete a project:
 ```
-localhost:8200/api/project/<project_id>
+localhost:8200/api/project/<projectId>
 ```
-* `project_id` - Path variable, ID of the project.
+* `projectId` - Path variable, ID of the project.
 Note that **all documents of other types under this project will also be deleted**.
 
 ---
@@ -217,41 +217,41 @@ You do not actually need to create `experiment` documents. When documents of typ
 For completeness, there is still an end-point for this, which you can use as follows if you'd like.
 
 ```
-localhost:8200/api/project/<project_id/experiment
+localhost:8200/api/project/<projectId>/experiment
 ```
-* `project_id` - Path variable, ID of the project.
+* `projectId` - Path variable, ID of the project.
 
 Contents of the body:
-* `experiment_id` -**Mandatory**, ID of the experiment. Note it is only unique within the project it belongs to.
-* `experiment_name` - *Optional*, name of the experiment.
+* `experimentId` -**Mandatory**, ID of the experiment. Note it is only unique within the project it belongs to.
+* `experimentName` - *Optional*, name of the experiment.
 
 Example:
 ```
 {
-  "experiment_id": "exp1",
-  "experiment_name": "Exp 1"
+  "experimentId": "exp1",
+  "experimentName": "Exp 1"
 }
 ```
 
 #### run-metadata
 ```
-localhost:8200/api/project/<project_id>/run-metadata?overwrite=<true_or_false>
+localhost:8200/api/project/<projectId>/run-metadata?overwrite=<true_or_false>
 ```
-* `project_id` - Path variable, ID of the project.
+* `projectId` - Path variable, ID of the project.
 * `overwrite` - *Optional* parameter, ID of the project.
 
 Contents of the body:
-* `experiment_id` - **Mandatory**, ID of the experiment.
-* `run_id` - **Mandatory** ID of the run. Note it is only unique within the project and experiment it belongs to.
-* `experiment_name` - *Optional*, name of the experiment.
+* `experimentId` - **Mandatory**, ID of the experiment.
+* `runId` - **Mandatory** ID of the run. Note it is only unique within the project and experiment it belongs to.
+* `experimentName` - *Optional*, name of the experiment.
 * `contents` - *Optional*, any object, can contain any valid JSON.
 
 Example:
 ```
 {
-  "experiment_id": "exp1",
-	"experiment_name": "Exp 1",
-	"run_id": "run1",
+  "experimentId": "exp1",
+	"experimentName": "Exp 1",
+	"runId": "run1",
 	"contents": {
 		"a":"aaa",
 		"b":"bbb"
@@ -261,30 +261,30 @@ Example:
 
 This document represents a run, which is why it presents a `overwrite` parameter.
 
-If `overwrite` is specified and set to `true`, it will generate the document and delete (if found) the previous `run-metadata` document that matches the same combination of `project_id`, `experiment_id` and `run_id`.
+If `overwrite` is specified and set to `true`, it will generate the document and delete (if found) the previous `run-metadata` document that matches the same combination of `projectId`, `experimentId` and `runId`.
 
 All documents of other types that match this combination will also be deleted. As you'd expect, `project` and `experiment` documents will be unaffected, as they reside above `run-metadata`.
 
-If `overwrite` is not specified, or set to `false`, and a document with the same `project_id`, `experiment_id` and `run_id` already exists, it will just result in an error.
+If `overwrite` is not specified, or set to `false`, and a document with the same `projectId`, `experimentId` and `runId` already exists, it will just result in an error.
 
 #### artifact-metadata
 ```
-localhost:8200/api/project/<project_id>/artifact-metadata
+localhost:8200/api/project/<projectId>/artifact-metadata
 ```
-* `project_id` - Path variable, ID of the project.
+* `projectId` - Path variable, ID of the project.
 
 Contents of the body:
-* `experiment_id` - **Mandatory**, ID of the experiment.
-* `run_id` - **Mandatory**, ID of the run.
+* `experimentId` - **Mandatory**, ID of the experiment.
+* `runId` - **Mandatory**, ID of the run.
 * `name` - **Mandatory**, name of the file.
 * `uri` - **Mandatory**, location of the file.
-* `experiment_name` - *Optional*, name of the experiment.
+* `experimentName` - *Optional*, name of the experiment.
 
 Example:
 ```
 {
-  "experiment_id":"experiment_validation",
-  "run_id":"c51dbaf523e943c099b11a53a38e6a4f",
+  "experimentId":"experiment_validation",
+  "runId":"c51dbaf523e943c099b11a53a38e6a4f",
   "name": "file.sample",
   "uri":"a/b/c"
 }
@@ -294,23 +294,23 @@ No error will occur for `artifact-metadata` if other documents contain the same 
 
 #### data-profile, data-resource, run-environment, short-report, short-schema
 ```
-localhost:8200/api/project/<project_id>/<document_type>
+localhost:8200/api/project/<projectId>/<document-type>
 ```
-* `project_id` - Path variable, ID of the project.
-* `document_type` - Path variable, `data-profile`, `data-resource`, `run-environment`, `short-report` or `short-schema`. These documents behave identically.
+* `projectId` - Path variable, ID of the project.
+* `document-type` - Path variable, `data-profile`, `data-resource`, `run-environment`, `short-report` or `short-schema`. These documents behave identically.
 
 Contents of the body:
-* `experiment_id` - **Mandatory**, ID of the experiment.
-* `run_id` - **Mandatory**, ID of the run.
-* `experiment_name` - *Optional*, name of the experiment.
+* `experimentId` - **Mandatory**, ID of the experiment.
+* `runId` - **Mandatory**, ID of the run.
+* `experimentName` - *Optional*, name of the experiment.
 * `contents` - *Optional*, any object, can contain any valid JSON.
 
 Example:
 ```
 {
-  "experiment_id": "exp1",
-  "experiment_name": "some_experiment",
-  "run_id": "run1",
+  "experimentId": "exp1",
+  "experimentName": "some_experiment",
+  "runId": "run1",
   "contents": {
     "a":"aaa",
     "b":"bbb"
@@ -318,50 +318,50 @@ Example:
 }
 ```
 
-If a document already exists with the same `project_id`, `experiment_id` and `run_id`, it will result in an error.
+If a document already exists with the same `projectId`, `experimentId` and `runId`, it will result in an error.
 
 ---
 
 ### Get document by ID (GET):
 
 ```
-localhost:8200/api/project/<project_id>/data-resource/<document_id>
+localhost:8200/api/project/<projectId>/data-resource/<documentId>
 ```
-* `project_id` - Path variable, ID of the project the document belongs to. If it does not match the project ID contained in the document, it will result in error.
-* `document_id` - Path variable, ID of the document you wish to retrieve.
+* `projectId` - Path variable, ID of the project the document belongs to. If it does not match the project ID contained in the document, it will result in error.
+* `documentId` - Path variable, ID of the document you wish to retrieve.
 
 ---
 
 ### Get documents by project ID (GET)
 ```
-localhost:8200/api/project/<project_id>/data-resource?experiment_id=<experiment_id>&run_id=<run_id>&search=<search>
+localhost:8200/api/project/<projectId>/data-resource?experimentId=<experimentId>&runId=<runId>&search=<search>
 ```
-* `project_id` - Path variable, ID of the project.
-* `experiment_id` - *Optional* parameter, ID of the experiment.
-* `run_id` - *Optional* parameter, ID of the run. Unused for documents of type `experiment`.
-* `search` - *Optional* parameter, a case-insensitive, diacritics-insensitive keyword to filter results by. Looks for a match in the `experiment_name` field of entries. For `artifact-metadata` documents only, the match may also be found in the `name` field instead.
+* `projectId` - Path variable, ID of the project.
+* `experimentId` - *Optional* parameter, ID of the experiment.
+* `runId` - *Optional* parameter, ID of the run. Unused for documents of type `experiment`.
+* `search` - *Optional* parameter, a case-insensitive, diacritics-insensitive keyword to filter results by. Looks for a match in the `experimentName` field of entries. For `artifact-metadata` documents only, the match may also be found in the `name` field instead.
 
 ---
 
 ### Update document (PUT)
 ```
-localhost:8200/api/project/<project_id>/data-resource/<document_id>
+localhost:8200/api/project/<projectId>/data-resource/<documentId>
 ```
-* `project_id` - Path variable, ID of the project the document belongs to. If it does not match the project ID contained in the document, it will result in error.
-* `document_id` - Path variable, ID of the document you wish to update.
+* `projectId` - Path variable, ID of the project the document belongs to. If it does not match the project ID contained in the document, it will result in error.
+* `documentId` - Path variable, ID of the document you wish to update.
 
 The content of the body follows the same structure as the endpoint for creation, but no fields are mandatory.
 
-For any document except `artifact-metadata`: `experiment_id` and `run_id` cannot be changed, but if specified, the back-end will check that they indeed match the values of the document with the specified ID, and return an error if they don't.
+For any document except `artifact-metadata`: `experimentId` and `runId` cannot be changed, but if specified, the back-end will check that they indeed match the values of the document with the specified ID, and return an error if they don't.
 
 ---
 
 ### Delete document by ID (DELETE)
 ```
-localhost:8200/api/project/<project_id>/data-resource/<document_id>
+localhost:8200/api/project/<projectId>/data-resource/<documentId>
 ```
-* `project_id` - Path variable, ID of the project the document belongs to. If it does not match the project ID contained in the document, it will result in error.
-* `document_id` - Path variable, ID of the document you wish to delete.
+* `projectId` - Path variable, ID of the project the document belongs to. If it does not match the project ID contained in the document, it will result in error.
+* `documentId` - Path variable, ID of the document you wish to delete.
 
 Keep in mind that if an `experiment` document is deleted, all related documents of types under it will also be deleted. As you'd expect, `project` documents will be unaffected, as they reside above `experiment`.
 
@@ -369,11 +369,11 @@ Keep in mind that if an `experiment` document is deleted, all related documents 
 
 ### Delete documents by project ID (DELETE)
 ```
-localhost:8200/api/project/<project_id>/data-resource?experiment_id=<experiment_id>&run_id=<run_id>
+localhost:8200/api/project/<projectId>/data-resource?experimentId=<experimentId>&runId=<runId>
 ```
-* `project_id` - Path variable, ID of the project.
-* `experiment_id` - *Optional* parameter, ID of the experiment.
-* `run_id` - *Optional* parameter, ID of the run. Unused for documents of type `experiment`.
+* `projectId` - Path variable, ID of the project.
+* `experimentId` - *Optional* parameter, ID of the experiment.
+* `runId` - *Optional* parameter, ID of the run. Unused for documents of type `experiment`.
 
 Keep in mind that if an `experiment` document is deleted, all related documents of types under it will also be deleted. As you'd expect, `project` documents will be unaffected, as they reside above `experiment`.
 
