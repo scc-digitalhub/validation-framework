@@ -14,6 +14,7 @@ import { BackButton } from '../fields/back-button';
 import { CheckProjectAndExperiment, formatDuration, makeFieldObject } from '../utils/common-functions';
 
 import { ToggleWithLabels } from '../components/toggle-with-labels';
+import { SeverityIndicator } from '../components/severity_indicator';
 
 const errorStatisticsRender = (data) => {
     if (!data.contents.errors || data.contents.errors.length === 0)
@@ -138,9 +139,10 @@ const errorsRenderBySeverity = (data) => {
             errorLists.push(
                 <Card style={{ "margin-bottom": "20px", "border": "2px solid #" + severityColors[i-1] }}>
                     <CardContent>
-                        <Typography class='MuiFormLabel-root' >
+                        <Typography class='MuiFormLabel-root' style={{"float": "left"}}>
                             Severity: {i}
                         </Typography>
+                        <SeverityIndicator level={i}/>
                         
                         <Card>
                             <CardContent>
