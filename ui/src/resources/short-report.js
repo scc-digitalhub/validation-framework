@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import keyBy from 'lodash/keyBy'
 
-import { Datagrid, TextField, NumberField, FunctionField, Button } from 'react-admin';
+import { Datagrid, TextField, NumberField, FunctionField } from 'react-admin';
 import { useQuery, Loading, Error } from 'react-admin';
 import { TopToolbar, SimpleShowLayout, ListContextProvider } from 'react-admin';
 
@@ -12,6 +12,8 @@ import Typography from '@material-ui/core/Typography';
 
 import { BackButton } from '../fields/back-button';
 import { CheckProjectAndExperiment, formatDuration, makeFieldObject } from '../utils/common-functions';
+
+import { ToggleWithLabels } from '../components/toggle-with-labels';
 
 const errorStatisticsRender = (data) => {
     if (!data.contents.errors || data.contents.errors.length === 0)
@@ -193,7 +195,8 @@ const errorsRender = (data) => {
     
     return (
         <React.Fragment>
-            <Button label="Change display" onClick={swapErrorsDisplay} style={{"margin-bottom": "12px"}}/>
+            <ToggleWithLabels toggleName="groupErrorsBy" leftLabel="By severity" rightLabel="By type" handleToggle={swapErrorsDisplay} />
+            <br/><br/>
             {bySeverity}
             {byCode}
         </React.Fragment>
