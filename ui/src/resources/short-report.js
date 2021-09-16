@@ -142,7 +142,7 @@ const errorsRenderBySeverity = (data) => {
                         <Typography class='MuiFormLabel-root' style={{"float": "left"}}>
                             Severity: {i}
                         </Typography>
-                        <SeverityIndicator level={i}/>
+                        <SeverityIndicator level={i} color={severityColors[i-1]}/>
                         
                         <Card>
                             <CardContent>

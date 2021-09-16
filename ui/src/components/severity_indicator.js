@@ -2,7 +2,8 @@ import * as React from 'react';
 import './severity_indicator.css';
 
 export const SeverityIndicator = ({
-    level
+    level,
+    color
 }) => {
     let toFill = 0;
     if (level > 0)
@@ -10,12 +11,17 @@ export const SeverityIndicator = ({
     
     let i = 1;
     let notches = [];
-    let classToPush = "severity_notch severity_notch_filled";
+    const emptyClass = "severity_notch severity_notch_empty";
+    const filledClass = "severity_notch severity_notch_filled";
+    const filledStyle = {
+        "background-color": "#" + color,
+        "border-color": "#" + color
+    };
     while (i <= 5) {
         if (i > toFill)
-            classToPush = "severity_notch severity_notch_empty";
-        
-        notches.push(<span className={classToPush}></span>);
+            notches.push(<span className={emptyClass}></span>);
+        else
+            notches.push(<span className={filledClass} style={filledStyle}></span>);
         
         i++;
     }
