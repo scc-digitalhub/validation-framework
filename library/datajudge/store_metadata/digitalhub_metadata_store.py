@@ -84,7 +84,7 @@ class DigitalHubMetadataStore(MetadataStore):
         key = None
         if src_type != self._ARTIFACT_METADATA:
             for elm in self._key_vault[src_type]:
-                if elm.run_id == metadata["run_id"]:
+                if elm.run_id == metadata["runId"]:
                     key = elm.key
         dst = self._build_source_destination(dst, src_type, key)
         kwargs = {
@@ -130,7 +130,7 @@ class DigitalHubMetadataStore(MetadataStore):
             raise j_err
 
         # Get ids (run id + id stored in backend)
-        run_id = resp.get("run_id")
+        run_id = resp.get("runId")
         id_ = resp.get("id")
 
         # Check and store key pairs in key_vault
