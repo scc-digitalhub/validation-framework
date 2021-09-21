@@ -114,7 +114,7 @@ const CustomMenu = ({ onMenuClick, logout }) => {
                     <MenuItemLink
                         key={'artifact-metadata'}
                         to={`/run/${currentRun}/artifact-metadata`}
-                        primaryText='ArtifactMetadata'
+                        primaryText='Artifact metadata'
                         leftIcon={<ListIcon />}
                         onClick={onMenuClick}
                     />
