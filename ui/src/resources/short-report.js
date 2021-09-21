@@ -11,7 +11,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 
 import { BackButton } from '../fields/back-button';
-import { CheckProjectAndExperiment, formatDuration, makeFieldObject } from '../utils/common-functions';
+import { CheckProjectAndExperiment, formatDuration, makeFieldObject, normalizeSeverity } from '../utils/common-functions';
 
 import { ToggleWithLabels } from '../components/toggle-with-labels';
 import { SeverityIndicator } from '../components/severity_indicator';
@@ -29,8 +29,7 @@ const errorStatisticsRender = (data) => {
     };
     
     data.contents.errors.forEach (e => {
-        if (e['severity'] in errorSeverityCounters)
-            errorSeverityCounters[e['severity']]++;
+        errorSeverityCounters[normalizeSeverity(e['severity'])]++;
     });
     
     let severityList = [];
@@ -118,13 +117,14 @@ const errorsRenderBySeverity = (data) => {
     let errorDict = {};
     
     data.contents.errors.forEach (e => {
-        if (e['severity'] in errorDict) {
-            e['index'] = errorDict[e['severity']].count;
-            errorDict[e['severity']].count++;
-            errorDict[e['severity']].items.push(e);
+        let severity = normalizeSeverity(e['severity']);
+        if (severity in errorDict) {
+            e['index'] = errorDict[severity].count;
+            errorDict[severity].count++;
+            errorDict[severity].items.push(e);
         } else {
             e['index'] = 0;
-            errorDict[e['severity']] = {
+            errorDict[severity] = {
                 count: 1,
                 items: [e]
             }

@@ -1,13 +1,13 @@
 import * as React from 'react';
 import './severity_indicator.css';
 
+import { normalizeSeverity } from '../utils/common-functions';
+
 export const SeverityIndicator = ({
     level,
     color
 }) => {
-    let toFill = 0;
-    if (level > 0)
-        toFill = level;
+    let toFill = normalizeSeverity(level);
     
     let i = 1;
     let notches = [];

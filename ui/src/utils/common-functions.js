@@ -98,3 +98,14 @@ export const makeFieldObject = (index, label, value) => {
         'value': value
     }
 }
+
+export const normalizeSeverity = (severity) => {
+    if (isNaN(severity))
+        return 5;
+    else if (severity < 1)
+        return 1;
+    else if (severity > 5)
+        return 5;
+    
+    return severity;
+}
