@@ -3,8 +3,14 @@ import * as React from 'react';
 import { matchPath } from "react-router";
 import { useLocation } from "react-router-dom";
 
+import { TopToolbar } from 'react-admin';
 import { useRedirect } from 'react-admin';
 
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import Typography from '@material-ui/core/Typography';
+
+import { BackButton } from '../fields/back-button';
 import { AppContext } from '../contexts/app-context';
 
 export const CheckProjectAndExperiment = () => {
@@ -108,4 +114,22 @@ export const normalizeSeverity = (severity) => {
         return 5;
     
     return severity;
+}
+
+export const missingDocumentError = (resource) => {
+    const errorMessage = "No document of this type found.";
+    return (
+        <React.Fragment>
+            <TopToolbar>
+                <BackButton resource={resource} />
+            </TopToolbar>
+            <Card>
+                <CardContent>
+                    <Typography class='MuiFormLabel-root' >
+                        {errorMessage}
+                    </Typography>
+                </CardContent>
+            </Card>
+        </React.Fragment>
+    );
 }

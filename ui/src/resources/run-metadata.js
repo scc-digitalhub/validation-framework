@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { List, Datagrid, TextField, DateField, FunctionField } from 'react-admin';
-import { useQuery, Loading, Error } from 'react-admin';
+import { useQuery, Loading } from 'react-admin';
 import { Title, Toolbar, TopToolbar, MenuItemLink, SimpleShowLayout } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
@@ -12,7 +12,7 @@ import ShortTextIcon from '@material-ui/icons/ShortText';
 import { SelectButton } from '../fields/select-button';
 import { BackButton } from '../fields/back-button';
 
-import { CheckProjectAndExperiment, formatDuration } from '../utils/common-functions';
+import { CheckProjectAndExperiment, formatDuration, missingDocumentError } from '../utils/common-functions';
 
 const ListActions = (props) => {
     return (
@@ -72,9 +72,10 @@ export const RunMetadataOverview = props => {
         }
     });
 
-    if (loading) return <Loading />;
-    if (error) return <Error error={error} />;
-    if (!data) return null;
+    if (loading)
+        return <Loading />;
+    if (error || !data)
+        return missingDocumentError(resource);
     
     if (!data.contents)
         data.contents = {};

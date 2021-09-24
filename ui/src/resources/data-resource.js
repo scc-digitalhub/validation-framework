@@ -1,14 +1,14 @@
 import * as React from 'react';
 
 import { TextField, FunctionField } from 'react-admin';
-import { useQuery, Loading, Error } from 'react-admin';
+import { useQuery, Loading } from 'react-admin';
 import { TopToolbar, SimpleShowLayout } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 
 import { BackButton } from '../fields/back-button';
-import { CheckProjectAndExperiment, formatBytes } from '../utils/common-functions';
+import { CheckProjectAndExperiment, formatBytes, missingDocumentError } from '../utils/common-functions';
 
 export const DataResourceDetail = props => {
     CheckProjectAndExperiment();
@@ -22,9 +22,10 @@ export const DataResourceDetail = props => {
         }
     });
     
-    if (loading) return <Loading />;
-    if (error) return <Error error={error} />;
-    if (!data) return null;
+    if (loading)
+        return <Loading />;
+    if (error || !data)
+        return missingDocumentError(resource);
     
     if (!data.contents)
         data.contents = {};

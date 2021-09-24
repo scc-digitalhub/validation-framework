@@ -3,7 +3,7 @@ import * as React from 'react';
 import keyBy from 'lodash/keyBy'
 
 import { Datagrid, TextField, NumberField, FunctionField } from 'react-admin';
-import { useQuery, Loading, Error } from 'react-admin';
+import { useQuery, Loading } from 'react-admin';
 import { TopToolbar, SimpleShowLayout, ListContextProvider } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
@@ -11,7 +11,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 
 import { BackButton } from '../fields/back-button';
-import { CheckProjectAndExperiment, displayAsPercentage, formatBytes, formatDuration, makeFieldObject } from '../utils/common-functions';
+import { CheckProjectAndExperiment, displayAsPercentage, formatBytes, formatDuration, makeFieldObject, missingDocumentError } from '../utils/common-functions';
 
 const getListOfMeasurementFields = (stats) => {
     let results = [];
@@ -24,8 +24,8 @@ const getListOfMeasurementFields = (stats) => {
     results.push(makeFieldObject(3, 'Size of a single record', formatBytes(stats.record_size)));
     results.push(makeFieldObject(4, 'Missing cells', stats.n_cells_missing));
     results.push(makeFieldObject(5, 'Missing cells (%)', displayAsPercentage(stats.p_cells_missing)));
-    results.push(makeFieldObject(6, 'Records with missing values', stats.n_vars_with_missing));
-    results.push(makeFieldObject(7, 'Empty records', stats.n_vars_all_missing));
+    results.push(makeFieldObject(6, 'Columns with missing values', stats.n_vars_with_missing));
+    results.push(makeFieldObject(7, 'Empty columns', stats.n_vars_all_missing));
     results.push(makeFieldObject(8, 'Duplicate records', stats.n_duplicates));
     results.push(makeFieldObject(9, 'Duplicate records (%)', displayAsPercentage(stats.p_duplicates)));
     
@@ -166,9 +166,10 @@ export const DataProfileDetail = props => {
         }
     });
     
-    if (loading) return <Loading />;
-    if (error) return <Error error={error} />;
-    if (!data) return null;
+    if (loading)
+        return <Loading />;
+    if (error || !data)
+        return missingDocumentError(resource);
     
     if (!data.contents)
         data.contents = {};

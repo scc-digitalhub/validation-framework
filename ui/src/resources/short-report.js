@@ -3,7 +3,7 @@ import * as React from 'react';
 import keyBy from 'lodash/keyBy'
 
 import { Datagrid, TextField, NumberField, FunctionField } from 'react-admin';
-import { useQuery, Loading, Error } from 'react-admin';
+import { useQuery, Loading } from 'react-admin';
 import { TopToolbar, SimpleShowLayout, ListContextProvider } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
@@ -11,7 +11,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 
 import { BackButton } from '../fields/back-button';
-import { CheckProjectAndExperiment, formatDuration, makeFieldObject, normalizeSeverity } from '../utils/common-functions';
+import { CheckProjectAndExperiment, formatDuration, makeFieldObject, normalizeSeverity, missingDocumentError } from '../utils/common-functions';
 
 import { ToggleWithLabels } from '../components/toggle-with-labels';
 import { SeverityIndicator } from '../components/severity_indicator';
@@ -109,7 +109,7 @@ const errorsRenderByCode = (data) => {
 };
 
 const errorsRenderBySeverity = (data) => {
-    const severityColors = ["00a1ff", "00ff00", "ffff00", "ffb600", "ff0000"];
+    const severityColors = ["ffff11", "ffdd22", "ffcc00", "ff8800", "ff0000"];
     
     if (!data.contents.errors)
         return null;
@@ -137,7 +137,7 @@ const errorsRenderBySeverity = (data) => {
     while (i > 0) {
         if (i in errorDict) {
             errorLists.push(
-                <Card style={{ "margin-bottom": "20px", "border": "2px solid #" + severityColors[i-1] }}>
+                <Card style={{ "margin-bottom": "20px", "border": i + "px solid #" + severityColors[i-1] }}>
                     <CardContent>
                         <Typography class='MuiFormLabel-root' style={{"float": "left"}}>
                             Severity: {i}
@@ -217,9 +217,10 @@ export const ShortReportDetail = props => {
         }
     });
     
-    if (loading) return <Loading />;
-    if (error) return <Error error={error} />;
-    if (!data) return null;
+    if (loading)
+        return <Loading />;
+    if (error || !data)
+        return missingDocumentError(resource);
     
     if (!data.contents)
         data.contents = {};

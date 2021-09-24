@@ -3,7 +3,7 @@ import * as React from 'react';
 import { List, Datagrid, TextField, FunctionField } from 'react-admin';
 import { TextInput } from 'react-admin';
 import { Create, Edit, SimpleForm } from 'react-admin';
-import { useRedirect, useQuery, Loading, Error } from 'react-admin';
+import { useRedirect, useQuery, Loading } from 'react-admin';
 import { Title, Toolbar, TopToolbar, MenuItemLink, SimpleShowLayout } from 'react-admin';
 import { required, regex } from 'react-admin';
 import { CreateButton } from 'react-admin';
@@ -18,6 +18,8 @@ import { EditButton } from 'react-admin';
 import { BackButton } from '../fields/back-button';
 
 import { AppContext } from '../contexts/app-context';
+
+import { missingDocumentError } from '../utils/common-functions';
 
 const validateId = [required(), regex(/^[a-zA-Z0-9_-]+$/, 'Allowed characters are lowercase letters, numbers, underscore (_) and hyphen (-).')];
 const validateName = regex(/^[a-zA-Z0-9 _-]+$/, 'Allowed characters are lowercase letters, numbers, underscore (_), hyphen (-) and space ( ).');
@@ -85,9 +87,10 @@ export const ProjectOverview = props => {
         }
     });
 
-    if (loading) return <Loading />;
-    if (error) return <Error error={error} />;
-    if (!data) return null;
+    if (loading)
+        return <Loading />;
+    if (error || !data)
+        return missingDocumentError(resource);
     
     return (
         <div>
