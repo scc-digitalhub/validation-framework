@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.DataProfile;
 import it.smartcommunitylab.validationstorage.model.dto.DataProfileDTO;
@@ -27,16 +28,16 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(value = "/api/project")
 @RequiredArgsConstructor
-@PreAuthorize(ValidationStorageUtils.PREAUTH_PROJECTID)
+@PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class DataProfileController {
     private final DataProfileService documentService;
 
-    @GetMapping("/{projectId}/" + ValidationStorageUtils.DATA_PROFILE + "/{id}")
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE + "/{id}")
     public ResponseEntity<DataProfile> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
         return ResponseEntity.ok(documentService.findDocumentById(projectId, id));
     }
 
-    @GetMapping("/{projectId}/" + ValidationStorageUtils.DATA_PROFILE)
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE)
     public ResponseEntity<List<DataProfile>> findDocuments(@PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId,
@@ -44,23 +45,23 @@ public class DataProfileController {
         return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
     }
 
-    @PostMapping("/{projectId}/" + ValidationStorageUtils.DATA_PROFILE)
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE)
     public ResponseEntity<DataProfile> createDocument(@PathVariable String projectId, @RequestBody @Valid DataProfileDTO request, Authentication authentication) {
         return ResponseEntity.ok(documentService.createDocument(projectId, request, ValidationStorageUtils.getAuthorName(authentication)));
     }
 
-    @PutMapping("/{projectId}/" + ValidationStorageUtils.DATA_PROFILE + "/{id}")
+    @PutMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE + "/{id}")
     public ResponseEntity<DataProfile> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid DataProfileDTO request) {
         return ResponseEntity.ok(documentService.updateDocument(projectId, id, request));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageUtils.DATA_PROFILE + "/{id}")
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE + "/{id}")
     public ResponseEntity<Void> deleteDocumentById(@PathVariable String projectId, @PathVariable String id) {
         documentService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageUtils.DATA_PROFILE)
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE)
     public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId) {

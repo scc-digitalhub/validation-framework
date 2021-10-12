@@ -72,6 +72,13 @@ export class DataProvider extends React.Component {
                     return Promise.reject(new Error('Run ID is null.'));
                 url += `/${this.getProject()}/experiment/${this.getExperiment()}/run/${params.id}`;
                 break;
+            case 'run-comparison':
+                if (!this.getProject() || !this.getExperiment())
+                    return Promise.reject(new Error('Project or experiment not set.'));
+                if (!params.ids)
+                    return Promise.reject(new Error('IDs are missing.'));
+                url += `/${this.getProject()}/experiment/${this.getExperiment()}/run-comparison/${params.ids}`;
+                break;
             default:
                 if (!this.getProject() || !this.getExperiment())
                     return Promise.reject(new Error('Project or experiment not set.'));

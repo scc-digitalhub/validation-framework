@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.RunEnvironment;
 import it.smartcommunitylab.validationstorage.model.dto.RunEnvironmentDTO;
@@ -27,16 +28,16 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(value = "/api/project")
 @RequiredArgsConstructor
-@PreAuthorize(ValidationStorageUtils.PREAUTH_PROJECTID)
+@PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunEnvironmentController {
     private final RunEnvironmentService documentService;
 
-    @GetMapping("/{projectId}/" + ValidationStorageUtils.RUN_ENVIRONMENT + "/{id}")
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN_ENVIRONMENT + "/{id}")
     public ResponseEntity<RunEnvironment> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
         return ResponseEntity.ok(documentService.findDocumentById(projectId, id));
     }
 
-    @GetMapping("/{projectId}/" + ValidationStorageUtils.RUN_ENVIRONMENT)
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN_ENVIRONMENT)
     public ResponseEntity<List<RunEnvironment>> findDocuments(@PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId,
@@ -44,23 +45,23 @@ public class RunEnvironmentController {
         return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
     }
 
-    @PostMapping("/{projectId}/" + ValidationStorageUtils.RUN_ENVIRONMENT)
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.RUN_ENVIRONMENT)
     public ResponseEntity<RunEnvironment> createDocument(@PathVariable String projectId, @RequestBody @Valid RunEnvironmentDTO request, Authentication authentication) {
         return ResponseEntity.ok(documentService.createDocument(projectId, request, ValidationStorageUtils.getAuthorName(authentication)));
     }
 
-    @PutMapping("/{projectId}/" + ValidationStorageUtils.RUN_ENVIRONMENT + "/{id}")
+    @PutMapping("/{projectId}/" + ValidationStorageConstants.RUN_ENVIRONMENT + "/{id}")
     public ResponseEntity<RunEnvironment> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid RunEnvironmentDTO request) {
         return ResponseEntity.ok(documentService.updateDocument(projectId, id, request));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageUtils.RUN_ENVIRONMENT + "/{id}")
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_ENVIRONMENT + "/{id}")
     public ResponseEntity<Void> deleteDocumentById(@PathVariable String projectId, @PathVariable String id) {
         documentService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageUtils.RUN_ENVIRONMENT)
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_ENVIRONMENT)
     public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId) {

@@ -62,6 +62,17 @@ export const formatBytes = (bytes, decimals = 2) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
+export const calculateDuration = (start, finish) => {
+    if (!start)
+        return null;
+    
+    const startDate = new Date(start);
+    
+    let finishDate = finish ? new Date(finish) : Date.now();
+    
+    return formatDuration(finishDate - startDate);
+}
+
 export const formatDuration = (duration, msDecimals = 2) => {
     if (!duration || duration < 0)
         return null;
@@ -117,7 +128,10 @@ export const normalizeSeverity = (severity) => {
 }
 
 export const missingDocumentError = (resource) => {
-    const errorMessage = "No document of this type found.";
+    return genericError(resource, "No document of this type found.");
+}
+
+export const genericError = (resource, errorMessage) => {
     return (
         <React.Fragment>
             <TopToolbar>

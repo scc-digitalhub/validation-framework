@@ -9,7 +9,7 @@ import org.springframework.util.ObjectUtils;
 
 import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
-import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.dto.ProjectDTO;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
@@ -84,7 +84,7 @@ public class ProjectService {
     }
 
     // Read
-    @PostFilter(ValidationStorageUtils.POSTFILTER_ID)
+    @PostFilter(ValidationStorageConstants.POSTFILTER_ID)
     public List<Project> findDocuments() {
         return documentRepository.findAll();
     }

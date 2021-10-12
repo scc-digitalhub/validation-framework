@@ -4,7 +4,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
-import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import lombok.Data;
 
 /**
@@ -16,13 +16,13 @@ public class ProjectDTO {
     /**
      * Unique ID.
      */
-    @Pattern(regexp = ValidationStorageUtils.ID_PATTERN)
+    @Pattern(regexp = ValidationStorageConstants.ID_PATTERN)
     @NotBlank
     private String id;
 
     /**
      * Name of the project.
      */
-    @Pattern(regexp = ValidationStorageUtils.NAME_PATTERN)
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String name;
 }

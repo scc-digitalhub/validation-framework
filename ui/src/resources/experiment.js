@@ -10,6 +10,7 @@ import ListIcon from '@material-ui/icons/List';
 
 import { SelectButton } from '../fields/select-button';
 import { BackButton } from '../fields/back-button';
+import { CompareRecentButton } from '../fields/compare-recent-button';
 
 import { AppContext } from '../contexts/app-context';
 
@@ -18,7 +19,7 @@ import { CheckProjectAndExperiment, missingDocumentError } from '../utils/common
 const ListActions = (props) => {
     return (
         <TopToolbar>
-            <BackButton key='back-button' resource='experiment'/>
+            <BackButton key='back-button' resource='experiment' />
         </TopToolbar>
     );
 }
@@ -32,7 +33,11 @@ export const ExperimentList = (props) => {
     }
     
     return (
-        <List {...props} perPage={50} pagination={false} actions={<ListActions />}>
+        <List {...props}
+                perPage={50}
+                pagination={false}
+                sort={{ field: 'experimentId', order: 'ASC' }}
+                actions={<ListActions />}>
             <Datagrid rowClick="">
                 <TextField source="experimentId" label="Experiment ID" />
                 <TextField source="experimentName" label="Name" />
@@ -65,7 +70,8 @@ export const ExperimentOverview = props => {
         <div>
             <Title title={data.experimentName} />
             <TopToolbar>
-                <BackButton resource='experiment' clear={true} />
+                <CompareRecentButton key='compare-recent-button' />
+                <BackButton key='back-button' resource='experiment' clear={true} />
             </TopToolbar>
             <Card>
                 <CardContent>

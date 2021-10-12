@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.dto.ProjectDTO;
@@ -25,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(value = "/api/project")
 @RequiredArgsConstructor
-@PreAuthorize(ValidationStorageUtils.PREAUTH_ID)
+@PreAuthorize(ValidationStorageConstants.PREAUTH_ID)
 public class ProjectController {
     private final ProjectService documentService;
 
@@ -40,7 +41,7 @@ public class ProjectController {
         return ResponseEntity.ok(documentService.findDocumentById(id));
     }
 
-    @PreAuthorize(ValidationStorageUtils.PREAUTH_REQUEST_ID)
+    @PreAuthorize(ValidationStorageConstants.PREAUTH_REQUEST_ID)
     @PostMapping
     public ResponseEntity<Project> createDocument(@RequestBody @Valid ProjectDTO request, Authentication authentication) {
         return ResponseEntity.ok(documentService.createDocument(request, ValidationStorageUtils.getAuthorName(authentication)));

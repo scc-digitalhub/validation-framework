@@ -12,6 +12,7 @@ import org.springframework.util.ObjectUtils;
 
 import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
 import it.smartcommunitylab.validationstorage.model.dto.RunMetadataDTO;
@@ -127,7 +128,7 @@ public class RunMetadataService {
         // Otherwise, it will take the current timestamp.
         Date ts;
         try {
-            ts = new SimpleDateFormat(ValidationStorageUtils.DATE_FORMAT).parse(request.getContents().get(ValidationStorageUtils.FIELD_RUN_METADATA_TS).toString());
+            ts = new SimpleDateFormat(ValidationStorageConstants.DATE_FORMAT).parse(request.getContents().get(ValidationStorageConstants.FIELD_RUN_METADATA_TS).toString());
         } catch (NullPointerException | ParseException e) {
             ts = new Date(System.currentTimeMillis());
         }

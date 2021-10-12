@@ -7,7 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
-import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import lombok.Data;
 
 /**
@@ -20,20 +20,20 @@ public class RunEnvironmentDTO {
      * ID of the experiment this document belongs to.
      */
     @NotBlank
-    @Pattern(regexp = ValidationStorageUtils.ID_PATTERN)
+    @Pattern(regexp = ValidationStorageConstants.ID_PATTERN)
     private String experimentId;
 
     /**
      * Name of the experiment this document belongs to.
      */
-    @Pattern(regexp = ValidationStorageUtils.NAME_PATTERN)
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String experimentName;
 
     /**
      * ID of the run this document belongs to.
      */
     @NotBlank
-    @Pattern(regexp = ValidationStorageUtils.ID_PATTERN)
+    @Pattern(regexp = ValidationStorageConstants.ID_PATTERN)
     private String runId;
 
     /**

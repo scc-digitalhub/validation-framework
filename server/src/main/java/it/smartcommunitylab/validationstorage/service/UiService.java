@@ -1,5 +1,6 @@
 package it.smartcommunitylab.validationstorage.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
@@ -7,7 +8,7 @@ import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
-import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 import it.smartcommunitylab.validationstorage.model.DataProfile;
 import it.smartcommunitylab.validationstorage.model.DataResource;
@@ -26,6 +27,7 @@ import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepositor
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
+import it.smartcommunitylab.validationstorage.runcomparison.RunSummary;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -43,9 +45,9 @@ public class UiService {
     private final RunEnvironmentRepository runEnvironmentRepository;
     private final ShortReportRepository shortReportRepository;
     private final ShortSchemaRepository shortSchemaRepository;
-
+    
     // Project
-    @PostFilter(ValidationStorageUtils.POSTFILTER_ID)
+    @PostFilter(ValidationStorageConstants.POSTFILTER_ID)
     public List<Project> findProjects(Pageable pageable) {
         return projectRepository.findAll(pageable.getSort());
     }
@@ -63,10 +65,6 @@ public class UiService {
     }
 
     // RunMetadata
-    public List<RunMetadata> findRunMetadata(String projectId, String experimentId, Pageable pageable) {
-        return runMetadataRepository.findByProjectIdAndExperimentId(projectId, experimentId, pageable);
-    }
-
     public RunMetadata findRunMetadataByRunId(String projectId, String experimentId, String runId) {
         List<RunMetadata> documents = runMetadataRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
@@ -104,11 +102,20 @@ public class UiService {
     }
 
     // ShortReport
-    public ShortReport findShortReportByRunId(String projectId, String experimentId, String runId) {
+    private ShortReport getShortReport(String projectId, String experimentId, String runId) {
         List<ShortReport> documents = shortReportRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
-        throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");
+        return null;
+    }
+    
+    public ShortReport findShortReportByRunId(String projectId, String experimentId, String runId) {
+        ShortReport document = getShortReport(projectId, experimentId, runId);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");
+        
+        return document;
     }
 
     // ShortSchema
@@ -117,5 +124,35 @@ public class UiService {
         if (!documents.isEmpty())
             return documents.get(0);
         throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");
+    }
+    
+    // RunSummary
+    public List<RunSummary> listRunSummaries(String projectId, String experimentId, Pageable pageable) {
+        List<RunSummary> runSummaries = new ArrayList<RunSummary>();
+        
+        List<RunMetadata> runMetadataDocuments = runMetadataRepository.findByProjectIdAndExperimentId(projectId, experimentId, pageable);
+        for (RunMetadata runMetadata: runMetadataDocuments)
+            runSummaries.add(buildRunSummaryWithShortReport(runMetadata));
+        
+        return runSummaries;
+    }
+    
+    public RunSummary findRunSummary(String projectId, String experimentId, String runId) {
+        RunMetadata runMetadata = findRunMetadataByRunId(projectId, experimentId, runId);
+        return buildRunSummaryWithShortReport(runMetadata);
+    }
+    
+    private RunSummary buildRunSummaryWithShortReport(RunMetadata runMetadata) {
+        String projectId = runMetadata.getProjectId();
+        String experimentId = runMetadata.getExperimentId();
+        String runId = runMetadata.getRunId();
+        
+        ShortReport shortReport = getShortReport(projectId, experimentId, runId);
+        
+        RunSummary runSummary = new RunSummary(runMetadata.getId(), projectId, experimentId, runId, runMetadata.getCreated());
+        runSummary.setRunMetadata(runMetadata);
+        runSummary.setShortReport(shortReport);
+        
+        return runSummary;
     }
 }

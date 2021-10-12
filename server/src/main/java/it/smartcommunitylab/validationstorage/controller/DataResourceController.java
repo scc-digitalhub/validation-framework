@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.DataResource;
 import it.smartcommunitylab.validationstorage.model.dto.DataResourceDTO;
@@ -27,16 +28,16 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(value = "/api/project")
 @RequiredArgsConstructor
-@PreAuthorize(ValidationStorageUtils.PREAUTH_PROJECTID)
+@PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class DataResourceController {
     private final DataResourceService documentService;
 
-    @GetMapping("/{projectId}/" + ValidationStorageUtils.DATA_RESOURCE + "/{id}")
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.DATA_RESOURCE + "/{id}")
     public ResponseEntity<DataResource> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
         return ResponseEntity.ok(documentService.findDocumentById(projectId, id));
     }
 
-    @GetMapping("/{projectId}/" + ValidationStorageUtils.DATA_RESOURCE)
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.DATA_RESOURCE)
     public ResponseEntity<List<DataResource>> findDocuments(@PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId,
@@ -44,23 +45,23 @@ public class DataResourceController {
         return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
     }
 
-    @PostMapping("/{projectId}/" + ValidationStorageUtils.DATA_RESOURCE)
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.DATA_RESOURCE)
     public ResponseEntity<DataResource> createDocument(@PathVariable String projectId, @RequestBody @Valid DataResourceDTO request, Authentication authentication) {
         return ResponseEntity.ok(documentService.createDocument(projectId, request, ValidationStorageUtils.getAuthorName(authentication)));
     }
 
-    @PutMapping("/{projectId}/" + ValidationStorageUtils.DATA_RESOURCE + "/{id}")
+    @PutMapping("/{projectId}/" + ValidationStorageConstants.DATA_RESOURCE + "/{id}")
     public ResponseEntity<DataResource> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid DataResourceDTO request) {
         return ResponseEntity.ok(documentService.updateDocument(projectId, id, request));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageUtils.DATA_RESOURCE + "/{id}")
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.DATA_RESOURCE + "/{id}")
     public ResponseEntity<Void> deleteDocumentById(@PathVariable String projectId, @PathVariable String id) {
         documentService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageUtils.DATA_RESOURCE)
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.DATA_RESOURCE)
     public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId) {

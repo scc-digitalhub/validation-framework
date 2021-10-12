@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 import it.smartcommunitylab.validationstorage.model.dto.ArtifactMetadataDTO;
@@ -27,16 +28,16 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(value = "/api/project")
 @RequiredArgsConstructor
-@PreAuthorize(ValidationStorageUtils.PREAUTH_PROJECTID)
+@PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class ArtifactMetadataController {
     private final ArtifactMetadataService documentService;
 
-    @GetMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA + "/{id}")
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.ARTIFACT_METADATA + "/{id}")
     public ResponseEntity<ArtifactMetadata> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
         return ResponseEntity.ok(documentService.findDocumentById(projectId, id));
     }
 
-    @GetMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA)
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.ARTIFACT_METADATA)
     public ResponseEntity<List<ArtifactMetadata>> findDocuments(@PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId,
@@ -44,23 +45,23 @@ public class ArtifactMetadataController {
         return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
     }
 
-    @PostMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA)
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.ARTIFACT_METADATA)
     public ResponseEntity<ArtifactMetadata> createDocument(@PathVariable String projectId, @RequestBody @Valid ArtifactMetadataDTO request, Authentication authentication) {
         return ResponseEntity.ok(documentService.createDocument(projectId, request, ValidationStorageUtils.getAuthorName(authentication)));
     }
 
-    @PutMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA + "/{id}")
+    @PutMapping("/{projectId}/" + ValidationStorageConstants.ARTIFACT_METADATA + "/{id}")
     public ResponseEntity<ArtifactMetadata> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid ArtifactMetadataDTO request) {
         return ResponseEntity.ok(documentService.updateDocument(projectId, id, request));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA + "/{id}")
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.ARTIFACT_METADATA + "/{id}")
     public ResponseEntity<Void> deleteDocumentById(@PathVariable String projectId, @PathVariable String id) {
         documentService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageUtils.ARTIFACT_METADATA)
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.ARTIFACT_METADATA)
     public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId) {

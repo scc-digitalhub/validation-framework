@@ -22,8 +22,8 @@ const getListOfMeasurementFields = (stats) => {
     results.push(makeFieldObject(1, 'Number of columns', stats.n_var));
     results.push(makeFieldObject(2, 'Size', formatBytes(stats.memory_size)));
     results.push(makeFieldObject(3, 'Size of a single record', formatBytes(stats.record_size)));
-    results.push(makeFieldObject(4, 'Missing cells', stats.n_cells_missing));
-    results.push(makeFieldObject(5, 'Missing cells (%)', displayAsPercentage(stats.p_cells_missing)));
+    results.push(makeFieldObject(4, 'Cells with no value', stats.n_cells_missing));
+    results.push(makeFieldObject(5, 'Cells with no value (%)', displayAsPercentage(stats.p_cells_missing)));
     results.push(makeFieldObject(6, 'Columns with missing values', stats.n_vars_with_missing));
     results.push(makeFieldObject(7, 'Empty columns', stats.n_vars_all_missing));
     results.push(makeFieldObject(8, 'Duplicate records', stats.n_duplicates));

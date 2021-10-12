@@ -46,6 +46,9 @@ export const BackButton = ({
                     redirect('/experiment/overview');
                 }
                 break;
+            case 'run-comparison':
+                redirect('/run');
+                break;
             default:
                 redirect('/run/' + currentRun + '/overview');
         }

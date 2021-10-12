@@ -14,6 +14,7 @@ import AccountTreeOutlinedIcon from '@material-ui/icons/AccountTreeOutlined';
 import ListIcon from '@material-ui/icons/List';
 import ShortTextIcon from '@material-ui/icons/ShortText';
 import Divider from '@material-ui/core/Divider';
+import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
 
 import { AppContext } from '../contexts/app-context';
 
@@ -152,6 +153,16 @@ const CustomMenu = ({ onMenuClick, logout }) => {
                 
                 runSubMenuContents.push(
                     <MenuItemLink
+                        key={'run-metadata'}
+                        to={`/run/${currentRun}/run-metadata`}
+                        primaryText='Run metadata'
+                        leftIcon={<ShortTextIcon />}
+                        onClick={onMenuClick}
+                    />
+                );
+                
+                runSubMenuContents.push(
+                    <MenuItemLink
                         key={'short-report'}
                         to={`/run/${currentRun}/short-report`}
                         primaryText='Short report'
@@ -171,16 +182,27 @@ const CustomMenu = ({ onMenuClick, logout }) => {
                 );
                 
                 const runSubMenu = (
-                    <div style={{ "padding-left": LEFT_PADDING }} key='run-sub-menu' >
+                    <div style={{ "paddingLeft": LEFT_PADDING }} key='run-sub-menu' >
                         { runSubMenuContents }
                     </div>
                 );
                 
                 experimentSubMenuContents.push(runSubMenu);
+            } else if (inRunComparison()) {
+                experimentSubMenuContents.push(<Divider key='run-comparison-divider' />);
+                experimentSubMenuContents.push(
+                    <MenuItemLink
+                        key={'run-comparison'}
+                        to={``}
+                        primaryText='Run comparison'
+                        leftIcon={<CompareArrowsIcon />}
+                        disabled={true}
+                    />
+                );
             }
             
             const experimentSubMenu = (
-                <div style={{ "padding-left": LEFT_PADDING }} key='experiment-sub-menu' >
+                <div style={{ "paddingLeft": LEFT_PADDING }} key='experiment-sub-menu' >
                     { experimentSubMenuContents }
                 </div>
             );
@@ -189,7 +211,7 @@ const CustomMenu = ({ onMenuClick, logout }) => {
         }
         
         const projectSubMenu = (
-            <div style={{ "padding-left": LEFT_PADDING }} key='project-sub-menu' >
+            <div style={{ "paddingLeft": LEFT_PADDING }} key='project-sub-menu' >
                 { projectSubMenuContents }
             </div>
         );
@@ -203,6 +225,10 @@ const CustomMenu = ({ onMenuClick, logout }) => {
             { menuContent }
         </React.Fragment>
     );
+}
+
+const inRunComparison = () => {
+    return (""+window.location).indexOf("run-comparison") > -1;
 }
 
 export default CustomMenu;

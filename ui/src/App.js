@@ -11,25 +11,29 @@ import { DataProvider } from './data-provider';
 import dashboard from './dashboard';
 import { ProjectList, ProjectCreate, ProjectEdit, ProjectOverview } from './resources/project';
 import { ExperimentList, ExperimentOverview } from './resources/experiment';
-import { RunMetadataList, RunMetadataOverview } from './resources/run-metadata';
+import { RunSummaryList, RunSummaryOverview } from './resources/run-summary';
 import { ArtifactMetadataList } from './resources/artifact-metadata';
 import { DataProfileDetail } from './resources/data-profile';
 import { DataResourceDetail } from './resources/data-resource';
 import { RunEnvironmentDetail } from './resources/run-environment';
+import { RunMetadataDetail } from './resources/run-metadata';
 import { ShortReportDetail } from './resources/short-report';
 import { ShortSchemaDetail } from './resources/short-schema';
+import { RunComparisonDetail } from './resources/run-comparison';
 import { AppContext } from './contexts/app-context';
 
 const customRoutes = [
     <Route exact path="/project/overview" component={ProjectOverview} />,
     <Route exact path="/experiment/overview" component={ExperimentOverview} />,
-    <Route exact path="/run/:runId/overview" component={RunMetadataOverview} />,
+    <Route exact path="/run/:runId/overview" component={RunSummaryOverview} />,
     <Route exact path="/run/:runId/artifact-metadata" component={ArtifactMetadataList} />,
     <Route exact path="/run/:runId/data-profile" component={DataProfileDetail} />,
     <Route exact path="/run/:runId/data-resource" component={DataResourceDetail} />,
     <Route exact path="/run/:runId/run-environment" component={RunEnvironmentDetail} />,
+    <Route exact path="/run/:runId/run-metadata" component={RunMetadataDetail} />,
     <Route exact path="/run/:runId/short-report" component={ShortReportDetail} />,
-    <Route exact path="/run/:runId/short-schema" component={ShortSchemaDetail} />
+    <Route exact path="/run/:runId/short-schema" component={ShortSchemaDetail} />,
+    <Route exact path="/run-comparison/:selectedIds" component={RunComparisonDetail} />
 ]
 
 let currentProject = null;
@@ -77,7 +81,7 @@ export default class App extends React.Component {
                 >
                     <Resource key="project" name="project" options={{ label: 'Projects' }} icon={Work} list={ProjectList} create={ProjectCreate} edit={ProjectEdit} />
                     <Resource key="experiment" name="experiment" options={{ label: 'Experiments' }} list={ExperimentList} />
-                    <Resource key="run" name="run" options={{ label: 'Runs' }} list={RunMetadataList} />
+                    <Resource key="run" name="run" options={{ label: 'Runs' }} list={RunSummaryList} />
                 </Admin>
             </AppContext.Provider>
         );
