@@ -4,7 +4,7 @@ import keyBy from 'lodash/keyBy'
 
 import { Datagrid, TextField, NumberField, FunctionField } from 'react-admin';
 import { useQuery, Loading } from 'react-admin';
-import { TopToolbar, SimpleShowLayout, ListContextProvider } from 'react-admin';
+import { Title, TopToolbar, SimpleShowLayout, ListContextProvider } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -65,6 +65,7 @@ export const ShortSchemaDetail = props => {
     
     return (
         <React.Fragment>
+            <Title title="Short schema" />
             <TopToolbar>
                 <BackButton resource={resource} />
             </TopToolbar>

@@ -19,7 +19,7 @@ import { RunEnvironmentDetail } from './resources/run-environment';
 import { RunMetadataDetail } from './resources/run-metadata';
 import { ShortReportDetail } from './resources/short-report';
 import { ShortSchemaDetail } from './resources/short-schema';
-import { RunComparisonDetail } from './resources/run-comparison';
+import { RunComparisonDetail } from './resources/run-comparison/comparison';
 import { AppContext } from './contexts/app-context';
 
 const customRoutes = [

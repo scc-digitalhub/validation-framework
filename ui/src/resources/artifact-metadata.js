@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import keyBy from 'lodash/keyBy'
 
-import { TopToolbar, Datagrid, TextField } from 'react-admin';
+import { Title, TopToolbar, Datagrid, TextField } from 'react-admin';
 import { useQuery, Loading, Error, ListContextProvider } from 'react-admin'
 
 import Card from '@material-ui/core/Card';
@@ -46,6 +46,7 @@ export const ArtifactMetadataList = (props) => {
     
     return (
         <React.Fragment>
+            <Title title="Artifact metadata" />
             {ListActions()}
             <Card>
                 <ListContextProvider value={{
@@ -54,7 +55,7 @@ export const ArtifactMetadataList = (props) => {
                         page: 1,
                         perPage: 50,
                         currentSort: { field: 'name', order: 'ASC' },
-                        basePath: { basePath },
+                        basePath: basePath,
                         resource: { resource }
                 }}>
                     <Datagrid rowClick="" actions={<ListActions />}>

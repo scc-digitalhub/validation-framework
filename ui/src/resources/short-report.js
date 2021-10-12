@@ -4,7 +4,7 @@ import keyBy from 'lodash/keyBy'
 
 import { Datagrid, TextField, NumberField, FunctionField } from 'react-admin';
 import { useQuery, Loading } from 'react-admin';
-import { TopToolbar, SimpleShowLayout, ListContextProvider } from 'react-admin';
+import { Title, TopToolbar, SimpleShowLayout, ListContextProvider } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -77,9 +77,9 @@ const errorsRenderByCode = (data) => {
     let errorLists = [];
     for (let e in errorDict) {
         errorLists.push(
-            <Card>
+            <Card key={e}>
                 <CardContent>
-                    <Typography class='MuiFormLabel-root' >
+                    <Typography className='MuiFormLabel-root' >
                         {e}
                     </Typography>
                     
@@ -137,9 +137,9 @@ const errorsRenderBySeverity = (data) => {
     while (i > 0) {
         if (i in errorDict) {
             errorLists.push(
-                <Card style={{ "margin-bottom": "20px", "border": i + "px solid #" + severityColors[i-1] }}>
+                <Card key={i} style={{ "marginBottom": "20px", "border": i + "px solid #" + severityColors[i-1] }}>
                     <CardContent>
-                        <Typography class='MuiFormLabel-root' style={{"float": "left"}}>
+                        <Typography className='MuiFormLabel-root' style={{"float": "left"}}>
                             Severity: {i}
                         </Typography>
                         <SeverityIndicator level={i} color={severityColors[i-1]}/>
@@ -227,6 +227,7 @@ export const ShortReportDetail = props => {
     
     return (
         <React.Fragment>
+            <Title title="Short report" />
             <TopToolbar>
                 <BackButton resource={resource} />
             </TopToolbar>

@@ -93,7 +93,7 @@ export const ProjectOverview = props => {
         return missingDocumentError(resource);
     
     return (
-        <div>
+        <React.Fragment>
             <Title title={data.name} />
             <TopToolbar>
                 <BackButton resource='project'/>
@@ -114,11 +114,9 @@ export const ProjectOverview = props => {
                         to='/experiment'
                         primaryText='Experiments'
                         leftIcon={<ListIcon />}
-                        //onClick={onMenuClick}
-                        sidebarIsOpen={true}
                     />
                 </Toolbar>
             </Card>
-        </div>
+        </React.Fragment>
     );
 }

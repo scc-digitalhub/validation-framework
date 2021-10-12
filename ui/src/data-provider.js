@@ -97,9 +97,7 @@ export class DataProvider extends React.Component {
             return httpClient(`${backendUrl}/${resource}`, {
                 method: 'POST',
                 body: JSON.stringify(params.data),
-            }).then(({ json }) => ({
-                data: { ...params.data, id: json.id },
-            }));
+            }).then(({ json }) => ({ data: { ...params.data, id: json.id } }));
         } else {
             return Promise.reject(new Error('Only project documents may be created.'));
         }

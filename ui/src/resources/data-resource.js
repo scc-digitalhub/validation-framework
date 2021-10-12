@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { TextField, FunctionField } from 'react-admin';
 import { useQuery, Loading } from 'react-admin';
-import { TopToolbar, SimpleShowLayout } from 'react-admin';
+import { Title, TopToolbar, SimpleShowLayout } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -32,6 +32,7 @@ export const DataResourceDetail = props => {
     
     return (
         <React.Fragment>
+            <Title title="Data resource" />
             <TopToolbar>
                 <BackButton resource={resource} />
             </TopToolbar>

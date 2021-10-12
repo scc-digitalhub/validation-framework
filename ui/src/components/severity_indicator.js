@@ -14,14 +14,14 @@ export const SeverityIndicator = ({
     const emptyClass = "severity_notch severity_notch_empty";
     const filledClass = "severity_notch severity_notch_filled";
     const filledStyle = {
-        "background-color": "#" + color,
-        "border-color": "#" + color
+        "backgroundColor": "#" + color,
+        "borderColor": "#" + color
     };
     while (i <= 5) {
         if (i > toFill)
-            notches.push(<span className={emptyClass}></span>);
+            notches.push(<span key={i} className={emptyClass}></span>);
         else
-            notches.push(<span className={filledClass} style={filledStyle}></span>);
+            notches.push(<span key={i} className={filledClass} style={filledStyle}></span>);
         
         i++;
     }

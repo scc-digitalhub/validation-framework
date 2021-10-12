@@ -120,56 +120,42 @@ export const RunSummaryOverview = props => {
                         to={`/run/${data.runId}/artifact-metadata`}
                         primaryText='ArtifactMetadata'
                         leftIcon={<ListIcon />}
-                        //onClick={onMenuClick}
-                        sidebarIsOpen={true}
                     />
                     <MenuItemLink
                         key='data-profile'
                         to={`/run/${data.runId}/data-profile`}
                         primaryText='Data profile'
                         leftIcon={<ShortTextIcon />}
-                        //onClick={onMenuClick}
-                        sidebarIsOpen={true}
                     />
                     <MenuItemLink
                         key='data-resource'
                         to={`/run/${data.runId}/data-resource`}
                         primaryText='Data resource'
                         leftIcon={<ShortTextIcon />}
-                        //onClick={onMenuClick}
-                        sidebarIsOpen={true}
                     />
                     <MenuItemLink
                         key='run-environment'
                         to={`/run/${data.runId}/run-environment`}
                         primaryText='Run environment'
                         leftIcon={<ShortTextIcon />}
-                        //onClick={onMenuClick}
-                        sidebarIsOpen={true}
                     />
                     <MenuItemLink
                         key='run-metadata'
                         to={`/run/${data.runId}/run-metadata`}
                         primaryText='Run metadata'
                         leftIcon={<ShortTextIcon />}
-                        //onClick={onMenuClick}
-                        sidebarIsOpen={true}
                     />
                     <MenuItemLink
                         key='short-report'
                         to={`/run/${data.runId}/short-report`}
                         primaryText='Short report'
                         leftIcon={<ShortTextIcon />}
-                        //onClick={onMenuClick}
-                        sidebarIsOpen={true}
                     />
                     <MenuItemLink
                         key='short-schema'
                         to={`/run/${data.runId}/short-schema`}
                         primaryText='Short schema'
                         leftIcon={<ShortTextIcon />}
-                        //onClick={onMenuClick}
-                        sidebarIsOpen={true}
                     />
                 </Toolbar>
             </Card>

@@ -7,6 +7,7 @@ import { Title, Toolbar, TopToolbar, MenuItemLink, SimpleShowLayout } from 'reac
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import ListIcon from '@material-ui/icons/List';
+import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
 
 import { SelectButton } from '../fields/select-button';
 import { BackButton } from '../fields/back-button';
@@ -67,7 +68,7 @@ export const ExperimentOverview = props => {
         return missingDocumentError(resource);
     
     return (
-        <div>
+        <React.Fragment>
             <Title title={data.experimentName} />
             <TopToolbar>
                 <CompareRecentButton key='compare-recent-button' />
@@ -90,11 +91,15 @@ export const ExperimentOverview = props => {
                         to='/run'
                         primaryText='Runs'
                         leftIcon={<ListIcon />}
-                        //onClick={onMenuClick}
-                        sidebarIsOpen={true}
+                    />
+                    <MenuItemLink
+                        key='run-comparison'
+                        to='/run-comparison/recent'
+                        primaryText='Compare recent runs'
+                        leftIcon={<CompareArrowsIcon />}
                     />
                 </Toolbar>
             </Card>
-        </div>
+        </React.Fragment>
     );
 }

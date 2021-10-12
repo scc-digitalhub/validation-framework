@@ -2,9 +2,10 @@ import * as React from 'react';
 
 import { DashboardMenuItem, MenuItemLink } from 'react-admin';
 
+import { useLocation } from "react-router-dom";
+
 import { GetCurrentRun } from '../utils/common-functions';
 
-// import { useMediaQuery } from '@material-ui/core';
 import WorkIcon from '@material-ui/icons/Work';
 import WorkOutline from '@material-ui/icons/WorkOutline';
 import GroupWorkIcon from '@material-ui/icons/GroupWork';
@@ -18,9 +19,9 @@ import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
 
 import { AppContext } from '../contexts/app-context';
 
-const LEFT_PADDING = "18px";
+const LEFT_PADDING = '18px';
 
-const CustomMenu = ({ onMenuClick, logout }) => {
+const CustomMenu = () => {
     const currentProject = React.useContext(AppContext).getProject();
     const currentExperiment = React.useContext(AppContext).getExperiment();
     const currentRun = GetCurrentRun();
@@ -30,196 +31,27 @@ const CustomMenu = ({ onMenuClick, logout }) => {
     
     const clearProject = () => {
         setProject(null);
-        onMenuClick();
     }
     
     const clearExperiment = () => {
         setExperiment(null);
-        onMenuClick();
     }
     
+    return (generateMainMenu(currentProject, currentExperiment, currentRun, clearProject, clearExperiment));
+}
+
+const generateMainMenu = (currentProject, currentExperiment, currentRun, clearProject, clearExperiment) => {
     let menuContent = [];
     
     menuContent.push(<DashboardMenuItem onClick={clearProject} key='dashboard' />)
     menuContent.push(<Divider key='project-list-divider' />);
     
-    menuContent.push(<MenuItemLink
-            key='projects'
-            to={`/project`}
-            primaryText='Projects'
-            leftIcon={<WorkOutline />}
-            onClick={clearProject}
-        />
-    );
+    menuContent.push(makeMenuItem('projects', '/project', 'Projects', <WorkOutline />, clearProject));
     
     if (currentProject) {
-        let projectSubMenuContents = [];
-        
-        projectSubMenuContents.push(
-            <MenuItemLink
-                key={'project-overview'}
-                to={`/project/overview`}
-                primaryText={currentProject}
-                leftIcon={<WorkIcon />}
-                onClick={clearExperiment}
-            />
-        );
-        
-        projectSubMenuContents.push(
-            <MenuItemLink
-                key={'experiments'}
-                to={`/experiment`}
-                primaryText='Experiments'
-                leftIcon={<GroupWorkOutlinedIcon />}
-                onClick={clearExperiment}
-            />
-        );
-        
-        if (currentExperiment) {
-            let experimentSubMenuContents = [];
-            
-            experimentSubMenuContents.push(
-                <MenuItemLink
-                    key={'experiment-overview'}
-                    to={`/experiment/overview`}
-                    primaryText={currentExperiment}
-                    leftIcon={<GroupWorkIcon />}
-                    onClick={onMenuClick}
-                />
-            );
-            
-            experimentSubMenuContents.push(
-                <MenuItemLink
-                    key={'runs'}
-                    to={`/run`}
-                    primaryText='Runs'
-                    leftIcon={<AccountTreeOutlinedIcon />}
-                    onClick={onMenuClick}
-                />
-            );
-            
-            if (currentRun) {
-                let runSubMenuContents = [];
-                
-                runSubMenuContents.push(
-                    <MenuItemLink
-                        key={'run-overview'}
-                        to={`/run/${currentRun}/overview`}
-                        primaryText={currentRun}
-                        leftIcon={<AccountTreeIcon />}
-                        onClick={onMenuClick}
-                    />
-                );
-                
-                runSubMenuContents.push(
-                    <MenuItemLink
-                        key={'artifact-metadata'}
-                        to={`/run/${currentRun}/artifact-metadata`}
-                        primaryText='Artifact metadata'
-                        leftIcon={<ListIcon />}
-                        onClick={onMenuClick}
-                    />
-                );
-                
-                runSubMenuContents.push(
-                    <MenuItemLink
-                        key={'data-profile'}
-                        to={`/run/${currentRun}/data-profile`}
-                        primaryText='Data profile'
-                        leftIcon={<ShortTextIcon />}
-                        onClick={onMenuClick}
-                    />
-                );
-                
-                runSubMenuContents.push(
-                    <MenuItemLink
-                        key={'data-resource'}
-                        to={`/run/${currentRun}/data-resource`}
-                        primaryText='Data resource'
-                        leftIcon={<ShortTextIcon />}
-                        onClick={onMenuClick}
-                    />
-                );
-                
-                runSubMenuContents.push(
-                    <MenuItemLink
-                        key={'run-environment'}
-                        to={`/run/${currentRun}/run-environment`}
-                        primaryText='Run environment'
-                        leftIcon={<ShortTextIcon />}
-                        onClick={onMenuClick}
-                    />
-                );
-                
-                runSubMenuContents.push(
-                    <MenuItemLink
-                        key={'run-metadata'}
-                        to={`/run/${currentRun}/run-metadata`}
-                        primaryText='Run metadata'
-                        leftIcon={<ShortTextIcon />}
-                        onClick={onMenuClick}
-                    />
-                );
-                
-                runSubMenuContents.push(
-                    <MenuItemLink
-                        key={'short-report'}
-                        to={`/run/${currentRun}/short-report`}
-                        primaryText='Short report'
-                        leftIcon={<ShortTextIcon />}
-                        onClick={onMenuClick}
-                    />
-                );
-                
-                runSubMenuContents.push(
-                    <MenuItemLink
-                        key={'short-schema'}
-                        to={`/run/${currentRun}/short-schema`}
-                        primaryText='Short schema'
-                        leftIcon={<ShortTextIcon />}
-                        onClick={onMenuClick}
-                    />
-                );
-                
-                const runSubMenu = (
-                    <div style={{ "paddingLeft": LEFT_PADDING }} key='run-sub-menu' >
-                        { runSubMenuContents }
-                    </div>
-                );
-                
-                experimentSubMenuContents.push(runSubMenu);
-            } else if (inRunComparison()) {
-                experimentSubMenuContents.push(<Divider key='run-comparison-divider' />);
-                experimentSubMenuContents.push(
-                    <MenuItemLink
-                        key={'run-comparison'}
-                        to={``}
-                        primaryText='Run comparison'
-                        leftIcon={<CompareArrowsIcon />}
-                        disabled={true}
-                    />
-                );
-            }
-            
-            const experimentSubMenu = (
-                <div style={{ "paddingLeft": LEFT_PADDING }} key='experiment-sub-menu' >
-                    { experimentSubMenuContents }
-                </div>
-            );
-            
-            projectSubMenuContents.push(experimentSubMenu);
-        }
-        
-        const projectSubMenu = (
-            <div style={{ "paddingLeft": LEFT_PADDING }} key='project-sub-menu' >
-                { projectSubMenuContents }
-            </div>
-        );
-        
-        menuContent.push(projectSubMenu);
+        menuContent.push(generateProjectSubMenu(currentProject, currentExperiment, currentRun, clearExperiment));
     }
     
-    // const isXSmall = useMediaQuery(theme => theme.breakpoints.down('xs'));
     return (
         <React.Fragment>
             { menuContent }
@@ -227,8 +59,82 @@ const CustomMenu = ({ onMenuClick, logout }) => {
     );
 }
 
-const inRunComparison = () => {
-    return (""+window.location).indexOf("run-comparison") > -1;
+const generateProjectSubMenu = (currentProject, currentExperiment, currentRun, clearExperiment) => {
+    let projectSubMenuContents = [];
+    
+    projectSubMenuContents.push(makeMenuItem('project-overview', '/project/overview', currentProject, <WorkIcon />, clearExperiment));
+    projectSubMenuContents.push(makeMenuItem('experiments', '/experiment', 'Experiments', <GroupWorkOutlinedIcon />, clearExperiment));
+    
+    if (currentExperiment) {
+        projectSubMenuContents.push(generateExperimentSubMenu(currentExperiment, currentRun));
+    }
+    
+    return (
+        <div style={{ "paddingLeft": LEFT_PADDING }} key='project-sub-menu' >
+            { projectSubMenuContents }
+        </div>
+    );
+}
+
+const generateExperimentSubMenu = (currentExperiment, currentRun) => {
+    let experimentSubMenuContents = [];
+    
+    experimentSubMenuContents.push(makeMenuItem('experiment-overview', '/experiment/overview', currentExperiment, <GroupWorkIcon />));
+    experimentSubMenuContents.push(makeMenuItem('runs', '/run', 'Runs', <AccountTreeOutlinedIcon />));
+    
+    if (currentRun) {
+        experimentSubMenuContents.push(generateRunSubMenu(currentRun));
+    } else if (InRunComparison()) {
+        experimentSubMenuContents.push(<Divider key='run-comparison-divider' />);
+        experimentSubMenuContents.push(makeMenuItem('run-comparison', '', 'Run comparison', <CompareArrowsIcon />, null, true));
+    }
+    
+    return (
+        <div style={{ "paddingLeft": LEFT_PADDING }} key='experiment-sub-menu' >
+            { experimentSubMenuContents }
+        </div>
+    );
+}
+
+const generateRunSubMenu = (currentRun) => {
+    let runSubMenuContents = [];
+    
+    runSubMenuContents.push(makeMenuItem('run-overview', '/run/' + currentRun + '/overview', currentRun, <AccountTreeIcon />));
+    runSubMenuContents.push(makeMenuItem('artifact-metadata', '/run/' + currentRun + '/artifact-metadata', 'Artifact metadata', <ListIcon />));
+    runSubMenuContents.push(makeMenuItem('data-profile', '/run/' + currentRun + '/data-profile', 'Data profile', <ShortTextIcon />));
+    runSubMenuContents.push(makeMenuItem('data-resource', '/run/' + currentRun + '/data-resource', 'Data resource', <ShortTextIcon />));
+    runSubMenuContents.push(makeMenuItem('run-environment', '/run/' + currentRun + '/run-environment', 'Run environment', <ShortTextIcon />));
+    runSubMenuContents.push(makeMenuItem('run-metadata', '/run/' + currentRun + '/run-metadata', 'Run metadata', <ShortTextIcon />));
+    runSubMenuContents.push(makeMenuItem('short-report', '/run/' + currentRun + '/short-report', 'Short report', <ShortTextIcon />));
+    runSubMenuContents.push(makeMenuItem('short-schema', '/run/' + currentRun + '/short-schema', 'Short schema', <ShortTextIcon />));
+    
+    return (
+        <div style={{ "paddingLeft": LEFT_PADDING }} key='run-sub-menu' >
+            { runSubMenuContents }
+        </div>
+    );
+}
+
+const makeMenuItem = (
+        key,
+        to = '',
+        primaryText = '',
+        leftIcon = null,
+        onClick = null,
+        disabled = false
+    ) => {
+    return (<MenuItemLink
+            key={key}
+            to={to}
+            primaryText={primaryText}
+            leftIcon={leftIcon}
+            onClick={onClick}
+            disabled={disabled}
+        />);
+}
+
+const InRunComparison = () => {
+    return useLocation().pathname.indexOf("run-comparison") > -1;
 }
 
 export default CustomMenu;

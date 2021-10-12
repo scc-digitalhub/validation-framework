@@ -14,7 +14,7 @@ export const ToggleWithLabels = ({
     
     return (
         <div className="toggle_with_labels" onClick={toggleCheckbox}>
-            <input type="checkbox" id={toggleName} checked="checked"/>
+            <input type="checkbox" id={toggleName} />
             <span>{leftLabel}</span>
             <span>{rightLabel}</span>
         </div>

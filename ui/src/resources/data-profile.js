@@ -4,7 +4,7 @@ import keyBy from 'lodash/keyBy'
 
 import { Datagrid, TextField, NumberField, FunctionField } from 'react-admin';
 import { useQuery, Loading } from 'react-admin';
-import { TopToolbar, SimpleShowLayout, ListContextProvider } from 'react-admin';
+import { Title, TopToolbar, SimpleShowLayout, ListContextProvider } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -72,7 +72,7 @@ const columnTypeCounts = (data) => {
     }
     
     return (
-        <Card style={{ "display": "inline-block", "margin-left": "20px" }}>
+        <Card style={{ "display": "inline-block", "marginLeft": "20px" }}>
             <ListContextProvider value={{
                     data: keyBy(listOfTypes, 'index'),
                     ids: listOfTypes.map(({ index }) => index),
@@ -106,9 +106,9 @@ const fieldStatistics = (data) => {
     let variableCards = [];
     for (let f in fields) {
         variableCards.push(
-            <Card>
+            <Card key={f}>
                 <CardContent>
-                    <Typography class='MuiFormLabel-root' >
+                    <Typography className='MuiFormLabel-root' >
                         {f}
                     </Typography>
                     
@@ -176,6 +176,7 @@ export const DataProfileDetail = props => {
     
     return (
         <React.Fragment>
+            <Title title="Data profile" />
             <TopToolbar>
                 <BackButton resource={resource} />
             </TopToolbar>

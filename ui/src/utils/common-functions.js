@@ -128,7 +128,7 @@ export const normalizeSeverity = (severity) => {
 }
 
 export const missingDocumentError = (resource) => {
-    return genericError(resource, "No document of this type found.");
+    return genericError(resource, 'No ' + resource + ' document found.');
 }
 
 export const genericError = (resource, errorMessage) => {
