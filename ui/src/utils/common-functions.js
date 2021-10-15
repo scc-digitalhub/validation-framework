@@ -3,12 +3,13 @@ import * as React from 'react';
 import { matchPath } from "react-router";
 import { useLocation } from "react-router-dom";
 
-import { TopToolbar } from 'react-admin';
-import { useRedirect } from 'react-admin';
+import { TopToolbar, MenuItemLink, useRedirect } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
+
+import { PATH_PROJECT, PATH_EXPERIMENT, PATH_RUN } from './common-constants';
 
 import { BackButton } from '../fields/back-button';
 import { AppContext } from '../contexts/app-context';
@@ -22,10 +23,10 @@ export const CheckProjectAndExperiment = () => {
     
     if (!currentProject) {
         valid = false;
-        redirect('/project');
+        redirect(PATH_PROJECT);
     } else if (!currentExperiment) {
         valid = false;
-        redirect('/experiment');
+        redirect(PATH_EXPERIMENT);
     }
     
     return valid;
@@ -35,7 +36,7 @@ export const GetCurrentRun = () => {
     let run = null;
     
     const runMatch = (matchPath(useLocation().pathname, {
-        path: ['/run/:run', '/run/:run/:other'],
+        path: [PATH_RUN + '/:run', PATH_RUN + '/:run/:other'],
         exact: true,
         strict: false
     }));
@@ -108,12 +109,36 @@ export const displayAsPercentage = (value, decimals = 2) => {
     return (value * 100).toFixed(dm) + '%';
 }
 
-export const makeFieldObject = (index, label, value) => {
-    return {
+export const createBaseEntry = (
+        index,
+        label,
+        value = null) => {
+    let entry = {
         'index': index,
-        'label': label,
-        'value': value
-    }
+        'label': label
+    };
+    
+    if (value !== null)
+        entry['value'] = value;
+    return entry;
+}
+
+export const makeMenuItemLink = (
+        key,
+        to = '',
+        primaryText = '',
+        leftIcon = null,
+        onClick = null,
+        disabled = false
+    ) => {
+    return (<MenuItemLink
+            key={key}
+            to={to}
+            primaryText={primaryText}
+            leftIcon={leftIcon}
+            onClick={onClick}
+            disabled={disabled}
+        />);
 }
 
 export const normalizeSeverity = (severity) => {
@@ -139,7 +164,7 @@ export const genericError = (resource, errorMessage) => {
             </TopToolbar>
             <Card>
                 <CardContent>
-                    <Typography class='MuiFormLabel-root' >
+                    <Typography className='MuiFormLabel-root' >
                         {errorMessage}
                     </Typography>
                 </CardContent>

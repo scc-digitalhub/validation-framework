@@ -11,13 +11,14 @@ public class ValidationStorageConstants {
     public static final String RUN_METADATA = "run-metadata";
     public static final String SHORT_REPORT = "short-report";
     public static final String SHORT_SCHEMA = "short-schema";
-    public static final String RUN_COMPARISON = "run-comparison";
-    public static final String RUN_COMPARISON_RECENT = "recent";
     
-    // RunMetadata documents act as representatives for the run they refer to. This is especially true for the UI,
-    // where all data related to a run is nested within the RunMetadata document. To make this nesting more explicit,
-    // UI end-points will use this constant for the portion of the path that identifies a run.
+    // RunMetadata documents act as representatives for the run they refer to, and are used as base to build
+    // run summaries. This is especially important for the UI, which bases its list of runs on run summaries.
+    // These constants are for run summary end-points.
     public static final String RUN = "run";
+    public static final String RUN_RICH = "run-rich";
+    public static final String RUN_RICH_RECENT = "run-rich-recent";
+    public static final int RECENT_RUNS_NUMBER = 5;
     
     // Date format and contents field for dates in RunMetadata documents
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";

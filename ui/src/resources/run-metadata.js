@@ -8,7 +8,7 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 
 import { BackButton } from '../fields/back-button';
-
+import { RESOURCE_RUN_METADATA } from '../utils/common-constants';
 import { CheckProjectAndExperiment, calculateDuration, missingDocumentError } from '../utils/common-functions';
 
 const getStatus = (data) => {
@@ -24,10 +24,9 @@ const getDuration = (data) => {
 export const RunMetadataDetail = props => {
     CheckProjectAndExperiment();
     
-    const resource = 'run-metadata';
     const { data, loading, error } = useQuery({
         type: 'getOne',
-        resource: resource,
+        resource: RESOURCE_RUN_METADATA,
         payload: {
             id: props.match.params.runId
         }
@@ -36,7 +35,7 @@ export const RunMetadataDetail = props => {
     if (loading)
         return <Loading />;
     if (error || !data)
-        return missingDocumentError(resource);
+        return missingDocumentError(RESOURCE_RUN_METADATA);
     
     if (!data.contents)
         data.contents = {};
@@ -45,11 +44,11 @@ export const RunMetadataDetail = props => {
         <React.Fragment>
             <Title title="Run metadata" />
             <TopToolbar>
-                <BackButton resource={resource} />
+                <BackButton resource={RESOURCE_RUN_METADATA} />
             </TopToolbar>
             <Card>
                 <CardContent>
-                    <SimpleShowLayout record={data} resource={resource}>
+                    <SimpleShowLayout record={data} resource={RESOURCE_RUN_METADATA}>
                         <FunctionField label="Status" render={getStatus} />
                         <FunctionField label="Duration" render={getDuration} />
                         <TextField source="contents.runMetadataUri" label="Run metadata URI" />

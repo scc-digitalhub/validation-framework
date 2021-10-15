@@ -11,7 +11,8 @@ import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 
 import { BackButton } from '../fields/back-button';
-import { CheckProjectAndExperiment, formatDuration, makeFieldObject, normalizeSeverity, missingDocumentError } from '../utils/common-functions';
+import { RESOURCE_SHORT_REPORT } from '../utils/common-constants';
+import { CheckProjectAndExperiment, formatDuration, createBaseEntry, normalizeSeverity, missingDocumentError } from '../utils/common-functions';
 
 import { ToggleWithLabels } from '../components/toggle-with-labels';
 import { SeverityIndicator } from '../components/severity_indicator';
@@ -34,7 +35,7 @@ const errorStatisticsRender = (data) => {
     
     let severityList = [];
     for (let e in errorSeverityCounters)
-        severityList.push(makeFieldObject(e-1, e, errorSeverityCounters[e]));
+        severityList.push(createBaseEntry(e-1, e, errorSeverityCounters[e]));
     
     return (
         <Card>
@@ -208,10 +209,9 @@ const errorsRender = (data) => {
 export const ShortReportDetail = props => {
     CheckProjectAndExperiment();
     
-    const resource = 'short-report';
     const { data, loading, error } = useQuery({
         type: 'getOne',
-        resource: resource,
+        resource: RESOURCE_SHORT_REPORT,
         payload: {
             id: props.match.params.runId
         }
@@ -220,7 +220,7 @@ export const ShortReportDetail = props => {
     if (loading)
         return <Loading />;
     if (error || !data)
-        return missingDocumentError(resource);
+        return missingDocumentError(RESOURCE_SHORT_REPORT);
     
     if (!data.contents)
         data.contents = {};
@@ -229,11 +229,11 @@ export const ShortReportDetail = props => {
         <React.Fragment>
             <Title title="Short report" />
             <TopToolbar>
-                <BackButton resource={resource} />
+                <BackButton resource={RESOURCE_SHORT_REPORT} />
             </TopToolbar>
             <Card>
                 <CardContent>
-                    <SimpleShowLayout record={data} resource={resource}>
+                    <SimpleShowLayout record={data} resource={RESOURCE_SHORT_REPORT}>
                         <TextField source="contents.valid" label="Valid" />
                         <FunctionField label="Number of errors" render={data => data.contents.errors.length} />
                         <FunctionField label="Error statistics" render={errorStatisticsRender} />

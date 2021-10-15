@@ -1,15 +1,8 @@
-package it.smartcommunitylab.validationstorage.runcomparison;
+package it.smartcommunitylab.validationstorage.model;
 
 import java.util.Date;
 import java.util.List;
 
-import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
-import it.smartcommunitylab.validationstorage.model.DataProfile;
-import it.smartcommunitylab.validationstorage.model.DataResource;
-import it.smartcommunitylab.validationstorage.model.RunEnvironment;
-import it.smartcommunitylab.validationstorage.model.RunMetadata;
-import it.smartcommunitylab.validationstorage.model.ShortReport;
-import it.smartcommunitylab.validationstorage.model.ShortSchema;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

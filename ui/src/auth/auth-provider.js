@@ -1,9 +1,11 @@
 import { fetchUtils } from 'react-admin';
 
-const backendUrl = process.env.REACT_APP_BACKEND_ADDRESS;
-const logoutUrl = backendUrl + '/logout';
+import { ENDPOINT_LOGOUT, ENDPOINT_USER } from '../utils/common-constants';
 
-let userUri = '/user';
+const backendUrl = process.env.REACT_APP_BACKEND_ADDRESS;
+const logoutUrl = backendUrl + ENDPOINT_LOGOUT;
+
+let userUri = ENDPOINT_USER;
 if (!userUri.startsWith("http")) {
     userUri = window.location.origin + userUri;
 }

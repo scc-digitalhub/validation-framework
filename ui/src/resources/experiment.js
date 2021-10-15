@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { List, Datagrid, TextField, FunctionField } from 'react-admin';
 import { useRedirect, useQuery, Loading } from 'react-admin';
-import { Title, Toolbar, TopToolbar, MenuItemLink, SimpleShowLayout } from 'react-admin';
+import { Title, Toolbar, TopToolbar, SimpleShowLayout } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -15,12 +15,13 @@ import { CompareRecentButton } from '../fields/compare-recent-button';
 
 import { AppContext } from '../contexts/app-context';
 
-import { CheckProjectAndExperiment, missingDocumentError } from '../utils/common-functions';
+import { PATH_PROJECT, PATH_RUN, PATH_RUN_COMPARISON_RECENT, RESOURCE_EXPERIMENT } from '../utils/common-constants';
+import { CheckProjectAndExperiment, missingDocumentError, makeMenuItemLink } from '../utils/common-functions';
 
 const ListActions = (props) => {
     return (
         <TopToolbar>
-            <BackButton key='back-button' resource='experiment' />
+            <BackButton key='back-button' resource={RESOURCE_EXPERIMENT} />
         </TopToolbar>
     );
 }
@@ -29,7 +30,7 @@ export const ExperimentList = (props) => {
     const redirect = useRedirect();
     const currentProject = React.useContext(AppContext).getProject();
     if (!currentProject) {
-        redirect('/project');
+        redirect(PATH_PROJECT);
         return null;
     }
     
@@ -51,12 +52,11 @@ export const ExperimentList = (props) => {
 export const ExperimentOverview = props => {
     CheckProjectAndExperiment();
     
-    const resource = 'experiment';
     const currentExperiment = React.useContext(AppContext).getExperiment();
 
     const { data, loading, error } = useQuery({
         type: 'getOne',
-        resource: resource,
+        resource: RESOURCE_EXPERIMENT,
         payload: {
             id: currentExperiment
         }
@@ -65,19 +65,19 @@ export const ExperimentOverview = props => {
     if (loading)
         return <Loading />;
     if (error || !data)
-        return missingDocumentError(resource);
+        return missingDocumentError(RESOURCE_EXPERIMENT);
     
     return (
         <React.Fragment>
             <Title title={data.experimentName} />
             <TopToolbar>
                 <CompareRecentButton key='compare-recent-button' />
-                <BackButton key='back-button' resource='experiment' clear={true} />
+                <BackButton key='back-button' resource={RESOURCE_EXPERIMENT} clear={true} />
             </TopToolbar>
             <Card>
                 <CardContent>
                     <React.Fragment>
-                        <SimpleShowLayout record={data} resource={resource}>
+                        <SimpleShowLayout record={data} resource={RESOURCE_EXPERIMENT}>
                             <FunctionField label="Name" render={data => <h1> {data.experimentName} </h1>} />
                             <TextField source="experimentId" label="Experiment ID" />
                             <TextField source="id" label="ID" />
@@ -86,18 +86,8 @@ export const ExperimentOverview = props => {
                 </CardContent>
                 
                 <Toolbar>
-                    <MenuItemLink
-                        key='run'
-                        to='/run'
-                        primaryText='Runs'
-                        leftIcon={<ListIcon />}
-                    />
-                    <MenuItemLink
-                        key='run-comparison'
-                        to='/run-comparison/recent'
-                        primaryText='Compare recent runs'
-                        leftIcon={<CompareArrowsIcon />}
-                    />
+                    {makeMenuItemLink('run', PATH_RUN, 'Runs', <ListIcon />)}
+                    {makeMenuItemLink('run-comparison-recent', PATH_RUN_COMPARISON_RECENT, 'Compare recent runs', <CompareArrowsIcon />)}
                 </Toolbar>
             </Card>
         </React.Fragment>

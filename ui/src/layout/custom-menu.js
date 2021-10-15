@@ -1,10 +1,12 @@
 import * as React from 'react';
 
-import { DashboardMenuItem, MenuItemLink } from 'react-admin';
+import { DashboardMenuItem } from 'react-admin';
 
 import { useLocation } from "react-router-dom";
-
-import { GetCurrentRun } from '../utils/common-functions';
+import { PATH_PROJECT, PATH_EXPERIMENT, PATH_RUN, PATH_RUN_COMPARISON, PATH_OVERVIEW,
+ PATH_ARTIFACT_METADATA, PATH_DATA_PROFILE, PATH_DATA_RESOURCE, PATH_RUN_ENVIRONMENT,
+ PATH_RUN_METADATA, PATH_SHORT_REPORT, PATH_SHORT_SCHEMA} from '../utils/common-constants';
+import { GetCurrentRun, makeMenuItemLink } from '../utils/common-functions';
 
 import WorkIcon from '@material-ui/icons/Work';
 import WorkOutline from '@material-ui/icons/WorkOutline';
@@ -46,10 +48,12 @@ const generateMainMenu = (currentProject, currentExperiment, currentRun, clearPr
     menuContent.push(<DashboardMenuItem onClick={clearProject} key='dashboard' />)
     menuContent.push(<Divider key='project-list-divider' />);
     
-    menuContent.push(makeMenuItem('projects', '/project', 'Projects', <WorkOutline />, clearProject));
+    menuContent.push(makeMenuItemLink('projects', PATH_PROJECT, 'Projects', <WorkOutline />, clearProject));
+    
+    const inRunComparison = InRunComparison();
     
     if (currentProject) {
-        menuContent.push(generateProjectSubMenu(currentProject, currentExperiment, currentRun, clearExperiment));
+        menuContent.push(generateProjectSubMenu(currentProject, currentExperiment, inRunComparison, currentRun, clearExperiment));
     }
     
     return (
@@ -59,14 +63,14 @@ const generateMainMenu = (currentProject, currentExperiment, currentRun, clearPr
     );
 }
 
-const generateProjectSubMenu = (currentProject, currentExperiment, currentRun, clearExperiment) => {
+const generateProjectSubMenu = (currentProject, currentExperiment, inRunComparison, currentRun, clearExperiment) => {
     let projectSubMenuContents = [];
     
-    projectSubMenuContents.push(makeMenuItem('project-overview', '/project/overview', currentProject, <WorkIcon />, clearExperiment));
-    projectSubMenuContents.push(makeMenuItem('experiments', '/experiment', 'Experiments', <GroupWorkOutlinedIcon />, clearExperiment));
+    projectSubMenuContents.push(makeMenuItemLink('project-overview', PATH_PROJECT + PATH_OVERVIEW, currentProject, <WorkIcon />, clearExperiment));
+    projectSubMenuContents.push(makeMenuItemLink('experiments', PATH_EXPERIMENT, 'Experiments', <GroupWorkOutlinedIcon />, clearExperiment));
     
     if (currentExperiment) {
-        projectSubMenuContents.push(generateExperimentSubMenu(currentExperiment, currentRun));
+        projectSubMenuContents.push(generateExperimentSubMenu(currentExperiment, inRunComparison, currentRun));
     }
     
     return (
@@ -76,17 +80,17 @@ const generateProjectSubMenu = (currentProject, currentExperiment, currentRun, c
     );
 }
 
-const generateExperimentSubMenu = (currentExperiment, currentRun) => {
+const generateExperimentSubMenu = (currentExperiment, inRunComparison, currentRun) => {
     let experimentSubMenuContents = [];
     
-    experimentSubMenuContents.push(makeMenuItem('experiment-overview', '/experiment/overview', currentExperiment, <GroupWorkIcon />));
-    experimentSubMenuContents.push(makeMenuItem('runs', '/run', 'Runs', <AccountTreeOutlinedIcon />));
+    experimentSubMenuContents.push(makeMenuItemLink('experiment-overview', PATH_EXPERIMENT + PATH_OVERVIEW, currentExperiment, <GroupWorkIcon />));
+    experimentSubMenuContents.push(makeMenuItemLink('runs', PATH_RUN, 'Runs', <AccountTreeOutlinedIcon />));
     
     if (currentRun) {
         experimentSubMenuContents.push(generateRunSubMenu(currentRun));
-    } else if (InRunComparison()) {
+    } else if (inRunComparison) {
         experimentSubMenuContents.push(<Divider key='run-comparison-divider' />);
-        experimentSubMenuContents.push(makeMenuItem('run-comparison', '', 'Run comparison', <CompareArrowsIcon />, null, true));
+        experimentSubMenuContents.push(makeMenuItemLink('run-comparison', '', 'Run comparison', <CompareArrowsIcon />, null, true));
     }
     
     return (
@@ -99,14 +103,14 @@ const generateExperimentSubMenu = (currentExperiment, currentRun) => {
 const generateRunSubMenu = (currentRun) => {
     let runSubMenuContents = [];
     
-    runSubMenuContents.push(makeMenuItem('run-overview', '/run/' + currentRun + '/overview', currentRun, <AccountTreeIcon />));
-    runSubMenuContents.push(makeMenuItem('artifact-metadata', '/run/' + currentRun + '/artifact-metadata', 'Artifact metadata', <ListIcon />));
-    runSubMenuContents.push(makeMenuItem('data-profile', '/run/' + currentRun + '/data-profile', 'Data profile', <ShortTextIcon />));
-    runSubMenuContents.push(makeMenuItem('data-resource', '/run/' + currentRun + '/data-resource', 'Data resource', <ShortTextIcon />));
-    runSubMenuContents.push(makeMenuItem('run-environment', '/run/' + currentRun + '/run-environment', 'Run environment', <ShortTextIcon />));
-    runSubMenuContents.push(makeMenuItem('run-metadata', '/run/' + currentRun + '/run-metadata', 'Run metadata', <ShortTextIcon />));
-    runSubMenuContents.push(makeMenuItem('short-report', '/run/' + currentRun + '/short-report', 'Short report', <ShortTextIcon />));
-    runSubMenuContents.push(makeMenuItem('short-schema', '/run/' + currentRun + '/short-schema', 'Short schema', <ShortTextIcon />));
+    runSubMenuContents.push(makeMenuItemLink('run-overview', PATH_RUN + '/' + currentRun + PATH_OVERVIEW, currentRun, <AccountTreeIcon />));
+    runSubMenuContents.push(makeMenuItemLink('artifact-metadata', PATH_RUN + '/' + currentRun + PATH_ARTIFACT_METADATA, 'Artifact metadata', <ListIcon />));
+    runSubMenuContents.push(makeMenuItemLink('data-profile', PATH_RUN + '/' + currentRun + PATH_DATA_PROFILE, 'Data profile', <ShortTextIcon />));
+    runSubMenuContents.push(makeMenuItemLink('data-resource', PATH_RUN + '/' + currentRun + PATH_DATA_RESOURCE, 'Data resource', <ShortTextIcon />));
+    runSubMenuContents.push(makeMenuItemLink('run-environment', PATH_RUN + '/' + currentRun + PATH_RUN_ENVIRONMENT, 'Run environment', <ShortTextIcon />));
+    runSubMenuContents.push(makeMenuItemLink('run-metadata', PATH_RUN + '/' + currentRun + PATH_RUN_METADATA, 'Run metadata', <ShortTextIcon />));
+    runSubMenuContents.push(makeMenuItemLink('short-report', PATH_RUN + '/' + currentRun + PATH_SHORT_REPORT, 'Short report', <ShortTextIcon />));
+    runSubMenuContents.push(makeMenuItemLink('short-schema', PATH_RUN + '/' + currentRun + PATH_SHORT_SCHEMA, 'Short schema', <ShortTextIcon />));
     
     return (
         <div style={{ "paddingLeft": LEFT_PADDING }} key='run-sub-menu' >
@@ -115,26 +119,8 @@ const generateRunSubMenu = (currentRun) => {
     );
 }
 
-const makeMenuItem = (
-        key,
-        to = '',
-        primaryText = '',
-        leftIcon = null,
-        onClick = null,
-        disabled = false
-    ) => {
-    return (<MenuItemLink
-            key={key}
-            to={to}
-            primaryText={primaryText}
-            leftIcon={leftIcon}
-            onClick={onClick}
-            disabled={disabled}
-        />);
-}
-
 const InRunComparison = () => {
-    return useLocation().pathname.indexOf("run-comparison") > -1;
+    return useLocation().pathname.indexOf(PATH_RUN_COMPARISON) > -1;
 }
 
 export default CustomMenu;

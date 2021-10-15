@@ -11,23 +11,24 @@ import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 
 import { BackButton } from '../fields/back-button';
-import { CheckProjectAndExperiment, displayAsPercentage, formatBytes, formatDuration, makeFieldObject, missingDocumentError } from '../utils/common-functions';
+import { RESOURCE_DATA_PROFILE } from '../utils/common-constants';
+import { CheckProjectAndExperiment, displayAsPercentage, formatBytes, formatDuration, createBaseEntry, missingDocumentError } from '../utils/common-functions';
 
 const getListOfMeasurementFields = (stats) => {
     let results = [];
     if (!stats)
         return results;
     
-    results.push(makeFieldObject(0, 'Number of records', stats.n));
-    results.push(makeFieldObject(1, 'Number of columns', stats.n_var));
-    results.push(makeFieldObject(2, 'Size', formatBytes(stats.memory_size)));
-    results.push(makeFieldObject(3, 'Size of a single record', formatBytes(stats.record_size)));
-    results.push(makeFieldObject(4, 'Cells with no value', stats.n_cells_missing));
-    results.push(makeFieldObject(5, 'Cells with no value (%)', displayAsPercentage(stats.p_cells_missing)));
-    results.push(makeFieldObject(6, 'Columns with missing values', stats.n_vars_with_missing));
-    results.push(makeFieldObject(7, 'Empty columns', stats.n_vars_all_missing));
-    results.push(makeFieldObject(8, 'Duplicate records', stats.n_duplicates));
-    results.push(makeFieldObject(9, 'Duplicate records (%)', displayAsPercentage(stats.p_duplicates)));
+    results.push(createBaseEntry(0, 'Number of records', stats.n));
+    results.push(createBaseEntry(1, 'Number of columns', stats.n_var));
+    results.push(createBaseEntry(2, 'Size', formatBytes(stats.memory_size)));
+    results.push(createBaseEntry(3, 'Size of a single record', formatBytes(stats.record_size)));
+    results.push(createBaseEntry(4, 'Cells with no value', stats.n_cells_missing));
+    results.push(createBaseEntry(5, 'Cells with no value (%)', displayAsPercentage(stats.p_cells_missing)));
+    results.push(createBaseEntry(6, 'Columns with missing values', stats.n_vars_with_missing));
+    results.push(createBaseEntry(7, 'Empty columns', stats.n_vars_all_missing));
+    results.push(createBaseEntry(8, 'Duplicate records', stats.n_duplicates));
+    results.push(createBaseEntry(9, 'Duplicate records (%)', displayAsPercentage(stats.p_duplicates)));
     
     return results;
 }
@@ -67,7 +68,7 @@ const columnTypeCounts = (data) => {
     let listOfTypes = [];
     let i = 0;
     for (let t in types) {
-        listOfTypes.push(makeFieldObject(i, t, types[t]));
+        listOfTypes.push(createBaseEntry(i, t, types[t]));
         i++;
     }
     
@@ -157,10 +158,9 @@ const fieldStatistics = (data) => {
 export const DataProfileDetail = props => {
     CheckProjectAndExperiment();
     
-    const resource = 'data-profile';
     const { data, loading, error } = useQuery({
         type: 'getOne',
-        resource: resource,
+        resource: RESOURCE_DATA_PROFILE,
         payload: {
             id: props.match.params.runId
         }
@@ -169,7 +169,7 @@ export const DataProfileDetail = props => {
     if (loading)
         return <Loading />;
     if (error || !data)
-        return missingDocumentError(resource);
+        return missingDocumentError(RESOURCE_DATA_PROFILE);
     
     if (!data.contents)
         data.contents = {};
@@ -178,11 +178,11 @@ export const DataProfileDetail = props => {
         <React.Fragment>
             <Title title="Data profile" />
             <TopToolbar>
-                <BackButton resource={resource} />
+                <BackButton resource={RESOURCE_DATA_PROFILE} />
             </TopToolbar>
             <Card>
                 <CardContent>
-                    <SimpleShowLayout record={data} resource={resource}>
+                    <SimpleShowLayout record={data} resource={RESOURCE_DATA_PROFILE}>
                         <FunctionField label="Duration" render={data => formatDuration(data.contents.duration*1000)} />
                         <TextField source="contents.dataResourceUri" label="Data resource URI" />
                         <FunctionField label="Statistics" render={fullStatistics} />

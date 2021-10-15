@@ -8,12 +8,13 @@ import { useQuery, Loading, Error, ListContextProvider } from 'react-admin'
 import Card from '@material-ui/core/Card';
 
 import { BackButton } from '../fields/back-button';
+import { PATH_RUN, PATH_ARTIFACT_METADATA, RESOURCE_ARTIFACT_METADATA } from '../utils/common-constants';
 import { CheckProjectAndExperiment } from '../utils/common-functions';
 
 const ListActions = (props) => {
     return (
         <TopToolbar>
-            <BackButton key='back-button' resource='artifact-metadata' />
+            <BackButton key='back-button' resource={RESOURCE_ARTIFACT_METADATA} />
         </TopToolbar>
     );
 }
@@ -21,10 +22,9 @@ const ListActions = (props) => {
 export const ArtifactMetadataList = (props) => {
     CheckProjectAndExperiment();
     
-    const resource = 'artifact-metadata';
     const { data, loading, error } = useQuery({
         type: 'getList',
-        resource: resource,
+        resource: RESOURCE_ARTIFACT_METADATA,
         payload: {
             id: props.match.params.runId,
             pagination: {
@@ -42,7 +42,7 @@ export const ArtifactMetadataList = (props) => {
     if (error) return <Error error={error} />;
     if (!data) return null;
     
-    const basePath = '/run/' + props.match.params.runId + '/artifact-metadata';
+    const basePath = PATH_RUN + '/' + props.match.params.runId + PATH_ARTIFACT_METADATA;
     
     return (
         <React.Fragment>
@@ -56,7 +56,7 @@ export const ArtifactMetadataList = (props) => {
                         perPage: 50,
                         currentSort: { field: 'name', order: 'ASC' },
                         basePath: basePath,
-                        resource: { resource }
+                        resource: { RESOURCE_ARTIFACT_METADATA }
                 }}>
                     <Datagrid rowClick="" actions={<ListActions />}>
                         <TextField source="name" />

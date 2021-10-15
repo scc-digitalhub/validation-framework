@@ -1,6 +1,6 @@
-import { contentsLabel, prepareColumns, addRawData, createBaseEntry, generateComparisonSection } from './common';
+import { contentsLabel, prepareColumns, addRawData, generateComparisonSection } from './common';
 
-import { calculateDuration } from '../../utils/common-functions';
+import { calculateDuration, createBaseEntry } from '../../utils/common-functions';
 
 const sectionLabel = "runMetadata";
 const rawFieldNames = ["created", "started", "finished"];

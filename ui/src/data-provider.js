@@ -2,6 +2,10 @@ import * as React from 'react';
 
 import { fetchUtils } from 'react-admin';
 
+import { ENDPOINT_PROJECT, ENDPOINT_EXPERIMENT, ENDPOINT_RUN, ENDPOINT_RUN_RICH, ENDPOINT_RUN_RICH_RECENT,
+ ENDPOINT_ARTIFACT_METADATA, RESOURCE_PROJECT, RESOURCE_EXPERIMENT, RESOURCE_RUN, RESOURCE_RUN_COMPARISON,
+ RESOURCE_RUN_COMPARISON_RECENT, RESOURCE_ARTIFACT_METADATA } from './utils/common-constants';
+
 const backendUrl = process.env.REACT_APP_BACKEND_ADDRESS;
 
 const httpClient = (url, options = {}) => {
@@ -21,28 +25,40 @@ export class DataProvider extends React.Component {
         const sort = params.sort.field + ',' + params.sort.order;
         const query = 'page=' + (page-1) + '&size=' + size + '&sort=' + sort;
         
-        let url = `${backendUrl}/project`;
+        let url = `${backendUrl}`+ENDPOINT_PROJECT;
         
         switch(resource) {
-            case 'project':
+            case RESOURCE_PROJECT:
                 url += `?${query}`;
                 break;
-            case 'experiment':
+            case RESOURCE_EXPERIMENT:
                 if (!this.getProject())
                     return Promise.reject(new Error('Project not set.'));
-                url += `/${this.getProject()}/experiment?${query}`;
+                url += `/${this.getProject()}`+ENDPOINT_EXPERIMENT+`?${query}`;
                 break;
-            case 'run':
+            case RESOURCE_RUN:
                 if (!this.getProject() || !this.getExperiment())
                     return Promise.reject(new Error('Project or experiment not set.'));
-                url += `/${this.getProject()}/experiment/${this.getExperiment()}/run?${query}`;
+                url += `/${this.getProject()}`+ENDPOINT_EXPERIMENT+`/${this.getExperiment()}`+ENDPOINT_RUN+`?${query}`;
                 break;
-            case 'artifact-metadata':
+            case RESOURCE_RUN_COMPARISON:
+                if (!this.getProject() || !this.getExperiment())
+                    return Promise.reject(new Error('Project or experiment not set.'));
+                if (!params.ids)
+                    return Promise.reject(new Error('IDs are missing.'));
+                url += `/${this.getProject()}`+ENDPOINT_EXPERIMENT+`/${this.getExperiment()}`+ENDPOINT_RUN_RICH+`/${params.ids}`;
+                break;
+            case RESOURCE_RUN_COMPARISON_RECENT:
+                if (!this.getProject() || !this.getExperiment())
+                    return Promise.reject(new Error('Project or experiment not set.'));
+                url += `/${this.getProject()}`+ENDPOINT_EXPERIMENT+`/${this.getExperiment()}`+ENDPOINT_RUN_RICH_RECENT;
+                break;
+            case RESOURCE_ARTIFACT_METADATA:
                 if (!this.getProject() || !this.getExperiment())
                     return Promise.reject(new Error('Project or experiment not set.'));
                 if (!params.id)
                     return Promise.reject(new Error('Run ID is null.'));
-                url += `/${this.getProject()}/experiment/${this.getExperiment()}/run/${params.id}/artifact-metadata?${query}`;
+                url += `/${this.getProject()}`+ENDPOINT_EXPERIMENT+`/${this.getExperiment()}`+ENDPOINT_RUN+`/${params.id}`+ENDPOINT_ARTIFACT_METADATA+`?${query}`;
                 break;
             default:
                 return Promise.reject(new Error('Invalid getList request.'));
@@ -55,36 +71,29 @@ export class DataProvider extends React.Component {
     }
     
     getOne(resource, params) {
-        let url = `${backendUrl}/project`;
+        let url = `${backendUrl}` + ENDPOINT_PROJECT;
         switch (resource) {
-            case 'project':
+            case RESOURCE_PROJECT:
                 url += `/${params.id}`;
                 break;
-            case 'experiment':
+            case RESOURCE_EXPERIMENT:
                 if (!this.getProject())
                     return Promise.reject(new Error('Project not set.'));
-                url += `/${this.getProject()}/experiment/${params.id}`;
+                url += `/${this.getProject()}`+ENDPOINT_EXPERIMENT+`/${params.id}`;
                 break;
-            case 'run':
+            case RESOURCE_RUN:
                 if (!this.getProject() || !this.getExperiment())
                     return Promise.reject(new Error('Project or experiment not set.'));
                 if (!params.id)
                     return Promise.reject(new Error('Run ID is null.'));
-                url += `/${this.getProject()}/experiment/${this.getExperiment()}/run/${params.id}`;
-                break;
-            case 'run-comparison':
-                if (!this.getProject() || !this.getExperiment())
-                    return Promise.reject(new Error('Project or experiment not set.'));
-                if (!params.ids)
-                    return Promise.reject(new Error('IDs are missing.'));
-                url += `/${this.getProject()}/experiment/${this.getExperiment()}/run-comparison/${params.ids}`;
+                url += `/${this.getProject()}`+ENDPOINT_EXPERIMENT+`/${this.getExperiment()}`+ENDPOINT_RUN+`/${params.id}`;
                 break;
             default:
                 if (!this.getProject() || !this.getExperiment())
                     return Promise.reject(new Error('Project or experiment not set.'));
                 if (!params.id)
                     return Promise.reject(new Error('Run ID is null.'));
-                url += `/${this.getProject()}/experiment/${this.getExperiment()}/run/${params.id}/${resource}`;
+                url += `/${this.getProject()}`+ENDPOINT_EXPERIMENT+`/${this.getExperiment()}`+ENDPOINT_RUN+`/${params.id}/${resource}`;
         }
         
         return httpClient(url).then( ({ json }) => ({
@@ -93,7 +102,7 @@ export class DataProvider extends React.Component {
     }
     
     create(resource, params) {
-        if (resource === 'project') {
+        if (resource === RESOURCE_PROJECT) {
             return httpClient(`${backendUrl}/${resource}`, {
                 method: 'POST',
                 body: JSON.stringify(params.data),
@@ -104,10 +113,10 @@ export class DataProvider extends React.Component {
     }
     
     update(resource, params) {
-        if (resource === 'project') {
+        if (resource === RESOURCE_PROJECT) {
             if (!params.id)
                 return Promise.reject(new Error('Project ID is null.'));
-            return httpClient(`${backendUrl}/project/${params.id}`, {
+            return httpClient(`${backendUrl}`+ENDPOINT_PROJECT+`/${params.id}`, {
                 method: 'PUT',
                 body: JSON.stringify(params.data),
             }).then(({ json }) => ({ data: json }));
@@ -117,8 +126,8 @@ export class DataProvider extends React.Component {
     }
     
     delete(resource, params) {
-        let url = `${backendUrl}/project`;
-        if (resource !== 'project')
+        let url = `${backendUrl}`+ENDPOINT_PROJECT;
+        if (resource !== RESOURCE_PROJECT)
             url += `/${this.getProject()}/${resource}`;
         
         if (!params.id)
@@ -129,8 +138,8 @@ export class DataProvider extends React.Component {
     }
     
     deleteMany(resource, params) {
-        let url = `${backendUrl}/project`;
-        if (resource !== 'project')
+        let url = `${backendUrl}`+ENDPOINT_PROJECT;
+        if (resource !== RESOURCE_PROJECT)
             url += `/${this.getProject()}/${resource}`;
         
         return Promise.all(

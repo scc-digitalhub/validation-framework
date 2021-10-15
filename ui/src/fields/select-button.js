@@ -7,6 +7,9 @@ import ArrowForward from '@material-ui/icons/ArrowForward';
 
 import { AppContext } from '../contexts/app-context';
 
+import { PATH_PROJECT, PATH_EXPERIMENT, PATH_RUN, PATH_OVERVIEW, RESOURCE_PROJECT,
+ RESOURCE_EXPERIMENT, RESOURCE_RUN} from '../utils/common-constants';
+
 const defaultIcon = <ArrowForward />;
 
 export const SelectButton = ({
@@ -23,17 +26,17 @@ export const SelectButton = ({
     
     const handleClick = () => {
         switch(resource) {
-            case 'project':
+            case RESOURCE_PROJECT:
                 setProject(record.id);
                 setExperiment(null);
-                redirect('/project/overview');
+                redirect(PATH_PROJECT + PATH_OVERVIEW);
                 break;
-            case 'experiment':
+            case RESOURCE_EXPERIMENT:
                 setExperiment(record.experimentId);
-                redirect('/experiment/overview');
+                redirect(PATH_EXPERIMENT + PATH_OVERVIEW);
                 break;
-            case 'run':
-                redirect('/run/' + record.runId + '/overview');
+            case RESOURCE_RUN:
+                redirect(PATH_RUN + '/' + record.runId + PATH_OVERVIEW);
                 break;
             default:
         }

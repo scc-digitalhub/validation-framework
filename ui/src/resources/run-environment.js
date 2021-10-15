@@ -8,15 +8,15 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 
 import { BackButton } from '../fields/back-button';
+import { RESOURCE_RUN_ENVIRONMENT } from '../utils/common-constants';
 import { CheckProjectAndExperiment, formatBytes, missingDocumentError } from '../utils/common-functions';
 
 export const RunEnvironmentDetail = props => {
     CheckProjectAndExperiment();
     
-    const resource = 'run-environment';
     const { data, loading, error } = useQuery({
         type: 'getOne',
-        resource: resource,
+        resource: RESOURCE_RUN_ENVIRONMENT,
         payload: {
             id: props.match.params.runId
         }
@@ -25,7 +25,7 @@ export const RunEnvironmentDetail = props => {
     if (loading)
         return <Loading />;
     if (error || !data)
-        return missingDocumentError(resource);
+        return missingDocumentError(RESOURCE_RUN_ENVIRONMENT);
     
     if (!data.contents)
         data.contents = {};
@@ -34,11 +34,11 @@ export const RunEnvironmentDetail = props => {
         <React.Fragment>
             <Title title="Run environment" />
             <TopToolbar>
-                <BackButton resource={resource} />
+                <BackButton resource={RESOURCE_RUN_ENVIRONMENT} />
             </TopToolbar>
             <Card>
                 <CardContent>
-                    <SimpleShowLayout record={data} resource={resource}>
+                    <SimpleShowLayout record={data} resource={RESOURCE_RUN_ENVIRONMENT}>
                         <TextField source="contents.platform" label="Platform" />
                         <TextField source="contents.pythonVersion" label="Python version" />
                         <TextField source="contents.cpuModel" label="CPU model" />

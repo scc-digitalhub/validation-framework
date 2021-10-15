@@ -10,6 +10,7 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 
 import { BackButton } from '../fields/back-button';
+import { RESOURCE_SHORT_SCHEMA } from '../utils/common-constants';
 import { CheckProjectAndExperiment, formatDuration, missingDocumentError } from '../utils/common-functions';
 
 const renderSchema = (data) => {
@@ -46,10 +47,9 @@ const renderSchema = (data) => {
 export const ShortSchemaDetail = props => {
     CheckProjectAndExperiment();
     
-    const resource = 'short-schema';
     const { data, loading, error } = useQuery({
         type: 'getOne',
-        resource: resource,
+        resource: RESOURCE_SHORT_SCHEMA,
         payload: {
             id: props.match.params.runId
         }
@@ -58,7 +58,7 @@ export const ShortSchemaDetail = props => {
     if (loading)
         return <Loading />;
     if (error || !data)
-        return missingDocumentError(resource);
+        return missingDocumentError(RESOURCE_SHORT_SCHEMA);
     
     if (!data.contents)
         data.contents = {};
@@ -67,11 +67,11 @@ export const ShortSchemaDetail = props => {
         <React.Fragment>
             <Title title="Short schema" />
             <TopToolbar>
-                <BackButton resource={resource} />
+                <BackButton resource={RESOURCE_SHORT_SCHEMA} />
             </TopToolbar>
             <Card>
                 <CardContent>
-                    <SimpleShowLayout record={data} resource={resource}>
+                    <SimpleShowLayout record={data} resource={RESOURCE_SHORT_SCHEMA}>
                         <FunctionField label="Duration" render={data => formatDuration(data.contents.duration*1000)} />
                         <TextField source="contents.dataResourceUri" label="Data resource URI" />
                         <FunctionField label="Schema" render={renderSchema} />

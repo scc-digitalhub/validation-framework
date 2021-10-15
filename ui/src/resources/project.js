@@ -4,7 +4,7 @@ import { List, Datagrid, TextField, FunctionField } from 'react-admin';
 import { TextInput } from 'react-admin';
 import { Create, Edit, SimpleForm } from 'react-admin';
 import { useRedirect, useQuery, Loading } from 'react-admin';
-import { Title, Toolbar, TopToolbar, MenuItemLink, SimpleShowLayout } from 'react-admin';
+import { Title, Toolbar, TopToolbar, SimpleShowLayout } from 'react-admin';
 import { required, regex } from 'react-admin';
 import { CreateButton } from 'react-admin';
 
@@ -19,7 +19,8 @@ import { BackButton } from '../fields/back-button';
 
 import { AppContext } from '../contexts/app-context';
 
-import { missingDocumentError } from '../utils/common-functions';
+import { PATH_PROJECT, PATH_EXPERIMENT, RESOURCE_PROJECT } from '../utils/common-constants';
+import { missingDocumentError, makeMenuItemLink } from '../utils/common-functions';
 
 const validateId = [required(), regex(/^[a-zA-Z0-9_-]+$/, 'Allowed characters are lowercase letters, numbers, underscore (_) and hyphen (-).')];
 const validateName = regex(/^[a-zA-Z0-9 _-]+$/, 'Allowed characters are lowercase letters, numbers, underscore (_), hyphen (-) and space ( ).');
@@ -48,7 +49,7 @@ export const ProjectList = (props) => (
 const CreateActions = (props) => {
     return (
         <TopToolbar>
-            <BackButton key='back-button' resource='project' label='Cancel' icon={clearIcon} />
+            <BackButton key='back-button' resource={RESOURCE_PROJECT} label='Cancel' icon={clearIcon} />
         </TopToolbar>
     );
 }
@@ -72,16 +73,15 @@ export const ProjectEdit = ({ ...props }) => (
 );
 
 export const ProjectOverview = props => {
-    const resource = 'project';
     const currentProject = React.useContext(AppContext).getProject();
     
     const redirect = useRedirect();
     if (!currentProject)
-        redirect('/project');
+        redirect(PATH_PROJECT);
     
     const { data, loading, error } = useQuery({
         type: 'getOne',
-        resource: resource,
+        resource: RESOURCE_PROJECT,
         payload: {
             id: currentProject
         }
@@ -90,18 +90,18 @@ export const ProjectOverview = props => {
     if (loading)
         return <Loading />;
     if (error || !data)
-        return missingDocumentError(resource);
+        return missingDocumentError(RESOURCE_PROJECT);
     
     return (
         <React.Fragment>
             <Title title={data.name} />
             <TopToolbar>
-                <BackButton resource='project'/>
+                <BackButton resource={RESOURCE_PROJECT}/>
             </TopToolbar>
             <Card>
                 <CardContent>
                     <React.Fragment>
-                        <SimpleShowLayout record={data} resource={resource}>
+                        <SimpleShowLayout record={data} resource={RESOURCE_PROJECT}>
                             <FunctionField label="Name" render={data => <h1> {data.name} </h1>} />
                             <TextField source="id" label="ID" />
                         </SimpleShowLayout>
@@ -109,12 +109,7 @@ export const ProjectOverview = props => {
                 </CardContent>
                 
                 <Toolbar>
-                    <MenuItemLink
-                        key='experiment'
-                        to='/experiment'
-                        primaryText='Experiments'
-                        leftIcon={<ListIcon />}
-                    />
+                    {makeMenuItemLink('experiment', PATH_EXPERIMENT, 'Experiments', <ListIcon />)}
                 </Toolbar>
             </Card>
         </React.Fragment>

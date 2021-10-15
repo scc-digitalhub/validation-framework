@@ -2,6 +2,8 @@ import * as React from 'react';
 
 import { useRedirect, Button } from 'react-admin';
 
+import { PATH_RUN_COMPARISON } from '../utils/common-constants';
+
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
 
 export const CompareButton = ({
@@ -14,7 +16,7 @@ export const CompareButton = ({
     const redirect = useRedirect();
     
     const handleClick = () => {
-        redirect('/run-comparison/' + selectedIds);
+        redirect(PATH_RUN_COMPARISON + '/' + selectedIds);
     };
     
     return (

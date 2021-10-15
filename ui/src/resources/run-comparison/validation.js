@@ -1,6 +1,6 @@
-import { contentsLabel, prepareColumns, addRawData, createBaseEntry, generateComparisonSection } from './common';
+import { contentsLabel, prepareColumns, addRawData, generateComparisonSection } from './common';
 
-import { formatDuration } from '../../utils/common-functions';
+import { formatDuration, createBaseEntry } from '../../utils/common-functions';
 
 const sectionLabel = "shortReport";
 const rawFieldNames = ["valid", "validationLibraryName", "validationLibraryVersion"];

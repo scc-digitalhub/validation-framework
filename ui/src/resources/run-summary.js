@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { List, Datagrid, TextField, DateField, FunctionField } from 'react-admin';
 import { useQuery, Loading, BulkDeleteButton } from 'react-admin';
-import { Title, Toolbar, TopToolbar, MenuItemLink, SimpleShowLayout } from 'react-admin';
+import { Title, Toolbar, TopToolbar, SimpleShowLayout } from 'react-admin';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -14,13 +14,15 @@ import { BackButton } from '../fields/back-button';
 import { CompareRecentButton } from '../fields/compare-recent-button';
 import { CompareButton } from '../fields/compare-button';
 
-import { CheckProjectAndExperiment, calculateDuration, missingDocumentError } from '../utils/common-functions';
+import { PATH_RUN, PATH_ARTIFACT_METADATA, PATH_DATA_PROFILE, PATH_DATA_RESOURCE, PATH_RUN_ENVIRONMENT,
+ PATH_RUN_METADATA, PATH_SHORT_REPORT, PATH_SHORT_SCHEMA, RESOURCE_RUN} from '../utils/common-constants';
+import { CheckProjectAndExperiment, calculateDuration, missingDocumentError, makeMenuItemLink } from '../utils/common-functions';
 
 const ListActions = (props) => {
     return (
         <TopToolbar>
             <CompareRecentButton key='compare-recent-button' />
-            <BackButton key='back-button' resource='run' />
+            <BackButton key='back-button' resource={RESOURCE_RUN} />
         </TopToolbar>
     );
 }
@@ -68,10 +70,9 @@ export const RunSummaryList = (props) => {
 export const RunSummaryOverview = props => {
     CheckProjectAndExperiment();
     
-    const resource = 'run';
     const { data, loading, error } = useQuery({
         type: 'getOne',
-        resource: resource,
+        resource: RESOURCE_RUN,
         payload: {
             id: props.match.params.runId
         }
@@ -80,7 +81,7 @@ export const RunSummaryOverview = props => {
     if (loading)
         return <Loading />;
     if (error || !data)
-        return missingDocumentError(resource);
+        return missingDocumentError(RESOURCE_RUN);
     
     if (!data.shortReport) {
         data.shortReport = {};
@@ -92,12 +93,12 @@ export const RunSummaryOverview = props => {
         <React.Fragment>
             <Title title={data.runId} />
             <TopToolbar>
-                <BackButton resource={resource} clear={true} />
+                <BackButton resource={RESOURCE_RUN} clear={true} />
             </TopToolbar>
             <Card>
                 <CardContent>
                     <React.Fragment>
-                        <SimpleShowLayout record={data} resource={resource}>
+                        <SimpleShowLayout record={data} resource={RESOURCE_RUN}>
                             <FunctionField label="Status" render={getStatus} />
                             <TextField source="shortReport.contents.valid" label="Valid" />
                             <FunctionField label="Number of errors" render={data => data.shortReport.contents.errors.length} />
@@ -115,48 +116,13 @@ export const RunSummaryOverview = props => {
                 </CardContent>
                 
                 <Toolbar>
-                    <MenuItemLink
-                        key='artifact-metadata'
-                        to={`/run/${data.runId}/artifact-metadata`}
-                        primaryText='ArtifactMetadata'
-                        leftIcon={<ListIcon />}
-                    />
-                    <MenuItemLink
-                        key='data-profile'
-                        to={`/run/${data.runId}/data-profile`}
-                        primaryText='Data profile'
-                        leftIcon={<ShortTextIcon />}
-                    />
-                    <MenuItemLink
-                        key='data-resource'
-                        to={`/run/${data.runId}/data-resource`}
-                        primaryText='Data resource'
-                        leftIcon={<ShortTextIcon />}
-                    />
-                    <MenuItemLink
-                        key='run-environment'
-                        to={`/run/${data.runId}/run-environment`}
-                        primaryText='Run environment'
-                        leftIcon={<ShortTextIcon />}
-                    />
-                    <MenuItemLink
-                        key='run-metadata'
-                        to={`/run/${data.runId}/run-metadata`}
-                        primaryText='Run metadata'
-                        leftIcon={<ShortTextIcon />}
-                    />
-                    <MenuItemLink
-                        key='short-report'
-                        to={`/run/${data.runId}/short-report`}
-                        primaryText='Short report'
-                        leftIcon={<ShortTextIcon />}
-                    />
-                    <MenuItemLink
-                        key='short-schema'
-                        to={`/run/${data.runId}/short-schema`}
-                        primaryText='Short schema'
-                        leftIcon={<ShortTextIcon />}
-                    />
+                    {makeMenuItemLink('artifact-metadata', PATH_RUN + `/${data.runId}` + PATH_ARTIFACT_METADATA, 'ArtifactMetadata', <ListIcon />)}
+                    {makeMenuItemLink('data-profile', PATH_RUN + `/${data.runId}` + PATH_DATA_PROFILE, 'Data profile', <ShortTextIcon />)}
+                    {makeMenuItemLink('data-resource', PATH_RUN + `/${data.runId}` + PATH_DATA_RESOURCE, 'Data resource', <ShortTextIcon />)}
+                    {makeMenuItemLink('run-environment', PATH_RUN + `/${data.runId}` + PATH_RUN_ENVIRONMENT, 'Run environment', <ShortTextIcon />)}
+                    {makeMenuItemLink('run-metadata', PATH_RUN + `/${data.runId}` + PATH_RUN_METADATA, 'Run metadata', <ShortTextIcon />)}
+                    {makeMenuItemLink('short-report', PATH_RUN + `/${data.runId}` + PATH_SHORT_REPORT, 'Short report', <ShortTextIcon />)}
+                    {makeMenuItemLink('short-schema', PATH_RUN + `/${data.runId}` + PATH_SHORT_SCHEMA, 'Short schema', <ShortTextIcon />)}
                 </Toolbar>
             </Card>
         </React.Fragment>

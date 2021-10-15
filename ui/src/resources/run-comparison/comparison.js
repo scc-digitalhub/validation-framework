@@ -11,22 +11,43 @@ import executionComparison from './execution';
 import profileComparison from './profile';
 
 import { BackButton } from '../../fields/back-button';
+import { RESOURCE_RUN_COMPARISON, RESOURCE_RUN_COMPARISON_RECENT } from '../../utils/common-constants';
 import { genericError } from '../../utils/common-functions';
 
-export const RunComparisonDetail = props => {
-    const resource = 'run-comparison';
-    const { data, loading, error } = useQuery({
-        type: 'getOne',
+export const RunComparisonRecentDetail = props => {
+    return RunComparison(props, RESOURCE_RUN_COMPARISON_RECENT);
+}
+
+export const RunComparisonDetail  = props => {
+    return RunComparison(props, RESOURCE_RUN_COMPARISON);
+}
+
+export const RunComparison = (props, resource) => {
+    let { data, loading, error } = useQuery({
+        type: 'getList',
         resource: resource,
         payload: {
-            ids: props.match.params.selectedIds
+            ids: props.match.params.requested,
+            pagination: {
+                page: 1,
+                perPage: 50
+            },
+            sort: {
+                field: "created",
+                order: "DESC"
+            }
         }
     });
     
     if (loading)
         return <Loading />;
-    if (error || !data || !data.runs)
+    if (error || !data)
         return genericError(resource, "Error while retrieving comparison.");
+    
+    data = {
+        runs: data,
+        requested: props.match.params.requested
+    }
     
     return (
         <React.Fragment>

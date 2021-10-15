@@ -8,15 +8,15 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 
 import { BackButton } from '../fields/back-button';
+import { RESOURCE_DATA_RESOURCE } from '../utils/common-constants';
 import { CheckProjectAndExperiment, formatBytes, missingDocumentError } from '../utils/common-functions';
 
 export const DataResourceDetail = props => {
     CheckProjectAndExperiment();
     
-    const resource = 'data-resource';
     const { data, loading, error } = useQuery({
         type: 'getOne',
-        resource: resource,
+        resource: RESOURCE_DATA_RESOURCE,
         payload: {
             id: props.match.params.runId
         }
@@ -25,7 +25,7 @@ export const DataResourceDetail = props => {
     if (loading)
         return <Loading />;
     if (error || !data)
-        return missingDocumentError(resource);
+        return missingDocumentError(RESOURCE_DATA_RESOURCE);
     
     if (!data.contents)
         data.contents = {};
@@ -34,11 +34,11 @@ export const DataResourceDetail = props => {
         <React.Fragment>
             <Title title="Data resource" />
             <TopToolbar>
-                <BackButton resource={resource} />
+                <BackButton resource={RESOURCE_DATA_RESOURCE} />
             </TopToolbar>
             <Card>
                 <CardContent>
-                    <SimpleShowLayout record={data} resource={resource}>
+                    <SimpleShowLayout record={data} resource={RESOURCE_DATA_RESOURCE}>
                         <TextField source="contents.path" label="Path" />
                         <TextField source="contents.name" label="Name" />
                         <TextField source="contents.profile" label="Profile" />
