@@ -436,7 +436,7 @@ class Run:
         Parameters
         ----------
         profile : ProfileReport, default = None
-            An pandas_profiling report to be logged. If it is not
+            A pandas_profiling report to be logged. If it is not
             provided, the run will check its own profile attribute.
         infer : bool, default = True
             If True, profile the resource.
@@ -698,14 +698,6 @@ class Run:
         Parse inference from specific validation framework.
         Used by profiling.
         """
-
-    # Getter
-
-    def get_run(self) -> dict:
-        """
-        Return a dictionary of run info attributes.
-        """
-        return self.run_info.to_dict()
 
     # Context manager
 
