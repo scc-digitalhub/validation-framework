@@ -63,7 +63,7 @@ class LocalMetadataStore(MetadataStore):
         Check if run folder already exist, otherwise it creates it.
         """
         if check_dir(dst):
-            if not overwrite:
+            if init and not overwrite:
                 raise OSError("Run already exists, please use another id")
             if init and overwrite:
                 self._artifact_count = 0

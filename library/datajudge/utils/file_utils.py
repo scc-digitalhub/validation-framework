@@ -26,9 +26,10 @@ def check_abs_path(path: str) -> bool:
     """
     Check if a path is absolute.
     """
-    if Path(path).is_absolute():
-        return True
-    return False
+    try:
+        return Path(path).is_absolute()
+    except OSError:
+        return False
 
 
 def make_dir(*args):
