@@ -2,6 +2,7 @@ package it.smartcommunitylab.validationstorage.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,17 +14,16 @@ import org.springframework.web.bind.annotation.RestController;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.RunSummary;
 import it.smartcommunitylab.validationstorage.service.RunSummaryService;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Controller for end-points related to run summaries.
  */
 @RestController
 @RequestMapping(value = "/project")
-@RequiredArgsConstructor
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunSummaryController {
-    private final RunSummaryService runSummaryService;
+    @Autowired
+    private RunSummaryService runSummaryService;
     
     @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN)
     public ResponseEntity<List<RunSummary>> listBasicRunSummaries(

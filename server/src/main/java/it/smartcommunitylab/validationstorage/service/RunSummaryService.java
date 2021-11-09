@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -18,17 +19,18 @@ import it.smartcommunitylab.validationstorage.model.ShortReport;
 import it.smartcommunitylab.validationstorage.repository.DataProfileRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Service for run summaries.
  */
 @Service
-@RequiredArgsConstructor
 public class RunSummaryService {
-    private final RunMetadataRepository runMetadataRepository;
-    private final ShortReportRepository shortReportRepository;
-    private final DataProfileRepository dataProfileRepository;
+    @Autowired
+    private RunMetadataRepository runMetadataRepository;
+    @Autowired
+    private ShortReportRepository shortReportRepository;
+    @Autowired
+    private DataProfileRepository dataProfileRepository;
     
     /**
      * Returns a list of run summaries for the provided experiment

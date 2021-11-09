@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -23,14 +24,13 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.ShortSchema;
 import it.smartcommunitylab.validationstorage.model.dto.ShortSchemaDTO;
 import it.smartcommunitylab.validationstorage.service.ShortSchemaService;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(value = "/api/project")
-@RequiredArgsConstructor
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class ShortSchemaController {
-    private final ShortSchemaService documentService;
+    @Autowired
+    private ShortSchemaService documentService;
 
     @GetMapping("/{projectId}/" + ValidationStorageConstants.SHORT_SCHEMA + "/{id}")
     public ResponseEntity<ShortSchema> findDocumentById(@PathVariable String projectId, @PathVariable String id) {

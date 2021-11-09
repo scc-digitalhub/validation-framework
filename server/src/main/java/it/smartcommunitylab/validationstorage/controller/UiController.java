@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,7 +40,6 @@ import it.smartcommunitylab.validationstorage.service.RunMetadataService;
 import it.smartcommunitylab.validationstorage.service.ShortReportService;
 import it.smartcommunitylab.validationstorage.service.ShortSchemaService;
 import it.smartcommunitylab.validationstorage.service.UiService;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Controller for all end-points meant for the UI.
@@ -47,20 +47,29 @@ import lombok.RequiredArgsConstructor;
  */
 @RestController
 @RequestMapping(value = "/project")
-@RequiredArgsConstructor
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class UiController {
-    private final UiService uiService;
+    @Autowired
+    private UiService uiService;
 
-    private final ArtifactMetadataService artifactMetadataService;
-    private final ExperimentService experimentService;
-    private final DataProfileService dataProfileService;
-    private final DataResourceService dataResourceService;
-    private final ProjectService projectService;
-    private final RunEnvironmentService runEnvironmentService;
-    private final RunMetadataService runMetadataService;
-    private final ShortReportService shortReportService;
-    private final ShortSchemaService shortSchemaService;
+    @Autowired
+    private ArtifactMetadataService artifactMetadataService;
+    @Autowired
+    private ExperimentService experimentService;
+    @Autowired
+    private DataProfileService dataProfileService;
+    @Autowired
+    private DataResourceService dataResourceService;
+    @Autowired
+    private ProjectService projectService;
+    @Autowired
+    private RunEnvironmentService runEnvironmentService;
+    @Autowired
+    private RunMetadataService runMetadataService;
+    @Autowired
+    private ShortReportService shortReportService;
+    @Autowired
+    private ShortSchemaService shortSchemaService;
 
     // Project
     @PreAuthorize("permitAll()")

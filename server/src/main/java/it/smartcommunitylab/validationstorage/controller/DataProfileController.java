@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -23,14 +24,13 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.DataProfile;
 import it.smartcommunitylab.validationstorage.model.dto.DataProfileDTO;
 import it.smartcommunitylab.validationstorage.service.DataProfileService;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(value = "/api/project")
-@RequiredArgsConstructor
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class DataProfileController {
-    private final DataProfileService documentService;
+    @Autowired
+    private DataProfileService documentService;
 
     @GetMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE + "/{id}")
     public ResponseEntity<DataProfile> findDocumentById(@PathVariable String projectId, @PathVariable String id) {

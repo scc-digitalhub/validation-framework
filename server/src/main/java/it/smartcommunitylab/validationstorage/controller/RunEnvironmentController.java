@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -23,14 +24,13 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.RunEnvironment;
 import it.smartcommunitylab.validationstorage.model.dto.RunEnvironmentDTO;
 import it.smartcommunitylab.validationstorage.service.RunEnvironmentService;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(value = "/api/project")
-@RequiredArgsConstructor
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunEnvironmentController {
-    private final RunEnvironmentService documentService;
+    @Autowired
+    private RunEnvironmentService documentService;
 
     @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN_ENVIRONMENT + "/{id}")
     public ResponseEntity<RunEnvironment> findDocumentById(@PathVariable String projectId, @PathVariable String id) {

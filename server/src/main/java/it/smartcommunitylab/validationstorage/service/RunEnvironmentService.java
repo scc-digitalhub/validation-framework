@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -15,15 +16,16 @@ import it.smartcommunitylab.validationstorage.model.dto.RunEnvironmentDTO;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class RunEnvironmentService {
-    private final RunEnvironmentRepository documentRepository;
+    @Autowired
+    private RunEnvironmentRepository documentRepository;
 
-    private final ProjectRepository projectRepository;
-    private final ExperimentRepository experimentRepository;
+    @Autowired
+    private ProjectRepository projectRepository;
+    @Autowired
+    private ExperimentRepository experimentRepository;
 
     /**
      * Given an ID, returns the corresponding document, or null if it can't be found.

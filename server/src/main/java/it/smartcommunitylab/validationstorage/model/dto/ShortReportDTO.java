@@ -8,12 +8,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import lombok.Data;
 
 /**
  * Request object: short report on the validation's result.
  */
-@Data
 @Valid
 public class ShortReportDTO {
     /**
@@ -40,4 +38,37 @@ public class ShortReportDTO {
      * May contain extra information.
      */
     private Map<String, Serializable> contents;
+
+    public String getExperimentId() {
+        return experimentId;
+    }
+
+    public void setExperimentId(String experimentId) {
+        this.experimentId = experimentId;
+    }
+
+    public String getExperimentName() {
+        return experimentName;
+    }
+
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
+    }
+
+    public String getRunId() {
+        return runId;
+    }
+
+    public void setRunId(String runId) {
+        this.runId = runId;
+    }
+
+    public Map<String, Serializable> getContents() {
+        return contents;
+    }
+
+    public void setContents(Map<String, Serializable> contents) {
+        this.contents = contents;
+    }
+    
 }

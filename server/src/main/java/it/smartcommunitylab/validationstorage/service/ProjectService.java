@@ -3,6 +3,7 @@ package it.smartcommunitylab.validationstorage.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -21,21 +22,28 @@ import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepositor
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class ProjectService {
-    private final ProjectRepository documentRepository;
+    @Autowired
+    private ProjectRepository documentRepository;
 
-    private final ExperimentRepository experimentRepository;
-    private final ArtifactMetadataRepository artifactMetadataRepository;
-    private final DataProfileRepository dataProfileRepository;
-    private final DataResourceRepository dataResourceRepository;
-    private final RunEnvironmentRepository runEnvironmentRepository;
-    private final RunMetadataRepository runMetadataRepository;
-    private final ShortReportRepository shortReportRepository;
-    private final ShortSchemaRepository shortSchemaRepository;
+    @Autowired
+    private ExperimentRepository experimentRepository;
+    @Autowired
+    private ArtifactMetadataRepository artifactMetadataRepository;
+    @Autowired
+    private DataProfileRepository dataProfileRepository;
+    @Autowired
+    private DataResourceRepository dataResourceRepository;
+    @Autowired
+    private RunEnvironmentRepository runEnvironmentRepository;
+    @Autowired
+    private RunMetadataRepository runMetadataRepository;
+    @Autowired
+    private ShortReportRepository shortReportRepository;
+    @Autowired
+    private ShortSchemaRepository shortSchemaRepository;
 
     /**
      * Given an ID, returns the corresponding document, or null if it can't be found.

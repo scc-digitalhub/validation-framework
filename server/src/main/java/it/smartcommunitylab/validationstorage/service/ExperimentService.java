@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -21,21 +22,28 @@ import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepositor
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class ExperimentService {
-    private final ExperimentRepository documentRepository;
+    @Autowired
+    private ExperimentRepository documentRepository;
 
-    private final ArtifactMetadataRepository artifactMetadataRepository;
-    private final DataProfileRepository dataProfileRepository;
-    private final DataResourceRepository dataResourceRepository;
-    private final ProjectRepository projectRepository;
-    private final RunEnvironmentRepository runEnvironmentRepository;
-    private final RunMetadataRepository runMetadataRepository;
-    private final ShortReportRepository shortReportRepository;
-    private final ShortSchemaRepository shortSchemaRepository;
+    @Autowired
+    private ArtifactMetadataRepository artifactMetadataRepository;
+    @Autowired
+    private DataProfileRepository dataProfileRepository;
+    @Autowired
+    private DataResourceRepository dataResourceRepository;
+    @Autowired
+    private ProjectRepository projectRepository;
+    @Autowired
+    private RunEnvironmentRepository runEnvironmentRepository;
+    @Autowired
+    private RunMetadataRepository runMetadataRepository;
+    @Autowired
+    private ShortReportRepository shortReportRepository;
+    @Autowired
+    private ShortSchemaRepository shortSchemaRepository;
 
     /**
      * Given an ID, returns the corresponding document, or null if it can't be found.

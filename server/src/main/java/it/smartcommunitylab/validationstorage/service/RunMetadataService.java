@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -25,21 +26,28 @@ import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepositor
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class RunMetadataService {
-    private final RunMetadataRepository documentRepository;
+    @Autowired
+    private RunMetadataRepository documentRepository;
 
-    private final ProjectRepository projectRepository;
-    private final ExperimentRepository experimentRepository;
-    private final ArtifactMetadataRepository artifactMetadataRepository;
-    private final DataProfileRepository dataProfileRepository;
-    private final DataResourceRepository dataResourceRepository;
-    private final RunEnvironmentRepository runEnvironmentRepository;
-    private final ShortReportRepository shortReportRepository;
-    private final ShortSchemaRepository shortSchemaRepository;
+    @Autowired
+    private ProjectRepository projectRepository;
+    @Autowired
+    private ExperimentRepository experimentRepository;
+    @Autowired
+    private ArtifactMetadataRepository artifactMetadataRepository;
+    @Autowired
+    private DataProfileRepository dataProfileRepository;
+    @Autowired
+    private DataResourceRepository dataResourceRepository;
+    @Autowired
+    private RunEnvironmentRepository runEnvironmentRepository;
+    @Autowired
+    private ShortReportRepository shortReportRepository;
+    @Autowired
+    private ShortSchemaRepository shortSchemaRepository;
 
     /**
      * Given an ID, returns the corresponding document, or null if it can't be found.

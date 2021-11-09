@@ -2,6 +2,7 @@ package it.smartcommunitylab.validationstorage.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
@@ -26,23 +27,30 @@ import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepositor
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Service for when the UI needs different behavior from the default service for the document.
  */
 @Service
-@RequiredArgsConstructor
 public class UiService {
-    private final ProjectRepository projectRepository;
-    private final ExperimentRepository experimentRepository;
-    private final RunMetadataRepository runMetadataRepository;
-    private final ArtifactMetadataRepository artifactMetadataRepository;
-    private final DataProfileRepository dataProfileRepository;
-    private final DataResourceRepository dataResourceRepository;
-    private final RunEnvironmentRepository runEnvironmentRepository;
-    private final ShortReportRepository shortReportRepository;
-    private final ShortSchemaRepository shortSchemaRepository;
+    @Autowired
+    private ProjectRepository projectRepository;
+    @Autowired
+    private ExperimentRepository experimentRepository;
+    @Autowired
+    private RunMetadataRepository runMetadataRepository;
+    @Autowired
+    private ArtifactMetadataRepository artifactMetadataRepository;
+    @Autowired
+    private DataProfileRepository dataProfileRepository;
+    @Autowired
+    private DataResourceRepository dataResourceRepository;
+    @Autowired
+    private RunEnvironmentRepository runEnvironmentRepository;
+    @Autowired
+    private ShortReportRepository shortReportRepository;
+    @Autowired
+    private ShortSchemaRepository shortSchemaRepository;
     
     // Project
     @PostFilter(ValidationStorageConstants.POSTFILTER_ID)
