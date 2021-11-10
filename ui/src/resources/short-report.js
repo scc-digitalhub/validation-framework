@@ -206,6 +206,22 @@ const errorsRender = (data) => {
     );
 }
 
+const determineLayoutBasedOnValid = (valid) => {
+    let layoutContent = [];
+    
+    layoutContent.push(<TextField source="contents.valid" label="Valid" />);
+    if (!valid) {
+        layoutContent.push(<FunctionField label="Number of errors" render={data => data.contents.errors.length} />);
+        layoutContent.push(<FunctionField label="Error statistics" render={errorStatisticsRender} />);
+    }
+    layoutContent.push(<TextField source="contents.dataResourceUri" label="Data resource URI" />);
+    layoutContent.push(<FunctionField label="Duration" render={data => formatDuration(data.contents.duration*1000)} />);
+    if (!valid)
+        layoutContent.push(<FunctionField label="Errors" render={errorsRender} />);
+    
+    return layoutContent;
+}
+
 export const ShortReportDetail = props => {
     CheckProjectAndExperiment();
     
@@ -225,6 +241,8 @@ export const ShortReportDetail = props => {
     if (!data.contents)
         data.contents = {};
     
+    const layoutContent = determineLayoutBasedOnValid(data.contents.valid);
+    
     return (
         <React.Fragment>
             <Title title="Short report" />
@@ -234,12 +252,7 @@ export const ShortReportDetail = props => {
             <Card>
                 <CardContent>
                     <SimpleShowLayout record={data} resource={RESOURCE_SHORT_REPORT}>
-                        <TextField source="contents.valid" label="Valid" />
-                        <FunctionField label="Number of errors" render={data => data.contents.errors.length} />
-                        <FunctionField label="Error statistics" render={errorStatisticsRender} />
-                        <TextField source="contents.dataResourceUri" label="Data resource URI" />
-                        <FunctionField label="Duration" render={data => formatDuration(data.contents.duration*1000)} />
-                        <FunctionField label="Errors" render={errorsRender} />
+                        {layoutContent}
                     </SimpleShowLayout>
                 </CardContent>
             </Card>
