@@ -16,9 +16,13 @@ import it.smartcommunitylab.validationstorage.model.DataProfile;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
 import it.smartcommunitylab.validationstorage.model.RunSummary;
 import it.smartcommunitylab.validationstorage.model.ShortReport;
+import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.DataProfileRepository;
+import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
+import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
+import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
 
 /**
  * Service for run summaries.
@@ -31,6 +35,15 @@ public class RunSummaryService {
     private ShortReportRepository shortReportRepository;
     @Autowired
     private DataProfileRepository dataProfileRepository;
+    
+    @Autowired
+    private ArtifactMetadataRepository artifactMetadataRepository;
+    @Autowired
+    private DataResourceRepository dataResourceRepository;
+    @Autowired
+    private RunEnvironmentRepository runEnvironmentRepository;
+    @Autowired
+    private ShortSchemaRepository shortSchemaRepository;
     
     /**
      * Returns a list of run summaries for the provided experiment
@@ -219,5 +232,31 @@ public class RunSummaryService {
         if (!documents.isEmpty())
             return documents.get(0);
         return null;
+    }
+    
+    /**
+     * Deletes a run and all related documents.
+     * @param runMetadataId ID of the run's RunMetadata document.
+     */
+    public void deleteRunByRunMetadataId(String runMetadataId) {
+        if (ObjectUtils.isEmpty(runMetadataId))
+            return;
+        
+        Optional<RunMetadata> runMetadata = runMetadataRepository.findById(runMetadataId);
+        if (!runMetadata.isPresent())
+            return;
+        
+        runMetadataRepository.deleteById(runMetadataId);
+        
+        String projectId = runMetadata.get().getProjectId();
+        String experimentId = runMetadata.get().getExperimentId();
+        String runId = runMetadata.get().getRunId();
+        
+        artifactMetadataRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+        dataProfileRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+        dataResourceRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+        runEnvironmentRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+        shortReportRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+        shortSchemaRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
     }
 }

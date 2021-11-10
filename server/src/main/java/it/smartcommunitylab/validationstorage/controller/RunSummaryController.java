@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,5 +55,11 @@ public class RunSummaryController {
             @PathVariable String experimentId,
             @PathVariable String[] requested) {
         return ResponseEntity.ok(runSummaryService.getRichRunSummariesByRunMetadataIds(projectId, experimentId, requested));
+    }
+    
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{RunMetadataId}")
+    public ResponseEntity<Void> deleteRunByRunMetadataById(@PathVariable String projectId, @PathVariable String RunMetadataId) {
+        runSummaryService.deleteRunByRunMetadataId(RunMetadataId);
+        return ResponseEntity.ok().build();
     }
 }

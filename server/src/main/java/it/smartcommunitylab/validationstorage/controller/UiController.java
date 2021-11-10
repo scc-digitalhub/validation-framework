@@ -187,7 +187,7 @@ public class UiController {
         return ResponseEntity.ok(uiService.findRunMetadataByRunId(projectId, experimentId, runId));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{id}")
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_METADATA + "/{id}")
     public ResponseEntity<Void> deleteRunMetadataById(@PathVariable String projectId, @PathVariable String id) {
         runMetadataService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();
