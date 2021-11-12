@@ -238,7 +238,7 @@ Example:
 localhost:8200/api/project/<projectId>/run-metadata?overwrite=<true_or_false>
 ```
 * `projectId` - Path variable, ID of the project.
-* `overwrite` - *Optional* parameter, ID of the project.
+* `overwrite` - *Optional* parameter, boolean.
 
 Contents of the body:
 * `experimentId` - **Mandatory**, ID of the experiment.
@@ -378,6 +378,70 @@ localhost:8200/api/project/<projectId>/data-resource?experimentId=<experimentId>
 Keep in mind that if an `experiment` document is deleted, all related documents of types under it will also be deleted. As you'd expect, `project` documents will be unaffected, as they reside above `experiment`.
 
 ## UI end-points
-A number of end-points are available and dedicated to the UI, featuring pagination and sorting of results.
+A number of end-points featuring pagination and sorting of results are available and dedicated to the UI. Their functionality is practically identical to the end-points described above.
 
-Their functionality is practically identical to the end-points described above, so they are not listed here. They can be accessed by removing `api/` from the path.
+The path for these end-points is however different: `api/` is not present and documents are generally identified by a combination of `projectId`, `experimentId` and `runId`, instead of the document's own ID.
+
+For example, to get a `run-metadata` document, instead of:
+```
+localhost:8200/api/project/<projectId>/run-metadata/<documentId>
+```
+The end-point for the UI is:
+```
+localhost:8200/project/<projectId>/experiment/<experimentId>/run/<runId>/run-metadata
+```
+
+There are no end-points for creating and updating documents outside of `project`.
+
+### run-summary
+The UI also makes use of another document, the `run-summary`: this is not actually persisted in the database, as it is built on-the-fly, using the `run-metadata` document as reference, but combining information from other documents as well, so that a summary of the run's information becomes available with a single API call.
+
+It has an end-point for deletion, which deletes all documents related to the run. Here are brief descriptions of the end-points.
+
+#### List basic run summaries
+```
+localhost:8200/project/<projectId>/experiment/<experimentId>/run
+```
+* `projectId` - Path variable, ID of the project.
+* `experimentId` - Path variable, ID of the experiment.
+
+Generates and returns `run-summary` documents for all runs under the specified experiment. These documents contain information from `run-metadata` and `short-report` documents.
+
+#### Retrieve basic run summary
+```
+localhost:8200/project/<projectId>/experiment/<experimentId>/run/<runId>
+```
+* `projectId` - Path variable, ID of the project.
+* `experimentId` - Path variable, ID of the experiment.
+* `runId` - Path variable, ID of the run.
+
+Generates and returns a `run-summary` document for the specified run, containing information from `run-metadata` and `short-report` documents.
+
+#### Retrieve recent rich run summaries
+```
+localhost:8200/project/<projectId>/experiment/<experimentId>/run-rich-recent
+```
+* `projectId` - Path variable, ID of the project.
+* `experimentId` - Path variable, ID of the experiment.
+
+Generates and returns a number `run-summary` documents under the specified experiment, for only the most recent runs. They contain information from `run-metadata`, `short-report` and `data-profile` documents.
+
+
+#### Retrieve rich run summaries by run-metadata IDs
+```
+localhost:8200/project/<projectId>/experiment/<experimentId>/run-rich/<list_of_run-metadata_ids>
+```
+* `projectId` - Path variable, ID of the project.
+* `experimentId` - Path variable, ID of the experiment.
+* `list_of_run-metadata_ids` - Path variable, comma-separated list of `run-metadata` document IDs.
+
+Generates and returns a list of `run-summary` documents for the specified runs. They contain information from `run-metadata`, `short-report` and `data-profile` documents. Note that runs must be identified by the `run-metadata` document's ID, not the run's ID.
+
+#### Delete all documents related to a run
+```
+localhost:8200/project/<projectId>/run/<run-metadata_id>
+```
+* `projectId` - Path variable, ID of the project.
+* `run-metadata_id` - Path variable, `run-metadata` document ID.
+
+Deletes all document related to the run identified by the provided `run-metadata` document ID.
