@@ -10,6 +10,7 @@ import org.springframework.util.ObjectUtils;
 
 import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
+import it.smartcommunitylab.validationstorage.common.IdMismatchException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.dto.ExperimentDTO;
@@ -17,7 +18,6 @@ import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataReposit
 import it.smartcommunitylab.validationstorage.repository.DataProfileRepository;
 import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
-import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
@@ -35,8 +35,6 @@ public class ExperimentService {
     @Autowired
     private DataResourceRepository dataResourceRepository;
     @Autowired
-    private ProjectRepository projectRepository;
-    @Autowired
     private RunEnvironmentRepository runEnvironmentRepository;
     @Autowired
     private RunMetadataRepository runMetadataRepository;
@@ -44,6 +42,9 @@ public class ExperimentService {
     private ShortReportRepository shortReportRepository;
     @Autowired
     private ShortSchemaRepository shortSchemaRepository;
+    
+    @Autowired
+    private ProjectService projectService;
 
     /**
      * Given an ID, returns the corresponding document, or null if it can't be found.
@@ -89,7 +90,7 @@ public class ExperimentService {
     public Experiment createDocument(String projectId, ExperimentDTO request, String author) {
         if (ObjectUtils.isEmpty(projectId))
             throw new IllegalArgumentException("Project ID is missing or blank.");
-        ValidationStorageUtils.checkProjectExists(projectRepository, projectId);
+        projectService.findDocumentById(projectId);
 
         String experimentId = request.getExperimentId();
 
@@ -105,6 +106,26 @@ public class ExperimentService {
         documentToSave.setAuthor(author);
 
         return documentRepository.save(documentToSave);
+    }
+    
+    /**
+     * Creates an experiment, if it does not already exist. Meant to be used by other services, when
+     * creating other documents, to automatically create the corresponding experiment if missing.
+     * 
+     * @param projectId ID of the project the experiment belongs to.
+     * @param experimentId ID of the experiment.
+     * @param experimentName Name of the experiment.
+     * @param author Author
+     */
+    void createExperimentIfMissing(String projectId, String experimentId, String experimentName, String author) {
+        if (documentRepository.findByProjectIdAndExperimentId(projectId, experimentId).size() == 0) {
+            Experiment experimentToSave = new Experiment(projectId, experimentId);
+            if (!ObjectUtils.isEmpty(experimentName))
+                experimentToSave.setExperimentName(experimentName);
+            if (!ObjectUtils.isEmpty(author))
+                experimentToSave.setAuthor(author);
+            documentRepository.save(experimentToSave);
+        }
     }
 
     // Read
@@ -126,7 +147,8 @@ public class ExperimentService {
     public Experiment findDocumentById(String projectId, String id) {
         Experiment document = getDocument(id);
         if (document != null) {
-            ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
+            if (!document.getProjectId().equals(projectId))
+                throw new IdMismatchException();
 
             return document;
         }
@@ -142,7 +164,8 @@ public class ExperimentService {
         if (document == null)
             throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 
-        ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
+        if (!document.getProjectId().equals(projectId))
+            throw new IdMismatchException();
 
         String experimentId = request.getExperimentId();
         if (experimentId != null && !(experimentId.equals(document.getExperimentId())))
@@ -157,7 +180,8 @@ public class ExperimentService {
     public void deleteDocumentById(String projectId, String id) {
         Experiment document = getDocument(id);
         if (document != null) {
-            ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
+            if (!document.getProjectId().equals(projectId))
+                throw new IdMismatchException();
 
             // When an experiment is deleted, all other documents under it are deleted.
             artifactMetadataRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());

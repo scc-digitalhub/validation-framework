@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.ShortReport;
 import it.smartcommunitylab.validationstorage.model.dto.ShortReportDTO;
 import it.smartcommunitylab.validationstorage.service.ShortReportService;
@@ -47,7 +46,7 @@ public class ShortReportController {
 
     @PostMapping("/{projectId}/" + ValidationStorageConstants.SHORT_REPORT)
     public ResponseEntity<ShortReport> createDocument(@PathVariable String projectId, @RequestBody @Valid ShortReportDTO request, Authentication authentication) {
-        return ResponseEntity.ok(documentService.createDocument(projectId, request, ValidationStorageUtils.getAuthorName(authentication)));
+        return ResponseEntity.ok(documentService.createDocument(projectId, request, authentication.getName()));
     }
 
     @PutMapping("/{projectId}/" + ValidationStorageConstants.SHORT_REPORT + "/{id}")

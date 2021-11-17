@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
+import it.smartcommunitylab.validationstorage.common.IdMismatchException;
 
 @ControllerAdvice
 public class GlobalResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
@@ -58,6 +59,11 @@ public class GlobalResponseEntityExceptionHandler extends ResponseEntityExceptio
     @ExceptionHandler(value = { DocumentNotFoundException.class })
     protected ResponseEntity<Object> handleDocumentNotFound(DocumentNotFoundException ex, WebRequest request) {
         return buildResponse(ex, HttpStatus.NOT_FOUND, request);
+    }
+    
+    @ExceptionHandler(value = { IdMismatchException.class })
+    protected ResponseEntity<Object> handleIdMismatch(IdMismatchException ex, WebRequest request) {
+        return buildResponse(ex, HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(value = { AccessDeniedException.class })

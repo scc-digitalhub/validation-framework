@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 import it.smartcommunitylab.validationstorage.model.dto.ArtifactMetadataDTO;
 import it.smartcommunitylab.validationstorage.service.ArtifactMetadataService;
@@ -47,7 +46,7 @@ public class ArtifactMetadataController {
 
     @PostMapping("/{projectId}/" + ValidationStorageConstants.ARTIFACT_METADATA)
     public ResponseEntity<ArtifactMetadata> createDocument(@PathVariable String projectId, @RequestBody @Valid ArtifactMetadataDTO request, Authentication authentication) {
-        return ResponseEntity.ok(documentService.createDocument(projectId, request, ValidationStorageUtils.getAuthorName(authentication)));
+        return ResponseEntity.ok(documentService.createDocument(projectId, request, authentication.getName()));
     }
 
     @PutMapping("/{projectId}/" + ValidationStorageConstants.ARTIFACT_METADATA + "/{id}")

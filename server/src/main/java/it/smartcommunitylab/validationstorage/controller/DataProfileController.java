@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.DataProfile;
 import it.smartcommunitylab.validationstorage.model.dto.DataProfileDTO;
 import it.smartcommunitylab.validationstorage.service.DataProfileService;
@@ -47,7 +46,7 @@ public class DataProfileController {
 
     @PostMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE)
     public ResponseEntity<DataProfile> createDocument(@PathVariable String projectId, @RequestBody @Valid DataProfileDTO request, Authentication authentication) {
-        return ResponseEntity.ok(documentService.createDocument(projectId, request, ValidationStorageUtils.getAuthorName(authentication)));
+        return ResponseEntity.ok(documentService.createDocument(projectId, request, authentication.getName()));
     }
 
     @PutMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE + "/{id}")

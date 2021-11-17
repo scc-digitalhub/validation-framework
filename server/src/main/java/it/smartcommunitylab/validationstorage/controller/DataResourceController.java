@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.DataResource;
 import it.smartcommunitylab.validationstorage.model.dto.DataResourceDTO;
 import it.smartcommunitylab.validationstorage.service.DataResourceService;
@@ -47,7 +46,7 @@ public class DataResourceController {
 
     @PostMapping("/{projectId}/" + ValidationStorageConstants.DATA_RESOURCE)
     public ResponseEntity<DataResource> createDocument(@PathVariable String projectId, @RequestBody @Valid DataResourceDTO request, Authentication authentication) {
-        return ResponseEntity.ok(documentService.createDocument(projectId, request, ValidationStorageUtils.getAuthorName(authentication)));
+        return ResponseEntity.ok(documentService.createDocument(projectId, request, authentication.getName()));
     }
 
     @PutMapping("/{projectId}/" + ValidationStorageConstants.DATA_RESOURCE + "/{id}")

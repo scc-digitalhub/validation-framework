@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.dto.ProjectDTO;
 import it.smartcommunitylab.validationstorage.service.ProjectService;
@@ -44,7 +43,7 @@ public class ProjectController {
     @PreAuthorize(ValidationStorageConstants.PREAUTH_REQUEST_ID)
     @PostMapping
     public ResponseEntity<Project> createDocument(@RequestBody @Valid ProjectDTO request, Authentication authentication) {
-        return ResponseEntity.ok(documentService.createDocument(request, ValidationStorageUtils.getAuthorName(authentication)));
+        return ResponseEntity.ok(documentService.createDocument(request, authentication.getName()));
     }
 
     @PutMapping("/{id}")

@@ -10,11 +10,10 @@ import org.springframework.util.ObjectUtils;
 
 import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
+import it.smartcommunitylab.validationstorage.common.IdMismatchException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.ShortSchema;
 import it.smartcommunitylab.validationstorage.model.dto.ShortSchemaDTO;
-import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
-import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
 
 @Service
@@ -23,9 +22,9 @@ public class ShortSchemaService {
     private ShortSchemaRepository documentRepository;
 
     @Autowired
-    private ProjectRepository projectRepository;
+    private ProjectService projectService;
     @Autowired
-    private ExperimentRepository experimentRepository;
+    private ExperimentService experimentService;
 
     /**
      * Given an ID, returns the corresponding document, or null if it can't be found.
@@ -71,7 +70,7 @@ public class ShortSchemaService {
     public ShortSchema createDocument(String projectId, ShortSchemaDTO request, String author) {
         if (ObjectUtils.isEmpty(projectId))
             throw new IllegalArgumentException("Project ID is missing or blank.");
-        ValidationStorageUtils.checkProjectExists(projectRepository, projectId);
+        projectService.findDocumentById(projectId);
 
         String experimentId = request.getExperimentId();
         String runId = request.getRunId();
@@ -89,7 +88,7 @@ public class ShortSchemaService {
         documentToSave.setContents(request.getContents());
 
         // Create experiment document automatically.
-        ValidationStorageUtils.createExperiment(experimentRepository, projectId, experimentId, request.getExperimentName(), author);
+        experimentService.createExperimentIfMissing(projectId, experimentId, request.getExperimentName(), author);
 
         return documentRepository.save(documentToSave);
     }
@@ -117,7 +116,8 @@ public class ShortSchemaService {
     public ShortSchema findDocumentById(String projectId, String id) {
         ShortSchema document = getDocument(id);
         if (document != null) {
-            ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
+            if (!document.getProjectId().equals(projectId))
+                throw new IdMismatchException();
 
             return document;
         }
@@ -133,7 +133,8 @@ public class ShortSchemaService {
         if (document == null)
             throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 
-        ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
+        if (!document.getProjectId().equals(projectId))
+            throw new IdMismatchException();
 
         String experimentId = request.getExperimentId();
         String runId = request.getRunId();
@@ -150,7 +151,8 @@ public class ShortSchemaService {
     public void deleteDocumentById(String projectId, String id) {
         ShortSchema document = getDocument(id);
         if (document != null) {
-            ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
+            if (!document.getProjectId().equals(projectId))
+                throw new IdMismatchException();
 
             documentRepository.deleteById(id);
             return;

@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
 import it.smartcommunitylab.validationstorage.model.dto.RunMetadataDTO;
 import it.smartcommunitylab.validationstorage.service.RunMetadataService;
@@ -50,7 +49,7 @@ public class RunMetadataController {
             @RequestParam("overwrite") Optional<String> overwrite,
             @RequestBody @Valid RunMetadataDTO request,
             Authentication authentication) {
-        return ResponseEntity.ok(documentService.createDocument(projectId, request, overwrite, ValidationStorageUtils.getAuthorName(authentication)));
+        return ResponseEntity.ok(documentService.createDocument(projectId, request, overwrite, authentication.getName()));
     }
 
     @PutMapping("/{projectId}/" + ValidationStorageConstants.RUN_METADATA + "/{id}")

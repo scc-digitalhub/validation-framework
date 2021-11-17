@@ -13,6 +13,7 @@ import org.springframework.util.ObjectUtils;
 
 import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
+import it.smartcommunitylab.validationstorage.common.IdMismatchException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
@@ -20,8 +21,6 @@ import it.smartcommunitylab.validationstorage.model.dto.RunMetadataDTO;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.DataProfileRepository;
 import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
-import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
-import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
@@ -31,11 +30,7 @@ import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
 public class RunMetadataService {
     @Autowired
     private RunMetadataRepository documentRepository;
-
-    @Autowired
-    private ProjectRepository projectRepository;
-    @Autowired
-    private ExperimentRepository experimentRepository;
+    
     @Autowired
     private ArtifactMetadataRepository artifactMetadataRepository;
     @Autowired
@@ -48,6 +43,11 @@ public class RunMetadataService {
     private ShortReportRepository shortReportRepository;
     @Autowired
     private ShortSchemaRepository shortSchemaRepository;
+    
+    @Autowired
+    private ProjectService projectService;
+    @Autowired
+    private ExperimentService experimentService;
 
     /**
      * Given an ID, returns the corresponding document, or null if it can't be found.
@@ -103,7 +103,7 @@ public class RunMetadataService {
     public RunMetadata createDocument(String projectId, RunMetadataDTO request, Optional<String> overwriteParam, String author) {
         if (ObjectUtils.isEmpty(projectId))
             throw new IllegalArgumentException("Project ID is missing or blank.");
-        ValidationStorageUtils.checkProjectExists(projectRepository, projectId);
+        projectService.findDocumentById(projectId);
 
         String experimentId = request.getExperimentId();
         String runId = request.getRunId();
@@ -147,7 +147,7 @@ public class RunMetadataService {
         documentToSave.setContents(request.getContents());
 
         // Create experiment document automatically.
-        ValidationStorageUtils.createExperiment(experimentRepository, projectId, experimentId, request.getExperimentName(), author);
+        experimentService.createExperimentIfMissing(projectId, experimentId, request.getExperimentName(), author);
 
         return documentRepository.save(documentToSave);
     }
@@ -174,7 +174,8 @@ public class RunMetadataService {
     public RunMetadata findDocumentById(String projectId, String id) {
         RunMetadata document = getDocument(id);
         if (document != null) {
-            ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
+            if (!document.getProjectId().equals(projectId))
+                throw new IdMismatchException();
 
             return document;
         }
@@ -190,7 +191,8 @@ public class RunMetadataService {
         if (document == null)
             throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 
-        ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
+        if (!document.getProjectId().equals(projectId))
+            throw new IdMismatchException();
 
         String experimentId = request.getExperimentId();
         String runId = request.getRunId();
@@ -207,7 +209,8 @@ public class RunMetadataService {
     public void deleteDocumentById(String projectId, String id) {
         RunMetadata document = getDocument(id);
         if (document != null) {
-            ValidationStorageUtils.checkProjectIdMatch(id, document.getProjectId(), projectId);
+            if (!document.getProjectId().equals(projectId))
+                throw new IdMismatchException();
 
             documentRepository.deleteById(id);
             return;
