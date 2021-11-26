@@ -1,5 +1,7 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import java.util.List;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -37,6 +39,11 @@ public class Experiment {
      * Name of the experiment.
      */
     private String experimentName;
+    
+    /**
+     * Tags.
+     */
+    private List<String> tags;
 
     /**
      * Creator of this document.
@@ -86,6 +93,14 @@ public class Experiment {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
     }
     
 }

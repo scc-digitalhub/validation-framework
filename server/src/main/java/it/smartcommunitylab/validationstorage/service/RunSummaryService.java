@@ -89,7 +89,7 @@ public class RunSummaryService {
      * @param runMetadataIds RunMetadata IDs.
      * @return List of run summaries.
      */
-    public List<RunSummary> getRichRunSummariesByRunMetadataIds(String projectId, String experimentId, String[] runMetadataIds) {
+    public List<RunSummary> getRichRunSummariesByRunMetadataIds(String projectId, String experimentId, List<String> runMetadataIds) {
         List<RunMetadata> runMetadataDocuments = getAndCheckRunMetadataDocuments(projectId, experimentId, runMetadataIds);
         List<RunSummary> runSummaries = buildRunSummaryListFromRunMetadataDocuments(projectId, experimentId, runMetadataDocuments);
         enrichRunSummaries(runSummaries);
@@ -105,7 +105,7 @@ public class RunSummaryService {
      * @param runMetadataIds List of RunMetadata document IDs.
      * @return List of RunMetadata documents.
      */
-    private List<RunMetadata> getAndCheckRunMetadataDocuments(String projectId, String experimentId, String[] runMetadataIds) {
+    private List<RunMetadata> getAndCheckRunMetadataDocuments(String projectId, String experimentId, List<String> runMetadataIds) {
         if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(experimentId))
             throw new IllegalArgumentException("Project ID or experiment ID are required and cannot be blank.");
         if (ObjectUtils.isEmpty(runMetadataIds))

@@ -1,11 +1,13 @@
 package it.smartcommunitylab.validationstorage.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
@@ -59,7 +61,9 @@ public class UiService {
     }
 
     // Experiment
-    public List<Experiment> findExperiments(String projectId, Pageable pageable) {
+    public List<Experiment> findExperiments(String projectId, Optional<List<String>> tags, Pageable pageable) {
+        if (tags.isPresent() && !ObjectUtils.isEmpty(tags.get()))
+            return experimentRepository.findByProjectIdAndTagsIn(projectId, tags.get(), pageable);
         return experimentRepository.findByProjectId(projectId, pageable);
     }
 

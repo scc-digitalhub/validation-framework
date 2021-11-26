@@ -103,6 +103,7 @@ public class ExperimentService {
         Experiment documentToSave = new Experiment(projectId, experimentId);
 
         documentToSave.setExperimentName(request.getExperimentName());
+        documentToSave.setTags(request.getTags());
         documentToSave.setAuthor(author);
 
         return documentRepository.save(documentToSave);
@@ -172,6 +173,7 @@ public class ExperimentService {
             throw new IllegalArgumentException("A value was specified for experimentId, but does not match the value in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
 
         document.setExperimentName(request.getExperimentName());
+        document.setTags(request.getTags());
 
         return documentRepository.save(document);
     }

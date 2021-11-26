@@ -12,6 +12,8 @@ public interface ExperimentRepository extends MongoRepository<Experiment, String
     List<Experiment> findByProjectId(String projectId);
 
     List<Experiment> findByProjectId(String projectId, Pageable pageable);
+    
+    List<Experiment> findByProjectIdAndTagsIn(String projectId, List<String> tags, Pageable pageable);
 
     List<Experiment> findByProjectIdAndExperimentId(String projectId, String experimentId);
 

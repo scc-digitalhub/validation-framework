@@ -1,6 +1,7 @@
 import * as React from 'react';
 
-import { List, Datagrid, TextField, FunctionField } from 'react-admin';
+import { List, Datagrid, TextField, FunctionField, SingleFieldList, ChipField } from 'react-admin';
+import { Filter, TextInput } from 'react-admin';
 import { useRedirect, useQuery, Loading } from 'react-admin';
 import { Title, Toolbar, TopToolbar, SimpleShowLayout } from 'react-admin';
 
@@ -11,6 +12,7 @@ import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
 
 import { SelectButton } from '../fields/select-button';
 import { BackButton } from '../fields/back-button';
+import { TextArrayField } from '../fields/text-array-field';
 import { CompareRecentButton } from '../fields/compare-recent-button';
 
 import { AppContext } from '../contexts/app-context';
@@ -26,6 +28,12 @@ const ListActions = (props) => {
     );
 }
 
+const ExperimentFilters = (props) => (
+    <Filter {...props}>
+        <TextInput label="Search by tags" source="tags" alwaysOn/>
+    </Filter>
+);
+
 export const ExperimentList = (props) => {
     const redirect = useRedirect();
     const currentProject = React.useContext(AppContext).getProject();
@@ -39,10 +47,17 @@ export const ExperimentList = (props) => {
                 perPage={50}
                 pagination={false}
                 sort={{ field: 'experimentId', order: 'ASC' }}
-                actions={<ListActions />}>
+                actions={<ListActions />}
+                filters={<ExperimentFilters/>}
+                >
             <Datagrid rowClick="">
                 <TextField source="experimentId" label="Experiment ID" />
                 <TextField source="experimentName" label="Name" />
+                <TextArrayField source="tags">
+                    <SingleFieldList>
+                        <ChipField />
+                    </SingleFieldList>
+                </TextArrayField>
                 <SelectButton />
             </Datagrid>
         </List>
@@ -80,6 +95,11 @@ export const ExperimentOverview = props => {
                         <SimpleShowLayout record={data} resource={RESOURCE_EXPERIMENT}>
                             <FunctionField label="Name" render={data => <h1> {data.experimentName} </h1>} />
                             <TextField source="experimentId" label="Experiment ID" />
+                            <TextArrayField source="tags">
+                                <SingleFieldList>
+                                    <ChipField />
+                                </SingleFieldList>
+                            </TextArrayField>
                             <TextField source="id" label="ID" />
                         </SimpleShowLayout>
                     </React.Fragment>

@@ -12,6 +12,12 @@ const httpClient = (url, options = {}) => {
     return fetchUtils.fetchJson(url, options);
 };
 
+const normalizeTagsFilter = (tagsFilter) => {
+    if (tagsFilter == null)
+        return null;
+    return tagsFilter.trim().split(/[ ,]+/).filter(function(i){return i}).join(',');
+}
+
 export class DataProvider extends React.Component {
     constructor(props) {
         super(props);
@@ -32,9 +38,13 @@ export class DataProvider extends React.Component {
                 url += `?${query}`;
                 break;
             case RESOURCE_EXPERIMENT:
+                const tagsFilter = normalizeTagsFilter(params.filter.tags);
                 if (!this.getProject())
                     return Promise.reject(new Error('Project not set.'));
                 url += `/${this.getProject()}`+ENDPOINT_EXPERIMENT+`?${query}`;
+                
+                if (tagsFilter != null)
+                    url += `&tags=${tagsFilter}`
                 break;
             case RESOURCE_RUN:
                 if (!this.getProject() || !this.getExperiment())

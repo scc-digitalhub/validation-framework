@@ -1,6 +1,7 @@
 package it.smartcommunitylab.validationstorage.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
@@ -104,8 +106,11 @@ public class UiController {
 
     // Experiment
     @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT)
-    public ResponseEntity<List<Experiment>> findExperiments(@PathVariable String projectId, Pageable pageable) {
-        return ResponseEntity.ok(uiService.findExperiments(projectId, pageable));
+    public ResponseEntity<List<Experiment>> findExperiments(
+            @PathVariable String projectId,
+            @RequestParam("tags") Optional<List<String>> tags,
+            Pageable pageable) {
+        return ResponseEntity.ok(uiService.findExperiments(projectId, tags, pageable));
     }
 
     @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}")

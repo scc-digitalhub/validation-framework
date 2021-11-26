@@ -53,7 +53,7 @@ public class RunSummaryController {
     public ResponseEntity<List<RunSummary>> getRichRunSummariesByRunMetadataIds(
             @PathVariable String projectId,
             @PathVariable String experimentId,
-            @PathVariable String[] requested) {
+            @PathVariable List<String> requested) {
         return ResponseEntity.ok(runSummaryService.getRichRunSummariesByRunMetadataIds(projectId, experimentId, requested));
     }
     
