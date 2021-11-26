@@ -214,7 +214,7 @@ This end-point involves the most significant differences depending on the kind o
 #### experiment
 You do not actually need to create `experiment` documents. When documents of types under `experiment` (`artifact-metadata`, `data-profile`, `data-resource`, `run-environment`, `run-metadata`, `short-report`, `short-schema` ) are created, the back-end will automatically create the `experiment` with the information it receives.
 
-For completeness, there is still an end-point for this, which you can use as follows if you'd like.
+However, when using the end-point for creating experiments, you can specify a list of tags to describe it. This allows filtering experiments by tags when viewing them in the UI.
 
 ```
 localhost:8200/api/project/<projectId>/experiment
@@ -224,12 +224,14 @@ localhost:8200/api/project/<projectId>/experiment
 Contents of the body:
 * `experimentId` -**Mandatory**, ID of the experiment. Note it is only unique within the project it belongs to.
 * `experimentName` - *Optional*, name of the experiment.
+* `tags` - *Optional*, tags for the experiment.
 
 Example:
 ```
 {
   "experimentId": "exp1",
-  "experimentName": "Exp 1"
+  "experimentName": "Exp 1",
+  "tags": ["some", "tags"]
 }
 ```
 
