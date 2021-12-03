@@ -354,7 +354,7 @@ class Run:
                          " Only CSV and XLS supported!")
 
     def infer_profile(self,
-                      **kwargs: dict) -> ProfileReport:
+                      pp_kwargs: dict = None) -> ProfileReport:
         """
         Generate pandas_profiling profile.
 
@@ -368,7 +368,7 @@ class Run:
         df = self._read_df(self.fetch_input_data(),
                            file_format,
                            **pandas_kwargs)
-        profile = ProfileReport(df, **kwargs)
+        profile = ProfileReport(df, **pp_kwargs)
         return profile
 
     def _parse_profile(self) -> dict:
@@ -407,13 +407,14 @@ class Run:
 
     def _set_profile(self,
                      profile: Optional[ProfileReport] = None,
-                     infer: bool = True) -> None:
+                     infer: bool = True,
+                     pp_kwargs: dict = None) -> None:
         """
         Set private attribute 'profile'.
         """
         if self.profile is None:
             if profile is None and infer:
-                self.profile = self.infer_profile()
+                self.profile = self.infer_profile(pp_kwargs)
             else:
                 self.profile = profile
 
@@ -428,7 +429,8 @@ class Run:
 
     def log_profile(self,
                     profile: Optional[ProfileReport] = None,
-                    infer: bool = True
+                    infer: bool = True,
+                    pp_kwargs: dict = None
                     ) -> None:
         """
         Log a pandas_profiling profile.
@@ -440,10 +442,12 @@ class Run:
             provided, the run will check its own profile attribute.
         infer : bool, default = True
             If True, profile the resource.
+        pp_kwargs : dict, default = None
+            Kwargs passed to ProfileReport.
 
         """
         self._check_profile(profile)
-        self._set_profile(profile, infer)
+        self._set_profile(profile, infer, pp_kwargs)
 
         if self.profile is None:
             warn("No profile provided! Skipped log.")
