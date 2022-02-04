@@ -1,10 +1,12 @@
 """
 Common generic utils.
 """
+import time
 import warnings
 from datetime import datetime
+from functools import wraps
 from mimetypes import guess_type
-from typing import Any, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple
 
 import dateutil.parser as parser
 
@@ -28,6 +30,19 @@ def time_to_sec(timestr: Optional[str] = None) -> float:
                       parsed.microsecond/1000000)
         return round(total_time, 4)
     return
+
+
+def timer(fnc: Callable):
+    """
+    Timer decorator.
+    """
+    @wraps(fnc)
+    def wrapper(*args, **kwrags):
+        start = time.perf_counter()
+        result = fnc(*args, **kwrags)
+        end = round(time.perf_counter() - start, 4)
+        return result, end
+    return wrapper
 
 
 def data_listify(data: Any,

@@ -12,12 +12,13 @@ from typing import Any, Optional
 from slugify import slugify
 
 from datajudge.utils import config as cfg
-from datajudge.utils.factories import get_store, get_run_flavour
+from datajudge.utils.factories import get_store, get_run
 
 # For type checking -> avoids circular imports
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
     from datajudge.run import Run
+    from datajudge.utils.config import RunConfig
 
 
 class Client:
@@ -110,7 +111,7 @@ class Client:
 
     def create_run(self,
                    data_resource: DataResource,
-                   validation_library: str,
+                   run_config: RunConfig,
                    run_id: Optional[str] = None,
                    overwrite: Optional[bool] = False) -> Run:
         """
@@ -150,11 +151,11 @@ class Client:
                          run_metadata_uri,
                          run_artifacts_uri)
 
-        run = get_run_flavour(run_info_args,
-                              validation_library,
-                              data_resource,
-                              self,
-                              overwrite)
+        run = get_run(run_info_args,
+                      run_config,
+                      data_resource,
+                      self,
+                      overwrite)
 
         return run
 

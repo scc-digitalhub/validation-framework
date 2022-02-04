@@ -19,6 +19,8 @@ class RunInfo:
         Name of the experiment.
     run_id : str
         Run id.
+    run_type: str
+        Run typology.
     run_metadata_uri : str
         URI that point to the metadata store.
     run_artifacts_uri : str
@@ -49,12 +51,6 @@ class RunInfo:
 
         self.data_resource_uri = None
 
-        self.validation_library_name = None
-        self.validation_library_version = None
-
-        self.profiling_library_name = None
-        self.profiling_library_version = None
-
         self.created = get_time()
         self.begin_status = None
         self.started = None
@@ -72,10 +68,6 @@ class RunInfo:
             "runMetadataUri": self.run_metadata_uri,
             "runArtifactsUri": self.run_artifacts_uri,
             "dataResourceUri": self.data_resource_uri,
-            "validationLibraryName": self.validation_library_name,
-            "validationLibraryVersion": self.validation_library_version,
-            "profilingLibraryName": self.profiling_library_name,
-            "profilingLibraryVersion": self.profiling_library_version,
             "created": self.created,
             "beginStatus": self.begin_status,
             "started": self.started,

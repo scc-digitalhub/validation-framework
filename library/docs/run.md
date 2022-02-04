@@ -63,7 +63,7 @@ The `Run` object is flexible. You can perform validations directly with it ...
 run = client.create_run(data, "frictionless")
 
 with run:
-    
+   
     # The validation process is started automatically
     run.log_short_report()
     run.persist_report()
@@ -91,7 +91,7 @@ with run:
     # Create a frictionless resource and schema
     resource = Resource(path_data)
     schema = Schema(path_schema)
-    
+   
     # Validate with frictionless
     report = validate_resource(resource, schema=schema)
 

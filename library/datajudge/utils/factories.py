@@ -8,7 +8,7 @@ from __future__ import annotations
 import typing
 from typing import Optional, Tuple, Union
 
-from datajudge.run import FrictionlessRun, GenericRun, RunInfo
+from datajudge.run import RunInfo, Run
 from datajudge.store_artifact import (AzureArtifactStore, FTPArtifactStore,
                                       HTTPArtifactStore, LocalArtifactStore,
                                       S3ArtifactStore)
@@ -24,9 +24,9 @@ if typing.TYPE_CHECKING:
     from datajudge.run import Run
     from datajudge.store_artifact import ArtifactStore
     from datajudge.store_metadata import MetadataStore
+    from datajudge.utils.config import RunConfig
 
-
-# SCHEMES
+# Schemes
 LOCAL_SCHEME = ["", "file"]
 HTTP_SCHEME = ["http", "https"]
 S3_SCHEME = ["s3"]
@@ -34,6 +34,7 @@ AZURE_SCHEME = ["wasb", "wasbs"]
 FTP_SCHEME = ["ftp"]
 
 
+# Registries
 METADATA_STORE_REGISTRY = {
     "": LocalMetadataStore,
     "file": LocalMetadataStore,
@@ -50,11 +51,6 @@ ARTIFACT_STORE_REGISTRY = {
     "http": HTTPArtifactStore,
     "https": HTTPArtifactStore,
     "ftp": FTPArtifactStore,
-}
-
-RUN_REGISTRY = {
-    "frictionless": FrictionlessRun,
-    "generic": GenericRun
 }
 
 
@@ -136,20 +132,21 @@ def get_store(store_type,
         raise KeyError from k_err
 
 
-def get_run_flavour(run_info_args: Tuple[str],
-                    library: str,
-                    data_resource: DataResource,
-                    client: Client,
-                    overwrite: bool) -> Run:
+def get_run(run_info_args: Tuple[str],
+            run_config: RunConfig,
+            data_resource: DataResource,
+            client: Client,
+            overwrite: bool) -> Run:
     """
-    Factory method that returns a run for a specific validation
-    library.
+    Factory method that returns a run.
     """
     try:
         run_info = RunInfo(*run_info_args)
-        return RUN_REGISTRY[library](run_info,
-                                     data_resource,
-                                     client,
-                                     overwrite)
+        return Run(run_info,
+                   run_config,
+                   data_resource,
+                   client,
+                   overwrite)
+
     except KeyError as k_err:
         raise NotImplementedError from k_err

@@ -1,9 +1,58 @@
 """
 Configuration for filenames, endpoints, etc.
 """
+from typing import Optional, Union
+from pydantic import BaseModel
+
+
+class FrictionlessConstraint(BaseModel):
+    pass
+
+
+class DatajudgeConstraint(BaseModel):
+    pass
+
+
+Constraints = Union[FrictionlessConstraint,
+                    DatajudgeConstraint]
+
+
+class ValidationConfig(BaseModel):
+    enabled: bool = True
+    library: Optional[str] = None
+    constraints: Optional[str] = None
+
+
+class InferenceConfig(BaseModel):
+    enabled: bool = True
+    library: Optional[str] = None
+
+
+class ProfilingConfig(BaseModel):
+    enabled: bool = True
+    library: Optional[str] = None
+
+
+class SnapshotConfig(BaseModel):
+    enabled: bool = False
+
+
+Configs = Union[ValidationConfig,
+                InferenceConfig,
+                ProfilingConfig,
+                SnapshotConfig]
+
+
+class RunConfig(BaseModel):
+
+    validation: Optional[ValidationConfig] = ValidationConfig()
+    inference: Optional[InferenceConfig] = InferenceConfig()
+    profiling: Optional[ProfilingConfig] = ProfilingConfig()
+    snapshot: Optional[SnapshotConfig] = SnapshotConfig()
+
 
 # DATAJUDGE VERSION
-DATAJUDGE_VERSION = "1.0.0"
+DATAJUDGE_VERSION = "1.1.0"
 
 # FILENAMES METADATA
 FN_RUN_METADATA = "run_metadata.json"
@@ -52,10 +101,3 @@ DEFAULT_TMP = DEFAULT_LOCAL + "/tmp"
 # DEFAULT NAMES
 DEFAULT_PROJ = "project"
 DEFAULT_EXP = "experiment"
-
-# COLUMNS/FIELDS TO PARSE FROM PROFILE
-PROFILE_COLUMNS = ["analysis", "table", "variables"]
-PROFILE_FIELDS = ["n_distinct", "p_distinct", "is_unique",
-                  "n_unique", "p_unique", "type", "hashable",
-                  "n_missing", "n", "p_missing", "count",
-                  "memory_size"]

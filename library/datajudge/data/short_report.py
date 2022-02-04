@@ -9,8 +9,7 @@ from typing import List, Mapping
 # pylint: disable=too-many-arguments
 
 ReportTuple = namedtuple("ReportTuple",
-                         ("val_lib_name", "val_lib_version",
-                          "time", "valid", "errors"))
+                         ("time", "valid", "errors"))
 
 
 class ShortReport:
@@ -20,9 +19,9 @@ class ShortReport:
 
     Attributes
     ----------
-    val_lib_name : str
+    lib_name : str
         Validation library name.
-    val_lib_version : str
+    lib_version : str
         Validation library version.
     data_resource_uri : str
         URI that point to the resource.
@@ -44,14 +43,14 @@ class ShortReport:
     """
 
     def __init__(self,
-                 val_lib_name: str,
-                 val_lib_version: str,
+                 lib_name: str,
+                 lib_version: str,
                  data_resource_uri: str,
                  duration: float,
                  valid: bool,
                  errors: List[Mapping]) -> None:
-        self.val_lib_name = val_lib_name
-        self.val_lib_version = val_lib_version
+        self.lib_name = lib_name
+        self.lib_version = lib_version
         self.data_resource_uri = data_resource_uri
         self.duration = duration
         self.valid = valid
@@ -62,8 +61,8 @@ class ShortReport:
         Return a dictionary of the attributes.
         """
         report = {
-            "validationLibraryName": self.val_lib_name,
-            "validationLibraryVersion": self.val_lib_version,
+            "libraryName": self.lib_name,
+            "libraryVersion": self.lib_version,
             "dataResourceUri": self.data_resource_uri,
             "duration": self.duration,
             "valid": self.valid,
