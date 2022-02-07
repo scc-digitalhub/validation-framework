@@ -9,7 +9,7 @@ import typing
 from typing import Any, Optional, Union
 
 from datajudge.data import BlobLog, EnvLog
-from datajudge.data import SchemaTuple, ShortSchema
+from datajudge.data import ShortSchema
 from datajudge.data.short_profile import ShortProfile
 from datajudge.data.short_report import ShortReport
 from datajudge.run.plugin_factory import get_plugin
@@ -74,11 +74,6 @@ class Run:
     _SHORT_SCHEMA = cfg.MT_SHORT_SCHEMA
     _DATA_PROFILE = cfg.MT_DATA_PROFILE
     _ARTIFACT_METADATA = cfg.MT_ARTIFACT_METADATA
-
-    _VALID_SCHEMA = cfg.FN_VALID_SCHEMA
-    _FULL_REPORT = cfg.FN_FULL_REPORT
-    _FULL_PROFILE_HTML = cfg.FN_FULL_PROFILE_HTML
-    _FULL_PROFILE_JSON = cfg.FN_FULL_PROFILE_JSON
 
     _RUN_ENV = cfg.MT_RUN_ENV
     _DJ_VERSION = cfg.DATAJUDGE_VERSION
@@ -157,6 +152,10 @@ class Run:
             If True, make inference on a resource.
 
         """
+        if self._inf_plugin is None:
+            warn("Inferencer disabled! Skipped log.")
+            return
+
         self.fetch_input_data()
 
         if infer:
@@ -200,6 +199,10 @@ class Run:
             provided, the run will check its own schema attribute.
 
         """
+        if self._inf_plugin is None:
+            warn("Inferencer disabled! Skipped log.")
+            return
+
         self.fetch_input_data()
         self.fetch_validation_schema()
 
@@ -233,9 +236,10 @@ class Run:
         """
         if self._report_validation is None:
             if report is None and infer:
-                self._report_validation = self._val_plugin.validate(self._data,
-                                                                    self._val_schema,
-                                                                    kwargs)
+                self._report_validation = self._val_plugin.validate(
+                                                            self._data,
+                                                            self._val_schema,
+                                                            kwargs)
             else:
                 self._report_validation = report
 
@@ -257,6 +261,10 @@ class Run:
             Validation arguments.
 
         """
+        if self._val_plugin is None:
+            warn("Validator disabled! Skipped log.")
+            return
+
         self.fetch_input_data()
         self.fetch_validation_schema()
 
@@ -284,25 +292,25 @@ class Run:
     def _set_profile(self,
                      profile: Optional[Any] = None,
                      infer: bool = True,
-                     kwargs: dict = None) -> None:
+                     profiler_kwargs: dict = None) -> None:
         """
         Set private attribute 'profile'.
         """
         if self._profile is None:
             if profile is None and infer:
                 self._profile = self._pro_plugin.profile(self._data,
-                                                         kwargs,
-                                                         self.data_resource)
+                                                         self.data_resource,
+                                                         profiler_kwargs)
             else:
                 self._profile = profile
 
     def log_profile(self,
                     profile: Optional[Any] = None,
                     infer: bool = True,
-                    kwargs: dict = None
+                    profiler_kwargs: dict = None
                     ) -> None:
         """
-        Log a pandas_profiling profile.
+        Log a data profile.
 
         Parameters
         ----------
@@ -311,12 +319,18 @@ class Run:
             the run will check its own profile attribute.
         infer : bool, default = True
             If True, profile the resource.
-        kwargs : dict, default = None
+        profiler_kwargs : dict, default = None
             Kwargs passed to profiler.
 
         """
+        self.fetch_input_data()
+
+        if self._pro_plugin is None:
+            warn("Profiler disabled! Skipped log.")
+            return
+
         self._pro_plugin.validate_profile(profile)
-        self._set_profile(profile, infer, kwargs)
+        self._set_profile(profile, infer, profiler_kwargs)
 
         if self._profile is None:
             warn("No profile provided! Skipped log.")
@@ -425,17 +439,19 @@ class Run:
     # Output data
 
     def persist_data(self,
-                     data_name: Optional[Union[str, list]] = None
-                     ) -> None:
+                     data_name: Optional[Union[str, list]] = None,
+                     validation_schema: bool = False,
+                     schema_name: Optional[str] = None) -> None:
         """
         Persist data and validation schema.
-
         Parameters
         ----------
         data_name : str or list, default = None
             Filename(s) for input data.
-
+        schema_name : str, default = None
+            Filename for input schema.
         """
+
         metadata = self.data_resource.get_metadata()
 
         # Data
@@ -447,8 +463,19 @@ class Run:
                                       else get_name_from_uri(path)
             self.persist_artifact(data[idx], src_name, metadata)
 
+        # Schema
+        if validation_schema:
+            schema = self.fetch_validation_schema()
+            if schema is not None:
+                src_name = schema_name if schema_name is not None \
+                                    else get_name_from_uri(schema)
+                self.persist_artifact(schema, src_name)
+                return
+            warn("No validation schema is provided!")
+
     def persist_full_report(self,
-                            report: Optional[Any] = None) -> None:
+                            report: Optional[Any] = None
+                            ) -> None:
         """
         Persist a report produced by a validation framework.
 
@@ -458,16 +485,13 @@ class Run:
             An report object produced by a validation library.
 
         """
-        if report is None:
-            if self.report is None:
-                warn("No report provided, skipping!")
-                return
-            report = self.report
-        self.persist_artifact(dict(report),
-                              src_name=self._FULL_REPORT)
+        self._persist_object(self._val_plugin,
+                             self._report_validation,
+                             report)
 
     def persist_inferred_schema(self,
-                                schema: Optional[Any] = None) -> None:
+                                schema: Optional[Any] = None
+                                ) -> None:
         """
         Persist an inferred schema produced by a validation framework.
 
@@ -477,17 +501,13 @@ class Run:
             An inferred schema object produced by a validation library.
 
         """
-        if schema is None :
-            if self.schema_inferred is None:
-                warn("No schema provided, skipping!")
-                return
-            schema = self.schema_inferred
-
-        self.persist_artifact(dict(schema),
-                              src_name=cfg.FN_INFERRED_SCHEMA)
+        self._persist_object(self._inf_plugin,
+                             self._schema_inferred,
+                             schema)
 
     def persist_profile(self,
-                        profile: Optional[Any] = None) -> None:
+                        profile: Optional[Any] = None
+                        ) -> None:
         """
         Persist a data profile produced by a profiling framework.
 
@@ -497,14 +517,26 @@ class Run:
             A profile object produced by a profiling library.
 
         """
-        if profile is None:
-            if self.profile is None:
-                warn("No profile provided, skipping!")
+        self._persist_object(self._pro_plugin,
+                             self._profile,
+                             profile)
+            
+    def _persist_object(self,
+                        plugin: Any,
+                        cached: Any,
+                        object: Optional[Any] = None
+                        ) -> None:
+        
+        if object is None:
+            if cached is None:
+                warn("No object provided, skipping!")
                 return
-            profile = self.profile
-        profile = self.render_profile(profile)
-        self.persist_artifact(dict(profile),
-                              self._FULL_PROFILE_JSON)
+            object = cached
+
+        rendered = plugin.render_object(object)
+        for obj in rendered:
+            self.persist_artifact(obj.object, 
+                                  obj.filename)
 
     def persist_artifact(self,
                          src: Any,

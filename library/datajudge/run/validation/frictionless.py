@@ -1,29 +1,24 @@
 """
-InferencePluginFrictionless module.
-Implementation of a Run plugin that uses Frictionless as
-validation framework.
+Frictionless implementation of validation plugin.
 """
-
 # pylint: disable=import-error,invalid-name
 from __future__ import annotations
 
-from typing import Optional
+from typing import List, Optional
 
+import frictionless
+from frictionless import Report, Resource, Schema
+
+import datajudge.utils.config as cfg
+from datajudge.run.validation.validation_plugin import (RenderTuple,
+                                                        ReportTuple,
+                                                        Validation)
 from datajudge.utils.utils import warn
-
-try:
-    import frictionless
-    from frictionless import Report, Schema, Resource
-except ImportError as ierr:
-    raise ImportError("Please install frictionless!") from ierr
-
-from datajudge.data import ReportTuple
-from datajudge.run.validation.validation_plugin import Validation
 
 
 class ValidationPluginFrictionless(Validation):
     """
-    Run plugin that executes inference over a Resource.
+    Frictionless implementation of validation plugin.
     """
 
     def update_library_info(self) -> None:
@@ -48,9 +43,9 @@ class ValidationPluginFrictionless(Validation):
         errors = [dict(zip(spec, err)) for err in flat_report]
 
         # Error severity mapping.
-        # See documentation for the validation schema integration.       
+        # See documentation for the validation schema integration.
         schema = Schema(descriptor=schema_path)
-       
+
         if schema:
             val_fields = schema.get("fields")
             for err in errors:
@@ -64,7 +59,7 @@ class ValidationPluginFrictionless(Validation):
         return ReportTuple(duration, valid, errors)
 
     def validate_report(self,
-                      report: Optional[Report] = None) -> None:
+                        report: Optional[Report] = None) -> None:
         """
         Validate frictionless report before log/persist it.
         """
@@ -74,7 +69,7 @@ class ValidationPluginFrictionless(Validation):
     def validate(self,
                  data_path: str,
                  schema_path: str,
-                 kwargs: dict) -> Report:
+                 kwargs: Optional[dict] = None) -> Report:
         """
         Validate a Data Resource.
 
@@ -86,7 +81,7 @@ class ValidationPluginFrictionless(Validation):
         """
         if not kwargs:
             kwargs = {}
-       
+
         schema = Schema(descriptor=schema_path)
         if schema is None:
             warn("No validation schema is provided! " +
@@ -96,3 +91,14 @@ class ValidationPluginFrictionless(Validation):
         report = frictionless.validate_resource(resource, **kwargs)
 
         return report
+
+    def render_object(self,
+                      obj: Report) -> List[RenderTuple]:
+        """
+        Return a rendered profile ready to be persisted as artifact.
+        """
+
+        self.validate_report(obj)
+        dict_report = dict(obj)
+
+        return [RenderTuple(dict_report, cfg.FN_FULL_REPORT)]

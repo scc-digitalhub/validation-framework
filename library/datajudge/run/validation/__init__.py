@@ -1,4 +1,4 @@
-from datajudge.run.validation.plugin_frictionless import ValidationPluginFrictionless
+from datajudge.run.validation.frictionless import ValidationPluginFrictionless
 
 __all__ = [
     "ValidationPluginFrictionless"

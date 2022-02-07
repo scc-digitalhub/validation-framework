@@ -2,14 +2,8 @@
 ShortReport module.
 Implementation of a Short Report common structure.
 """
-from collections import namedtuple
-from typing import List, Mapping
-
-
 # pylint: disable=too-many-arguments
-
-ReportTuple = namedtuple("ReportTuple",
-                         ("time", "valid", "errors"))
+from typing import List, Mapping
 
 
 class ShortReport:

@@ -29,7 +29,6 @@ def time_to_sec(timestr: Optional[str] = None) -> float:
                       parsed.second +
                       parsed.microsecond/1000000)
         return round(total_time, 4)
-    return
 
 
 def timer(fnc: Callable):

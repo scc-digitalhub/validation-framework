@@ -20,7 +20,7 @@ Constraints = Union[FrictionlessConstraint,
 class ValidationConfig(BaseModel):
     enabled: bool = True
     library: Optional[str] = None
-    constraints: Optional[str] = None
+    constraints: Optional[Constraints] = None
 
 
 class InferenceConfig(BaseModel):

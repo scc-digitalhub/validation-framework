@@ -1,9 +1,5 @@
 """
-RunInference class module.
-The RunInference class describes a Run object that performs
-inference tasks over a Resource. With inference task, we mean
-a general description of a resource (extension, metadata etc.)
-and the inference of a data schema (field types).
+Pandas profiling implementation of profiling plugin.
 """
 # pylint: disable=import-error,invalid-name
 from __future__ import annotations
@@ -13,14 +9,13 @@ import typing
 from typing import List, Optional, Tuple, Union
 
 import pandas as pd
-try:
-    import pandas_profiling
-    from pandas_profiling import ProfileReport
-except ImportError as ierr:
-    raise ImportError("Please install pandas_profiling!") from ierr
+import pandas_profiling
+from pandas_profiling import ProfileReport
 
-from datajudge.data.short_profile import ProfileTuple
-from datajudge.run.profiling.profiling_plugin import Profiling
+import datajudge.utils.config as cfg
+from datajudge.run.profiling.profiling_plugin import (ProfileTuple, Profiling,
+                                                      RenderTuple)
+from datajudge.utils.io_utils import write_bytesio
 from datajudge.utils.utils import time_to_sec
 
 if typing.TYPE_CHECKING:
@@ -36,6 +31,9 @@ PROFILE_FIELDS = ["n_distinct", "p_distinct", "is_unique",
 
 
 class InferencePluginPandasProfiling(Profiling):
+    """
+    Pandas profiling implementation of profiling plugin.
+    """
 
     def update_library_info(self) -> None:
         """
@@ -43,7 +41,7 @@ class InferencePluginPandasProfiling(Profiling):
         """
         self.lib_name = pandas_profiling.__name__
         self.lib_version = pandas_profiling.__version__
-   
+
     def parse_profile(self,
                       profile: ProfileReport) -> ProfileTuple:
         """
@@ -87,7 +85,7 @@ class InferencePluginPandasProfiling(Profiling):
 
     def validate_profile(self,
                          profile: Optional[ProfileReport] = None
-                        ) -> None:
+                         ) -> None:
         """
         Validate the profile.
         """
@@ -96,8 +94,9 @@ class InferencePluginPandasProfiling(Profiling):
 
     def profile(self,
                 data_path: str,
-                profiler_kwargs: dict = None,
-                resource: DataResource = None) -> ProfileReport:
+                resource: DataResource,
+                profiler_kwargs: Optional[dict] = None
+                ) -> ProfileReport:
         """
         Generate pandas_profiling profile.
 
@@ -109,18 +108,18 @@ class InferencePluginPandasProfiling(Profiling):
         """
         if profiler_kwargs is None:
             profiler_kwargs = {}
-       
+
         file_format, pandas_kwargs = self._parse_resource(resource)
         df = self._read_df(data_path,
                            file_format,
                            **pandas_kwargs)
         profile = ProfileReport(df, **profiler_kwargs)
         return profile
-   
+
     @staticmethod
     def _read_df(path: Union[str, List[str]],
-                file_format: str,
-                **kwargs: dict) -> pd.DataFrame:
+                 file_format: str,
+                 **kwargs: dict) -> pd.DataFrame:
         """
         Read a file into a pandas DataFrame.
         """
@@ -147,27 +146,36 @@ class InferencePluginPandasProfiling(Profiling):
         raise ValueError("Invalid extension.",
                          " Only CSV and XLS supported!")
 
-    def _parse_resource(self,
-                        resource: DataResource = None
-                        ) -> Tuple[str, dict]:
+    @staticmethod
+    def _parse_resource(resource: DataResource) -> Tuple[str, dict]:
         """
         Parse DataResource and return file format and
         optional arguments for pandas.
         """
-
-        pandas_args = {}
-
-        file_format = getattr(resource, "format")
-        if file_format is None:
-            file_format = "csv"
-        pandas_args["sep"] = ","
-        pandas_args["encoding"] = "utf-8"
-
-        # Redo this part
-        # Default args for read_csv: sep ",", encoding "utf-8"
-        # if file_format == "csv":
-        #     pandas_args["sep"] = self.inferred.get("dialect", {})\
-        #                                       .get("delimiter", ",")
-        #     pandas_args["encoding"] = self.inferred.get("encoding", "utf-8")
-
+        # Redo this part, need some custom
+        # inference over a resource
+        file_format = getattr(resource, "format", "csv")
+        pandas_args = {
+            "sep": ",",
+            "encoding": "utf-8"
+        }
         return file_format, pandas_args
+
+    def render_object(self,
+                      obj: ProfileReport) -> List[RenderTuple]:
+        """
+        Return a rendered profile ready to be persisted as artifact.
+        """
+
+        self.validate_profile(obj)
+
+        string_html = obj.to_html()
+
+        string_json = obj.to_json()
+        string_json = string_json.replace("NaN", "null")
+
+        strio_html = write_bytesio(string_html)
+        strio_json = write_bytesio(string_json)
+
+        return [RenderTuple(strio_html, cfg.FN_FULL_PROFILE_HTML),
+                RenderTuple(strio_json, cfg.FN_FULL_PROFILE_JSON)]

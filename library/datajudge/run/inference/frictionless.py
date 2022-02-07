@@ -1,22 +1,18 @@
 """
-InferencePluginFrictionless module.
-Implementation of a Run plugin that uses Frictionless as
-inference framework.
+Frictionless implementation of inference plugin.
 """
 from __future__ import annotations
 
 import typing
-from typing import Optional
+from typing import List, Optional
 
-try:
-    import frictionless
-    from frictionless import Resource, describe_schema
-    from frictionless.schema import Schema
-except ImportError as ierr:
-    raise ImportError("Please install frictionless!") from ierr
+import frictionless
+from frictionless import Resource, describe_schema
+from frictionless.schema import Schema
 
-from datajudge.data import SchemaTuple
-from datajudge.run.inference.inference_plugin import Inference
+import datajudge.utils.config as cfg
+from datajudge.run.inference.inference_plugin import (Inference, RenderTuple,
+                                                      SchemaTuple)
 from datajudge.utils.utils import guess_mediatype, timer, warn
 
 if typing.TYPE_CHECKING:
@@ -25,7 +21,7 @@ if typing.TYPE_CHECKING:
 
 class InferencePluginFrictionless(Inference):
     """
-    Frictionless inference plugin.
+    Frictionless implementation of inference plugin.
     """
 
     def update_library_info(self) -> None:
@@ -134,3 +130,14 @@ class InferencePluginFrictionless(Inference):
         resource.infer(stats=True)
         resource.expand()
         return resource
+
+    def render_object(self,
+                      obj: Schema) -> List[RenderTuple]:
+        """
+        Return a rendered profile ready to be persisted as artifact.
+        """
+
+        self.validate_schema(obj)
+        dict_schema = dict(obj)
+
+        return [RenderTuple(dict_schema, cfg.FN_INFERRED_SCHEMA)]

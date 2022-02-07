@@ -3,12 +3,6 @@ ShortProfile module.
 Implementation of a Short Profile common structure.
 """
 
-from collections import namedtuple
-
-
-ProfileTuple = namedtuple("ProfileTuple",
-                         ("duration", "stats", "fields"))
-
 
 class ShortProfile:
     """

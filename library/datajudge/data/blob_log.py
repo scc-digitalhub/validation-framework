@@ -39,7 +39,7 @@ class BlobLog:
         self.experiment_name = experiment_name
         self.datajudge_version = datajudge_version
         self.contents = contents
-   
+
     def to_dict(self) -> dict:
         """
         Return a dictionary.
@@ -52,6 +52,6 @@ class BlobLog:
             "contents": self.contents
         }
         return run_dict
-   
+
     def __repr__(self) -> str:
         return str(self.to_dict())

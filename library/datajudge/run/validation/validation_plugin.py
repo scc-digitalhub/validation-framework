@@ -1,30 +1,24 @@
 """
-RunInference class module.
-The RunInference class describes a Run object that performs
-inference tasks over a Resource. With inference task, we mean
-a general description of a resource (extension, metadata etc.)
-and the inference of a data schema (field types).
+Validation plugin abstract class module.
 """
-
 # pylint: disable=import-error,invalid-name
 from __future__ import annotations
 from collections import namedtuple
 
-import typing
 from abc import ABCMeta, abstractmethod
-from typing import Any
+from typing import Any, List, Optional
 
-if typing.TYPE_CHECKING:
-    from datajudge.client import Client
-    from datajudge.data import DataResource
-    from datajudge.run import RunInfo
+ReportTuple = namedtuple("ReportTuple",
+                         ("time", "valid", "errors"))
+RenderTuple = namedtuple("RenderTuple",
+                         ("object", "filename"))
 
 
-class Validation(object, metaclass=ABCMeta):
+class Validation(metaclass=ABCMeta):
     """
     Run plugin that executes validation over a Resource.
     """
-   
+
     def __init__(self) -> None:
 
         self.lib_name = None
@@ -39,18 +33,33 @@ class Validation(object, metaclass=ABCMeta):
 
     @abstractmethod
     def parse_report(self,
-                      nmtp: namedtuple) -> namedtuple:
+                     report: Any,
+                     schema_path: Optional[str] = None
+                     ) -> ReportTuple:
         """
         Parse the report produced by the validation framework.
         """
 
     @abstractmethod
     def validate_report(self,
-                      report: Any) -> None:
+                        report: Optional[Any] = None
+                        ) -> None:
         """
         Check a report before log/persist it.
         """
 
     @abstractmethod
-    def validate(self) -> None:
-        pass
+    def validate(self,
+                 data_path: str,
+                 schema_path: str,
+                 kwargs: Optional[dict] = None) -> Any:
+        """
+        Validate a resource.
+        """
+
+    @abstractmethod
+    def render_object(self,
+                      obj: Any) -> List[RenderTuple]:
+        """
+        Return a rendered report ready to be persisted as artifact.
+        """

@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
 
 
 class DataPackage:
-   
+
     def __init__(self,
                  resources: List[DataResource],
                  constraints: Optional[List[Mapping]] = None,
@@ -32,7 +32,7 @@ class DataPackage:
                  image: Optional[str] = None,
                  created: Optional[str] = None
                  ) -> None:
-       
+
         self.resources = resources
         self.constraints = constraints
         self.name = name
@@ -48,7 +48,7 @@ class DataPackage:
         self.keywords = keywords
         self.image = image
         self.created = created
-       
+
     def to_dict(self) -> dict:
         """
         Return dictionary of non null values.

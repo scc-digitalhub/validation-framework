@@ -1,4 +1,4 @@
-from datajudge.run.inference.plugin_frictionless import InferencePluginFrictionless
+from datajudge.run.inference.frictionless import InferencePluginFrictionless
 
 __all__ = [
     "InferencePluginFrictionless"

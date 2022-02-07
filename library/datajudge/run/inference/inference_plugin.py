@@ -1,24 +1,24 @@
 """
-RunInference class module.
-The RunInference class describes a Run object that performs
-inference tasks over a Resource. With inference task, we mean
-a general description of a resource (extension, metadata etc.)
-and the inference of a data schema (field types).
+Inference plugin abstract class module.
 """
-
 # pylint: disable=import-error,invalid-name
 from __future__ import annotations
+from collections import namedtuple
 
 import typing
 from abc import ABCMeta, abstractmethod
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 if typing.TYPE_CHECKING:
-    from datajudge.client import Client
     from datajudge.data import DataResource
 
+SchemaTuple = namedtuple("SchemaTuple", ("name", "type",
+                                         "valid_type", "description"))
+RenderTuple = namedtuple("RenderTuple",
+                         ("object", "filename"))
 
-class Inference(object, metaclass=ABCMeta):
+
+class Inference(metaclass=ABCMeta):
     """
     Run plugin that executes inference over a Resource.
     """
@@ -45,9 +45,8 @@ class Inference(object, metaclass=ABCMeta):
 
     @abstractmethod
     def parse_schema(self,
-                     client: Client,
                      schema_inferred: Any,
-                     schema_uri: Optional[str] = None
+                     schema_path: Optional[str] = None
                      ) -> list:
         """
         Parse the inferred schema produced by the validation
@@ -56,19 +55,29 @@ class Inference(object, metaclass=ABCMeta):
 
     @abstractmethod
     def validate_schema(self,
-                        schema: Any) -> None:
+                        schema: Optional[Any] = None
+                        ) -> None:
         """
         Validate a schema before log/persist it.
         """
 
     @abstractmethod
-    def infer_schema(self) -> Any:
+    def infer_schema(self,
+                     data_path: str) -> Any:
         """
         Inference method for schema.
         """
 
     @abstractmethod
-    def infer_resource(self) -> Any:
+    def infer_resource(self,
+                       data_path: str) -> Any:
         """
         Inference method for resource.
+        """
+
+    @abstractmethod
+    def render_object(self,
+                      obj: Any) -> List[RenderTuple]:
+        """
+        Return a rendered schema ready to be persisted as artifact.
         """

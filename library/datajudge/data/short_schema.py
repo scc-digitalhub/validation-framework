@@ -6,10 +6,6 @@ from collections import namedtuple
 from typing import List
 
 
-SchemaTuple = namedtuple("SchemaTuple", ("name", "type",
-                                         "valid_type", "description"))
-
-
 class ShortSchema:
     """
     ShortSchema object consisting in a succint
@@ -39,7 +35,7 @@ class ShortSchema:
                  lib_version: str,
                  data_resource_uri: str,
                  duration: float,
-                 fields: List[SchemaTuple]) -> None:
+                 fields: List[namedtuple]) -> None:
         self.lib_name = lib_name
         self.lib_version = lib_version
         self.data_resource_uri = data_resource_uri

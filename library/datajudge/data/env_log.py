@@ -14,7 +14,7 @@ def round_ram() -> str:
     """
     mem = virtual_memory().total
     return str(round(mem / (1024.0 ** 3)))+" GB"
-   
+
 
 class EnvLog:
     """
@@ -40,6 +40,6 @@ class EnvLog:
             "ram": self.ram
         }
         return env_data
-   
+
     def __repr__(self) -> str:
         return str(self.to_dict())

@@ -29,7 +29,7 @@ def get_plugin(config: dict) -> Any:
     """
     if config is None:
         return
-    if config.enabled:   
+    if config.enabled:
         try:
             if isinstance(config, cfg.InferenceConfig):
                 return PLUGIN_REGISTRY["inference"][config.library]()

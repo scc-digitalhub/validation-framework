@@ -21,7 +21,6 @@ from datajudge.utils.uri_utils import check_url, get_uri_scheme, rebuild_uri
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
     from datajudge.data import DataResource
-    from datajudge.run import Run
     from datajudge.store_artifact import ArtifactStore
     from datajudge.store_metadata import MetadataStore
     from datajudge.utils.config import RunConfig
