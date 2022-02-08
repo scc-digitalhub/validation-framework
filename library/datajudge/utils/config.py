@@ -5,6 +5,14 @@ from typing import Any, List, Optional, Union
 from pydantic import BaseModel, Field
 
 
+class StoreConfig(BaseModel):
+    title: str
+    name: str
+    path: str
+    isDefault: bool = False
+    config: Optional[dict] = None
+
+
 class FrictionlessConst(BaseModel):
     name: str
     schema_: dict = Field(alias="schema")
@@ -107,9 +115,16 @@ ST_METADATA = "metadata"
 ST_ARTIFACT = "artifact"
 ST_DATA = "data"
 
-# DEFAULT FOLDERS
+# DEFAULT FOLDERS/STORES
 DEFAULT_LOCAL = "./djruns"
 DEFAULT_TMP = DEFAULT_LOCAL + "/tmp"
+DEFAULT_STORE = StoreConfig(title="Local Default Store",
+                            name="local",
+                            path=DEFAULT_LOCAL,
+                            isDefault=True)
+DEFAULT_MD_STORE = StoreConfig(title="Local Metadata Store",
+                               name="local_md",
+                               path=DEFAULT_LOCAL)
 
 # DEFAULT NAMES
 DEFAULT_PROJ = "project"

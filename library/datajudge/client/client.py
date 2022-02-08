@@ -7,18 +7,21 @@ and create runs.
 from __future__ import annotations
 
 import typing
-from typing import Any, Optional
+from typing import Any, List, Optional, Union
 
 from slugify import slugify
 
 from datajudge.utils import config as cfg
-from datajudge.utils.factories import get_store, get_run
+from datajudge.utils.factories import get_md_store, get_stores, get_run
 
 # For type checking -> avoids circular imports
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
     from datajudge.run import Run
     from datajudge.utils.config import RunConfig
+
+
+store_cfg = Optional[List[Union[cfg.StoreConfig, dict]]]
 
 
 class Client:
@@ -52,12 +55,8 @@ class Client:
     def __init__(self,
                  project_id: Optional[str] = cfg.DEFAULT_PROJ,
                  experiment_title: Optional[str] = cfg.DEFAULT_EXP,
-                 metadata_store_uri: Optional[str] = cfg.DEFAULT_LOCAL,
-                 metadata_store_config: Optional[dict] = None,
-                 artifact_store_uri: Optional[str] = cfg.DEFAULT_LOCAL,
-                 artifact_store_config: Optional[dict] = None,
-                 data_store_uri: Optional[str] = cfg.DEFAULT_LOCAL,
-                 data_store_config: Optional[dict] = None,
+                 metadata_store_config: store_cfg = cfg.DEFAULT_MD_STORE,
+                 store_configs: store_cfg = cfg.DEFAULT_STORE,
                  tmp_dir: Optional[str] = cfg.DEFAULT_TMP
                  ) -> None:
         """
@@ -70,44 +69,39 @@ class Client:
         experiment_title : str
             Experiment name. An experiment is a logical unit for keeping
             together the validation runs made on a Data Package/Data Resource.
-        metadata_store_uri : str
-            Metadata store URI.
-        metadata_store_config : dict
+        metadata_store_config : StoreConfig or dict or list, default = StoreConfig
             Dictionary containing configuration for the store.
-        artifact_store_uri : str
-            Artifact store URI (output data).
-        artifact_store_config : dict
-            Dictionary containing configuration for the store.
-        data_store_uri : str
-            Data store URI (input data).
-        data_store_config : dict
+        stores_config : StoreConfig or dict or list, default = StoreConfig
             Dictionary containing configuration for the store.
         tmp_dir : str
             Default temporary folder where to download data.
 
         """
-
         self._project_id = project_id
         self._experiment_title = experiment_title
         self._experiment_name = slugify(experiment_title,
-                                      max_length=20,
-                                      separator="_")
+                                        max_length=20,
+                                        separator="_")
         self._tmp_dir = tmp_dir
-        self._metadata_store = get_store(cfg.ST_METADATA,
-                                         self._project_id,
-                                         self._experiment_name,
-                                         metadata_store_uri,
-                                         metadata_store_config)
-        self._artifact_store = get_store(cfg.ST_ARTIFACT,
-                                         self._project_id,
-                                         self._experiment_name,
-                                         artifact_store_uri,
-                                         artifact_store_config)
-        self._data_store = get_store(cfg.ST_DATA,
-                                     self._project_id,
-                                     self._experiment_name,
-                                     data_store_uri,
-                                     data_store_config)
+        self._metadata_store = get_md_store(self._project_id,
+                                            self._experiment_name,
+                                            metadata_store_config)
+        self._store_registry = get_stores(self._experiment_name,
+                                          store_configs)
+        self._default_store = self._select_default_store()
+
+    def _select_default_store(self) -> None:
+        """
+        Select default store in the store registry.
+        """
+        default = None
+        for k, v in self._store_registry.items():
+            if v.get("is_default", False):
+                if default is None:
+                    default = v.get("store")
+                else:
+                    raise ValueError("Please select only one store as default.")
+        return default
 
     def create_run(self,
                    data_resource: DataResource,
@@ -121,10 +115,8 @@ class Client:
         ----------
         data_resource : DataResource
             A DataResource object.
-        validation_library : str
-            Name of the validation framework used to perform
-            the validation task. It's used to select a specific
-            Run object.
+        run_config : RunConfig
+            Run configuration object.
         run_id : str, default = None
             Optional string parameter for user defined run id.
         overwrite : bool, default = False
@@ -143,7 +135,7 @@ class Client:
         self._metadata_store.init_run(run_id, overwrite)
 
         run_metadata_uri = self._metadata_store.get_run_metadata_uri(run_id)
-        run_artifacts_uri = self._artifact_store.get_run_artifacts_uri(run_id)
+        run_artifacts_uri = self._default_store.get_run_artifacts_uri(run_id)
 
         run_info_args = (self._experiment_title,
                          self._experiment_name,
@@ -191,7 +183,7 @@ class Client:
                          metadata: dict
                          ) -> None:
         """
-        Method to persist artifacts in the artifact store.
+        Method to persist artifacts in the default artifact store.
 
         Parameters
         ----------
@@ -205,10 +197,11 @@ class Client:
             Optional metadata to attach on artifact.
 
         """
-        self._artifact_store.persist_artifact(src, dst, src_name, metadata)
+        self._default_store.persist_artifact(src, dst, src_name, metadata)
 
     def fetch_artifact(self,
-                       uri: str) -> str:
+                       uri: str,
+                       store_name: Optional[str] = None) -> str:
         """
         Fetch artifact from backend and store locally.
 
@@ -216,6 +209,8 @@ class Client:
         ----------
         uri : str
             URI of artifact to fetch.
+        store_name : str, default = None
+            Store name where to fetch an artifact.
 
         Returns
         -------
@@ -223,7 +218,11 @@ class Client:
             Path to temp file
 
         """
-        return self._data_store.fetch_artifact(uri, self.tmp_dir)
+        if store_name is None:
+            in_store = self._default_store
+        else:
+            in_store = self._store_registry.get(store_name).get("store")
+        return in_store.fetch_artifact(uri, self.tmp_dir)
 
     def get_data_resource_uri(self,
                               run_id: str) -> str:

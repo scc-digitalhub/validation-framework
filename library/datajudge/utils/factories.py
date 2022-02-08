@@ -6,7 +6,7 @@ factory methods.
 from __future__ import annotations
 
 import typing
-from typing import Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from datajudge.run import RunInfo, Run
 from datajudge.store_artifact import (AzureArtifactStore, FTPArtifactStore,
@@ -15,6 +15,7 @@ from datajudge.store_artifact import (AzureArtifactStore, FTPArtifactStore,
 from datajudge.store_metadata import (DigitalHubMetadataStore,
                                       LocalMetadataStore)
 from datajudge.utils import config as cfg
+from datajudge.utils.config import StoreConfig
 from datajudge.utils.file_utils import get_absolute_path
 from datajudge.utils.uri_utils import check_url, get_uri_scheme, rebuild_uri
 
@@ -24,13 +25,16 @@ if typing.TYPE_CHECKING:
     from datajudge.store_artifact import ArtifactStore
     from datajudge.store_metadata import MetadataStore
 
+
+META = cfg.ST_METADATA
+DATA = cfg.ST_ARTIFACT
+
 # Schemes
 LOCAL_SCHEME = ["", "file"]
 HTTP_SCHEME = ["http", "https"]
 S3_SCHEME = ["s3"]
 AZURE_SCHEME = ["wasb", "wasbs"]
 FTP_SCHEME = ["ftp"]
-
 
 # Registries
 METADATA_STORE_REGISTRY = {
@@ -62,7 +66,7 @@ def build_exp_uri(scheme: str,
     """
 
     # Metadata stores
-    if store == cfg.ST_METADATA:
+    if store == META:
 
         if scheme in LOCAL_SCHEME:
             return get_absolute_path(uri, store, experiment_name)
@@ -76,12 +80,11 @@ def build_exp_uri(scheme: str,
         raise NotImplementedError
 
     # Artifact/data stores
-    if store in (cfg.ST_DATA, cfg.ST_ARTIFACT):
+    if store == DATA:
 
         if scheme in LOCAL_SCHEME:
             return get_absolute_path(uri, store, experiment_name)
-        if scheme in [*AZURE_SCHEME, *S3_SCHEME,
-                      *HTTP_SCHEME, *FTP_SCHEME]:
+        if scheme in [*AZURE_SCHEME, *S3_SCHEME, *HTTP_SCHEME, *FTP_SCHEME]:
             return rebuild_uri(uri, store, experiment_name)
         raise NotImplementedError
 
@@ -95,39 +98,68 @@ def resolve_uri(uri: str,
     """
     Return a builded URI and it's scheme.
     """
-    uri = uri if uri is not None else cfg.DEFAULT_LOCAL
     scheme = get_uri_scheme(uri)
     new_uri = build_exp_uri(scheme, uri, experiment_name, store, project_id)
     return new_uri, scheme
 
 
-def get_store(store_type,
-              project_id: str,
-              experiment_name: str,
-              uri: Optional[str] = None,
-              config: Optional[dict] = None
-              ) -> Union[MetadataStore, ArtifactStore]:
+def cfg_conversion(config: Union[StoreConfig, dict]) -> StoreConfig:
     """
-    Function that returns metadata and artifact stores.
+    Try to convert a store configuration in a StoreConfig model.
+    """    
+    if not isinstance(config, StoreConfig):
+        try:
+            return StoreConfig(**config)
+        except Exception as ex:
+            raise ex
+    return config
+
+
+def get_md_store(project_id: str,
+                 experiment_name: str,
+                 config: Union[dict, StoreConfig]
+                 ) -> MetadataStore:
     """
+    Function that returns metadata stores.
+    """
+    config = cfg_conversion(config)
+    uri = config.path
     new_uri, scheme = resolve_uri(uri,
                                   experiment_name,
-                                  store_type,
+                                  META,
                                   project_id)
     try:
-        if store_type == cfg.ST_METADATA:
-            return METADATA_STORE_REGISTRY[scheme](new_uri, config)
-
-        if store_type == cfg.ST_ARTIFACT:
-            return ARTIFACT_STORE_REGISTRY[scheme](new_uri, config)
-
-        if store_type == cfg.ST_DATA:
-            return ARTIFACT_STORE_REGISTRY[scheme](new_uri, config, data=True)
-
-        raise NotImplementedError
-
+        return METADATA_STORE_REGISTRY[scheme](new_uri, config)
     except KeyError as k_err:
         raise KeyError from k_err
+
+def get_stores(experiment_name: str,
+               store_configs: Union[dict, StoreConfig, list]
+               ) -> ArtifactStore:
+    """
+    Function that returns artifact stores.
+    """
+    if not isinstance(store_configs, list):
+        store_configs = [store_configs]
+
+    stores = {}
+    for cfg in store_configs:
+        cfg = cfg_conversion(cfg)
+        new_uri, scheme = resolve_uri(cfg.path,
+                                      experiment_name,
+                                      DATA)
+        try:
+            obj = ARTIFACT_STORE_REGISTRY[scheme](new_uri, cfg.config)
+            stores[cfg.name] = {
+                "store": obj,
+                "is_default": cfg.isDefault 
+            }
+        except KeyError as k_err:
+            raise KeyError from k_err
+    
+    print(stores)
+    
+    return stores
 
 
 def get_run(run_info_args: Tuple[str],
