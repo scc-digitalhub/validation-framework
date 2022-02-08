@@ -12,9 +12,9 @@ class BlobLog:
     ----------
     run_id : str
         Run id.
-    experiment_id : str
-        Id of the experiment.
     experiment_name : str
+        Id of the experiment.
+    experiment_title : str
         Name of the experiment.
     datajudge_version : str
         Version of the library.
@@ -30,13 +30,13 @@ class BlobLog:
 
     def __init__(self,
                  run_id: str,
-                 experiment_id: str,
                  experiment_name: str,
+                 experiment_title: str,
                  datajudge_version: str,
                  contents: dict) -> None:
         self.run_id = run_id
-        self.experiment_id = experiment_id
         self.experiment_name = experiment_name
+        self.experiment_title = experiment_title
         self.datajudge_version = datajudge_version
         self.contents = contents
 
@@ -46,8 +46,8 @@ class BlobLog:
         """
         run_dict = {
             "runId": self.run_id,
-            "experimentId": self.experiment_id,
             "experimentName": self.experiment_name,
+            "experimentTitle": self.experiment_title,
             "datajudgeVersion": self.datajudge_version,
             "contents": self.contents
         }

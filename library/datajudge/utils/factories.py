@@ -23,7 +23,6 @@ if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
     from datajudge.store_artifact import ArtifactStore
     from datajudge.store_metadata import MetadataStore
-    from datajudge.utils.config import RunConfig
 
 # Schemes
 LOCAL_SCHEME = ["", "file"]
@@ -55,7 +54,7 @@ ARTIFACT_STORE_REGISTRY = {
 
 def build_exp_uri(scheme: str,
                   uri: str,
-                  experiment_id: str,
+                  experiment_name: str,
                   store: str,
                   project_id: Optional[str] = None) -> str:
     """
@@ -66,7 +65,7 @@ def build_exp_uri(scheme: str,
     if store == cfg.ST_METADATA:
 
         if scheme in LOCAL_SCHEME:
-            return get_absolute_path(uri, store, experiment_id)
+            return get_absolute_path(uri, store, experiment_name)
 
         if scheme in HTTP_SCHEME:
             if project_id is not None:
@@ -80,17 +79,17 @@ def build_exp_uri(scheme: str,
     if store in (cfg.ST_DATA, cfg.ST_ARTIFACT):
 
         if scheme in LOCAL_SCHEME:
-            return get_absolute_path(uri, store, experiment_id)
+            return get_absolute_path(uri, store, experiment_name)
         if scheme in [*AZURE_SCHEME, *S3_SCHEME,
                       *HTTP_SCHEME, *FTP_SCHEME]:
-            return rebuild_uri(uri, store, experiment_id)
+            return rebuild_uri(uri, store, experiment_name)
         raise NotImplementedError
 
     raise RuntimeError("Invalid store.")
 
 
 def resolve_uri(uri: str,
-                experiment_id: str,
+                experiment_name: str,
                 store: str,
                 project_id: Optional[str] = None) -> Tuple[str, str]:
     """
@@ -98,13 +97,13 @@ def resolve_uri(uri: str,
     """
     uri = uri if uri is not None else cfg.DEFAULT_LOCAL
     scheme = get_uri_scheme(uri)
-    new_uri = build_exp_uri(scheme, uri, experiment_id, store, project_id)
+    new_uri = build_exp_uri(scheme, uri, experiment_name, store, project_id)
     return new_uri, scheme
 
 
 def get_store(store_type,
               project_id: str,
-              experiment_id: str,
+              experiment_name: str,
               uri: Optional[str] = None,
               config: Optional[dict] = None
               ) -> Union[MetadataStore, ArtifactStore]:
@@ -112,7 +111,7 @@ def get_store(store_type,
     Function that returns metadata and artifact stores.
     """
     new_uri, scheme = resolve_uri(uri,
-                                  experiment_id,
+                                  experiment_name,
                                   store_type,
                                   project_id)
     try:
@@ -132,7 +131,6 @@ def get_store(store_type,
 
 
 def get_run(run_info_args: Tuple[str],
-            run_config: RunConfig,
             data_resource: DataResource,
             client: Client,
             overwrite: bool) -> Run:
@@ -142,7 +140,6 @@ def get_run(run_info_args: Tuple[str],
     try:
         run_info = RunInfo(*run_info_args)
         return Run(run_info,
-                   run_config,
                    data_resource,
                    client,
                    overwrite)

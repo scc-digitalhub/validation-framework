@@ -9,9 +9,7 @@ import typing
 from typing import Any, Optional, Union
 
 from datajudge.data import BlobLog, EnvLog
-from datajudge.data import ShortSchema
-from datajudge.data.short_profile import ShortProfile
-from datajudge.data.short_report import ShortReport
+from datajudge.data import ShortSchema, ShortProfile, ShortReport
 from datajudge.run.plugin_factory import get_plugin
 from datajudge.utils import config as cfg
 from datajudge.utils.file_utils import clean_all
@@ -22,7 +20,6 @@ if typing.TYPE_CHECKING:
     from datajudge.client import Client
     from datajudge.data import DataResource
     from datajudge.run import RunInfo
-    from datajudge.utils.config import RunConfig
 
 # pylint: disable=too-many-instance-attributes
 
@@ -80,22 +77,24 @@ class Run:
 
     def __init__(self,
                  run_info: RunInfo,
-                 run_config: RunConfig,
                  data_resource: DataResource,
                  client: Client,
                  overwrite: bool) -> None:
 
         self.data_resource = data_resource
-        self.run_config = run_config
         self._client = client
         self.run_info = run_info
         self._overwrite = overwrite
 
         # Plugin
-        self._inf_plugin = get_plugin(self.run_config.inference)
-        self._val_plugin = get_plugin(self.run_config.validation)
-        self._pro_plugin = get_plugin(self.run_config.profiling)
-        self._sna_plugin = get_plugin(self.run_config.snapshot)
+        self._inf_plugin = get_plugin(
+            self.run_info.run_config.inference)
+        self._val_plugin = get_plugin(
+            self.run_info.run_config.validation)
+        self._pro_plugin = get_plugin(
+            self.run_info.run_config.profiling)
+        self._sna_plugin = get_plugin(
+            self.run_info.run_config.snapshot)
 
         # Local temp paths
         self._data = None
@@ -111,10 +110,33 @@ class Run:
         self._inf_schema_duration = None
 
         # Preliminary log
+        self._get_plugin_info()
         self._log_run()
         self._log_env()
 
     # Run
+
+    def _get_plugin_info(self) -> None:
+        """
+        Get plugins used libs.
+        """
+        self.run_info.run_libraries =  {
+            "validation": self._get_plugin_lib(self._val_plugin),
+            "inference": self._get_plugin_lib(self._inf_plugin),
+            "profiling": self._get_plugin_lib(self._pro_plugin),
+            "snapshot": self._get_plugin_lib(self._sna_plugin)
+        }
+    
+    @staticmethod
+    def _get_plugin_lib(plugin) -> Optional[dict]:
+        """
+        Return library name/version of a plugin.
+        """
+        if plugin is not None:
+            return {
+                "libName": plugin.lib_name,
+                "libVerision": plugin.lib_version
+            }
 
     def _log_run(self) -> None:
         """
@@ -149,7 +171,8 @@ class Run:
         Parameters
         ----------
         infer : bool, default = True
-            If True, make inference on a resource.
+            If True, make inference on a resource, otherwise
+            log it as it is.
 
         """
         if self._inf_plugin is None:
@@ -229,13 +252,12 @@ class Run:
 
     def _set_report(self,
                     report: Optional[Any] = None,
-                    infer: bool = True,
                     kwargs: Optional[dict] = None) -> None:
         """
         Set private attribute 'report'.
         """
         if self._report_validation is None:
-            if report is None and infer:
+            if report is None:
                 self._report_validation = self._val_plugin.validate(
                                                             self._data,
                                                             self._val_schema,
@@ -245,7 +267,6 @@ class Run:
 
     def log_short_report(self,
                          report: Optional[dict] = None,
-                         infer: bool = True,
                          kwargs: Optional[dict] = None) -> None:
         """
         Log short report.
@@ -255,8 +276,6 @@ class Run:
         report : Any
             A report object to be logged. If it is not
             provided, the run will check its own report attribute.
-        infer : bool, default = True
-            If True, try to validate the resource.
         kwargs : dict, default = None
             Validation arguments.
 
@@ -269,7 +288,7 @@ class Run:
         self.fetch_validation_schema()
 
         self._val_plugin.validate_report(report)
-        self._set_report(report, infer, kwargs)
+        self._set_report(report, kwargs)
 
         if self._report_validation is None:
             warn("No report provided! Skipped log.")
@@ -382,8 +401,8 @@ class Run:
         if content is None:
             content = {}
         metadata = BlobLog(self.run_info.run_id,
-                           self.run_info.experiment_id,
                            self.run_info.experiment_name,
+                           self.run_info.experiment_title,
                            self._DJ_VERSION,
                            content).to_dict()
         return metadata

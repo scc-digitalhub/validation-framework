@@ -21,12 +21,12 @@ data = dj.DataResource(PATH_DATA,
 ```
 
 We then instantiate a `Client` object with which we can interact with storages and create runs. A `Client` can accept various parameters. We can pass endpoints and credentials for the backend stores, and ids/names for *projects* and *experiments*. Both the latest are organizational unit of validation/profiling processes. Specifing a `project_id` is only required if you use the *DigitalHub* backend as *metadata store*.
-We can provide an `experiment_name` parameter to the constructor in the following way.
+We can provide an `experiment_title` parameter to the constructor in the following way.
 
 ```python
 EXP_NAME = "example_experiment"
 
-client = dj.Client(experiment_name=EXP_NAME)
+client = dj.Client(experiment_title=EXP_NAME)
 ```
 
 The `Client` is associated univocally with an *experiment* (and *project*). Every `Run` created with the client will be organized under that *experiment*.

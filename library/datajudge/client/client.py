@@ -51,7 +51,7 @@ class Client:
 
     def __init__(self,
                  project_id: Optional[str] = cfg.DEFAULT_PROJ,
-                 experiment_name: Optional[str] = cfg.DEFAULT_EXP,
+                 experiment_title: Optional[str] = cfg.DEFAULT_EXP,
                  metadata_store_uri: Optional[str] = cfg.DEFAULT_LOCAL,
                  metadata_store_config: Optional[dict] = None,
                  artifact_store_uri: Optional[str] = cfg.DEFAULT_LOCAL,
@@ -67,7 +67,7 @@ class Client:
         ----------
         project_id : str
             The id of the project, needed for the rest metadata store.
-        experiment_name : str
+        experiment_title : str
             Experiment name. An experiment is a logical unit for keeping
             together the validation runs made on a Data Package/Data Resource.
         metadata_store_uri : str
@@ -88,24 +88,24 @@ class Client:
         """
 
         self._project_id = project_id
-        self._experiment_name = experiment_name
-        self._experiment_id = slugify(experiment_name,
+        self._experiment_title = experiment_title
+        self._experiment_name = slugify(experiment_title,
                                       max_length=20,
                                       separator="_")
         self._tmp_dir = tmp_dir
         self._metadata_store = get_store(cfg.ST_METADATA,
                                          self._project_id,
-                                         self._experiment_id,
+                                         self._experiment_name,
                                          metadata_store_uri,
                                          metadata_store_config)
         self._artifact_store = get_store(cfg.ST_ARTIFACT,
                                          self._project_id,
-                                         self._experiment_id,
+                                         self._experiment_name,
                                          artifact_store_uri,
                                          artifact_store_config)
         self._data_store = get_store(cfg.ST_DATA,
                                      self._project_id,
-                                     self._experiment_id,
+                                     self._experiment_name,
                                      data_store_uri,
                                      data_store_config)
 
@@ -145,14 +145,14 @@ class Client:
         run_metadata_uri = self._metadata_store.get_run_metadata_uri(run_id)
         run_artifacts_uri = self._artifact_store.get_run_artifacts_uri(run_id)
 
-        run_info_args = (self._experiment_name,
-                         self._experiment_id,
+        run_info_args = (self._experiment_title,
+                         self._experiment_name,
                          run_id,
+                         run_config,
                          run_metadata_uri,
                          run_artifacts_uri)
 
         run = get_run(run_info_args,
-                      run_config,
                       data_resource,
                       self,
                       overwrite)

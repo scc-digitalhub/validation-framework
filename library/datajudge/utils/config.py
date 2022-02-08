@@ -1,26 +1,39 @@
 """
 Configuration for filenames, endpoints, etc.
 """
-from typing import Optional, Union
-from pydantic import BaseModel
+from typing import Any, List, Optional, Union
+from pydantic import BaseModel, Field
 
 
-class FrictionlessConstraint(BaseModel):
-    pass
+class FrictionlessConst(BaseModel):
+    name: str
+    schema_: dict = Field(alias="schema")
 
 
-class DatajudgeConstraint(BaseModel):
-    pass
+class DatajudgeConstList(BaseModel):
+    title: str
+    name: str
+    query: str
+    expect: str
+    value: Optional[Any] = None
+    errors: dict
 
+        
+class DatajudgeConst(BaseModel):
+    name: str
+    path: str
+    constraintsList: List[DatajudgeConstList]
 
-Constraints = Union[FrictionlessConstraint,
-                    DatajudgeConstraint]
+        
+class ConstLib(BaseModel):
+    frictionless: FrictionlessConst = None
+    datajudge: List[DatajudgeConst] = None
 
 
 class ValidationConfig(BaseModel):
     enabled: bool = True
     library: Optional[str] = None
-    constraints: Optional[Constraints] = None
+    constraints: Optional[ConstLib] = None
 
 
 class InferenceConfig(BaseModel):

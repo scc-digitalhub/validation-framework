@@ -2,10 +2,15 @@
 RunInfo module.
 Implementation of the basic Run's metadata.
 """
+# pylint: disable=too-many-instance-attributes,too-many-arguments
+from __future__ import annotations
+
+import typing
+
 from datajudge.utils.utils import get_time
 
-
-# pylint: disable=too-many-instance-attributes,too-many-arguments
+if typing.TYPE_CHECKING:
+    from datajudge.utils.config import RunConfig
 
 class RunInfo:
     """
@@ -13,9 +18,9 @@ class RunInfo:
 
     Attributes
     ----------
-    experiment_id : str
-        Id of the experiment.
     experiment_name : str
+        Id of the experiment.
+    experiment_title : str
         Name of the experiment.
     run_id : str
         Run id.
@@ -36,16 +41,19 @@ class RunInfo:
     """
 
     def __init__(self,
+                 experiment_title: str,
                  experiment_name: str,
-                 experiment_id: str,
                  run_id: str,
+                 run_config: RunConfig,
                  run_metadata_uri: str,
                  run_artifacts_uri: str) -> None:
 
+        self.experiment_title = experiment_title
         self.experiment_name = experiment_name
-        self.experiment_id = experiment_id
 
         self.run_id = run_id
+        self.run_config = run_config
+        self.run_libraries = None
         self.run_metadata_uri = run_metadata_uri
         self.run_artifacts_uri = run_artifacts_uri
 
@@ -62,9 +70,12 @@ class RunInfo:
         Return a dictionary of attributes.
         """
         run_dict = {
+            "experimentTitle": self.experiment_title,
             "experimentName": self.experiment_name,
-            "experimentId": self.experiment_id,
             "runId": self.run_id,
+            "runConfig": self.run_config.dict(exclude_none=True,
+                                              by_alias=True),
+            "runLibraries": self.run_libraries,
             "runMetadataUri": self.run_metadata_uri,
             "runArtifactsUri": self.run_artifacts_uri,
             "dataResourceUri": self.data_resource_uri,
