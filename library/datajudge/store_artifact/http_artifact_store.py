@@ -23,9 +23,9 @@ class HTTPArtifactStore(ArtifactStore):
 
     def __init__(self,
                  artifact_uri: str,
-                 config: Optional[dict] = None,
-                 data: bool = False) -> None:
-        super().__init__(artifact_uri, config, data)
+                 config: Optional[dict] = None
+                 ) -> None:
+        super().__init__(artifact_uri, config)
         self._check_access_to_storage(self.artifact_uri)
 
     def persist_artifact(self,

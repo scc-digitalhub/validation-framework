@@ -157,8 +157,6 @@ def get_stores(experiment_name: str,
         except KeyError as k_err:
             raise KeyError from k_err
     
-    print(stores)
-    
     return stores
 
 

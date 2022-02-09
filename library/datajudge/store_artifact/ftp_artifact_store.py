@@ -26,9 +26,9 @@ class FTPArtifactStore(ArtifactStore):
 
     def __init__(self,
                  artifact_uri: str,
-                 config: Optional[dict] = None,
-                 data: bool = False) -> None:
-        super().__init__(artifact_uri, config, data)
+                 config: Optional[dict] = None
+                 ) -> None:
+        super().__init__(artifact_uri, config)
         if self.config is None:
             parsed = parse_uri(self.artifact_uri)
             self.config = {
@@ -53,7 +53,7 @@ class FTPArtifactStore(ArtifactStore):
         Persist an artifact.
         """
         path = build_key(dst)
-        self._check_access_to_storage(path)
+        self._check_access_to_storage(path, write=True)
 
         with self._get_client() as ftp:
 
@@ -99,7 +99,9 @@ class FTPArtifactStore(ArtifactStore):
         return filepath
 
     # pylint: disable=arguments-differ
-    def _check_access_to_storage(self, dst: str) -> None:
+    def _check_access_to_storage(self,
+                                 dst: str,
+                                 write: bool = False) -> None:
         """
         Check if there is access to the storage.
         """
@@ -107,7 +109,7 @@ class FTPArtifactStore(ArtifactStore):
             try:
                 ftp.cwd(dst)
             except ftplib.error_perm as ex:
-                if not self.data:
+                if write:
                     self._mkdir(dst)
                 else:
                     raise ex

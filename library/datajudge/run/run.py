@@ -101,7 +101,6 @@ class Run:
         self._val_schema = None
 
         # Cahcing results of inference/validation/profiling
-        self._resource_inferred = None
         self._schema_inferred = None
         self._report_validation = None
         self._profile = None

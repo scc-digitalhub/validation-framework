@@ -28,9 +28,9 @@ class S3ArtifactStore(ArtifactStore):
 
     def __init__(self,
                  artifact_uri: str,
-                 config: Optional[dict] = None,
-                 data: bool = False) -> None:
-        super().__init__(artifact_uri, config, data)
+                 config: Optional[dict] = None
+                 ) -> None:
+        super().__init__(artifact_uri, config)
 
         self.client = self._get_client()
 

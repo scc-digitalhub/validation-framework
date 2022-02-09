@@ -27,9 +27,9 @@ class AzureArtifactStore(ArtifactStore):
 
     def __init__(self,
                  artifact_uri: str,
-                 config: Optional[dict] = None,
-                 data: bool = False) -> None:
-        super().__init__(artifact_uri, config, data)
+                 config: Optional[dict] = None
+                 ) -> None:
+        super().__init__(artifact_uri, config)
         # Get BlobService Client
         self.client = self._get_client()
 

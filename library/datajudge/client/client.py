@@ -94,13 +94,19 @@ class Client:
         """
         Select default store in the store registry.
         """
+        if len(self._store_registry) == 1:
+            key = next(iter(self._store_registry))
+            return self._store_registry.get(key).get("store")
+
         default = None
-        for k, v in self._store_registry.items():
+        for _, v in self._store_registry.items():
             if v.get("is_default", False):
                 if default is None:
                     default = v.get("store")
                 else:
-                    raise ValueError("Please select only one store as default.")
+                    raise ValueError("Please configure only one store as default.")
+        if default is None:
+            raise ValueError("Please configure one store as default.")
         return default
 
     def create_run(self,

@@ -21,9 +21,9 @@ class LocalArtifactStore(ArtifactStore):
 
     def __init__(self,
                  artifact_uri: str,
-                 config: Optional[dict] = None,
-                 data: bool = False) -> None:
-        super().__init__(artifact_uri, config, data)
+                 config: Optional[dict] = None
+                 ) -> None:
+        super().__init__(artifact_uri, config)
         self._check_access_to_storage(self.artifact_uri)
 
     def persist_artifact(self,
@@ -35,7 +35,7 @@ class LocalArtifactStore(ArtifactStore):
         """
         Persist an artifact.
         """
-        self._check_access_to_storage(dst)
+        self._check_access_to_storage(dst, write=True)
 
         if src_name is not None:
             dst = get_path(dst, src_name)
@@ -65,9 +65,11 @@ class LocalArtifactStore(ArtifactStore):
         return src
 
     # pylint: disable=arguments-differ
-    def _check_access_to_storage(self, dst: str) -> None:
+    def _check_access_to_storage(self,
+                                 dst: str,
+                                 write: bool = False) -> None:
         """
         Check if there is access to the storage.
         """
-        if not self.data and not check_dir(dst):
+        if write and not check_dir(dst):
             make_dir(dst)
