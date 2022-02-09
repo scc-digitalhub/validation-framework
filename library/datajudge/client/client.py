@@ -82,13 +82,15 @@ class Client:
         self._experiment_name = slugify(experiment_title,
                                         max_length=20,
                                         separator="_")
-        self._tmp_dir = tmp_dir
+
         self._metadata_store = get_md_store(self._project_id,
                                             self._experiment_name,
                                             metadata_store_config)
         self._store_registry = get_stores(self._experiment_name,
                                           store_configs)
         self._default_store = self._select_default_store()
+
+        self._tmp_dir = tmp_dir
 
     def _select_default_store(self) -> None:
         """
@@ -108,6 +110,26 @@ class Client:
         if default is None:
             raise ValueError("Please configure one store as default.")
         return default
+
+    def add_store(self, 
+                  config: Union[cfg.StoreConfig, dict]
+                  ) -> None:
+        """
+        Add a new store to the client internal registry.
+
+        Parameters
+        ----------
+        config: StoreConfig or dict
+
+        """
+        dict_store = get_stores(self._experiment_name,
+                                config)
+        key = next(iter(dict_store))
+        if key in self._store_registry:
+            raise ValueError("There is already a store with that name. ",
+                             "Please choose another.")
+
+        self._store_registry[key] = dict_store[key]
 
     def create_run(self,
                    data_resource: DataResource,
