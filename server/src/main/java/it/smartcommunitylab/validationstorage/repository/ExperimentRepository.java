@@ -4,10 +4,11 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.CrudRepository;
 
 import it.smartcommunitylab.validationstorage.model.Experiment;
 
-public interface ExperimentRepository extends MongoRepository<Experiment, String> {
+public interface ExperimentRepository extends CrudRepository<Experiment, String> {
 
     List<Experiment> findByProjectId(String projectId);
 

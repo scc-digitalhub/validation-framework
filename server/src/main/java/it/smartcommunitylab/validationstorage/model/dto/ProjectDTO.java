@@ -11,33 +11,10 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
  */
 @Valid
 public class ProjectDTO {
-    /**
-     * Unique ID.
-     */
-    @Pattern(regexp = ValidationStorageConstants.ID_PATTERN)
     @NotBlank
-    private String id;
-
-    /**
-     * Name of the project.
-     */
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String name;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    
+    private String title;
     
 }

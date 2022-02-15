@@ -12,63 +12,14 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 /**
  * Request object: schema of the data.
  */
-@Valid
 public class ShortSchemaDTO {
-    /**
-     * ID of the experiment this document belongs to.
-     */
-    @NotBlank
-    @Pattern(regexp = ValidationStorageConstants.ID_PATTERN)
-    private String experimentId;
-
-    /**
-     * Name of the experiment this document belongs to.
-     */
-    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private String experimentName;
-
-    /**
-     * ID of the run this document belongs to.
-     */
-    @NotBlank
-    @Pattern(regexp = ValidationStorageConstants.ID_PATTERN)
-    private String runId;
+    private long experimentId;
+    
+    private long runId;
 
     /**
      * May contain extra information.
      */
     private Map<String, Serializable> contents;
-
-    public String getExperimentId() {
-        return experimentId;
-    }
-
-    public void setExperimentId(String experimentId) {
-        this.experimentId = experimentId;
-    }
-
-    public String getExperimentName() {
-        return experimentName;
-    }
-
-    public void setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
-    }
-
-    public String getRunId() {
-        return runId;
-    }
-
-    public void setRunId(String runId) {
-        this.runId = runId;
-    }
-
-    public Map<String, Serializable> getContents() {
-        return contents;
-    }
-
-    public void setContents(Map<String, Serializable> contents) {
-        this.contents = contents;
-    }
     
 }

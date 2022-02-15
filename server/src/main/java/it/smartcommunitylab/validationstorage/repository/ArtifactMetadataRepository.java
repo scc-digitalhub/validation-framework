@@ -4,10 +4,11 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.CrudRepository;
 
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 
-public interface ArtifactMetadataRepository extends MongoRepository<ArtifactMetadata, String> {
+public interface ArtifactMetadataRepository extends CrudRepository<ArtifactMetadata, String> {
     List<ArtifactMetadata> findByProjectId(String projectId);
 
     List<ArtifactMetadata> findByProjectIdAndExperimentId(String projectId, String experimentId);

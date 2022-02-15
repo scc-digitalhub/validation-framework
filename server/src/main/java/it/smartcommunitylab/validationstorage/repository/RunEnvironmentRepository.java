@@ -5,8 +5,9 @@ import it.smartcommunitylab.validationstorage.model.RunEnvironment;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.CrudRepository;
 
-public interface RunEnvironmentRepository extends MongoRepository<RunEnvironment, String> {
+public interface RunEnvironmentRepository extends CrudRepository<RunEnvironment, String> {
     List<RunEnvironment> findByProjectId(String projectId);
 
     List<RunEnvironment> findByProjectIdAndExperimentId(String projectId, String experimentId);

@@ -2,6 +2,8 @@ package it.smartcommunitylab.validationstorage.model;
 
 import java.util.List;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -11,88 +13,92 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
-/**
- * Details an experiment.
- */
-@Valid
-@Document
+@Entity
 public class Experiment {
-    /**
-     * Unique ID of this document.
-     */
     @Id
-    private String id;
+    @GeneratedValue
+    private long id;
 
-    /**
-     * ID of the project this document belongs to.
-     */
-    @NotBlank
-    @Pattern(regexp = ValidationStorageConstants.ID_PATTERN)
-    private String projectId;
+    private String name;
 
-    /**
-     * ID of the experiment. Only unique within the project it belongs to.
-     */
-    private String experimentId;
-
-    /**
-     * Name of the experiment.
-     */
-    private String experimentName;
+    private String title;
     
-    /**
-     * Tags.
-     */
+    private Project project;
+    
+    private DataPackage dataPackage;
+    
+    private List<RunConfig> runConfigs;
+    
+    private List<Run> runs;
+    
+    private List<Constraint> constraints;
+    
     private List<String> tags;
 
-    /**
-     * Creator of this document.
-     */
     private String author;
 
-    public Experiment(String projectId, String experimentId) {
-        this.projectId = projectId;
-        this.experimentId = experimentId;
-    }
-
-    public String getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public String getProjectId() {
-        return projectId;
+    public String getName() {
+        return name;
     }
 
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getExperimentId() {
-        return experimentId;
+    public String getTitle() {
+        return title;
     }
 
-    public void setExperimentId(String experimentId) {
-        this.experimentId = experimentId;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public String getExperimentName() {
-        return experimentName;
+    public Project getProject() {
+        return project;
     }
 
-    public void setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
+    public void setProject(Project project) {
+        this.project = project;
     }
 
-    public String getAuthor() {
-        return author;
+    public DataPackage getDataPackage() {
+        return dataPackage;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
+    public void setDataPackage(DataPackage dataPackage) {
+        this.dataPackage = dataPackage;
+    }
+
+    public List<RunConfig> getRunConfigs() {
+        return runConfigs;
+    }
+
+    public void setRunConfigs(List<RunConfig> runConfigs) {
+        this.runConfigs = runConfigs;
+    }
+
+    public List<Run> getRuns() {
+        return runs;
+    }
+
+    public void setRuns(List<Run> runs) {
+        this.runs = runs;
+    }
+
+    public List<Constraint> getConstraints() {
+        return constraints;
+    }
+
+    public void setConstraints(List<Constraint> constraints) {
+        this.constraints = constraints;
     }
 
     public List<String> getTags() {
@@ -102,5 +108,12 @@ public class Experiment {
     public void setTags(List<String> tags) {
         this.tags = tags;
     }
-    
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
 }

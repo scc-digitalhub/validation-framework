@@ -2,6 +2,8 @@ package it.smartcommunitylab.validationstorage.model;
 
 import java.util.Map;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -14,36 +16,17 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 /**
  * Schema of the data.
  */
-@Valid
-@Document
+@Entity
 public class ShortSchema {
-    /**
-     * Unique ID of this document.
-     */
     @Id
-    private String id;
+    @GeneratedValue
+    private long id;
 
-    /**
-     * ID of the project this document belongs to.
-     */
-    @NotBlank
-    @Pattern(regexp = ValidationStorageConstants.ID_PATTERN)
-    private String projectId;
+    private Project project;
 
-    /**
-     * ID of the experiment this document belongs to.
-     */
-    private String experimentId;
-
-    /**
-     * ID of the run this document belongs to.
-     */
-    private String runId;
-
-    /**
-     * Name of the experiment this document belongs to.
-     */
-    private String experimentName;
+    private Experiment experiment;
+    
+    private Run run;
 
     /**
      * Creator of this document.
@@ -55,50 +38,36 @@ public class ShortSchema {
      */
     private Map<String, ?> contents;
 
-    public ShortSchema(String projectId, String experimentId, String runId) {
-        this.projectId = projectId;
-        this.experimentId = experimentId;
-        this.runId = runId;
-    }
-
-    public String getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public String getProjectId() {
-        return projectId;
+    public Project getProject() {
+        return project;
     }
 
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
+    public void setProject(Project project) {
+        this.project = project;
     }
 
-    public String getExperimentId() {
-        return experimentId;
+    public Experiment getExperiment() {
+        return experiment;
     }
 
-    public void setExperimentId(String experimentId) {
-        this.experimentId = experimentId;
+    public void setExperiment(Experiment experiment) {
+        this.experiment = experiment;
     }
 
-    public String getRunId() {
-        return runId;
+    public Run getRun() {
+        return run;
     }
 
-    public void setRunId(String runId) {
-        this.runId = runId;
-    }
-
-    public String getExperimentName() {
-        return experimentName;
-    }
-
-    public void setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
+    public void setRun(Run run) {
+        this.run = run;
     }
 
     public String getAuthor() {

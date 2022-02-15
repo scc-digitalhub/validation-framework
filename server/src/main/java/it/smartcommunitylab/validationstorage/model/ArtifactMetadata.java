@@ -1,5 +1,7 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -12,31 +14,17 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 /**
  * Metadata about artifact files related to a run.
  */
-@Valid
-@Document
+@Entity
 public class ArtifactMetadata {
-    /**
-     * Unique ID of this document.
-     */
     @Id
-    private String id;
+    @GeneratedValue
+    private long id;
 
-    /**
-     * ID of the project this document belongs to.
-     */
-    @NotBlank
-    @Pattern(regexp = ValidationStorageConstants.ID_PATTERN)
-    private String projectId;
+    private Project project;
 
-    /**
-     * ID of the experiment this document belongs to.
-     */
-    private String experimentId;
-
-    /**
-     * ID of the run this document belongs to.
-     */
-    private String runId;
+    private Experiment experiment;
+    
+    private Run run;
 
     /**
      * File name.
@@ -49,53 +37,40 @@ public class ArtifactMetadata {
     private String uri;
     
     /**
-     * Name of the experiment this document belongs to.
-     */
-    private String experimentName;
-
-    /**
      * Creator of this document.
      */
     private String author;
-    
-    public ArtifactMetadata(String projectId, String experimentId, String runId, String name, String uri) {
-        this.projectId = projectId;
-        this.experimentId = experimentId;
-        this.runId = runId;
-        this.name = name;
-        this.uri = uri;
-    }
-    
-    public String getId() {
+
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public String getProjectId() {
-        return projectId;
+    public Project getProject() {
+        return project;
     }
 
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
+    public void setProject(Project project) {
+        this.project = project;
     }
 
-    public String getExperimentId() {
-        return experimentId;
+    public Experiment getExperiment() {
+        return experiment;
     }
 
-    public void setExperimentId(String experimentId) {
-        this.experimentId = experimentId;
+    public void setExperiment(Experiment experiment) {
+        this.experiment = experiment;
     }
 
-    public String getRunId() {
-        return runId;
+    public Run getRun() {
+        return run;
     }
 
-    public void setRunId(String runId) {
-        this.runId = runId;
+    public void setRun(Run run) {
+        this.run = run;
     }
 
     public String getName() {
@@ -114,14 +89,6 @@ public class ArtifactMetadata {
         this.uri = uri;
     }
 
-    public String getExperimentName() {
-        return experimentName;
-    }
-
-    public void setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
-    }
-
     public String getAuthor() {
         return author;
     }
@@ -129,4 +96,7 @@ public class ArtifactMetadata {
     public void setAuthor(String author) {
         this.author = author;
     }
+    
+    
+    
 }

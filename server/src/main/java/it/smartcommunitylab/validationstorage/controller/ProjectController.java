@@ -27,33 +27,33 @@ import it.smartcommunitylab.validationstorage.service.ProjectService;
 @PreAuthorize(ValidationStorageConstants.PREAUTH_ID)
 public class ProjectController {
     @Autowired
-    private ProjectService documentService;
-
+    private ProjectService service;
+    
+    @PreAuthorize(ValidationStorageConstants.PREAUTH_REQUEST_ID)
+    @PostMapping
+    public ResponseEntity<Project> create(@RequestBody @Valid ProjectDTO request, Authentication authentication) {
+        return ResponseEntity.ok(service.create(request, authentication.getName()));
+    }
+    
     @PreAuthorize("permitAll()")
     @GetMapping
-    public ResponseEntity<List<Project>> findDocuments() {
-        return ResponseEntity.ok(documentService.findDocuments());
+    public ResponseEntity<List<Project>> find() {
+        return ResponseEntity.ok(service.find());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Project> findDocumentById(@PathVariable String id) {
-        return ResponseEntity.ok(documentService.findDocumentById(id));
-    }
-
-    @PreAuthorize(ValidationStorageConstants.PREAUTH_REQUEST_ID)
-    @PostMapping
-    public ResponseEntity<Project> createDocument(@RequestBody @Valid ProjectDTO request, Authentication authentication) {
-        return ResponseEntity.ok(documentService.createDocument(request, authentication.getName()));
+    public ResponseEntity<Project> findById(@PathVariable String id) {
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Project> updateDocument(@PathVariable String id, @RequestBody @Valid ProjectDTO request) {
-        return ResponseEntity.ok(documentService.updateDocument(id, request));
+    public ResponseEntity<Project> update(@PathVariable String id, @RequestBody @Valid ProjectDTO request) {
+        return ResponseEntity.ok(service.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDocumentById(@PathVariable String id) {
-        documentService.deleteDocumentById(id);
+    public ResponseEntity<Void> deleteById(@PathVariable String id) {
+        service.deleteById(id);
         return ResponseEntity.ok().build();
     }
 }

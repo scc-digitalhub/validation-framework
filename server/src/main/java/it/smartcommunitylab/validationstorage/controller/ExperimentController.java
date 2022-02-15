@@ -29,40 +29,44 @@ import it.smartcommunitylab.validationstorage.service.ExperimentService;
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class ExperimentController {
     @Autowired
-    private ExperimentService documentService;
-
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{id}")
-    public ResponseEntity<Experiment> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
-        return ResponseEntity.ok(documentService.findDocumentById(projectId, id));
-    }
-
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT)
-    public ResponseEntity<List<Experiment>> findDocuments(@PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId,
-            @RequestParam("search") Optional<String> search) {
-        return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, search));
-    }
-
+    private ExperimentService service;
+    
     @PostMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT)
-    public ResponseEntity<Experiment> createDocument(@PathVariable String projectId, @RequestBody @Valid ExperimentDTO request, Authentication authentication) {
-        return ResponseEntity.ok(documentService.createDocument(projectId, request, authentication.getName()));
+    public ResponseEntity<Experiment> create(@PathVariable String projectId, @RequestBody @Valid ExperimentDTO request, Authentication authentication) {
+        return ResponseEntity.ok(service.create(projectId, request, authentication.getName()));
+    }
+    
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT)
+    public ResponseEntity<List<Experiment>> findByProjectId(
+            @PathVariable String projectId,
+            @RequestParam("experimentId") Optional<String> experimentId,
+            @RequestParam("runId") Optional<String> runId,
+            @RequestParam("search") Optional<String> search) {
+        return ResponseEntity.ok(service.findByProjectId(projectId, experimentId, runId, search));
+    }
+    
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{id}")
+    public ResponseEntity<Experiment> findById(@PathVariable String projectId, @PathVariable String id) {
+        return ResponseEntity.ok(service.findById(projectId, id));
     }
 
     @PutMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{id}")
-    public ResponseEntity<Experiment> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid ExperimentDTO request) {
-        return ResponseEntity.ok(documentService.updateDocument(projectId, id, request));
+    public ResponseEntity<Experiment> update(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid ExperimentDTO request) {
+        return ResponseEntity.ok(service.update(projectId, id, request));
     }
 
     @DeleteMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{id}")
-    public ResponseEntity<Void> deleteDocumentById(@PathVariable String projectId, @PathVariable String id) {
-        documentService.deleteDocumentById(projectId, id);
+    public ResponseEntity<Void> deleteById(@PathVariable String projectId, @PathVariable String id) {
+        service.deleteById(projectId, id);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT)
-    public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId) {
-        documentService.deleteDocumentsByProjectId(projectId, experimentId);
+    public ResponseEntity<Void> deleteByProjectId(
+            @PathVariable String projectId,
+            @RequestParam("experimentId") Optional<String> experimentId,
+            @RequestParam("runId") Optional<String> runId) {
+        service.deleteByProjectId(projectId, experimentId, runId);
         return ResponseEntity.ok().build();
     }
 }

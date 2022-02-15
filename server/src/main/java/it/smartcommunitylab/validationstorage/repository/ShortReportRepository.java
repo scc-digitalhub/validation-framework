@@ -5,8 +5,9 @@ import it.smartcommunitylab.validationstorage.model.ShortReport;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.CrudRepository;
 
-public interface ShortReportRepository extends MongoRepository<ShortReport, String> {
+public interface ShortReportRepository extends CrudRepository<ShortReport, String> {
     List<ShortReport> findByProjectId(String projectId);
 
     List<ShortReport> findByProjectIdAndExperimentId(String projectId, String experimentId);

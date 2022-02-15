@@ -4,10 +4,11 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.CrudRepository;
 
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
 
-public interface RunMetadataRepository extends MongoRepository<RunMetadata, String> {
+public interface RunMetadataRepository extends CrudRepository<RunMetadata, String> {
     List<RunMetadata> findByProjectId(String projectId);
 
     List<RunMetadata> findByProjectIdAndExperimentId(String projectId, String experimentId);

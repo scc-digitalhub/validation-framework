@@ -5,8 +5,9 @@ import it.smartcommunitylab.validationstorage.model.DataResource;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.CrudRepository;
 
-public interface DataResourceRepository extends MongoRepository<DataResource, String> {
+public interface DataResourceRepository extends CrudRepository<DataResource, String> {
     List<DataResource> findByProjectId(String projectId);
 
     List<DataResource> findByProjectIdAndExperimentId(String projectId, String experimentId);

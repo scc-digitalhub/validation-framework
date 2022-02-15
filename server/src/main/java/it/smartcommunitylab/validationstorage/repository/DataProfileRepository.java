@@ -5,8 +5,9 @@ import it.smartcommunitylab.validationstorage.model.DataProfile;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.CrudRepository;
 
-public interface DataProfileRepository extends MongoRepository<DataProfile, String> {
+public interface DataProfileRepository extends CrudRepository<DataProfile, String> {
     List<DataProfile> findByProjectId(String projectId);
 
     List<DataProfile> findByProjectIdAndExperimentId(String projectId, String experimentId);

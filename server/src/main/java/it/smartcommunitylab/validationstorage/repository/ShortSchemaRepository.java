@@ -5,8 +5,9 @@ import it.smartcommunitylab.validationstorage.model.ShortSchema;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.CrudRepository;
 
-public interface ShortSchemaRepository extends MongoRepository<ShortSchema, String> {
+public interface ShortSchemaRepository extends CrudRepository<ShortSchema, String> {
     List<ShortSchema> findByProjectId(String projectId);
 
     List<ShortSchema> findByProjectIdAndExperimentId(String projectId, String experimentId);
