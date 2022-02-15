@@ -47,7 +47,7 @@ class FTPArtifactStore(ArtifactStore):
                          src: Any,
                          dst: str,
                          src_name: str,
-                         metadata: dict
+                         metadata: Optional[dict] = None
                          ) -> Tuple[str, str]:
         """
         Persist an artifact.

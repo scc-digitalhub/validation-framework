@@ -1,11 +1,12 @@
 """
 Implementation of REST metadata store designed by Digital Society Lab.
 """
+# pylint: disable=import-error
 from collections import namedtuple
 from json.decoder import JSONDecodeError
 from typing import Optional
 
-from requests.models import Response  # pylint: disable=import-error
+from requests.models import Response
 
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils import config as cfg
@@ -50,6 +51,7 @@ class DigitalHubMetadataStore(MetadataStore):
         }
 
     def init_run(self,
+                 exp_name: str,
                  run_id: str,
                  overwrite: bool) -> None:
         """
@@ -68,6 +70,7 @@ class DigitalHubMetadataStore(MetadataStore):
                 self._key_vault[i] = [
                     elm for elm in self._key_vault[i] if elm.run_id != run_id]
             return
+
         if not overwrite and exist:
             raise RuntimeError("Id already present, please change " +
                                "it or enable overwrite.")
@@ -144,14 +147,16 @@ class DigitalHubMetadataStore(MetadataStore):
         raise Exception("Something wrong with JSON response!")
 
     def get_run_metadata_uri(self,
-                             run_id: Optional[str] = None) -> str:
+                             exp_name: str,
+                             run_id: str) -> str:
         """
         Return the URL of the metadata store for the Run.
         """
         return self.uri_metadata
 
     def get_data_resource_uri(self,
-                              run_id: Optional[str] = None) -> str:
+                              exp_name: str,
+                              run_id: str) -> str:
         """
         Return the URL of the data resource for the Run.
         """

@@ -2,7 +2,6 @@
 Abstract class for artifact store.
 """
 from abc import ABCMeta, abstractmethod
-from io import BytesIO
 from typing import Any, Optional
 
 from datajudge.utils.file_utils import check_dir, make_dir, write_bytes
@@ -58,7 +57,7 @@ class ArtifactStore:
         """
 
     @abstractmethod
-    def fetch_artifact(self, src: str, dst: str) -> BytesIO:
+    def fetch_artifact(self, src: str, dst: str) -> str:
         """
         Method to fetch an artifact.
         """
@@ -69,11 +68,13 @@ class ArtifactStore:
         Check if there is access to the storage.
         """
 
-    def get_run_artifacts_uri(self, run_id: str) -> str:
+    def get_run_artifacts_uri(self,
+                              exp_name: str,
+                              run_id: str) -> str:
         """
         Return the path of the artifact store for the Run.
         """
-        return rebuild_uri(self.artifact_uri, run_id)
+        return rebuild_uri(self.artifact_uri, exp_name, run_id)
 
     @staticmethod
     def _check_temp_dir(uri: str) -> None:

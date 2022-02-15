@@ -33,6 +33,7 @@ class LocalMetadataStore(MetadataStore):
         self._artifact_count = 0
 
     def init_run(self,
+                 exp_name: str,
                  run_id: str,
                  overwrite: bool) -> None:
         """
@@ -40,7 +41,7 @@ class LocalMetadataStore(MetadataStore):
         If folder doesn't exist, create it.
         If overwrite is True, it delete all the run's folder contents.
         """
-        uri = self.get_run_metadata_uri(run_id)
+        uri = self.get_run_metadata_uri(exp_name, run_id)
         self._check_dst_folder(uri, overwrite, init=True)
 
     def log_metadata(self,
@@ -84,17 +85,22 @@ class LocalMetadataStore(MetadataStore):
             self._artifact_count += 1
         return get_path(dst, filename)
 
-    def get_run_metadata_uri(self, run_id: str) -> str:
+    def get_run_metadata_uri(self,
+                             exp_name: str,
+                             run_id: str) -> str:
         """
         Return the path of the metadata folder for the Run.
         """
-        return get_path(self.uri_metadata, run_id)
+        return get_path(self.uri_metadata, exp_name, run_id)
 
-    def get_data_resource_uri(self, run_id: str) -> str:
+    def get_data_resource_uri(self,
+                              exp_name: str,
+                              run_id: str) -> str:
         """
         Return the path of the data resource for the Run.
         """
         filename = self._filenames[self._DATA_RESOURCE]
         return get_path(self.uri_metadata,
+                        exp_name,
                         run_id,
                         filename)

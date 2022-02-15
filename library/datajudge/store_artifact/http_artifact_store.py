@@ -61,7 +61,7 @@ class HTTPArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    def fetch_artifact(self, src: str, dst: str) -> IO:
+    def fetch_artifact(self, src: str, dst: str) -> str:
         """
         Method to fetch an artifact.
         """
@@ -87,12 +87,6 @@ class HTTPArtifactStore(ArtifactStore):
             check_url_availability(dst)
         except Exception as ex:
             raise ex
-
-    def get_run_artifacts_uri(self, run_id: str) -> str:
-        """
-        Return the path of the artifact store for the Run.
-        """
-        return rebuild_uri(self.artifact_uri, run_id)
 
     def _parse_auth(self, kwargs: dict) -> dict:
         """

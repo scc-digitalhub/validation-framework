@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 
 class StoreConfig(BaseModel):
-    title: str
+    title: Optional[str] = None
     name: str
     path: str
     isDefault: bool = False

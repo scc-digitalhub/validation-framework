@@ -8,8 +8,8 @@ from __future__ import annotations
 import typing
 from typing import Any, Optional, Union
 
-from datajudge.data import BlobLog, EnvLog
-from datajudge.data import ShortSchema, ShortProfile, ShortReport
+from datajudge.data import (BlobLog, EnvLog, ShortProfile, ShortReport,
+                            ShortSchema)
 from datajudge.run.plugin_factory import get_plugin
 from datajudge.utils import config as cfg
 from datajudge.utils.file_utils import clean_all
@@ -110,8 +110,6 @@ class Run:
 
         # Preliminary log
         self._get_plugin_info()
-        self._log_run()
-        self._log_env()
 
     # Run
 
@@ -134,7 +132,7 @@ class Run:
         if plugin is not None:
             return {
                 "libName": plugin.lib_name,
-                "libVerision": plugin.lib_version
+                "libVersion": plugin.lib_version
             }
 
     def _log_run(self) -> None:
@@ -189,7 +187,8 @@ class Run:
         # Update run info
         if self.run_info.data_resource_uri is None:
             uri_resource = self._client.get_data_resource_uri(
-                                                self.run_info.run_id)
+                                            self.run_info.experiment_name,
+                                            self.run_info.run_id)
             self.run_info.data_resource_uri = uri_resource
 
     # Short schema
@@ -589,6 +588,7 @@ class Run:
         self.run_info.begin_status = "active"
         self.run_info.started = get_time()
         self._log_run()
+        self._log_env()
         return self
 
     def __exit__(self,

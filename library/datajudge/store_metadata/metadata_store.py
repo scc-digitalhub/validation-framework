@@ -8,7 +8,7 @@ from typing import Optional
 from datajudge.utils import config as cfg
 
 
-class MetadataStore:
+class MetadataStore(metaclass=ABCMeta):
     """
     Abstract metadata class that defines methods on how to persist
     metadata into different storage backends.
@@ -36,8 +36,6 @@ class MetadataStore:
 
     """
 
-    __metaclass__ = ABCMeta
-
     _RUN_METADATA = cfg.MT_RUN_METADATA
     _DATA_RESOURCE = cfg.MT_DATA_RESOURCE
     _SHORT_REPORT = cfg.MT_SHORT_REPORT
@@ -54,6 +52,7 @@ class MetadataStore:
 
     @abstractmethod
     def init_run(self,
+                 exp_name: str,
                  run_id: str,
                  overwrite: bool) -> None:
         """
@@ -71,13 +70,17 @@ class MetadataStore:
         """
 
     @abstractmethod
-    def get_run_metadata_uri(self, run_id: str) -> str:
+    def get_run_metadata_uri(self,
+                             exp_name: str,
+                             run_id: str) -> str:
         """
         Return the URI of the metadata store for the Run.
         """
 
     @abstractmethod
-    def get_data_resource_uri(self, run_id: str) -> str:
+    def get_data_resource_uri(self,
+                              exp_name: str,
+                              run_id: str) -> str:
         """
         Return the URI of the data resource for the Run.
         """

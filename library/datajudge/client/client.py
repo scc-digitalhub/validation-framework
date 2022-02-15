@@ -53,8 +53,7 @@ class Client:
     """
 
     def __init__(self,
-                 project_id: Optional[str] = cfg.DEFAULT_PROJ,
-                 experiment_title: Optional[str] = cfg.DEFAULT_EXP,
+                 project_name: Optional[str] = cfg.DEFAULT_PROJ,
                  metadata_store_config: store_cfg = cfg.DEFAULT_MD_STORE,
                  store_configs: store_cfg = cfg.DEFAULT_STORE,
                  tmp_dir: Optional[str] = cfg.DEFAULT_TMP
@@ -64,11 +63,8 @@ class Client:
 
         Parameters
         ----------
-        project_id : str
+        project_name : str
             The id of the project, needed for the rest metadata store.
-        experiment_title : str
-            Experiment name. An experiment is a logical unit for keeping
-            together the validation runs made on a Data Package/Data Resource.
         metadata_store_config : StoreConfig or dict or list, default = StoreConfig
             Dictionary containing configuration for the store.
         stores_config : StoreConfig or dict or list, default = StoreConfig
@@ -77,19 +73,11 @@ class Client:
             Default temporary folder where to download data.
 
         """
-        self._project_id = project_id
-        self._experiment_title = experiment_title
-        self._experiment_name = slugify(experiment_title,
-                                        max_length=20,
-                                        separator="_")
-
-        self._metadata_store = get_md_store(self._project_id,
-                                            self._experiment_name,
+        self._project_name = project_name
+        self._metadata_store = get_md_store(self._project_name,
                                             metadata_store_config)
-        self._store_registry = get_stores(self._experiment_name,
-                                          store_configs)
+        self._store_registry = get_stores(store_configs)
         self._default_store = self._select_default_store()
-
         self._tmp_dir = tmp_dir
 
     def _select_default_store(self) -> None:
@@ -122,11 +110,10 @@ class Client:
         config: StoreConfig or dict
 
         """
-        dict_store = get_stores(self._experiment_name,
-                                config)
+        dict_store = get_stores(config)
         key = next(iter(dict_store))
         if key in self._store_registry:
-            raise ValueError("There is already a store with that name. ",
+            raise ValueError("There is already a store with that name. " +
                              "Please choose another.")
 
         self._store_registry[key] = dict_store[key]
@@ -134,6 +121,7 @@ class Client:
     def create_run(self,
                    data_resource: DataResource,
                    run_config: RunConfig,
+                   experiment_title: Optional[str] = cfg.DEFAULT_EXP,
                    run_id: Optional[str] = None,
                    overwrite: Optional[bool] = False) -> Run:
         """
@@ -141,6 +129,9 @@ class Client:
 
         Parameters
         ----------
+        experiment_title : str
+            Experiment title. An experiment is a logical unit for ordinate
+            runs made on a Data Package/Data Resource.
         data_resource : DataResource
             A DataResource object.
         run_config : RunConfig
@@ -157,16 +148,23 @@ class Client:
             Return a specific Run object.
 
         """
+        experiment_name = slugify(experiment_title,
+                                  max_length=20,
+                                  separator="_")
 
         run_id = self._metadata_store.get_run_id(run_id)
 
-        self._metadata_store.init_run(run_id, overwrite)
+        self._metadata_store.init_run(experiment_name,
+                                      run_id, 
+                                      overwrite)
 
-        run_metadata_uri = self._metadata_store.get_run_metadata_uri(run_id)
-        run_artifacts_uri = self._default_store.get_run_artifacts_uri(run_id)
+        run_metadata_uri = self._metadata_store.get_run_metadata_uri(experiment_name,
+                                                                     run_id)
+        run_artifacts_uri = self._default_store.get_run_artifacts_uri(experiment_name,
+                                                                      run_id)
 
-        run_info_args = (self._experiment_title,
-                         self._experiment_name,
+        run_info_args = (experiment_title,
+                         experiment_name,
                          run_id,
                          run_config,
                          run_metadata_uri,
@@ -253,12 +251,14 @@ class Client:
         return in_store.fetch_artifact(uri, self.tmp_dir)
 
     def get_data_resource_uri(self,
+                              exp_name: str,
                               run_id: str) -> str:
         """
         Method that wrap 'get_data_resource_uri' of the
         metadata store. Return DataResource URI.
         """
-        return self._metadata_store.get_data_resource_uri(run_id)
+        return self._metadata_store.get_data_resource_uri(exp_name,
+                                                          run_id)
 
     @property
     def tmp_dir(self) -> str:

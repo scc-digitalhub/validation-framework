@@ -16,7 +16,7 @@ The `Client` set by default local filesystem as artifacts/data and metadata stor
 ```python
 import datajudge as dj
 
-client = dj.Client(project_id="some_id",
+client = dj.Client(project_name="some_id",
                    experiment_title="some_experiment_title",
                    metadata_store_uri=None,
                    metadata_store_config=None,

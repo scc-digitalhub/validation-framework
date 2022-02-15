@@ -23,7 +23,7 @@ The way to build arguments for the `Client` is the following:
 ```python
 import datajudge as dj
 
-PROJECT_ID = "projId"
+project_name = "projId"
 API_ENDPOINT = "http://ip_address:port"
 ```
 
@@ -49,7 +49,7 @@ API_CREDENTIALS = {
 Setted the variables, the `Client` can be created.
 
 ```python
-client = dj.Client(project_id=PROJECT_ID,
+client = dj.Client(project_name=project_name,
                    metadata_store_uri=API_ENDPOINT,
                    metadata_store_config=API_CREDENTIALS)
 
