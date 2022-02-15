@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.model.Resource;
+import it.smartcommunitylab.validationstorage.model.DataResource;
 import it.smartcommunitylab.validationstorage.model.dto.ResourceDTO;
 import it.smartcommunitylab.validationstorage.service.ResourceService;
 
@@ -32,12 +32,12 @@ public class ResourceController {
     private ResourceService service;
     
     @PostMapping("/{projectId}/" + ValidationStorageConstants.RESOURCE)
-    public ResponseEntity<Resource> create(@PathVariable String projectId, @RequestBody @Valid ResourceDTO request, Authentication authentication) {
+    public ResponseEntity<DataResource> create(@PathVariable String projectId, @RequestBody @Valid ResourceDTO request, Authentication authentication) {
         return ResponseEntity.ok(service.create(projectId, request, authentication.getName()));
     }
     
     @GetMapping("/{projectId}/" + ValidationStorageConstants.RESOURCE)
-    public ResponseEntity<List<Resource>> findByProjectId(
+    public ResponseEntity<List<DataResource>> findByProjectId(
             @PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId,
@@ -46,12 +46,12 @@ public class ResourceController {
     }
     
     @GetMapping("/{projectId}/" + ValidationStorageConstants.RESOURCE + "/{id}")
-    public ResponseEntity<Resource> findById(@PathVariable String projectId, @PathVariable String id) {
+    public ResponseEntity<DataResource> findById(@PathVariable String projectId, @PathVariable String id) {
         return ResponseEntity.ok(service.findById(projectId, id));
     }
 
     @PutMapping("/{projectId}/" + ValidationStorageConstants.RESOURCE + "/{id}")
-    public ResponseEntity<Resource> update(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid ResourceDTO request) {
+    public ResponseEntity<DataResource> update(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid ResourceDTO request) {
         return ResponseEntity.ok(service.update(projectId, id, request));
     }
 

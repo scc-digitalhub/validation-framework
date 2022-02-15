@@ -12,7 +12,7 @@ import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsExcept
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.IdMismatchException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
-import it.smartcommunitylab.validationstorage.model.DataResource;
+import it.smartcommunitylab.validationstorage.model.RunDataResource;
 import it.smartcommunitylab.validationstorage.model.dto.DataResourceDTO;
 import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
 
@@ -32,13 +32,13 @@ public class DataResourceService {
      * @param id ID of the document to retrieve.
      * @return The document if found, null otherwise.
      */
-    private DataResource getDocument(String id) {
+    private RunDataResource getDocument(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
-        Optional<DataResource> o = documentRepository.findById(id);
+        Optional<RunDataResource> o = documentRepository.findById(id);
         if (o.isPresent()) {
-            DataResource document = o.get();
+            RunDataResource document = o.get();
             return document;
         }
         return null;
@@ -51,14 +51,14 @@ public class DataResourceService {
      * @param search A term to filter results by.
      * @return A new list, with only the results that found a match.
      */
-    private List<DataResource> filterBySearch(List<DataResource> items, String search) {
+    private List<RunDataResource> filterBySearch(List<RunDataResource> items, String search) {
         if (ObjectUtils.isEmpty(search))
             return items;
 
         String normalized = ValidationStorageUtils.normalizeString(search);
 
-        List<DataResource> results = new ArrayList<DataResource>();
-        for (DataResource item : items) {
+        List<RunDataResource> results = new ArrayList<RunDataResource>();
+        for (RunDataResource item : items) {
             if (item.getExperimentName().toLowerCase().contains(normalized))
                 results.add(item);
         }
@@ -67,7 +67,7 @@ public class DataResourceService {
     }
 
     // Create
-    public DataResource createDocument(String projectId, DataResourceDTO request, String author) {
+    public RunDataResource createDocument(String projectId, DataResourceDTO request, String author) {
         if (ObjectUtils.isEmpty(projectId))
             throw new IllegalArgumentException("Project ID is missing or blank.");
         projectService.findDocumentById(projectId);
@@ -81,7 +81,7 @@ public class DataResourceService {
         if (!(documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId).isEmpty()))
             throw new DocumentAlreadyExistsException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") already exists.");
 
-        DataResource documentToSave = new DataResource(projectId, experimentId, runId);
+        RunDataResource documentToSave = new RunDataResource(projectId, experimentId, runId);
 
         documentToSave.setExperimentName(request.getExperimentName());
         documentToSave.setAuthor(author);
@@ -94,8 +94,8 @@ public class DataResourceService {
     }
 
     // Read
-    public List<DataResource> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
-        List<DataResource> repositoryResults;
+    public List<RunDataResource> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
+        List<RunDataResource> repositoryResults;
 
         if (experimentId.isPresent() && runId.isPresent())
             repositoryResults = documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId.get(), runId.get());
@@ -113,8 +113,8 @@ public class DataResourceService {
     }
 
     // Read
-    public DataResource findDocumentById(String projectId, String id) {
-        DataResource document = getDocument(id);
+    public RunDataResource findDocumentById(String projectId, String id) {
+        RunDataResource document = getDocument(id);
         if (document != null) {
             if (!document.getProjectId().equals(projectId))
                 throw new IdMismatchException();
@@ -125,11 +125,11 @@ public class DataResourceService {
     }
 
     // Update
-    public DataResource updateDocument(String projectId, String id, DataResourceDTO request) {
+    public RunDataResource updateDocument(String projectId, String id, DataResourceDTO request) {
         if (ObjectUtils.isEmpty(id))
             throw new IllegalArgumentException("Document ID is missing or blank.");
 
-        DataResource document = getDocument(id);
+        RunDataResource document = getDocument(id);
         if (document == null)
             throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 
@@ -149,7 +149,7 @@ public class DataResourceService {
 
     // Delete
     public void deleteDocumentById(String projectId, String id) {
-        DataResource document = getDocument(id);
+        RunDataResource document = getDocument(id);
         if (document != null) {
             if (!document.getProjectId().equals(projectId))
                 throw new IdMismatchException();

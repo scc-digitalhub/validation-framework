@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 import it.smartcommunitylab.validationstorage.model.DataProfile;
-import it.smartcommunitylab.validationstorage.model.DataResource;
+import it.smartcommunitylab.validationstorage.model.RunDataResource;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.RunEnvironment;
@@ -157,7 +157,7 @@ public class UiController {
 
     // DataResource
     @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.DATA_RESOURCE)
-    public ResponseEntity<DataResource> findDataResourceByRunId(@PathVariable String projectId,
+    public ResponseEntity<RunDataResource> findDataResourceByRunId(@PathVariable String projectId,
             @PathVariable String experimentId,
             @PathVariable String runId) {
         return ResponseEntity.ok(uiService.findDataResourceByRunId(projectId, experimentId, runId));

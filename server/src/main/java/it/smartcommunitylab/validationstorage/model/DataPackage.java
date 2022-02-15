@@ -2,29 +2,40 @@ package it.smartcommunitylab.validationstorage.model;
 
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Entity
-@Table(name="package")
+@Table(name = "data_package", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "name" }))
 public class DataPackage {
     @Id
     @GeneratedValue
     private long id;
-    
+
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "project_id")
+    private String projectId;
+
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String name;
-    
+
+    @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
-    
-    private Project project;
-    
-    private Experiment experiment;
-    
-    private List<Resource> resources;
-    
-    private List<Run> runs;
+
+    @OneToMany(mappedBy = "packageId", fetch = FetchType.LAZY)
+    private List<DataResource> resources;
 
     public long getId() {
         return id;
@@ -66,11 +77,11 @@ public class DataPackage {
         this.experiment = experiment;
     }
 
-    public List<Resource> getResources() {
+    public List<DataResource> getResources() {
         return resources;
     }
 
-    public void setResources(List<Resource> resources) {
+    public void setResources(List<DataResource> resources) {
         this.resources = resources;
     }
 

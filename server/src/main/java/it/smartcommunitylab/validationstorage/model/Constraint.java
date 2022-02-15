@@ -20,7 +20,7 @@ public class Constraint {
     
     private Run run;
     
-    private List<Resource> resources;
+    private List<DataResource> resources;
     
     private String name;
     
@@ -67,11 +67,11 @@ public class Constraint {
         this.run = run;
     }
 
-    public List<Resource> getResources() {
+    public List<DataResource> getResources() {
         return resources;
     }
 
-    public void setResources(List<Resource> resources) {
+    public void setResources(List<DataResource> resources) {
         this.resources = resources;
     }
 

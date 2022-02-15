@@ -1,32 +1,48 @@
 package it.smartcommunitylab.validationstorage.model;
 
-import java.util.List;
+import java.io.Serializable;
 import java.util.Map;
 
+import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.Lob;
+import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import javax.persistence.UniqueConstraint;
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.repository.HashMapConverter;
 
 @Entity
+@Table(name = "stores", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "name" }))
 public class Store {
     @Id
     @GeneratedValue
     private long id;
-    
+
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "project_id")
+    private String projectId;
+
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String name;
-    
+
+    @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
-    
+
     private String path;
-    
-    private Map<String, ?> config;
-    
-    private boolean isDefault = false;
-    
-    private Project project;
-    
-    private List<Resource> resources;
+
+    @Lob
+    @Column(name = "config_map")
+    @Convert(converter = HashMapConverter.class)
+    private Map<String, Serializable> config;
+
+    private Boolean isDefault;
 
     public long getId() {
         return id;
@@ -34,6 +50,14 @@ public class Store {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
     }
 
     public String getName() {
@@ -60,35 +84,24 @@ public class Store {
         this.path = path;
     }
 
-    public Map<String, ?> getConfig() {
+    public Map<String, Serializable> getConfig() {
         return config;
     }
 
-    public void setConfig(Map<String, ?> config) {
+    public void setConfig(Map<String, Serializable> config) {
         this.config = config;
     }
 
     public boolean isDefault() {
+        return isDefault != null ? isDefault.booleanValue() : false;
+    }
+
+    public Boolean getIsDefault() {
         return isDefault;
     }
 
-    public void setDefault(boolean isDefault) {
+    public void setIsDefault(Boolean isDefault) {
         this.isDefault = isDefault;
     }
 
-    public Project getProject() {
-        return project;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public List<Resource> getResources() {
-        return resources;
-    }
-
-    public void setResources(List<Resource> resources) {
-        this.resources = resources;
-    }
 }

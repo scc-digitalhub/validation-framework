@@ -38,7 +38,7 @@ public class ValidationStorageConstants {
     public static final String POSTFILTER_ID = "hasAuthority(@authenticationProperties.getProjectAuthorityPrefix() + filterObject.getId())";
     
     // Patterns to check validity of certain fields
-    public static final String ID_PATTERN = "^[a-zA-Z0-9_-]+$";
-    public static final String NAME_PATTERN = "^[a-zA-Z0-9 _-]+$";
+    public static final String NAME_PATTERN = "^[a-zA-Z0-9_-]+$";
+    public static final String TITLE_PATTERN = "^[a-zA-Z0-9 _-]+$";
     
 }

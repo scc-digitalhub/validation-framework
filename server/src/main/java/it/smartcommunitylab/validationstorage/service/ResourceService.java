@@ -7,7 +7,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import it.smartcommunitylab.validationstorage.model.Resource;
+import it.smartcommunitylab.validationstorage.model.DataResource;
 import it.smartcommunitylab.validationstorage.model.dto.ResourceDTO;
 import it.smartcommunitylab.validationstorage.repository.ResourceRepository;
 
@@ -15,22 +15,22 @@ public class ResourceService {
     @Autowired
     private ResourceRepository repository;
 
-    public Resource create(String projectId, @Valid ResourceDTO request, String name) {
+    public DataResource create(String projectId, @Valid ResourceDTO request, String name) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public List<Resource> findByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
+    public List<DataResource> findByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public Resource findById(String projectId, String id) {
+    public DataResource findById(String projectId, String id) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public Resource update(String projectId, String id, @Valid ResourceDTO request) {
+    public DataResource update(String projectId, String id, @Valid ResourceDTO request) {
         // TODO Auto-generated method stub
         return null;
     }

@@ -5,7 +5,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.model.Resource.Dataset;
+import it.smartcommunitylab.validationstorage.model.DataResource.Dataset;
 import it.smartcommunitylab.validationstorage.model.Schema;
 
 @Valid

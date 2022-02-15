@@ -1,42 +1,52 @@
 package it.smartcommunitylab.validationstorage.model;
 
-import java.util.Map;
+import java.util.List;
 
+import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.validation.Valid;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
-/**
- * Information about the data's format.
- */
 @Entity
 public class DataResource {
     @Id
     @GeneratedValue
     private long id;
 
-    private Project project;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "project_id")
+    private String projectId;
 
-    private Experiment experiment;
-    
-    private Run run;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "package_id")
+    private long packageId;
 
-    /**
-     * Creator of this document.
-     */
-    private String author;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    private String name;
 
-    /**
-     * May contain extra information.
-     */
-    private Map<String, ?> contents;
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "store_name")
+    private String storeName;
+
+    @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
+    private String title;
+
+    @OneToOne()
+    private Schema schema;
+
+    @Embedded
+    private Dataset dataset;
 
     public long getId() {
         return id;
@@ -46,44 +56,68 @@ public class DataResource {
         this.id = id;
     }
 
-    public Project getProject() {
-        return project;
+    public String getName() {
+        return name;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public Experiment getExperiment() {
-        return experiment;
+    public String getTitle() {
+        return title;
     }
 
-    public void setExperiment(Experiment experiment) {
-        this.experiment = experiment;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public Run getRun() {
-        return run;
+    public String getPath() {
+        return path;
     }
 
-    public void setRun(Run run) {
-        this.run = run;
+    public void setPath(String path) {
+        this.path = path;
     }
 
-    public String getAuthor() {
-        return author;
+    public Store getStore() {
+        return store;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
+    public void setStore(Store store) {
+        this.store = store;
     }
 
-    public Map<String, ?> getContents() {
-        return contents;
+    public DataPackage getDataPackage() {
+        return dataPackage;
     }
 
-    public void setContents(Map<String, ?> contents) {
-        this.contents = contents;
+    public void setDataPackage(DataPackage dataPackage) {
+        this.dataPackage = dataPackage;
     }
-    
+
+    public Schema getSchema() {
+        return schema;
+    }
+
+    public void setSchema(Schema schema) {
+        this.schema = schema;
+    }
+
+    public List<Constraint> getConstraints() {
+        return constraints;
+    }
+
+    public void setConstraints(List<Constraint> constraints) {
+        this.constraints = constraints;
+    }
+
+    public Dataset getDataset() {
+        return dataset;
+    }
+
+    public void setDataset(Dataset dataset) {
+        this.dataset = dataset;
+    }
+
 }

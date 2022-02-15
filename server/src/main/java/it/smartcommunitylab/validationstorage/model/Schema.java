@@ -9,8 +9,8 @@ public class Schema {
     @Id
     @GeneratedValue
     private long id;
-    
-    private Resource resource;
+
+    private long resourceId;
 
     public long getId() {
         return id;
@@ -20,11 +20,4 @@ public class Schema {
         this.id = id;
     }
 
-    public Resource getResource() {
-        return resource;
-    }
-
-    public void setResource(Resource resource) {
-        this.resource = resource;
-    }
 }

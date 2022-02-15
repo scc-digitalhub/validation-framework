@@ -31,7 +31,7 @@ public class Run {
     
     private DataProfile dataProfile;
     
-    private DataResource dataResource;
+    private RunDataResource dataResource;
     
     private RunEnvironment runEnvironment;
     
@@ -121,11 +121,11 @@ public class Run {
         this.dataProfile = dataProfile;
     }
 
-    public DataResource getDataResource() {
+    public RunDataResource getDataResource() {
         return dataResource;
     }
 
-    public void setDataResource(DataResource dataResource) {
+    public void setDataResource(RunDataResource dataResource) {
         this.dataResource = dataResource;
     }
 

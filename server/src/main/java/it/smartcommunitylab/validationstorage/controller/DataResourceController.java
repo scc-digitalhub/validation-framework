@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.model.DataResource;
+import it.smartcommunitylab.validationstorage.model.RunDataResource;
 import it.smartcommunitylab.validationstorage.model.dto.DataResourceDTO;
 import it.smartcommunitylab.validationstorage.service.DataResourceService;
 
@@ -32,12 +32,12 @@ public class DataResourceController {
     private DataResourceService documentService;
 
     @GetMapping("/{projectId}/" + ValidationStorageConstants.DATA_RESOURCE + "/{id}")
-    public ResponseEntity<DataResource> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
+    public ResponseEntity<RunDataResource> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
         return ResponseEntity.ok(documentService.findDocumentById(projectId, id));
     }
 
     @GetMapping("/{projectId}/" + ValidationStorageConstants.DATA_RESOURCE)
-    public ResponseEntity<List<DataResource>> findDocuments(@PathVariable String projectId,
+    public ResponseEntity<List<RunDataResource>> findDocuments(@PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId,
             @RequestParam("search") Optional<String> search) {
@@ -45,12 +45,12 @@ public class DataResourceController {
     }
 
     @PostMapping("/{projectId}/" + ValidationStorageConstants.DATA_RESOURCE)
-    public ResponseEntity<DataResource> createDocument(@PathVariable String projectId, @RequestBody @Valid DataResourceDTO request, Authentication authentication) {
+    public ResponseEntity<RunDataResource> createDocument(@PathVariable String projectId, @RequestBody @Valid DataResourceDTO request, Authentication authentication) {
         return ResponseEntity.ok(documentService.createDocument(projectId, request, authentication.getName()));
     }
 
     @PutMapping("/{projectId}/" + ValidationStorageConstants.DATA_RESOURCE + "/{id}")
-    public ResponseEntity<DataResource> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid DataResourceDTO request) {
+    public ResponseEntity<RunDataResource> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid DataResourceDTO request) {
         return ResponseEntity.ok(documentService.updateDocument(projectId, id, request));
     }
 

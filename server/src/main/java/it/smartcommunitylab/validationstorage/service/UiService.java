@@ -13,7 +13,7 @@ import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 import it.smartcommunitylab.validationstorage.model.DataProfile;
-import it.smartcommunitylab.validationstorage.model.DataResource;
+import it.smartcommunitylab.validationstorage.model.RunDataResource;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.RunEnvironment;
@@ -88,8 +88,8 @@ public class UiService {
     }
 
     // DataResource
-    public DataResource findDataResourceByRunId(String projectId, String experimentId, String runId) {
-        List<DataResource> documents = dataResourceRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+    public RunDataResource findDataResourceByRunId(String projectId, String experimentId, String runId) {
+        List<RunDataResource> documents = dataResourceRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
         throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");

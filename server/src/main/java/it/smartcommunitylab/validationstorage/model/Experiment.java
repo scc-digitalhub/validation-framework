@@ -22,17 +22,17 @@ public class Experiment {
     private String name;
 
     private String title;
-    
-    private Project project;
-    
-    private DataPackage dataPackage;
-    
+
+    private String projectId;
+
+    private List<DataResource> resources;
+
     private List<RunConfig> runConfigs;
-    
+
     private List<Run> runs;
-    
+
     private List<Constraint> constraints;
-    
+
     private List<String> tags;
 
     private String author;
