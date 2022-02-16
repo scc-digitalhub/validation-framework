@@ -1,13 +1,12 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
+import java.util.Map;
 
 /**
- * Request object: metadata about artifact files related to a run.
+ * Request object: short report on the validation's result.
  */
-@Valid
-public class ArtifactMetadataDTO {
+public class RunShortReportDTO {
     private String projectId;
     
     private long experimentId;
@@ -15,16 +14,9 @@ public class ArtifactMetadataDTO {
     private long runId;
 
     /**
-     * File name.
+     * May contain extra information.
      */
-    @NotBlank
-    private String name;
-
-    /**
-     * File location.
-     */
-    @NotBlank
-    private String uri;
+    private Map<String, Serializable> contents;
 
     public String getProjectId() {
         return projectId;
@@ -50,20 +42,12 @@ public class ArtifactMetadataDTO {
         this.runId = runId;
     }
 
-    public String getName() {
-        return name;
+    public Map<String, Serializable> getContents() {
+        return contents;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setContents(Map<String, Serializable> contents) {
+        this.contents = contents;
     }
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
+    
 }

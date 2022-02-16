@@ -2,44 +2,65 @@ package it.smartcommunitylab.validationstorage.model;
 
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 
 import org.springframework.data.annotation.Id;
 
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+
 @Entity
+@Table(name = "run", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "experiment_name", "name" }))
 public class Run {
     @Id
     @GeneratedValue
     private long id;
     
-    private String name;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "project_id")
+    private String projectId;
     
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "experiment_name")
+    private String experimentName;
+    
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    private String name;
+
+    @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
     
-    private Project project;
-    
-    private Experiment experiment;
-    
-    private DataPackage dataPackage;
-    
-    private RunConfig runConfig;
-    
-    private List<Constraint> constraints;
-    
+    @OneToMany(mappedBy = "runName", fetch = FetchType.LAZY)
     private List<ArtifactMetadata> artifactMetadata;
     
-    private DataProfile dataProfile;
+    @OneToOne()
+    private RunDataProfile runDataProfile;
     
-    private RunDataResource dataResource;
+    @OneToOne()
+    private RunDataResource runDataResource;
     
+    @OneToOne()
     private RunEnvironment runEnvironment;
     
+    @OneToOne()
     private RunMetadata runMetadata;
     
-    private ShortReport shortReport;
+    @OneToOne()
+    private RunShortReport runShortReport;
     
-    private ShortSchema shortSchema;
+    @OneToOne()
+    private RunShortSchema runShortSchema;
 
     public long getId() {
         return id;
@@ -47,6 +68,22 @@ public class Run {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getExperimentName() {
+        return experimentName;
+    }
+
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public String getName() {
@@ -65,46 +102,6 @@ public class Run {
         this.title = title;
     }
 
-    public Project getProject() {
-        return project;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public Experiment getExperiment() {
-        return experiment;
-    }
-
-    public void setExperiment(Experiment experiment) {
-        this.experiment = experiment;
-    }
-
-    public DataPackage getDataPackage() {
-        return dataPackage;
-    }
-
-    public void setDataPackage(DataPackage dataPackage) {
-        this.dataPackage = dataPackage;
-    }
-
-    public RunConfig getRunConfig() {
-        return runConfig;
-    }
-
-    public void setRunConfig(RunConfig runConfig) {
-        this.runConfig = runConfig;
-    }
-
-    public List<Constraint> getConstraints() {
-        return constraints;
-    }
-
-    public void setConstraints(List<Constraint> constraints) {
-        this.constraints = constraints;
-    }
-
     public List<ArtifactMetadata> getArtifactMetadata() {
         return artifactMetadata;
     }
@@ -113,20 +110,20 @@ public class Run {
         this.artifactMetadata = artifactMetadata;
     }
 
-    public DataProfile getDataProfile() {
-        return dataProfile;
+    public RunDataProfile getRunDataProfile() {
+        return runDataProfile;
     }
 
-    public void setDataProfile(DataProfile dataProfile) {
-        this.dataProfile = dataProfile;
+    public void setRunDataProfile(RunDataProfile runDataProfile) {
+        this.runDataProfile = runDataProfile;
     }
 
-    public RunDataResource getDataResource() {
-        return dataResource;
+    public RunDataResource getRunDataResource() {
+        return runDataResource;
     }
 
-    public void setDataResource(RunDataResource dataResource) {
-        this.dataResource = dataResource;
+    public void setRunDataResource(RunDataResource runDataResource) {
+        this.runDataResource = runDataResource;
     }
 
     public RunEnvironment getRunEnvironment() {
@@ -145,19 +142,20 @@ public class Run {
         this.runMetadata = runMetadata;
     }
 
-    public ShortReport getShortReport() {
-        return shortReport;
+    public RunShortReport getRunShortReport() {
+        return runShortReport;
     }
 
-    public void setShortReport(ShortReport shortReport) {
-        this.shortReport = shortReport;
+    public void setRunShortReport(RunShortReport runShortReport) {
+        this.runShortReport = runShortReport;
     }
 
-    public ShortSchema getShortSchema() {
-        return shortSchema;
+    public RunShortSchema getRunShortSchema() {
+        return runShortSchema;
     }
 
-    public void setShortSchema(ShortSchema shortSchema) {
-        this.shortSchema = shortSchema;
+    public void setRunShortSchema(RunShortSchema runShortSchema) {
+        this.runShortSchema = runShortSchema;
     }
+    
 }

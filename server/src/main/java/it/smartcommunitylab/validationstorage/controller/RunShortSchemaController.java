@@ -20,47 +20,47 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.model.ShortReport;
-import it.smartcommunitylab.validationstorage.model.dto.ShortReportDTO;
-import it.smartcommunitylab.validationstorage.service.ShortReportService;
+import it.smartcommunitylab.validationstorage.model.RunShortSchema;
+import it.smartcommunitylab.validationstorage.model.dto.RunShortSchemaDTO;
+import it.smartcommunitylab.validationstorage.service.RunShortSchemaService;
 
 @RestController
 @RequestMapping(value = "/api/project")
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
-public class ShortReportController {
+public class RunShortSchemaController {
     @Autowired
-    private ShortReportService documentService;
+    private RunShortSchemaService documentService;
 
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.SHORT_REPORT + "/{id}")
-    public ResponseEntity<ShortReport> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN_SHORT_SCHEMA + "/{id}")
+    public ResponseEntity<RunShortSchema> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
         return ResponseEntity.ok(documentService.findDocumentById(projectId, id));
     }
 
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.SHORT_REPORT)
-    public ResponseEntity<List<ShortReport>> findDocuments(@PathVariable String projectId,
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN_SHORT_SCHEMA)
+    public ResponseEntity<List<RunShortSchema>> findDocuments(@PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId,
             @RequestParam("search") Optional<String> search) {
         return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
     }
 
-    @PostMapping("/{projectId}/" + ValidationStorageConstants.SHORT_REPORT)
-    public ResponseEntity<ShortReport> createDocument(@PathVariable String projectId, @RequestBody @Valid ShortReportDTO request, Authentication authentication) {
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.RUN_SHORT_SCHEMA)
+    public ResponseEntity<RunShortSchema> createDocument(@PathVariable String projectId, @RequestBody @Valid RunShortSchemaDTO request, Authentication authentication) {
         return ResponseEntity.ok(documentService.createDocument(projectId, request, authentication.getName()));
     }
 
-    @PutMapping("/{projectId}/" + ValidationStorageConstants.SHORT_REPORT + "/{id}")
-    public ResponseEntity<ShortReport> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid ShortReportDTO request) {
+    @PutMapping("/{projectId}/" + ValidationStorageConstants.RUN_SHORT_SCHEMA + "/{id}")
+    public ResponseEntity<RunShortSchema> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid RunShortSchemaDTO request) {
         return ResponseEntity.ok(documentService.updateDocument(projectId, id, request));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.SHORT_REPORT + "/{id}")
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_SHORT_SCHEMA + "/{id}")
     public ResponseEntity<Void> deleteDocumentById(@PathVariable String projectId, @PathVariable String id) {
         documentService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.SHORT_REPORT)
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_SHORT_SCHEMA)
     public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId) {

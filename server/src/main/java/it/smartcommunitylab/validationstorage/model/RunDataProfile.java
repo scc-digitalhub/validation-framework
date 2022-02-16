@@ -1,8 +1,12 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import java.util.Map;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
@@ -11,10 +15,11 @@ import org.springframework.data.annotation.Id;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 /**
- * Metadata about artifact files related to a run.
+ * Profile for the data.
  */
 @Entity
-public class ArtifactMetadata {
+@Table(name = "run_data_profile", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "experiment_name", "run_name" }))
+public class RunDataProfile {
     @Id
     @GeneratedValue
     private long id;
@@ -35,14 +40,9 @@ public class ArtifactMetadata {
     private String runName;
 
     /**
-     * File name.
+     * May contain extra information.
      */
-    private String name;
-
-    /**
-     * File location.
-     */
-    private String uri;
+    private Map<String, ?> contents;
 
     public long getId() {
         return id;
@@ -76,20 +76,12 @@ public class ArtifactMetadata {
         this.runName = runName;
     }
 
-    public String getName() {
-        return name;
+    public Map<String, ?> getContents() {
+        return contents;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
+    public void setContents(Map<String, ?> contents) {
+        this.contents = contents;
     }
     
 }

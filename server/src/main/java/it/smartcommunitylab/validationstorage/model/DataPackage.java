@@ -45,6 +45,14 @@ public class DataPackage {
         this.id = id;
     }
 
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
     public String getName() {
         return name;
     }
@@ -61,22 +69,6 @@ public class DataPackage {
         this.title = title;
     }
 
-    public Project getProject() {
-        return project;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public Experiment getExperiment() {
-        return experiment;
-    }
-
-    public void setExperiment(Experiment experiment) {
-        this.experiment = experiment;
-    }
-
     public List<DataResource> getResources() {
         return resources;
     }
@@ -84,12 +76,5 @@ public class DataPackage {
     public void setResources(List<DataResource> resources) {
         this.resources = resources;
     }
-
-    public List<Run> getRuns() {
-        return runs;
-    }
-
-    public void setRuns(List<Run> runs) {
-        this.runs = runs;
-    }
+    
 }

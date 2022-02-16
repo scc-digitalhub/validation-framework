@@ -12,15 +12,15 @@ import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsExcept
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.IdMismatchException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
-import it.smartcommunitylab.validationstorage.model.ShortReport;
-import it.smartcommunitylab.validationstorage.model.dto.ShortReportDTO;
-import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
+import it.smartcommunitylab.validationstorage.model.RunDataResource;
+import it.smartcommunitylab.validationstorage.model.dto.RunDataResourceDTO;
+import it.smartcommunitylab.validationstorage.repository.RunDataResourceRepository;
 
 @Service
-public class ShortReportService {
+public class RunDataResourceService {
     @Autowired
-    private ShortReportRepository documentRepository;
-
+    private RunDataResourceRepository documentRepository;
+    
     @Autowired
     private ProjectService projectService;
     @Autowired
@@ -32,13 +32,13 @@ public class ShortReportService {
      * @param id ID of the document to retrieve.
      * @return The document if found, null otherwise.
      */
-    private ShortReport getDocument(String id) {
+    private RunDataResource getDocument(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
-        Optional<ShortReport> o = documentRepository.findById(id);
+        Optional<RunDataResource> o = documentRepository.findById(id);
         if (o.isPresent()) {
-            ShortReport document = o.get();
+            RunDataResource document = o.get();
             return document;
         }
         return null;
@@ -51,14 +51,14 @@ public class ShortReportService {
      * @param search A term to filter results by.
      * @return A new list, with only the results that found a match.
      */
-    private List<ShortReport> filterBySearch(List<ShortReport> items, String search) {
+    private List<RunDataResource> filterBySearch(List<RunDataResource> items, String search) {
         if (ObjectUtils.isEmpty(search))
             return items;
 
         String normalized = ValidationStorageUtils.normalizeString(search);
 
-        List<ShortReport> results = new ArrayList<ShortReport>();
-        for (ShortReport item : items) {
+        List<RunDataResource> results = new ArrayList<RunDataResource>();
+        for (RunDataResource item : items) {
             if (item.getExperimentName().toLowerCase().contains(normalized))
                 results.add(item);
         }
@@ -67,7 +67,7 @@ public class ShortReportService {
     }
 
     // Create
-    public ShortReport createDocument(String projectId, ShortReportDTO request, String author) {
+    public RunDataResource createDocument(String projectId, RunDataResourceDTO request, String author) {
         if (ObjectUtils.isEmpty(projectId))
             throw new IllegalArgumentException("Project ID is missing or blank.");
         projectService.findDocumentById(projectId);
@@ -81,7 +81,7 @@ public class ShortReportService {
         if (!(documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId).isEmpty()))
             throw new DocumentAlreadyExistsException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") already exists.");
 
-        ShortReport documentToSave = new ShortReport(projectId, experimentId, runId);
+        RunDataResource documentToSave = new RunDataResource(projectId, experimentId, runId);
 
         documentToSave.setExperimentName(request.getExperimentName());
         documentToSave.setAuthor(author);
@@ -94,8 +94,8 @@ public class ShortReportService {
     }
 
     // Read
-    public List<ShortReport> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
-        List<ShortReport> repositoryResults;
+    public List<RunDataResource> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
+        List<RunDataResource> repositoryResults;
 
         if (experimentId.isPresent() && runId.isPresent())
             repositoryResults = documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId.get(), runId.get());
@@ -113,8 +113,8 @@ public class ShortReportService {
     }
 
     // Read
-    public ShortReport findDocumentById(String projectId, String id) {
-        ShortReport document = getDocument(id);
+    public RunDataResource findDocumentById(String projectId, String id) {
+        RunDataResource document = getDocument(id);
         if (document != null) {
             if (!document.getProjectId().equals(projectId))
                 throw new IdMismatchException();
@@ -125,11 +125,11 @@ public class ShortReportService {
     }
 
     // Update
-    public ShortReport updateDocument(String projectId, String id, ShortReportDTO request) {
+    public RunDataResource updateDocument(String projectId, String id, RunDataResourceDTO request) {
         if (ObjectUtils.isEmpty(id))
             throw new IllegalArgumentException("Document ID is missing or blank.");
 
-        ShortReport document = getDocument(id);
+        RunDataResource document = getDocument(id);
         if (document == null)
             throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 
@@ -149,7 +149,7 @@ public class ShortReportService {
 
     // Delete
     public void deleteDocumentById(String projectId, String id) {
-        ShortReport document = getDocument(id);
+        RunDataResource document = getDocument(id);
         if (document != null) {
             if (!document.getProjectId().equals(projectId))
                 throw new IdMismatchException();

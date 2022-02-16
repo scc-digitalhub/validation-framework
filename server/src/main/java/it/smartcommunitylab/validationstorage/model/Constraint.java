@@ -2,11 +2,14 @@ package it.smartcommunitylab.validationstorage.model;
 
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Entity
 public class Constraint {
@@ -14,23 +17,29 @@ public class Constraint {
     @GeneratedValue
     private long id;
     
-    private Project project;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "project_id")
+    private String projectId;
     
-    private Experiment experiment;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "experiment_name")
+    private String experimentName;
     
-    private Run run;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    private String name;
+
+    @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
+    private String title;
     
     private List<DataResource> resources;
-    
-    private String name;
-    
-    private String title;
     
     private String type;
     
     private String description;
     
-    @JsonUnwrapped
     private int errorSeverity;
     
     private TypedConstraint constraint;
@@ -43,36 +52,20 @@ public class Constraint {
         this.id = id;
     }
 
-    public Project getProject() {
-        return project;
+    public String getProjectId() {
+        return projectId;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
     }
 
-    public Experiment getExperiment() {
-        return experiment;
+    public String getExperimentName() {
+        return experimentName;
     }
 
-    public void setExperiment(Experiment experiment) {
-        this.experiment = experiment;
-    }
-
-    public Run getRun() {
-        return run;
-    }
-
-    public void setRun(Run run) {
-        this.run = run;
-    }
-
-    public List<DataResource> getResources() {
-        return resources;
-    }
-
-    public void setResources(List<DataResource> resources) {
-        this.resources = resources;
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public String getName() {
@@ -89,6 +82,14 @@ public class Constraint {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public List<DataResource> getResources() {
+        return resources;
+    }
+
+    public void setResources(List<DataResource> resources) {
+        this.resources = resources;
     }
 
     public String getType() {

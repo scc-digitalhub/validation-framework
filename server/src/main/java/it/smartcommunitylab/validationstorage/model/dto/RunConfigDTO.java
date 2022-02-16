@@ -24,4 +24,61 @@ public class RunConfigDTO {
     private RunConfigImpl schemaInference;
     
     private RunConfigImpl validation;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public long getExperimentId() {
+        return experimentId;
+    }
+
+    public void setExperimentId(long experimentId) {
+        this.experimentId = experimentId;
+    }
+
+    public long getRunId() {
+        return runId;
+    }
+
+    public void setRunId(long runId) {
+        this.runId = runId;
+    }
+
+    public RunConfigImpl getSnapshot() {
+        return snapshot;
+    }
+
+    public void setSnapshot(RunConfigImpl snapshot) {
+        this.snapshot = snapshot;
+    }
+
+    public RunConfigImpl getProfiling() {
+        return profiling;
+    }
+
+    public void setProfiling(RunConfigImpl profiling) {
+        this.profiling = profiling;
+    }
+
+    public RunConfigImpl getSchemaInference() {
+        return schemaInference;
+    }
+
+    public void setSchemaInference(RunConfigImpl schemaInference) {
+        this.schemaInference = schemaInference;
+    }
+
+    public RunConfigImpl getValidation() {
+        return validation;
+    }
+
+    public void setValidation(RunConfigImpl validation) {
+        this.validation = validation;
+    }
+    
 }

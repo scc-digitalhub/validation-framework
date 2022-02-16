@@ -12,23 +12,23 @@ import org.springframework.util.ObjectUtils;
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
-import it.smartcommunitylab.validationstorage.model.DataProfile;
+import it.smartcommunitylab.validationstorage.model.RunDataProfile;
 import it.smartcommunitylab.validationstorage.model.RunDataResource;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.RunEnvironment;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
-import it.smartcommunitylab.validationstorage.model.ShortReport;
-import it.smartcommunitylab.validationstorage.model.ShortSchema;
+import it.smartcommunitylab.validationstorage.model.RunShortReport;
+import it.smartcommunitylab.validationstorage.model.RunShortSchema;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
-import it.smartcommunitylab.validationstorage.repository.DataProfileRepository;
-import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
+import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepository;
+import it.smartcommunitylab.validationstorage.repository.RunDataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
-import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
-import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
+import it.smartcommunitylab.validationstorage.repository.RunShortReportRepository;
+import it.smartcommunitylab.validationstorage.repository.RunShortSchemaRepository;
 
 /**
  * Service for when the UI needs different behavior from the default service for the document.
@@ -44,15 +44,15 @@ public class UiService {
     @Autowired
     private ArtifactMetadataRepository artifactMetadataRepository;
     @Autowired
-    private DataProfileRepository dataProfileRepository;
+    private RunDataProfileRepository dataProfileRepository;
     @Autowired
-    private DataResourceRepository dataResourceRepository;
+    private RunDataResourceRepository dataResourceRepository;
     @Autowired
     private RunEnvironmentRepository runEnvironmentRepository;
     @Autowired
-    private ShortReportRepository shortReportRepository;
+    private RunShortReportRepository shortReportRepository;
     @Autowired
-    private ShortSchemaRepository shortSchemaRepository;
+    private RunShortSchemaRepository shortSchemaRepository;
     
     // Project
     @PostFilter(ValidationStorageConstants.POSTFILTER_ID)
@@ -80,8 +80,8 @@ public class UiService {
     }
 
     // DataProfile
-    public DataProfile findDataProfileByRunId(String projectId, String experimentId, String runId) {
-        List<DataProfile> documents = dataProfileRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+    public RunDataProfile findDataProfileByRunId(String projectId, String experimentId, String runId) {
+        List<RunDataProfile> documents = dataProfileRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
         throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");
@@ -112,16 +112,16 @@ public class UiService {
     }
 
     // ShortReport
-    public ShortReport findShortReportByRunId(String projectId, String experimentId, String runId) {
-        List<ShortReport> documents = shortReportRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+    public RunShortReport findShortReportByRunId(String projectId, String experimentId, String runId) {
+        List<RunShortReport> documents = shortReportRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
         throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");
     }
 
     // ShortSchema
-    public ShortSchema findShortSchemaByRunId(String projectId, String experimentId, String runId) {
-        List<ShortSchema> documents = shortSchemaRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+    public RunShortSchema findShortSchemaByRunId(String projectId, String experimentId, String runId) {
+        List<RunShortSchema> documents = shortSchemaRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
         throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");

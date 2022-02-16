@@ -12,14 +12,14 @@ import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsExcept
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.IdMismatchException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
-import it.smartcommunitylab.validationstorage.model.ShortSchema;
-import it.smartcommunitylab.validationstorage.model.dto.ShortSchemaDTO;
-import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
+import it.smartcommunitylab.validationstorage.model.RunDataProfile;
+import it.smartcommunitylab.validationstorage.model.dto.RunDataProfileDTO;
+import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepository;
 
 @Service
-public class ShortSchemaService {
+public class RunDataProfileService {
     @Autowired
-    private ShortSchemaRepository documentRepository;
+    private RunDataProfileRepository documentRepository;
 
     @Autowired
     private ProjectService projectService;
@@ -32,13 +32,13 @@ public class ShortSchemaService {
      * @param id ID of the document to retrieve.
      * @return The document if found, null otherwise.
      */
-    private ShortSchema getDocument(String id) {
+    private RunDataProfile getDocument(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
-        Optional<ShortSchema> o = documentRepository.findById(id);
+        Optional<RunDataProfile> o = documentRepository.findById(id);
         if (o.isPresent()) {
-            ShortSchema document = o.get();
+            RunDataProfile document = o.get();
             return document;
         }
         return null;
@@ -51,14 +51,14 @@ public class ShortSchemaService {
      * @param search A term to filter results by.
      * @return A new list, with only the results that found a match.
      */
-    private List<ShortSchema> filterBySearch(List<ShortSchema> items, String search) {
+    private List<RunDataProfile> filterBySearch(List<RunDataProfile> items, String search) {
         if (ObjectUtils.isEmpty(search))
             return items;
 
         String normalized = ValidationStorageUtils.normalizeString(search);
 
-        List<ShortSchema> results = new ArrayList<ShortSchema>();
-        for (ShortSchema item : items) {
+        List<RunDataProfile> results = new ArrayList<RunDataProfile>();
+        for (RunDataProfile item : items) {
             if (item.getExperimentName().toLowerCase().contains(normalized))
                 results.add(item);
         }
@@ -67,9 +67,10 @@ public class ShortSchemaService {
     }
 
     // Create
-    public ShortSchema createDocument(String projectId, ShortSchemaDTO request, String author) {
+    public RunDataProfile createDocument(String projectId, RunDataProfileDTO request, String author) {
         if (ObjectUtils.isEmpty(projectId))
             throw new IllegalArgumentException("Project ID is missing or blank.");
+
         projectService.findDocumentById(projectId);
 
         String experimentId = request.getExperimentId();
@@ -81,7 +82,7 @@ public class ShortSchemaService {
         if (!(documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId).isEmpty()))
             throw new DocumentAlreadyExistsException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") already exists.");
 
-        ShortSchema documentToSave = new ShortSchema(projectId, experimentId, runId);
+        RunDataProfile documentToSave = new RunDataProfile(projectId, experimentId, runId);
 
         documentToSave.setExperimentName(request.getExperimentName());
         documentToSave.setAuthor(author);
@@ -94,8 +95,8 @@ public class ShortSchemaService {
     }
 
     // Read
-    public List<ShortSchema> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
-        List<ShortSchema> repositoryResults;
+    public List<RunDataProfile> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
+        List<RunDataProfile> repositoryResults;
 
         if (experimentId.isPresent() && runId.isPresent())
             repositoryResults = documentRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId.get(), runId.get());
@@ -113,8 +114,8 @@ public class ShortSchemaService {
     }
 
     // Read
-    public ShortSchema findDocumentById(String projectId, String id) {
-        ShortSchema document = getDocument(id);
+    public RunDataProfile findDocumentById(String projectId, String id) {
+        RunDataProfile document = getDocument(id);
         if (document != null) {
             if (!document.getProjectId().equals(projectId))
                 throw new IdMismatchException();
@@ -125,11 +126,11 @@ public class ShortSchemaService {
     }
 
     // Update
-    public ShortSchema updateDocument(String projectId, String id, ShortSchemaDTO request) {
+    public RunDataProfile updateDocument(String projectId, String id, RunDataProfileDTO request) {
         if (ObjectUtils.isEmpty(id))
             throw new IllegalArgumentException("Document ID is missing or blank.");
 
-        ShortSchema document = getDocument(id);
+        RunDataProfile document = getDocument(id);
         if (document == null)
             throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
 
@@ -149,7 +150,7 @@ public class ShortSchemaService {
 
     // Delete
     public void deleteDocumentById(String projectId, String id) {
-        ShortSchema document = getDocument(id);
+        RunDataProfile document = getDocument(id);
         if (document != null) {
             if (!document.getProjectId().equals(projectId))
                 throw new IdMismatchException();

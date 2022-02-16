@@ -1,5 +1,8 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import javax.persistence.Embeddable;
+
+@Embeddable
 public class RunConfigImpl {
     private boolean enable = false;
 

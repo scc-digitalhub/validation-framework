@@ -2,40 +2,42 @@ package it.smartcommunitylab.validationstorage.model;
 
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.validation.Valid;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Entity
+@Table(name = "experiment", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "name" }))
 public class Experiment {
     @Id
     @GeneratedValue
     private long id;
-
-    private String name;
-
-    private String title;
-
+    
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "project_id")
     private String projectId;
 
-    private List<DataResource> resources;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    private String name;
 
-    private List<RunConfig> runConfigs;
+    @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
+    private String title;
+    
+    private long[] resources;
 
-    private List<Run> runs;
-
-    private List<Constraint> constraints;
+    private long[] constraints;
 
     private List<String> tags;
-
-    private String author;
 
     public long getId() {
         return id;
@@ -43,6 +45,14 @@ public class Experiment {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
     }
 
     public String getName() {
@@ -61,43 +71,19 @@ public class Experiment {
         this.title = title;
     }
 
-    public Project getProject() {
-        return project;
+    public long[] getResources() {
+        return resources;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setResources(long[] resources) {
+        this.resources = resources;
     }
 
-    public DataPackage getDataPackage() {
-        return dataPackage;
-    }
-
-    public void setDataPackage(DataPackage dataPackage) {
-        this.dataPackage = dataPackage;
-    }
-
-    public List<RunConfig> getRunConfigs() {
-        return runConfigs;
-    }
-
-    public void setRunConfigs(List<RunConfig> runConfigs) {
-        this.runConfigs = runConfigs;
-    }
-
-    public List<Run> getRuns() {
-        return runs;
-    }
-
-    public void setRuns(List<Run> runs) {
-        this.runs = runs;
-    }
-
-    public List<Constraint> getConstraints() {
+    public long[] getConstraints() {
         return constraints;
     }
 
-    public void setConstraints(List<Constraint> constraints) {
+    public void setConstraints(long[] constraints) {
         this.constraints = constraints;
     }
 
@@ -108,12 +94,5 @@ public class Experiment {
     public void setTags(List<String> tags) {
         this.tags = tags;
     }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
+    
 }

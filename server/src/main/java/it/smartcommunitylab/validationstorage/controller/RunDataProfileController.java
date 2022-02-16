@@ -20,47 +20,47 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.model.DataProfile;
-import it.smartcommunitylab.validationstorage.model.dto.DataProfileDTO;
-import it.smartcommunitylab.validationstorage.service.DataProfileService;
+import it.smartcommunitylab.validationstorage.model.RunDataProfile;
+import it.smartcommunitylab.validationstorage.model.dto.RunDataProfileDTO;
+import it.smartcommunitylab.validationstorage.service.RunDataProfileService;
 
 @RestController
 @RequestMapping(value = "/api/project")
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
-public class DataProfileController {
+public class RunDataProfileController {
     @Autowired
-    private DataProfileService documentService;
+    private RunDataProfileService documentService;
 
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE + "/{id}")
-    public ResponseEntity<DataProfile> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN_DATA_PROFILE + "/{id}")
+    public ResponseEntity<RunDataProfile> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
         return ResponseEntity.ok(documentService.findDocumentById(projectId, id));
     }
 
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE)
-    public ResponseEntity<List<DataProfile>> findDocuments(@PathVariable String projectId,
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN_DATA_PROFILE)
+    public ResponseEntity<List<RunDataProfile>> findDocuments(@PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId,
             @RequestParam("search") Optional<String> search) {
         return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
     }
 
-    @PostMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE)
-    public ResponseEntity<DataProfile> createDocument(@PathVariable String projectId, @RequestBody @Valid DataProfileDTO request, Authentication authentication) {
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.RUN_DATA_PROFILE)
+    public ResponseEntity<RunDataProfile> createDocument(@PathVariable String projectId, @RequestBody @Valid RunDataProfileDTO request, Authentication authentication) {
         return ResponseEntity.ok(documentService.createDocument(projectId, request, authentication.getName()));
     }
 
-    @PutMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE + "/{id}")
-    public ResponseEntity<DataProfile> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid DataProfileDTO request) {
+    @PutMapping("/{projectId}/" + ValidationStorageConstants.RUN_DATA_PROFILE + "/{id}")
+    public ResponseEntity<RunDataProfile> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid RunDataProfileDTO request) {
         return ResponseEntity.ok(documentService.updateDocument(projectId, id, request));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE + "/{id}")
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_DATA_PROFILE + "/{id}")
     public ResponseEntity<Void> deleteDocumentById(@PathVariable String projectId, @PathVariable String id) {
         documentService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE)
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_DATA_PROFILE)
     public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
             @RequestParam("experimentId") Optional<String> experimentId,
             @RequestParam("runId") Optional<String> runId) {

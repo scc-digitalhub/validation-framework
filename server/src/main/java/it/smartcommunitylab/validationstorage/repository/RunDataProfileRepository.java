@@ -1,20 +1,20 @@
 package it.smartcommunitylab.validationstorage.repository;
 
-import it.smartcommunitylab.validationstorage.model.ShortReport;
+import it.smartcommunitylab.validationstorage.model.RunDataProfile;
 
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.repository.CrudRepository;
 
-public interface ShortReportRepository extends CrudRepository<ShortReport, String> {
-    List<ShortReport> findByProjectId(String projectId);
+public interface RunDataProfileRepository extends CrudRepository<RunDataProfile, String> {
+    List<RunDataProfile> findByProjectId(String projectId);
 
-    List<ShortReport> findByProjectIdAndExperimentId(String projectId, String experimentId);
+    List<RunDataProfile> findByProjectIdAndExperimentId(String projectId, String experimentId);
 
-    List<ShortReport> findByProjectIdAndRunId(String projectId, String runId);
+    List<RunDataProfile> findByProjectIdAndRunId(String projectId, String runId);
 
-    List<ShortReport> findByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
+    List<RunDataProfile> findByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
 
     void deleteByProjectId(String projectId);
 

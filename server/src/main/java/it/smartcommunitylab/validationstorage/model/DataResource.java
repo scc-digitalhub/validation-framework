@@ -1,21 +1,20 @@
 package it.smartcommunitylab.validationstorage.model;
 
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Entity
+@Table(name = "data_resource", uniqueConstraints = @UniqueConstraint(columnNames = { "package_id", "name" }))
 public class DataResource {
     @Id
     @GeneratedValue
@@ -30,15 +29,15 @@ public class DataResource {
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "package_id")
     private long packageId;
-
-    @NotBlank
-    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private String name;
-
+    
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "store_name")
     private String storeName;
 
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    private String name;
+    
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
 
@@ -56,12 +55,36 @@ public class DataResource {
         this.id = id;
     }
 
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public long getPackageId() {
+        return packageId;
+    }
+
+    public void setPackageId(long packageId) {
+        this.packageId = packageId;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getStoreName() {
+        return storeName;
+    }
+
+    public void setStoreName(String storeName) {
+        this.storeName = storeName;
     }
 
     public String getTitle() {
@@ -72,44 +95,12 @@ public class DataResource {
         this.title = title;
     }
 
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public Store getStore() {
-        return store;
-    }
-
-    public void setStore(Store store) {
-        this.store = store;
-    }
-
-    public DataPackage getDataPackage() {
-        return dataPackage;
-    }
-
-    public void setDataPackage(DataPackage dataPackage) {
-        this.dataPackage = dataPackage;
-    }
-
     public Schema getSchema() {
         return schema;
     }
 
     public void setSchema(Schema schema) {
         this.schema = schema;
-    }
-
-    public List<Constraint> getConstraints() {
-        return constraints;
-    }
-
-    public void setConstraints(List<Constraint> constraints) {
-        this.constraints = constraints;
     }
 
     public Dataset getDataset() {

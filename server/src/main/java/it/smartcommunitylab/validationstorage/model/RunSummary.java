@@ -31,7 +31,7 @@ public class RunSummary {
 
     private List<ArtifactMetadata> artifactMetadata;
 
-    private DataProfile dataProfile;
+    private RunDataProfile dataProfile;
 
     private RunDataResource dataResource;
 
@@ -39,9 +39,9 @@ public class RunSummary {
 
     private RunMetadata runMetadata;
 
-    private ShortReport shortReport;
+    private RunShortReport shortReport;
 
-    private ShortSchema shortSchema;
+    private RunShortSchema shortSchema;
 
     public RunSummary(String id, String projectId, String experimentId, String runId, Date created) {
         this.id = id;
@@ -79,11 +79,11 @@ public class RunSummary {
         this.artifactMetadata = artifactMetadata;
     }
 
-    public DataProfile getDataProfile() {
+    public RunDataProfile getDataProfile() {
         return dataProfile;
     }
     
-    public void setDataProfile(DataProfile dataProfile) {
+    public void setDataProfile(RunDataProfile dataProfile) {
         this.dataProfile = dataProfile;
     }
 
@@ -111,19 +111,19 @@ public class RunSummary {
         this.runMetadata = runMetadata;
     }
 
-    public ShortReport getShortReport() {
+    public RunShortReport getShortReport() {
         return shortReport;
     }
     
-    public void setShortReport(ShortReport shortReport) {
+    public void setShortReport(RunShortReport shortReport) {
         this.shortReport = shortReport;
     }
 
-    public ShortSchema getShortSchema() {
+    public RunShortSchema getShortSchema() {
         return shortSchema;
     }
     
-    public void setShortSchema(ShortSchema shortSchema) {
+    public void setShortSchema(RunShortSchema shortSchema) {
         this.shortSchema = shortSchema;
     }
     

@@ -22,24 +22,24 @@ import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
-import it.smartcommunitylab.validationstorage.model.DataProfile;
+import it.smartcommunitylab.validationstorage.model.RunDataProfile;
 import it.smartcommunitylab.validationstorage.model.RunDataResource;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.RunEnvironment;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
-import it.smartcommunitylab.validationstorage.model.ShortReport;
-import it.smartcommunitylab.validationstorage.model.ShortSchema;
+import it.smartcommunitylab.validationstorage.model.RunShortReport;
+import it.smartcommunitylab.validationstorage.model.RunShortSchema;
 import it.smartcommunitylab.validationstorage.model.dto.ProjectDTO;
 import it.smartcommunitylab.validationstorage.service.ArtifactMetadataService;
-import it.smartcommunitylab.validationstorage.service.DataProfileService;
-import it.smartcommunitylab.validationstorage.service.DataResourceService;
+import it.smartcommunitylab.validationstorage.service.RunDataProfileService;
+import it.smartcommunitylab.validationstorage.service.RunDataResourceService;
 import it.smartcommunitylab.validationstorage.service.ExperimentService;
 import it.smartcommunitylab.validationstorage.service.ProjectService;
 import it.smartcommunitylab.validationstorage.service.RunEnvironmentService;
 import it.smartcommunitylab.validationstorage.service.RunMetadataService;
-import it.smartcommunitylab.validationstorage.service.ShortReportService;
-import it.smartcommunitylab.validationstorage.service.ShortSchemaService;
+import it.smartcommunitylab.validationstorage.service.RunShortReportService;
+import it.smartcommunitylab.validationstorage.service.RunShortSchemaService;
 import it.smartcommunitylab.validationstorage.service.UiService;
 
 /**
@@ -58,9 +58,9 @@ public class UiController {
     @Autowired
     private ExperimentService experimentService;
     @Autowired
-    private DataProfileService dataProfileService;
+    private RunDataProfileService dataProfileService;
     @Autowired
-    private DataResourceService dataResourceService;
+    private RunDataResourceService dataResourceService;
     @Autowired
     private ProjectService projectService;
     @Autowired
@@ -68,9 +68,9 @@ public class UiController {
     @Autowired
     private RunMetadataService runMetadataService;
     @Autowired
-    private ShortReportService shortReportService;
+    private RunShortReportService shortReportService;
     @Autowired
-    private ShortSchemaService shortSchemaService;
+    private RunShortSchemaService shortSchemaService;
 
     // Project
     @PreAuthorize("permitAll()")
@@ -142,28 +142,28 @@ public class UiController {
     }
 
     // DataProfile
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.DATA_PROFILE)
-    public ResponseEntity<DataProfile> findDataProfileByRunId(@PathVariable String projectId,
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_PROFILE)
+    public ResponseEntity<RunDataProfile> findDataProfileByRunId(@PathVariable String projectId,
             @PathVariable String experimentId,
             @PathVariable String runId) {
         return ResponseEntity.ok(uiService.findDataProfileByRunId(projectId, experimentId, runId));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.DATA_PROFILE + "/{id}")
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_DATA_PROFILE + "/{id}")
     public ResponseEntity<Void> deleteDataProfileById(@PathVariable String projectId, @PathVariable String id) {
         dataProfileService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();
     }
 
     // DataResource
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.DATA_RESOURCE)
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_RESOURCE)
     public ResponseEntity<RunDataResource> findDataResourceByRunId(@PathVariable String projectId,
             @PathVariable String experimentId,
             @PathVariable String runId) {
         return ResponseEntity.ok(uiService.findDataResourceByRunId(projectId, experimentId, runId));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.DATA_RESOURCE + "/{id}")
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_DATA_RESOURCE + "/{id}")
     public ResponseEntity<Void> deleteDataResourceById(@PathVariable String projectId, @PathVariable String id) {
         dataResourceService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();
@@ -198,28 +198,28 @@ public class UiController {
     }
 
     // ShortReport
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.SHORT_REPORT)
-    public ResponseEntity<ShortReport> findShortReportByRunId(@PathVariable String projectId,
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_SHORT_REPORT)
+    public ResponseEntity<RunShortReport> findShortReportByRunId(@PathVariable String projectId,
             @PathVariable String experimentId,
             @PathVariable String runId) {
         return ResponseEntity.ok(uiService.findShortReportByRunId(projectId, experimentId, runId));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.SHORT_REPORT + "/{id}")
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_SHORT_REPORT + "/{id}")
     public ResponseEntity<Void> deleteShortReportById(@PathVariable String projectId, @PathVariable String id) {
         shortReportService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();
     }
 
     // ShortSchema
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.SHORT_SCHEMA)
-    public ResponseEntity<ShortSchema> findShortSchemaByRunId(@PathVariable String projectId,
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_SHORT_SCHEMA)
+    public ResponseEntity<RunShortSchema> findShortSchemaByRunId(@PathVariable String projectId,
             @PathVariable String experimentId,
             @PathVariable String runId) {
         return ResponseEntity.ok(uiService.findShortSchemaByRunId(projectId, experimentId, runId));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.SHORT_SCHEMA + "/{id}")
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_SHORT_SCHEMA + "/{id}")
     public ResponseEntity<Void> deleteShortSchemaById(@PathVariable String projectId, @PathVariable String id) {
         shortSchemaService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();

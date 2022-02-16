@@ -3,14 +3,15 @@ package it.smartcommunitylab.validationstorage.model;
 import java.util.Date;
 import java.util.Map;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.validation.Valid;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
@@ -18,26 +19,31 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
  * Lists metadata about a run.
  */
 @Entity
+@Table(name = "run_metadata", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "experiment_name", "run_name" }))
 public class RunMetadata {
     @Id
     @GeneratedValue
     private long id;
 
-    private Project project;
-
-    private Experiment experiment;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "project_id")
+    private String projectId;
     
-    private Run run;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "experiment_name")
+    private String experimentName;
+    
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "run_name")
+    private String runName;
 
     /**
      * Timestamp of the run's creation, taken from 'contents'. If not specified in 'contents', will be the time of creation of this document.
      */
     private Date created;
-
-    /**
-     * Creator of this document.
-     */
-    private String author;
 
     /**
      * May contain extra information.
@@ -52,28 +58,28 @@ public class RunMetadata {
         this.id = id;
     }
 
-    public Project getProject() {
-        return project;
+    public String getProjectId() {
+        return projectId;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
     }
 
-    public Experiment getExperiment() {
-        return experiment;
+    public String getExperimentName() {
+        return experimentName;
     }
 
-    public void setExperiment(Experiment experiment) {
-        this.experiment = experiment;
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
-    public Run getRun() {
-        return run;
+    public String getRunName() {
+        return runName;
     }
 
-    public void setRun(Run run) {
-        this.run = run;
+    public void setRunName(String runName) {
+        this.runName = runName;
     }
 
     public Date getCreated() {
@@ -82,14 +88,6 @@ public class RunMetadata {
 
     public void setCreated(Date created) {
         this.created = created;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
     }
 
     public Map<String, ?> getContents() {

@@ -1,8 +1,14 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Entity
 public class RunConfig {
@@ -10,18 +16,26 @@ public class RunConfig {
     @GeneratedValue
     private long id;
     
-    private Project project;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "project_id")
+    private String projectId;
     
-    private Experiment experiment;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @Column(name = "experiment_name")
+    private String experimentName;
     
-    private Run run;
-    
+    @Embedded
     private RunConfigImpl snapshot;
     
+    @Embedded
     private RunConfigImpl profiling;
     
+    @Embedded
     private RunConfigImpl schemaInference;
     
+    @Embedded
     private RunConfigImpl validation;
 
     public long getId() {
@@ -32,28 +46,20 @@ public class RunConfig {
         this.id = id;
     }
 
-    public Project getProject() {
-        return project;
+    public String getProjectId() {
+        return projectId;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
     }
 
-    public Experiment getExperiment() {
-        return experiment;
+    public String getExperimentName() {
+        return experimentName;
     }
 
-    public void setExperiment(Experiment experiment) {
-        this.experiment = experiment;
-    }
-
-    public Run getRun() {
-        return run;
-    }
-
-    public void setRun(Run run) {
-        this.run = run;
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public RunConfigImpl getSnapshot() {
@@ -87,4 +93,5 @@ public class RunConfig {
     public void setValidation(RunConfigImpl validation) {
         this.validation = validation;
     }
+    
 }

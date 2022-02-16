@@ -15,13 +15,13 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.dto.ExperimentDTO;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
-import it.smartcommunitylab.validationstorage.repository.DataProfileRepository;
-import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
+import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepository;
+import it.smartcommunitylab.validationstorage.repository.RunDataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
-import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
-import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
+import it.smartcommunitylab.validationstorage.repository.RunShortReportRepository;
+import it.smartcommunitylab.validationstorage.repository.RunShortSchemaRepository;
 
 @Service
 public class ExperimentService {
@@ -31,17 +31,17 @@ public class ExperimentService {
     @Autowired
     private ArtifactMetadataRepository artifactMetadataRepository;
     @Autowired
-    private DataProfileRepository dataProfileRepository;
+    private RunDataProfileRepository dataProfileRepository;
     @Autowired
-    private DataResourceRepository dataResourceRepository;
+    private RunDataResourceRepository dataResourceRepository;
     @Autowired
     private RunEnvironmentRepository runEnvironmentRepository;
     @Autowired
     private RunMetadataRepository runMetadataRepository;
     @Autowired
-    private ShortReportRepository shortReportRepository;
+    private RunShortReportRepository shortReportRepository;
     @Autowired
-    private ShortSchemaRepository shortSchemaRepository;
+    private RunShortSchemaRepository shortSchemaRepository;
     
     @Autowired
     private ProjectService projectService;

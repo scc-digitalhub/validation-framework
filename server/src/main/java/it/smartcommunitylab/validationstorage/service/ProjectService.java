@@ -14,14 +14,14 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.dto.ProjectDTO;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
-import it.smartcommunitylab.validationstorage.repository.DataProfileRepository;
-import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
+import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepository;
+import it.smartcommunitylab.validationstorage.repository.RunDataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
-import it.smartcommunitylab.validationstorage.repository.ShortReportRepository;
-import it.smartcommunitylab.validationstorage.repository.ShortSchemaRepository;
+import it.smartcommunitylab.validationstorage.repository.RunShortReportRepository;
+import it.smartcommunitylab.validationstorage.repository.RunShortSchemaRepository;
 
 @Service
 public class ProjectService {
@@ -33,17 +33,17 @@ public class ProjectService {
     @Autowired
     private ArtifactMetadataRepository artifactMetadataRepository;
     @Autowired
-    private DataProfileRepository dataProfileRepository;
+    private RunDataProfileRepository dataProfileRepository;
     @Autowired
-    private DataResourceRepository dataResourceRepository;
+    private RunDataResourceRepository dataResourceRepository;
     @Autowired
     private RunEnvironmentRepository runEnvironmentRepository;
     @Autowired
     private RunMetadataRepository runMetadataRepository;
     @Autowired
-    private ShortReportRepository shortReportRepository;
+    private RunShortReportRepository shortReportRepository;
     @Autowired
-    private ShortSchemaRepository shortSchemaRepository;
+    private RunShortSchemaRepository shortSchemaRepository;
 
     /**
      * Given an ID, returns the corresponding document, or null if it can't be found.
