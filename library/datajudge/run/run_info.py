@@ -58,6 +58,7 @@ class RunInfo:
         self.run_artifacts_uri = run_artifacts_uri
 
         self.data_resource_uri = None
+        self.data_resource = None
 
         self.created = get_time()
         self.begin_status = None
@@ -79,6 +80,7 @@ class RunInfo:
             "runMetadataUri": self.run_metadata_uri,
             "runArtifactsUri": self.run_artifacts_uri,
             "dataResourceUri": self.data_resource_uri,
+            "dataResource": self.data_resource,
             "created": self.created,
             "beginStatus": self.begin_status,
             "started": self.started,

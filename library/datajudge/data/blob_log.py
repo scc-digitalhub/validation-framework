@@ -49,7 +49,7 @@ class BlobLog:
             "experimentName": self.experiment_name,
             "experimentTitle": self.experiment_title,
             "datajudgeVersion": self.datajudge_version,
-            "contents": self.contents
+            **self.contents
         }
         return run_dict
 

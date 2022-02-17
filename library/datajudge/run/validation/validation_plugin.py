@@ -51,7 +51,8 @@ class Validation(metaclass=ABCMeta):
     @abstractmethod
     def validate(self,
                  data_path: str,
-                 schema_path: str,
+                 constraints: Optional[dict] = None,
+                 schema_path: Optional[str] = None,
                  kwargs: Optional[dict] = None) -> Any:
         """
         Validate a resource.

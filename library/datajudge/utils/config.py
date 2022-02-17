@@ -110,11 +110,6 @@ MT_DATA_PROFILE = "profile"
 MT_ARTIFACT_METADATA = "artifact"
 MT_RUN_ENV = "run_env"
 
-# STORE TYPE
-ST_METADATA = "metadata"
-ST_ARTIFACT = "artifact"
-ST_DATA = "data"
-
 # DEFAULT FOLDERS/STORES
 DEFAULT_LOCAL = "./djruns"
 DEFAULT_TMP = DEFAULT_LOCAL + "/tmp"

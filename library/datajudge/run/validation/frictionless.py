@@ -59,16 +59,17 @@ class ValidationPluginFrictionless(Validation):
         return ReportTuple(duration, valid, errors)
 
     def validate_report(self,
-                        report: Optional[Report] = None) -> None:
+                        report: Report) -> None:
         """
         Validate frictionless report before log/persist it.
         """
-        if report is not None and not isinstance(report, Report):
+        if not isinstance(report, Report):
             raise TypeError("Expected frictionless Report!")
 
     def validate(self,
                  data_path: str,
-                 schema_path: str,
+                 constraints: Optional[dict] = None,
+                 schema_path: Optional[str] = None,
                  kwargs: Optional[dict] = None) -> Report:
         """
         Validate a Data Resource.
@@ -82,9 +83,15 @@ class ValidationPluginFrictionless(Validation):
         if not kwargs:
             kwargs = {}
 
-        schema = Schema(descriptor=schema_path)
-        if schema is None:
-            warn("No validation schema is provided! " +
+        try:
+            schema = Schema(constraints)
+        except:
+            warn("Invalid constraints format.")
+        finally:
+            schema = Schema(descriptor=schema_path)
+
+        if not schema or schema is None:
+            warn("No valid table schema is provided! " +
                  "Report will results valid by default.")
 
         resource = Resource(path=data_path, schema=schema)
