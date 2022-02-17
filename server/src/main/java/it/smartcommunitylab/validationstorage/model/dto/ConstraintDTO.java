@@ -1,6 +1,6 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -11,9 +11,13 @@ import it.smartcommunitylab.validationstorage.model.TypedConstraint;
 
 @Valid
 public class ConstraintDTO {
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
     
-    private String experimentName;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    private String experimentId;
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
@@ -22,7 +26,7 @@ public class ConstraintDTO {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
     
-    private long[] resourceIds;
+    private Set<String> resourceIds;
     
     private String type;
     
@@ -40,12 +44,12 @@ public class ConstraintDTO {
         this.projectId = projectId;
     }
 
-    public String getExperimentName() {
-        return experimentName;
+    public String getExperimentId() {
+        return experimentId;
     }
 
-    public void setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
+    public void setExperimentId(String experimentId) {
+        this.experimentId = experimentId;
     }
 
     public String getName() {
@@ -64,11 +68,11 @@ public class ConstraintDTO {
         this.title = title;
     }
 
-    public long[] getResourceIds() {
+    public Set<String> getResourceIds() {
         return resourceIds;
     }
 
-    public void setResourceIds(long[] resourceIds) {
+    public void setResourceIds(Set<String> resourceIds) {
         this.resourceIds = resourceIds;
     }
 

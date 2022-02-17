@@ -11,11 +11,11 @@ import it.smartcommunitylab.validationstorage.model.RunConfigImpl;
 public class RunConfigDTO {
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private String name;
+    private String projectId;
     
-    private long experimentId;
-    
-    private long runId;
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    private String experimentId;
     
     private RunConfigImpl snapshot;
     
@@ -25,28 +25,20 @@ public class RunConfigDTO {
     
     private RunConfigImpl validation;
 
-    public String getName() {
-        return name;
+    public String getProjectId() {
+        return projectId;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
     }
 
-    public long getExperimentId() {
+    public String getExperimentId() {
         return experimentId;
     }
 
-    public void setExperimentId(long experimentId) {
+    public void setExperimentId(String experimentId) {
         this.experimentId = experimentId;
-    }
-
-    public long getRunId() {
-        return runId;
-    }
-
-    public void setRunId(long runId) {
-        this.runId = runId;
     }
 
     public RunConfigImpl getSnapshot() {

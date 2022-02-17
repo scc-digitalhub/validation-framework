@@ -31,8 +31,8 @@ public class DataResource {
     private long packageId;
     
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    @Column(name = "store_name")
-    private String storeName;
+    @Column(name = "store_id")
+    private long storeId;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
@@ -79,12 +79,12 @@ public class DataResource {
         this.name = name;
     }
 
-    public String getStoreName() {
-        return storeName;
+    public long getStoreId() {
+        return storeId;
     }
 
-    public void setStoreName(String storeName) {
-        this.storeName = storeName;
+    public void setStoreId(long storeId) {
+        this.storeId = storeId;
     }
 
     public String getTitle() {

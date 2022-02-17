@@ -9,7 +9,7 @@ public class FrictionlessConstraint extends TypedConstraint {
     
     private FieldType fieldType;
     
-    private ConstraintType type;
+    private FrictionlessType frictionlessType;
     
     @NotNull
     private String value;
@@ -32,7 +32,7 @@ public class FrictionlessConstraint extends TypedConstraint {
         any
     }
     
-    enum ConstraintType {
+    enum FrictionlessType {
         required,
         unique,
         minLength,
@@ -59,12 +59,12 @@ public class FrictionlessConstraint extends TypedConstraint {
         this.fieldType = fieldType;
     }
 
-    public ConstraintType getType() {
-        return type;
+    public FrictionlessType getFrictionlessType() {
+        return frictionlessType;
     }
 
-    public void setType(ConstraintType type) {
-        this.type = type;
+    public void setFrictionlessType(FrictionlessType frictionlessType) {
+        this.frictionlessType = frictionlessType;
     }
 
     public String getValue() {

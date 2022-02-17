@@ -15,6 +15,8 @@ public class Project {
 
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
+    
+    private String description;
 
     public String getName() {
         return name;
@@ -30,6 +32,14 @@ public class Project {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
 }

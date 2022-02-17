@@ -1,6 +1,6 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -13,6 +13,8 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
  */
 @Valid
 public class ExperimentDTO {
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
     
     @NotBlank
@@ -22,15 +24,15 @@ public class ExperimentDTO {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
     
-    private long[] runs;
+    private Set<String> runs;
     
-    private long runConfig;
+    private Set<Long> runConfigIds;
     
-    private long[] resources;
+    private Set<Long> resourceIds;
 
-    private long[] constraints;
+    private Set<Long> constraintIds;
     
-    private List<String> tags;
+    private Set<String> tags;
 
     public String getProjectId() {
         return projectId;
@@ -56,43 +58,43 @@ public class ExperimentDTO {
         this.title = title;
     }
 
-    public long[] getRuns() {
+    public Set<String> getRuns() {
         return runs;
     }
 
-    public void setRuns(long[] runs) {
+    public void setRuns(Set<String> runs) {
         this.runs = runs;
     }
 
-    public long getRunConfig() {
-        return runConfig;
+    public Set<Long> getRunConfigIds() {
+        return runConfigIds;
     }
 
-    public void setRunConfig(long runConfig) {
-        this.runConfig = runConfig;
+    public void setRunConfigIds(Set<Long> runConfigIds) {
+        this.runConfigIds = runConfigIds;
     }
 
-    public long[] getResources() {
-        return resources;
+    public Set<Long> getResourceIds() {
+        return resourceIds;
     }
 
-    public void setResources(long[] resources) {
-        this.resources = resources;
+    public void setResourceIds(Set<Long> resourceIds) {
+        this.resourceIds = resourceIds;
     }
 
-    public long[] getConstraints() {
-        return constraints;
+    public Set<Long> getConstraintIds() {
+        return constraintIds;
     }
 
-    public void setConstraints(long[] constraints) {
-        this.constraints = constraints;
+    public void setConstraintIds(Set<Long> constraintIds) {
+        this.constraintIds = constraintIds;
     }
 
-    public List<String> getTags() {
+    public Set<String> getTags() {
         return tags;
     }
 
-    public void setTags(List<String> tags) {
+    public void setTags(Set<String> tags) {
         this.tags = tags;
     }
     

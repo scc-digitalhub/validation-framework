@@ -1,45 +1,106 @@
 package it.smartcommunitylab.validationstorage.service;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
-import it.smartcommunitylab.validationstorage.model.DataResource;
+import it.smartcommunitylab.validationstorage.model.dto.DataPackageDTO;
 import it.smartcommunitylab.validationstorage.model.dto.DataResourceDTO;
+import it.smartcommunitylab.validationstorage.model.dto.SchemaDTO;
+import it.smartcommunitylab.validationstorage.model.dto.StoreDTO;
+import it.smartcommunitylab.validationstorage.repository.DataPackageRepository;
 import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
+import it.smartcommunitylab.validationstorage.repository.SchemaRepository;
+import it.smartcommunitylab.validationstorage.repository.StoreRepository;
 
 public class DataResourceService {
     @Autowired
-    private DataResourceRepository repository;
-
-    public DataResource create(String projectId, @Valid DataResourceDTO request, String name) {
+    private DataPackageRepository dataPackageRepository;
+    
+    @Autowired
+    private StoreRepository storeRepository;
+    
+    @Autowired
+    private DataResourceRepository dataResourceRepository;
+    
+    @Autowired
+    private SchemaRepository schemaRepository;
+    
+    // Package
+    public DataPackageDTO createDataPackage(DataPackageDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
-
-    public List<DataResource> findByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId, Optional<String> search) {
+   
+    public DataPackageDTO findDataPackageById(String id) {
         // TODO Auto-generated method stub
         return null;
     }
-
-    public DataResource findById(String projectId, String id) {
+   
+    public DataPackageDTO updateDataPackage(String id, DataPackageDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
-
-    public DataResource update(String projectId, String id, @Valid DataResourceDTO request) {
+   
+    public void deleteDataPackage(String id) {
+        // TODO Auto-generated method stub
+    }
+    
+    // Store
+    public StoreDTO createStore(StoreDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
-
-    public void deleteById(String projectId, String id) {
+   
+    public StoreDTO findStoreById(String id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+   
+    public StoreDTO updateStore(String id, StoreDTO request) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+   
+    public void deleteStore(String id) {
         // TODO Auto-generated method stub
     }
-
-    public void deleteByProjectId(String projectId, Optional<String> experimentId, Optional<String> runId) {
+    
+    // Resource
+    public DataResourceDTO createDataResource(DataResourceDTO request) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+   
+    public DataResourceDTO findDataResourceById(String id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+   
+    public DataResourceDTO updateDataResource(String id, DataResourceDTO request) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+   
+    public void deleteDataResource(String id) {
+        // TODO Auto-generated method stub
+    }
+    
+    // Schema
+    public SchemaDTO createSchema(SchemaDTO request) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+   
+    public SchemaDTO findSchemaById(String id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+   
+    public SchemaDTO updateSchema(String id, SchemaDTO request) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+   
+    public void deleteSchema(String id) {
         // TODO Auto-generated method stub
     }
 }

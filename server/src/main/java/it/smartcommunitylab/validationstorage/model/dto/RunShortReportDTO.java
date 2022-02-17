@@ -3,15 +3,28 @@ package it.smartcommunitylab.validationstorage.model.dto;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+
 /**
  * Request object: short report on the validation's result.
  */
 public class RunShortReportDTO {
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
     
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private long experimentId;
     
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private long runId;
+    
+    private boolean valid;
 
     /**
      * May contain extra information.
@@ -48,6 +61,14 @@ public class RunShortReportDTO {
 
     public void setContents(Map<String, Serializable> contents) {
         this.contents = contents;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
     }
     
 }

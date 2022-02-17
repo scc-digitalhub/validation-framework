@@ -42,6 +42,7 @@ public class Store {
     @Convert(converter = HashMapConverter.class)
     private Map<String, Serializable> config;
 
+    @Column(name = "is_default")
     private Boolean isDefault;
 
     public long getId() {

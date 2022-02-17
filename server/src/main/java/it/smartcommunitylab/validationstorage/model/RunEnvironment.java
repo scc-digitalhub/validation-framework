@@ -31,13 +31,13 @@ public class RunEnvironment {
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    @Column(name = "experiment_name")
-    private String experimentName;
+    @Column(name = "experiment_id")
+    private String experimentId;
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    @Column(name = "run_name")
-    private String runName;
+    @Column(name = "run_id")
+    private String runId;
 
     /**
      * May contain extra information.
@@ -60,20 +60,20 @@ public class RunEnvironment {
         this.projectId = projectId;
     }
 
-    public String getExperimentName() {
-        return experimentName;
+    public String getExperimentId() {
+        return experimentId;
     }
 
-    public void setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
+    public void setExperimentId(String experimentId) {
+        this.experimentId = experimentId;
     }
 
-    public String getRunName() {
-        return runName;
+    public String getRunId() {
+        return runId;
     }
 
-    public void setRunName(String runName) {
-        this.runName = runName;
+    public void setRunId(String runId) {
+        this.runId = runId;
     }
 
     public Map<String, ?> getContents() {

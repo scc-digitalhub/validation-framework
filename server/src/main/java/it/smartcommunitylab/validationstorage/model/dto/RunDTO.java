@@ -1,5 +1,9 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
+import java.io.Serializable;
+import java.util.Map;
+import java.util.Set;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -8,34 +12,33 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Valid
 public class RunDTO {
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
-    
-    private long experimentId;
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private String name;
-    
-    @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
-    private String title;
+    private long experimentId;
     
     private long packageId;
     
     private long runConfigId;
     
-    private long[] constraints;
-    
-    private long runDataProfileId;
-    
-    private long runDataResourceId;
-    
-    private long runEnvironmentId;
+    private Map<String, Serializable> constraints;
     
     private long runMetadataId;
     
-    private long runShortReportId;
+    private long runEnvironmentId;
     
-    private long runShortSchemaId;
+    private Set<Long> artifactMetadataIds;
+    
+    private Set<Long> runDataProfileIds;
+    
+    private Set<Long> runDataResourceIds;
+    
+    private Set<Long> runShortReportIds;
+    
+    private Set<Long> runShortSchemaIds;
 
     public String getProjectId() {
         return projectId;
@@ -51,22 +54,6 @@ public class RunDTO {
 
     public void setExperimentId(long experimentId) {
         this.experimentId = experimentId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public long getPackageId() {
@@ -85,36 +72,12 @@ public class RunDTO {
         this.runConfigId = runConfigId;
     }
 
-    public long[] getConstraints() {
+    public Map<String, Serializable> getConstraints() {
         return constraints;
     }
 
-    public void setConstraints(long[] constraints) {
+    public void setConstraints(Map<String, Serializable> constraints) {
         this.constraints = constraints;
-    }
-
-    public long getRunDataProfileId() {
-        return runDataProfileId;
-    }
-
-    public void setRunDataProfileId(long runDataProfileId) {
-        this.runDataProfileId = runDataProfileId;
-    }
-
-    public long getRunDataResourceId() {
-        return runDataResourceId;
-    }
-
-    public void setRunDataResourceId(long runDataResourceId) {
-        this.runDataResourceId = runDataResourceId;
-    }
-
-    public long getRunEnvironmentId() {
-        return runEnvironmentId;
-    }
-
-    public void setRunEnvironmentId(long runEnvironmentId) {
-        this.runEnvironmentId = runEnvironmentId;
     }
 
     public long getRunMetadataId() {
@@ -125,20 +88,52 @@ public class RunDTO {
         this.runMetadataId = runMetadataId;
     }
 
-    public long getRunShortReportId() {
-        return runShortReportId;
+    public long getRunEnvironmentId() {
+        return runEnvironmentId;
     }
 
-    public void setRunShortReportId(long runShortReportId) {
-        this.runShortReportId = runShortReportId;
+    public void setRunEnvironmentId(long runEnvironmentId) {
+        this.runEnvironmentId = runEnvironmentId;
     }
 
-    public long getRunShortSchemaId() {
-        return runShortSchemaId;
+    public Set<Long> getArtifactMetadataIds() {
+        return artifactMetadataIds;
     }
 
-    public void setRunShortSchemaId(long runShortSchemaId) {
-        this.runShortSchemaId = runShortSchemaId;
+    public void setArtifactMetadataIds(Set<Long> artifactMetadataIds) {
+        this.artifactMetadataIds = artifactMetadataIds;
+    }
+
+    public Set<Long> getRunDataProfileIds() {
+        return runDataProfileIds;
+    }
+
+    public void setRunDataProfileIds(Set<Long> runDataProfileIds) {
+        this.runDataProfileIds = runDataProfileIds;
+    }
+
+    public Set<Long> getRunDataResourceIds() {
+        return runDataResourceIds;
+    }
+
+    public void setRunDataResourceIds(Set<Long> runDataResourceIds) {
+        this.runDataResourceIds = runDataResourceIds;
+    }
+
+    public Set<Long> getRunShortReportIds() {
+        return runShortReportIds;
+    }
+
+    public void setRunShortReportIds(Set<Long> runShortReportIds) {
+        this.runShortReportIds = runShortReportIds;
+    }
+
+    public Set<Long> getRunShortSchemaIds() {
+        return runShortSchemaIds;
+    }
+
+    public void setRunShortSchemaIds(Set<Long> runShortSchemaIds) {
+        this.runShortSchemaIds = runShortSchemaIds;
     }
     
 }

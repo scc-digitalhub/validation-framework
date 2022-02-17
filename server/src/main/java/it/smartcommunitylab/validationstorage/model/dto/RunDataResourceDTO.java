@@ -3,14 +3,25 @@ package it.smartcommunitylab.validationstorage.model.dto;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+
 /**
  * Request object: information about the data's format.
  */
 public class RunDataResourceDTO {
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
     
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private long experimentId;
     
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private long runId;
 
     /**

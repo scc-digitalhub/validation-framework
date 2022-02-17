@@ -4,7 +4,8 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
@@ -18,8 +19,7 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 @Table(name = "experiment", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "name" }))
 public class Experiment {
     @Id
-    @GeneratedValue
-    private long id;
+    private String id;
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
@@ -33,17 +33,18 @@ public class Experiment {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
     
-    private long[] resources;
-
-    private long[] constraints;
+    private String description;
+    
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<DataResource> resources;
 
     private List<String> tags;
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -71,20 +72,20 @@ public class Experiment {
         this.title = title;
     }
 
-    public long[] getResources() {
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<DataResource> getResources() {
         return resources;
     }
 
-    public void setResources(long[] resources) {
+    public void setResources(List<DataResource> resources) {
         this.resources = resources;
-    }
-
-    public long[] getConstraints() {
-        return constraints;
-    }
-
-    public void setConstraints(long[] constraints) {
-        this.constraints = constraints;
     }
 
     public List<String> getTags() {

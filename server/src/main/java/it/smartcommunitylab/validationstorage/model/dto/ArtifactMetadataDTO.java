@@ -2,16 +2,25 @@ package it.smartcommunitylab.validationstorage.model.dto;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+
+import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 /**
  * Request object: metadata about artifact files related to a run.
  */
 @Valid
 public class ArtifactMetadataDTO {
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
     
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private long experimentId;
     
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private long runId;
 
     /**

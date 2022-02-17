@@ -4,13 +4,27 @@ import javax.persistence.Embeddable;
 
 @Embeddable
 public class RunConfigImpl {
-    private boolean enable = false;
+    private Boolean enable;
+    
+    private String library;
 
-    public boolean getEnable() {
+    public Boolean getEnable() {
         return enable;
     }
+    
+    public boolean isEnabled() {
+        return enable != null ? enable.booleanValue() : false;
+    }
 
-    public void setEnable(boolean enable) {
+    public void setEnable(Boolean enable) {
         this.enable = enable;
+    }
+
+    public String getLibrary() {
+        return library;
+    }
+
+    public void setLibrary(String library) {
+        this.library = library;
     }
 }

@@ -1,5 +1,7 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
+import java.util.Set;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -8,6 +10,8 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Valid
 public class DataPackageDTO {
+    @NotBlank
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
     
     @NotBlank
@@ -17,7 +21,7 @@ public class DataPackageDTO {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
     
-    private long[] resources;
+    private Set<Long> resources;
 
     public String getProjectId() {
         return projectId;
@@ -43,11 +47,11 @@ public class DataPackageDTO {
         this.title = title;
     }
 
-    public long[] getResources() {
+    public Set<Long> getResources() {
         return resources;
     }
 
-    public void setResources(long[] resources) {
+    public void setResources(Set<Long> resources) {
         this.resources = resources;
     }
     

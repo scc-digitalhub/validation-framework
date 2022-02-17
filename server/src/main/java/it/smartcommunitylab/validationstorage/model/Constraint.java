@@ -1,15 +1,19 @@
 package it.smartcommunitylab.validationstorage.model;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.repository.StringSetConverter;
+import it.smartcommunitylab.validationstorage.repository.TypedConstraintConverter;
 
 @Entity
 public class Constraint {
@@ -24,8 +28,8 @@ public class Constraint {
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    @Column(name = "experiment_name")
-    private String experimentName;
+    @Column(name = "experiment_id")
+    private String experimentId;
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
@@ -34,14 +38,20 @@ public class Constraint {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
     
-    private List<DataResource> resources;
+    @Lob
+    @Column(name = "resource_ids")
+    @Convert(converter = StringSetConverter.class)
+    private Set<String> resourceIds;
     
     private String type;
     
     private String description;
     
+    @Column(name = "error_severity")
     private int errorSeverity;
     
+    @Lob
+    @Convert(converter = TypedConstraintConverter.class)
     private TypedConstraint constraint;
 
     public long getId() {
@@ -60,12 +70,12 @@ public class Constraint {
         this.projectId = projectId;
     }
 
-    public String getExperimentName() {
-        return experimentName;
+    public String getExperimentId() {
+        return experimentId;
     }
 
-    public void setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
+    public void setExperimentId(String experimentId) {
+        this.experimentId = experimentId;
     }
 
     public String getName() {
@@ -84,12 +94,12 @@ public class Constraint {
         this.title = title;
     }
 
-    public List<DataResource> getResources() {
-        return resources;
+    public Set<String> getResources() {
+        return resourceIds;
     }
 
-    public void setResources(List<DataResource> resources) {
-        this.resources = resources;
+    public void setResources(Set<String> resourceIds) {
+        this.resourceIds = resourceIds;
     }
 
     public String getType() {

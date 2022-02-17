@@ -23,8 +23,8 @@ public class RunConfig {
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    @Column(name = "experiment_name")
-    private String experimentName;
+    @Column(name = "experiment_id")
+    private String experimentId;
     
     @Embedded
     private RunConfigImpl snapshot;
@@ -54,12 +54,12 @@ public class RunConfig {
         this.projectId = projectId;
     }
 
-    public String getExperimentName() {
-        return experimentName;
+    public String getExperimentId() {
+        return experimentId;
     }
 
-    public void setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
+    public void setExperimentId(String experimentId) {
+        this.experimentId = experimentId;
     }
 
     public RunConfigImpl getSnapshot() {

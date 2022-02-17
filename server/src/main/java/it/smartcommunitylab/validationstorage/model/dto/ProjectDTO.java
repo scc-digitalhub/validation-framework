@@ -1,5 +1,7 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
+import java.util.Set;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -18,11 +20,13 @@ public class ProjectDTO {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
     
-    private long[] experiments;
+    private String description;
     
-    private long[] dataPackages;
+    private Set<String> experimentIds;
     
-    private long[] stores;
+    private Set<Long> packageIds;
+    
+    private Set<Long> storeIds;
 
     public String getName() {
         return name;
@@ -40,28 +44,36 @@ public class ProjectDTO {
         this.title = title;
     }
 
-    public long[] getExperiments() {
-        return experiments;
+    public String getDescription() {
+        return description;
     }
 
-    public void setExperiments(long[] experiments) {
-        this.experiments = experiments;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public long[] getDataPackages() {
-        return dataPackages;
+    public Set<String> getExperimentIds() {
+        return experimentIds;
     }
 
-    public void setDataPackages(long[] dataPackages) {
-        this.dataPackages = dataPackages;
+    public void setExperimentIds(Set<String> experimentIds) {
+        this.experimentIds = experimentIds;
     }
 
-    public long[] getStores() {
-        return stores;
+    public Set<Long> getPackageIds() {
+        return packageIds;
     }
 
-    public void setStores(long[] stores) {
-        this.stores = stores;
+    public void setPackageIds(Set<Long> packageIds) {
+        this.packageIds = packageIds;
+    }
+
+    public Set<Long> getStoreIds() {
+        return storeIds;
+    }
+
+    public void setStoreIds(Set<Long> storeIds) {
+        this.storeIds = storeIds;
     }
     
 }
