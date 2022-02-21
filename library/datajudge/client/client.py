@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import typing
 from typing import Any, List, Optional, Union
+import uuid
 
 from slugify import slugify
 
@@ -54,8 +55,8 @@ class Client:
 
     def __init__(self,
                  project_name: Optional[str] = cfg.DEFAULT_PROJ,
-                 metadata_store_config: store_cfg = cfg.DEFAULT_MD_STORE,
-                 store_configs: store_cfg = cfg.DEFAULT_STORE,
+                 metadata_store_config: store_cfg = None,
+                 store_configs: store_cfg = None,
                  tmp_dir: Optional[str] = cfg.DEFAULT_TMP
                  ) -> None:
         """
@@ -118,6 +119,15 @@ class Client:
 
         self._store_registry[key] = dict_store[key]
 
+    @staticmethod
+    def _get_run_id(run_id: Optional[str] = None) -> str:
+        """
+        Return a string UID for a Run.
+        """
+        if run_id:
+            return run_id
+        return uuid.uuid4().hex
+
     def create_run(self,
                    data_resource: DataResource,
                    run_config: RunConfig,
@@ -152,7 +162,7 @@ class Client:
                                   max_length=20,
                                   separator="_")
 
-        run_id = self._metadata_store.get_run_id(run_id)
+        run_id = self._get_run_id(run_id)
 
         self._metadata_store.init_run(experiment_name,
                                       run_id, 

@@ -12,10 +12,8 @@ from typing import Any, List, Optional
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
 
-SchemaTuple = namedtuple("SchemaTuple", ("name", "type",
-                                         "valid_type", "description"))
-RenderTuple = namedtuple("RenderTuple",
-                         ("object", "filename"))
+SchemaTuple = namedtuple("SchemaTuple", ("name", "type"))
+RenderTuple = namedtuple("RenderTuple", ("object", "filename"))
 
 
 class Inference(metaclass=ABCMeta):
@@ -45,8 +43,7 @@ class Inference(metaclass=ABCMeta):
 
     @abstractmethod
     def parse_schema(self,
-                     schema_inferred: Any,
-                     schema_path: Optional[str] = None
+                     schema_inferred: Any
                      ) -> list:
         """
         Parse the inferred schema produced by the validation

@@ -54,52 +54,23 @@ class InferencePluginFrictionless(Inference):
         setattr(resource, "mediatype", mediatype)
 
     def parse_schema(self,
-                     schema_inferred: Schema,
-                     schema_path: Optional[str] = None
+                     schema_inferred: Schema
                      ) -> list:
         """
         Parse an inferred schema and return a field list for
         standardized ShortSchema.
-        The process involves two steps:
-
-            1. Retrieve the user validation schema if available.
-            2. Parse the inferred schema and extract some
-               infos from the user validation schema.
-
-        The ShortSchema field description report the
-        following informations:
-
-            A. Name of the field
-            B. Inferred type
-            C. Expected type (from val. schema)
-            D. Description (from val. schema)
-
         """
 
-        # Can be empty dict!
-        schema_valid = Schema(descriptor=schema_path)
-
-        field_valid = schema_valid.get("fields", [])
         field_infer = schema_inferred.get("fields", [])
         short_schema_fields = []
 
         for fi in field_infer:
-
             fname = fi.get("name", "")
             ftype = fi.get("type", "")
-            exp_type = ""
-            desc = ""
-
-            for fv in field_valid:
-                if fname == fv.get("name"):
-                    exp_type = fv.get("type", "")
-                    desc = fv.get("description", "")
-                    break
-
-            schm_tpl = SchemaTuple(fname, ftype, exp_type, desc)
-            short_schema_fields.append(schm_tpl)
-
-        return short_schema_fields
+            short_schema_fields.append(SchemaTuple(fname, ftype))
+        if short_schema_fields:
+            return short_schema_fields
+        return [SchemaTuple("", "")]
 
     def validate_schema(self,
                         schema: Optional[Schema] = None) -> None:

@@ -1,7 +1,7 @@
 """
 DataResource module.
-Implementation of a DataResource object as defined in frictionless
-specifications.
+Implementation of a DataResource object similar to the one defined 
+in frictionless-data specifications.
 """
 from typing import List, Mapping, Optional, Union
 
@@ -11,7 +11,7 @@ from typing import List, Mapping, Optional, Union
 
 class DataResource:
     """
-    DataResource object as described in frictionless Data Resource
+    DataResource object similar to Resource described in frictionless-data
     specifications.
 
     A Data Resource must have a path pointing to it's locations.
@@ -24,6 +24,10 @@ class DataResource:
     ----------
     path : str
         Required. An URI (or a list of URI) that point to data.
+    store : str
+        Store name where to find the resource.
+    package : str
+        Package name that Resource belongs to.
     name : str, default = None
         Name of the Data Resource.
     title : str, default = None
@@ -66,6 +70,8 @@ class DataResource:
 
     def __init__(self,
                  path: Union[str, list],
+                 store: Optional[str] = None,
+                 package: Optional[str] = None,
                  schema: Optional[str] = None,
                  name: Optional[str] = None,
                  title: Optional[str] = None,
@@ -73,6 +79,8 @@ class DataResource:
                  sources: Optional[List[Mapping]] = None,
                  licenses: Optional[List[Mapping]] = None) -> None:
         self.path = path
+        self.store = store
+        self.package = package
         self.name = name
         self.profile = None
         self.title = title

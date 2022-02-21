@@ -50,9 +50,7 @@ class ShortSchema:
         for field in self.fields:
             data = {
                 "name": field.name,
-                "type": field.type,
-                "validType": field.valid_type,
-                "description": field.description
+                "type": field.type
             }
             fields.append(data)
 

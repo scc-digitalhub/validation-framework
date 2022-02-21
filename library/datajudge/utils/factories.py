@@ -6,14 +6,15 @@ factory methods.
 from __future__ import annotations
 
 import typing
-from typing import Optional, Tuple, Union
+from typing import Tuple, Union
 
 from datajudge.run import RunInfo, Run
 from datajudge.store_artifact import (AzureArtifactStore, FTPArtifactStore,
                                       HTTPArtifactStore, LocalArtifactStore,
-                                      S3ArtifactStore)
+                                      S3ArtifactStore, DummyArtifactStore)
 from datajudge.store_metadata import (DigitalHubMetadataStore,
-                                      LocalMetadataStore)
+                                      LocalMetadataStore,
+                                      DummyMetadataStore)
 from datajudge.utils import config as cfg
 from datajudge.utils.config import StoreConfig
 from datajudge.utils.file_utils import get_absolute_path
@@ -39,6 +40,7 @@ METADATA_STORE_REGISTRY = {
     "file": LocalMetadataStore,
     "http": DigitalHubMetadataStore,
     "https": DigitalHubMetadataStore,
+    "dummy": DummyMetadataStore,
 }
 
 ARTIFACT_STORE_REGISTRY = {
@@ -50,6 +52,7 @@ ARTIFACT_STORE_REGISTRY = {
     "http": HTTPArtifactStore,
     "https": HTTPArtifactStore,
     "ftp": FTPArtifactStore,
+    "dummy": DummyArtifactStore,
 }
 
 
@@ -85,6 +88,9 @@ def get_md_store(project_name: str,
     """
     Function that returns metadata stores.
     """
+    if config is None:
+        return METADATA_STORE_REGISTRY["dummy"](None, None)
+    
     cfg = cfg_conversion(config)
     scheme = get_uri_scheme(cfg.path)
     new_uri = resolve_uri_metadata(cfg.path, scheme, project_name)
@@ -110,9 +116,16 @@ def get_stores(store_configs: Union[dict, StoreConfig, list]
     """
     Function that returns artifact stores.
     """
+    if store_configs is None:
+        return {
+            "dummy": {
+                "store": ARTIFACT_STORE_REGISTRY["dummy"](None, None),
+                "is_default": True
+            }
+        }
+
     if not isinstance(store_configs, list):
         store_configs = [store_configs]
-
     stores = {}
     for cfg in store_configs:
         cfg = cfg_conversion(cfg)

@@ -52,7 +52,7 @@ class Run:
     persist_artifact :
         Persist an artifact in the artifact store.
     persist_data :
-        Persist input data (and optionally a validation schema).
+        Persist input data.
     persist_report :
         Persist a report produced by a validation framework.
     persist_schema :
@@ -63,9 +63,11 @@ class Run:
         Fetch an artifact from artifact store.
     fetch_input_data :
         Fetch input data from artifact store.
-    fetch_validation_schema : 
+    fetch_validation_schema :
         Fetch a validation schema from artifact store.
-    
+    get_run :
+        Returns run's info.
+
     """
 
     # Constants
@@ -107,16 +109,23 @@ class Run:
         self._val_schema = None
 
         # Cahcing results of inference/validation/profiling
-        # It's cached only the result of the framework used,
-        # not the shorter version provided by datajudge
-        self._schema = None
-        self._report = None
-        self._profile = None
+        # dj suffix means results from datajudge,
+        # fw results from external framework (eg. frictionless)
+        self._schema_dj = None
+        self._schema_fw = None
+        self._report_dj = None
+        self._report_fw = None
+        self._profile_dj = None
+        self._profile_fw = None
 
         # Constant to measure duration of schema inference task
         self._time_inf_sch = None
 
-    # Run metadata
+        # Update run info
+        self._get_resource()
+        self._get_plugin_info()
+
+    # Run methods
 
     def _get_resource(self) -> None:
         """
@@ -134,7 +143,7 @@ class Run:
             "profiling": self._get_plugin_lib(self._pro_plugin),
             "snapshot": self._get_plugin_lib(self._sna_plugin)
         }
-    
+
     @staticmethod
     def _get_plugin_lib(plugin) -> Optional[dict]:
         """
@@ -150,6 +159,8 @@ class Run:
         """
         Log run's metadata.
         """
+        if self.run_info.run_metadata_uri is None:
+            return
         metadata = self._get_blob(self.run_info.to_dict())
         self._log_metadata(metadata, self._RUN_METADATA)
 
@@ -157,217 +168,11 @@ class Run:
         """
         Log run's enviroment details.
         """
+        if self.run_info.run_metadata_uri is None:
+            return
         env_data = EnvLog().to_dict()
         metadata = self._get_blob(env_data)
         self._log_metadata(metadata, self._RUN_ENV)
-
-    # Data Resource
-
-    def infer_resource(self) -> dict:
-        """
-        Execute inference over a resource.
-        """
-        self._check_plugin(self._inf_plugin)
-        self.fetch_input_data()
-        self._inf_plugin.update_data_resource(
-                                self.data_resource,
-                                self._data)
-        return self.data_resource.to_dict()
-
-    def log_data_resource(self) -> None:
-        """
-        Log data resource.
-        """
-        metadata = self._get_blob(self.data_resource.to_dict())
-        self._log_metadata(metadata, self._DATA_RESOURCE)
-
-        # Update run info
-        if self.run_info.data_resource_uri is None:
-            uri_resource = self._client.get_data_resource_uri(
-                                            self.run_info.experiment_name,
-                                            self.run_info.run_id)
-            self.run_info.data_resource_uri = uri_resource
-
-    # Short schema
-
-    def infer_schema(self) -> Any:
-        """
-        Execute schema inference over a resource.
-        """
-        self._check_plugin(self._inf_plugin)
-        self.fetch_input_data()
-        self.fetch_validation_schema()
-
-        # Cache schema on run.
-        if self._schema is None:
-            self._schema, self._time_inf_sch = \
-                        self._inf_plugin.infer_schema(self._data)
-        return self._schema
-
-    def log_short_schema(self,
-                         schema: Optional[dict] = None
-                         ) -> None:
-        """
-        Log short schema. The method register a schema object
-        on the run derived from a specific inference library.
-
-        Parameters
-        ----------
-        schema : dict, default = None
-            An inferred schema to be logged. If it is not
-            provided, the run will check its own schema attribute.
-
-        """
-        schema = self._check_obj(schema, self._schema)
-        self._inf_plugin.validate_schema(schema)
-        parsed = self._inf_plugin.parse_schema(schema,
-                                               self._val_schema)
-        short_schema = ShortSchema(
-                            self._inf_plugin.lib_name,
-                            self._inf_plugin.lib_version,
-                            self.run_info.data_resource_uri,
-                            self._time_inf_sch,
-                            parsed).to_dict()
-        metadata = self._get_blob(short_schema)
-        self._log_metadata(metadata, self._SHORT_SCHEMA)
-
-    def infer(self) -> tuple:
-        """
-        Execute inference and schema inference over a resource.
-        """
-        return self.infer_resource(), self.infer_schema()
-
-    # Short report
-
-    def validate(self,
-                 constraints: Optional[dict] = None,
-                 val_kwargs: Optional[dict] = None) -> Any:
-        """
-        Execute validation of a resource.
-
-        Parameters
-        ----------
-        constraints : dict, default = None
-            Constraints from configuration.
-        val_kwargs : dict, default = None
-            Specific framework arguments.
-
-        """
-        self._check_plugin(self._val_plugin)
-        self.fetch_input_data()
-        self.fetch_validation_schema()
-
-        # Cache report on run.
-        if self._report is None:
-            self._report = self._val_plugin.validate(self._data,
-                                                     constraints,
-                                                     self._val_schema,
-                                                     val_kwargs)
-        return self._report
-
-    def log_short_report(self,
-                         report: Optional[Any] = None) -> None:
-        """
-        Log short report.
-
-        Parameters
-        ----------
-        report : Any
-            A report object to be logged. If it is not
-            provided, the run will check its own report attribute.
-        kwargs : dict, default = None
-            Validation arguments.
-
-        """
-        report = self._check_obj(report, self._report)
-        self._val_plugin.validate_report(report)
-        parsed = self._val_plugin.parse_report(report,
-                                               self._val_schema)
-
-        blob = ShortReport(self._val_plugin.lib_name,
-                           self._val_plugin.lib_version,
-                           self.run_info.data_resource_uri,
-                           parsed.time,
-                           parsed.valid,
-                           parsed.errors).to_dict()
-
-        metadata = self._get_blob(blob)
-        self._log_metadata(metadata, self._SHORT_REPORT)
-
-    # Short profile
-
-    def profile(self,
-                profiler_kwargs: dict = None) -> Any:
-        """
-        Execute profiling on a resource.
-
-        Parameters
-        ----------
-        profiler_kwargs : dict, default = None
-            Kwargs passed to profiler.
-
-        """
-        self._check_plugin(self._pro_plugin)
-        self.fetch_input_data()
-
-        # Cache profile on run.
-        if self._profile is None:
-            self._profile = self._pro_plugin.profile(self._data,
-                                                     self.data_resource,
-                                                     profiler_kwargs)
-        return self._profile
-
-    def log_profile(self,
-                    profile: Optional[Any] = None) -> None:
-        """
-        Log a data profile.
-
-        Parameters
-        ----------
-        profile : Any, default = None
-            A profile report to be logged. If it is not provided,
-            the run will check its own profile attribute.
-
-        """
-        profile = self._check_obj(profile, self._profile)
-        self._pro_plugin.validate_profile(profile)
-    
-        parsed = self._pro_plugin.parse_profile(self._profile)
-        blob = ShortProfile(self._pro_plugin.lib_name,
-                            self._pro_plugin.lib_version,
-                            self.run_info.data_resource_uri,
-                            parsed.duration,
-                            parsed.stats,
-                            parsed.fields).to_dict()
-
-        metadata = self._get_blob(blob)
-        self._log_metadata(metadata, self._DATA_PROFILE)
-
-    # Artifact metadata
-
-    def _get_artifact_metadata(self,
-                               uri: str,
-                               name: str) -> dict:
-        """
-        Build artifact metadata.
-        """
-        metadata = {
-            "uri": uri,
-            "name": name
-        }
-        return self._get_blob(metadata)
-
-    def _log_artifact(self,
-                      src_name: Optional[str] = None
-                      ) -> None:
-        """
-        Log artifact metadata.
-        """
-        uri = self.run_info.run_artifacts_uri
-        metadata = self._get_artifact_metadata(uri, src_name)
-        self._log_metadata(metadata, self._ARTIFACT_METADATA)
-
-    # Metadata
 
     def _get_blob(self,
                   content: Optional[dict] = None) -> dict:
@@ -394,6 +199,442 @@ class Run:
                            self.run_info.run_metadata_uri,
                            src_type,
                            self._overwrite)
+
+    def _get_artifact_metadata(self,
+                               uri: str,
+                               name: str) -> dict:
+        """
+        Build artifact metadata.
+        """
+        metadata = {
+            "uri": uri,
+            "name": name
+        }
+        return self._get_blob(metadata)
+
+    def _log_artifact(self,
+                      src_name: Optional[str] = None
+                      ) -> None:
+        """
+        Log artifact metadata.
+        """
+        if self.run_info.run_metadata_uri is None:
+            return
+        uri = self.run_info.run_artifacts_uri
+        metadata = self._get_artifact_metadata(uri, src_name)
+        self._log_metadata(metadata, self._ARTIFACT_METADATA)
+
+    def _render_obj(self,
+                    plugin: Any,
+                    cached: Any,
+                    object: Optional[Any] = None) -> None:
+        """
+        Check objects to persist, render and persist them.
+        """
+        object = self._check_obj(object, cached)
+        rendered = plugin.render_object(object)
+        for obj in rendered:
+            self.persist_artifact(obj.object,
+                                  obj.filename)
+
+    def persist_artifact(self,
+                         src: Any,
+                         src_name: Optional[str] = None,
+                         metadata: Optional[dict] = None,
+                         ) -> None:
+        """
+        Persist artifacts in the artifact store.
+
+        Parameters
+        ----------
+        src : str, list or dict
+            One or a list of URI described by a string, or a dictionary.
+        src_name : str, default = None
+            Filename. Required only if src is a dictionary.
+        metadata: dict, default = None
+            Optional metadata to attach on artifact.
+
+        """
+        if self.run_info.run_artifacts_uri is None:
+            raise AttributeError("Please configure an artifact store.")
+
+        if metadata is None:
+            metadata = {}
+        self._client.persist_artifact(src,
+                                      self.run_info.run_artifacts_uri,
+                                      src_name=src_name,
+                                      metadata=metadata)
+        self._log_artifact(src_name)
+
+    # Inference
+
+    def infer_resource(self) -> dict:
+        """
+        Execute inference over a resource.
+        """
+        self._check_plugin(self._inf_plugin)
+        self.fetch_input_data()
+        self._inf_plugin.update_data_resource(
+                                self.data_resource,
+                                self._data)
+        return self.data_resource.to_dict()
+
+    def infer_schema_wrapper(self) -> tuple:
+        """
+        Execute schema inference over a resource.
+        Return the schema inferred by the inference framework and
+        the datajudge version.
+        """
+        self._check_plugin(self._inf_plugin)
+        self.fetch_input_data()
+        if self._schema_fw is None:
+            self._schema_fw, self._time_inf_sch = \
+                        self._inf_plugin.infer_schema(self._data)
+        return self._schema_fw
+
+    def infer_schema_datajudge(self) -> dict:
+        """
+        Execute schema inference over a resource.
+        Return the schema inferred by datajudge.
+        """
+        if self._schema_dj is not None:
+            return self._schema_dj
+
+        if self._schema_fw is None:
+            self.infer_schema_wrapper()
+
+        parsed = self._inf_plugin.parse_schema(self._schema_fw)
+        self._schema_dj = ShortSchema(
+                            self._inf_plugin.lib_name,
+                            self._inf_plugin.lib_version,
+                            self.run_info.data_resource_uri,
+                            self._time_inf_sch,
+                            parsed).to_dict()
+        return self._schema_dj
+
+    def infer(self) -> tuple:
+        """
+        Execute inference and schema inference over a resource.
+        """
+        resource = self.infer_resource()
+        schema_fw = self.infer_schema_wrapper()
+        schema_dj = self.infer_schema_datajudge()
+        return resource, schema_fw, schema_dj
+
+    def log_resource(self) -> None:
+        """
+        Log data resource.
+        """
+        if self.run_info.run_metadata_uri is None:
+            raise AttributeError("Please configure a metadata store.")
+
+        metadata = self._get_blob(self.data_resource.to_dict())
+        self._log_metadata(metadata, self._DATA_RESOURCE)
+
+        # Update run info
+        if self.run_info.data_resource_uri is None:
+            uri_resource = self._client.get_data_resource_uri(
+                                            self.run_info.experiment_name,
+                                            self.run_info.run_id)
+            self.run_info.data_resource_uri = uri_resource
+
+    def persist_resource(self,
+                         data_name: Optional[Union[str, list]] = None
+                        ) -> None:
+        """
+        Persist resource as artifact.
+
+        Parameters
+        ----------
+        data_name : str or list, default = None
+            Filename(s) for input data.
+
+        """
+
+        metadata = self.data_resource.get_metadata()
+
+        # Data
+        data = self.fetch_input_data()
+        data, data_name = data_listify(data, data_name)
+        for idx, path in enumerate(data):
+            # try to infer source name if no name is passed
+            src_name = data_name[idx] if data_name[idx] is not None \
+                                      else get_name_from_uri(path)
+            self.persist_artifact(data[idx], src_name, metadata)
+
+    def log_schema(self,
+                   schema: Optional[ShortSchema] = None
+                   ) -> None:
+        """
+        Log short schema. The method register a schema object
+        on the run derived from a specific inference library.
+
+        Parameters
+        ----------
+        schema : dict, default = None
+            A datajudge schema to be logged. If it is not provided, 
+            the run will check its own schema_dj attribute.
+
+        """
+        if self.run_info.run_metadata_uri is None:
+            raise AttributeError("Please configure a metadata store.")
+
+        if schema is None or not isinstance(schema, ShortSchema):
+            if self._schema_dj is None:
+                schema = self.infer_schema_datajudge()
+                if schema is None:
+                    warn("Unable to log schema, skipping.")
+                    return
+            else:
+                schema = self._schema_dj
+
+        metadata = self._get_blob(schema)
+        self._log_metadata(metadata, self._SHORT_SCHEMA)
+
+    def persist_schema(self,
+                       schema: Optional[Any] = None) -> None:
+        """
+        Persist an inferred schema produced by a validation framework.
+
+        Parameters
+        ----------
+        schema : Any, default = None
+            An inferred schema object produced by a validation library.
+
+        """
+        self._render_obj(self._inf_plugin,
+                         self._schema_fw,
+                         schema)
+
+    # Validation
+
+    def validate_wrapper(self,
+                         constraints: Optional[dict] = None,
+                         val_kwargs: Optional[dict] = None) -> Any:
+        """
+        Execute validation of a resource.
+
+        Parameters
+        ----------
+        constraints : dict, default = None
+            Constraints from configuration.
+        val_kwargs : dict, default = None
+            Specific framework arguments.
+
+        """
+        self._check_plugin(self._val_plugin)
+        self.fetch_input_data()
+        self.fetch_validation_schema()
+        if self._report_fw is None:
+            self._report_fw = self._val_plugin.validate(self._data,
+                                                        constraints,
+                                                        self._val_schema,
+                                                        val_kwargs)
+       
+    def validate_datajudge(self,
+                           constraints: Optional[dict] = None,
+                           val_kwargs: Optional[dict] = None
+                           ) -> dict:
+        """
+        Execute schema inference over a resource.
+        Return the schema inferred by datajudge.
+
+        Parameters
+        ----------
+        constraints : dict, default = None
+            Constraints from configuration.
+        val_kwargs : dict, default = None
+            Specific framework arguments.
+
+        """
+        if self._report_dj is not None:
+            return self._report_dj
+
+        if self._report_fw is None:
+            self.validate_wrapper(constraints, val_kwargs)
+        parsed = self._val_plugin.parse_report(self._report_fw,
+                                               self._val_schema)
+
+        self._report_dj = ShortReport(self._val_plugin.lib_name,
+                                      self._val_plugin.lib_version,
+                                      self.run_info.data_resource_uri,
+                                      parsed.time,
+                                      parsed.valid,
+                                      parsed.errors).to_dict()
+
+        return self._report_dj
+
+    def validate(self,
+                 constraints: Optional[dict] = None,
+                 val_kwargs: Optional[dict] = None) -> tuple:
+        """
+        Execute validation over a resource.
+
+        Parameters
+        ----------
+        constraints : dict, default = None
+            Constraints from configuration.
+        val_kwargs : dict, default = None
+            Specific framework arguments.
+
+        """
+        report_fw = self.validate_wrapper(constraints, val_kwargs)
+        report_dj = self.validate_datajudge()
+        return report_fw, report_dj
+       
+    def log_report(self, 
+                   report: Optional[ShortReport] = None) -> None:
+        """
+        Log short report.
+
+        Parameters
+        ----------
+        report : Any
+            A report object to be logged. If it is not
+            provided, the run will check its own report attribute.
+        kwargs : dict, default = None
+            Validation arguments.
+
+        """
+        if self.run_info.run_metadata_uri is None:
+            raise AttributeError("Please configure a metadata store.")
+
+        if not isinstance(report, ShortReport):
+            if self._report_dj is None:
+                report = self.validate_datajudge()
+                if report is None:
+                    warn("Unable to log report, skipping.")
+                    return
+            else:
+                report = self._report_dj
+
+        metadata = self._get_blob(report)
+        self._log_metadata(metadata, self._SHORT_REPORT)
+
+    def persist_report(self,
+                       report: Optional[Any] = None) -> None:
+        """
+        Persist a report produced by a validation framework.
+
+        Parameters
+        ----------
+        report : Any, default = None
+            An report object produced by a validation library.
+
+        """
+        self._render_obj(self._val_plugin,
+                         self._report_fw,
+                         report)
+
+    # Profiling
+
+    def profile_wrapper(self,
+                        profiler_kwargs: dict = None) -> Any:
+        """
+        Execute profiling on a resource.
+
+        Parameters
+        ----------
+        profiler_kwargs : dict, default = None
+            Kwargs passed to profiler.
+
+        """
+        self._check_plugin(self._pro_plugin)
+        self.fetch_input_data()
+
+        # Cache profile on run.
+        if self._profile_fw is None:
+            self._profile_fw = self._pro_plugin.profile(self._data,
+                                                        self.data_resource,
+                                                        profiler_kwargs)
+        return self._profile_fw
+
+    def profile_datajudge(self,
+                          profiler_kwargs: dict = None
+                          ) -> dict:
+        """
+        Execute schema inference over a resource.
+        Return the schema inferred by datajudge.
+        
+        Parameters
+        ----------
+        profiler_kwargs : dict, default = None
+            Kwargs passed to profiler.
+
+        """
+        if self._profile_dj is not None:
+            return self._profile_dj
+
+        if self._profile_fw is None:
+            self.profile_wrapper(profiler_kwargs)
+
+        parsed = self._pro_plugin.parse_profile(self._profile_fw)
+        self._profile_dj = ShortProfile(self._pro_plugin.lib_name,
+                                        self._pro_plugin.lib_version,
+                                        self.run_info.data_resource_uri,
+                                        parsed.duration,
+                                        parsed.stats,
+                                        parsed.fields).to_dict()
+
+        return self._profile_dj
+
+    def profile(self,
+                profiler_kwargs: dict = None) -> tuple:
+        """
+        Execute profiling over a resource.
+        
+        Parameters
+        ----------
+        profiler_kwargs : dict, default = None
+            Kwargs passed to profiler.
+
+        """
+        profile_fw = self.profile_wrapper(profiler_kwargs)
+        profile_dj = self.profile_datajudge()
+        return profile_fw, profile_dj
+
+    def log_profile(self,
+                    profile: Optional[Any] = None) -> None:
+        """
+        Log a data profile.
+
+        Parameters
+        ----------
+        profile : Any, default = None
+            A profile report to be logged. If it is not provided,
+            the run will check its own profile attribute.
+
+        """
+        if self.run_info.run_metadata_uri is None:
+            raise AttributeError("Please configure a metadata store.")
+
+        if not isinstance(profile, ShortProfile):
+            if self._report_dj is None:
+                profile = self.profile_datajudge()
+                if profile is None:
+                    warn("Unable to log profile, skipping.")
+                    return
+            else:
+                profile = self._report_dj
+
+        metadata = self._get_blob(profile)
+        self._log_metadata(metadata, self._DATA_PROFILE)
+
+    def persist_profile(self,
+                        profile: Optional[Any] = None
+                        ) -> None:
+        """
+        Persist a data profile produced by a profiling framework.
+
+        Parameters
+        ----------
+        profile : Any, default = None
+            A profile object produced by a profiling library.
+
+        """
+        self._render_obj(self._pro_plugin,
+                         self._profile_fw,
+                         profile)
 
     # Input data
 
@@ -429,132 +670,13 @@ class Run:
         uri : str
             URI of artifact to fetch.
         """
+        if self.run_info.run_artifacts_uri is None:
+            raise AttributeError("Please configure an artifact store.")
+
         return self._client.fetch_artifact(uri)
 
-    # Output data
-
-    def persist_data(self,
-                     data_name: Optional[Union[str, list]] = None,
-                     validation_schema: bool = False,
-                     schema_name: Optional[str] = None) -> None:
-        """
-        Persist data and validation schema.
-        Parameters
-        ----------
-        data_name : str or list, default = None
-            Filename(s) for input data.
-        schema_name : str, default = None
-            Filename for input schema.
-        """
-
-        metadata = self.data_resource.get_metadata()
-
-        # Data
-        data = self.fetch_input_data()
-        data, data_name = data_listify(data, data_name)
-        for idx, path in enumerate(data):
-            # try to infer source name if no name is passed
-            src_name = data_name[idx] if data_name[idx] is not None \
-                                      else get_name_from_uri(path)
-            self.persist_artifact(data[idx], src_name, metadata)
-
-        # Schema
-        if validation_schema:
-            schema = self.fetch_validation_schema()
-            if schema is not None:
-                src_name = schema_name if schema_name is not None \
-                                    else get_name_from_uri(schema)
-                self.persist_artifact(schema, src_name)
-                return
-            warn("No validation schema is provided!")
-
-    def persist_report(self,
-                       report: Optional[Any] = None) -> None:
-        """
-        Persist a report produced by a validation framework.
-
-        Parameters
-        ----------
-        report : Any, default = None
-            An report object produced by a validation library.
-
-        """
-        self._render_obj(self._val_plugin,
-                             self._report,
-                             report)
-
-    def persist_schema(self,
-                       schema: Optional[Any] = None) -> None:
-        """
-        Persist an inferred schema produced by a validation framework.
-
-        Parameters
-        ----------
-        schema : Any, default = None
-            An inferred schema object produced by a validation library.
-
-        """
-        self._render_obj(self._inf_plugin,
-                             self._schema,
-                             schema)
-
-    def persist_profile(self,
-                        profile: Optional[Any] = None
-                        ) -> None:
-        """
-        Persist a data profile produced by a profiling framework.
-
-        Parameters
-        ----------
-        profile : Any, default = None
-            A profile object produced by a profiling library.
-
-        """
-        self._render_obj(self._pro_plugin,
-                             self._profile,
-                             profile)
-            
-    def _render_obj(self,
-                    plugin: Any,
-                    cached: Any,
-                    object: Optional[Any] = None) -> None:
-        """
-        Check objects to persist, render and persist them.
-        """
-        object = self._check_obj(object, cached)
-        rendered = plugin.render_object(object)
-        for obj in rendered:
-            self.persist_artifact(obj.object, 
-                                  obj.filename)
-
-    def persist_artifact(self,
-                         src: Any,
-                         src_name: Optional[str] = None,
-                         metadata: Optional[dict] = None,
-                         ) -> None:
-        """
-        Persist artifacts in the artifact store.
-
-        Parameters
-        ----------
-        src : str, list or dict
-            One or a list of URI described by a string, or a dictionary.
-        src_name : str, default = None
-            Filename. Required only if src is a dictionary.
-        metadata: dict, default = None
-            Optional metadata to attach on artifact.
-
-        """
-        if metadata is None:
-            metadata = {}
-        self._client.persist_artifact(src,
-                                      self.run_info.run_artifacts_uri,
-                                      src_name=src_name,
-                                      metadata=metadata)
-        self._log_artifact(src_name)
-
     # Utils
-    
+
     @staticmethod
     def _check_plugin(plugin: Any) -> None:
         """
@@ -579,9 +701,6 @@ class Run:
     # Context manager
 
     def __enter__(self) -> Run:
-        # Update run info
-        self._get_resource()
-        self._get_plugin_info()
         # Set run status
         self.run_info.begin_status = "active"
         self.run_info.started = get_time()

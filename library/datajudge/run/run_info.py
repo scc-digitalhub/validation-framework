@@ -6,6 +6,7 @@ Implementation of the basic Run's metadata.
 from __future__ import annotations
 
 import typing
+from typing import Optional
 
 from datajudge.utils.utils import get_time
 
@@ -45,8 +46,8 @@ class RunInfo:
                  experiment_name: str,
                  run_id: str,
                  run_config: RunConfig,
-                 run_metadata_uri: str,
-                 run_artifacts_uri: str) -> None:
+                 run_metadata_uri: Optional[str] = None,
+                 run_artifacts_uri: Optional[str] = None) -> None:
 
         self.experiment_title = experiment_title
         self.experiment_name = experiment_name
@@ -74,8 +75,7 @@ class RunInfo:
             "experimentTitle": self.experiment_title,
             "experimentName": self.experiment_name,
             "runId": self.run_id,
-            "runConfig": self.run_config.dict(exclude_none=True,
-                                              by_alias=True),
+            "runConfig": self.run_config.dict(exclude_none=True, by_alias=True),
             "runLibraries": self.run_libraries,
             "runMetadataUri": self.run_metadata_uri,
             "runArtifactsUri": self.run_artifacts_uri,

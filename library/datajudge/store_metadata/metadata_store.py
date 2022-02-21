@@ -1,7 +1,6 @@
 """
 Abstract class for metadata store.
 """
-import uuid
 from abc import ABCMeta, abstractmethod
 from typing import Optional
 
@@ -31,8 +30,6 @@ class MetadataStore(metaclass=ABCMeta):
         Return the URI of the metadata store for the Run.
     get_data_resource_uri :
         Return the URI of the data resource for the Run.
-    get_run_id :
-        Return a string UUID for a Run.
 
     """
 
@@ -93,12 +90,3 @@ class MetadataStore(metaclass=ABCMeta):
         """
         Return source destination based on source type.
         """
-
-    @staticmethod
-    def get_run_id(run_id: Optional[str] = None) -> str:
-        """
-        Return a string UID for a Run.
-        """
-        if run_id:
-            return run_id
-        return uuid.uuid4().hex
