@@ -1,47 +1,42 @@
 # pylint: disable=import-error,invalid-name
-from __future__ import annotations
-
 from typing import Any
 
-from datajudge.run.inference import InferencePluginFrictionless
-from datajudge.run.validation import ValidationPluginFrictionless
+from datajudge.run.inference import (InferencePluginFrictionless, InferencePluginDummy)
+from datajudge.run.validation import (ValidationPluginFrictionless, ValidationPluginDummy)
 from datajudge.run.profiling import (ProfilePluginPandasProfiling,
-                                     ProfilePluginFrictionless)
-from datajudge.utils import config as cfg
+                                     ProfilePluginFrictionless, ProfilePluginDummy)
 
 
 PLUGIN_REGISTRY = {
     "inference": {
-        "frictionless": InferencePluginFrictionless
+        "dummy": InferencePluginDummy,
+        "frictionless": InferencePluginFrictionless,
         },
     "validation": {
-        "frictionless": ValidationPluginFrictionless
+        "dummy": ValidationPluginDummy,
+        "frictionless": ValidationPluginFrictionless,
         },
     "profiling": {
+        "dummy": ProfilePluginDummy,
         "pandas_profiling": ProfilePluginPandasProfiling,
-        "frictionless": ProfilePluginFrictionless
+        "frictionless": ProfilePluginFrictionless,
         },
-    "snapshot": {}
+    "snapshot": {
+        "dummy": None,
+    }
 }
 
 
-def get_plugin(config: dict) -> Any:
+def get_plugin(config: dict,
+               typology: str) -> Any:
     """
     Factory method that returns a run plugin.
     """
     if config is None:
-        return
+        return PLUGIN_REGISTRY[typology]["dummy"]()
     if config.enabled:
         try:
-            if isinstance(config, cfg.InferenceConfig):
-                return PLUGIN_REGISTRY["inference"][config.library]()
-            if isinstance(config, cfg.ValidationConfig):
-                return PLUGIN_REGISTRY["validation"][config.library]()
-            if isinstance(config, cfg.ProfilingConfig):
-                return PLUGIN_REGISTRY["profiling"][config.library]()
-            if isinstance(config, cfg.SnapshotConfig):
-                return PLUGIN_REGISTRY["snapshot"][config.library]()
-            raise TypeError("Invalid plugin configuration.")
-
+            return PLUGIN_REGISTRY[typology][config.library]()
         except KeyError as k_err:
             raise NotImplementedError from k_err
+    return PLUGIN_REGISTRY[typology]["dummy"]()

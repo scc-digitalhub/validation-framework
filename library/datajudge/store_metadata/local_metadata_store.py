@@ -23,7 +23,6 @@ class LocalMetadataStore(MetadataStore):
         super().__init__(uri_metadata, config)
         self._filenames = {
             self._RUN_METADATA: cfg.FN_RUN_METADATA,
-            self._DATA_RESOURCE: cfg.FN_DATA_RESOURCE,
             self._DJ_REPORT: cfg.FN_DJ_REPORT,
             self._DJ_SCHEMA: cfg.FN_DJ_SCHEMA,
             self._DJ_PROFILE: cfg.FN_DJ_PROFILE,
@@ -92,15 +91,3 @@ class LocalMetadataStore(MetadataStore):
         Return the path of the metadata folder for the Run.
         """
         return get_path(self.uri_metadata, exp_name, run_id)
-
-    def get_data_resource_uri(self,
-                              exp_name: str,
-                              run_id: str) -> str:
-        """
-        Return the path of the data resource for the Run.
-        """
-        filename = self._filenames[self._DATA_RESOURCE]
-        return get_path(self.uri_metadata,
-                        exp_name,
-                        run_id,
-                        filename)

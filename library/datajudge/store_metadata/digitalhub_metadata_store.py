@@ -11,7 +11,7 @@ from requests.models import Response
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils import config as cfg
 from datajudge.utils.rest_utils import api_post_call, api_put_call
-from datajudge.utils.uri_utils import check_url, rebuild_uri
+from datajudge.utils.uri_utils import check_url
 
 
 KeyPairs = namedtuple("KeyPairs", ("run_id", "key"))
@@ -32,7 +32,6 @@ class DigitalHubMetadataStore(MetadataStore):
         # To memorize runs present in the backend
         self._key_vault = {
             self._RUN_METADATA: [],
-            self._DATA_RESOURCE: [],
             self._DJ_REPORT: [],
             self._DJ_SCHEMA: [],
             self._DJ_PROFILE: [],
@@ -42,7 +41,6 @@ class DigitalHubMetadataStore(MetadataStore):
         # API endpoints
         self._endpoints = {
             self._RUN_METADATA: cfg.API_RUN_METADATA,
-            self._DATA_RESOURCE: cfg.API_DATA_RESOURCE,
             self._DJ_REPORT: cfg.API_DJ_REPORT,
             self._DJ_SCHEMA: cfg.API_DJ_SCHEMA,
             self._DJ_PROFILE: cfg.API_DJ_PROFILE,
@@ -153,15 +151,6 @@ class DigitalHubMetadataStore(MetadataStore):
         Return the URL of the metadata store for the Run.
         """
         return self.uri_metadata
-
-    def get_data_resource_uri(self,
-                              exp_name: str,
-                              run_id: str) -> str:
-        """
-        Return the URL of the data resource for the Run.
-        """
-        url = self.uri_metadata + self._endpoints[self._DATA_RESOURCE]
-        return rebuild_uri(url)
 
     def _parse_auth(self, kwargs: dict) -> dict:
         """

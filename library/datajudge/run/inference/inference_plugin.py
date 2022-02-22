@@ -59,3 +59,17 @@ class Inference(metaclass=ABCMeta):
         """
         Return a rendered schema ready to be persisted as artifact.
         """
+
+    # Getters
+
+    def get_lib_name(self) -> str:
+        return self.lib_name
+    
+    def get_lib_version(self) -> str:
+        return self.lib_version
+    
+    def get_lib(self) -> dict:
+        return {
+                "libName": self.lib_name,
+                "libVersion": self.lib_version
+        }

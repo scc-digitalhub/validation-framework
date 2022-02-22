@@ -28,13 +28,10 @@ class MetadataStore(metaclass=ABCMeta):
         Log metadata to backend.
     get_run_metadata_uri :
         Return the URI of the metadata store for the Run.
-    get_data_resource_uri :
-        Return the URI of the data resource for the Run.
 
     """
 
     _RUN_METADATA = cfg.MT_RUN_METADATA
-    _DATA_RESOURCE = cfg.MT_DATA_RESOURCE
     _DJ_REPORT = cfg.MT_DJ_REPORT
     _DJ_SCHEMA = cfg.MT_DJ_SCHEMA
     _DJ_PROFILE = cfg.MT_DJ_PROFILE
@@ -72,14 +69,6 @@ class MetadataStore(metaclass=ABCMeta):
                              run_id: str) -> str:
         """
         Return the URI of the metadata store for the Run.
-        """
-
-    @abstractmethod
-    def get_data_resource_uri(self,
-                              exp_name: str,
-                              run_id: str) -> str:
-        """
-        Return the URI of the data resource for the Run.
         """
 
     @abstractmethod

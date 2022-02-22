@@ -1,9 +1,7 @@
 """
 Common generic utils.
 """
-import warnings
 from datetime import datetime
-from mimetypes import guess_type
 from typing import Any, Optional, Tuple
 
 import dateutil.parser as parser
@@ -44,20 +42,3 @@ def data_listify(data: Any,
             raise IndexError("Data filename list must have " +
                              "same lenght of data source list")
     return data, data_name
-
-
-def guess_mediatype(path: str) -> str:
-    """
-    Guess mediatype of resource.
-    """
-    if isinstance(path, list):
-        path = path[0]
-    mtype, _ = guess_type(path)
-    return mtype
-
-
-def warn(msg: str):
-    """
-    Raise message warn.
-    """
-    warnings.warn(msg)

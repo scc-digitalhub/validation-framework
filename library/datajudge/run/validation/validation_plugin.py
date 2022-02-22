@@ -2,11 +2,12 @@
 Validation plugin abstract class module.
 """
 # pylint: disable=import-error,invalid-name
-from __future__ import annotations
-from collections import namedtuple
-
 from abc import ABCMeta, abstractmethod
+from collections import namedtuple
 from typing import Any, List, Optional
+
+from datajudge.run.results_registry import ResultsRegistry
+
 
 ReportTuple = namedtuple("ReportTuple",
                          ("time", "valid", "errors"))
@@ -20,9 +21,9 @@ class Validation(metaclass=ABCMeta):
     """
 
     def __init__(self) -> None:
-
         self.lib_name = None
         self.lib_version = None
+        self.registry = ResultsRegistry()
         self.update_library_info()
 
     @abstractmethod
@@ -50,6 +51,7 @@ class Validation(metaclass=ABCMeta):
 
     @abstractmethod
     def validate(self,
+                 res_name: str,
                  data_path: str,
                  constraints: Optional[dict] = None,
                  schema_path: Optional[str] = None,
@@ -64,3 +66,17 @@ class Validation(metaclass=ABCMeta):
         """
         Return a rendered report ready to be persisted as artifact.
         """
+
+    # Getters
+
+    def get_lib_name(self) -> str:
+        return self.lib_name
+    
+    def get_lib_version(self) -> str:
+        return self.lib_version
+    
+    def get_lib(self) -> dict:
+        return {
+                "libName": self.lib_name,
+                "libVersion": self.lib_version
+        }

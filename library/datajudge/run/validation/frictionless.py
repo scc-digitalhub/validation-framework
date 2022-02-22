@@ -2,18 +2,18 @@
 Frictionless implementation of validation plugin.
 """
 # pylint: disable=import-error,invalid-name
-from __future__ import annotations
-
+import warnings
 from typing import List, Optional
 
 import frictionless
 from frictionless import Report, Resource, Schema
 
-import datajudge.utils.config as cfg
 from datajudge.run.validation.validation_plugin import (RenderTuple,
                                                         ReportTuple,
                                                         Validation)
-from datajudge.utils.utils import warn
+
+
+FN_REPORT = "report_frictionless.json"
 
 
 class ValidationPluginFrictionless(Validation):
@@ -67,6 +67,7 @@ class ValidationPluginFrictionless(Validation):
             raise TypeError("Expected frictionless Report!")
 
     def validate(self,
+                 res_name: str,
                  data_path: str,
                  constraints: Optional[dict] = None,
                  schema_path: Optional[str] = None,
@@ -80,22 +81,29 @@ class ValidationPluginFrictionless(Validation):
             Keywords args for frictionless.validate_resource method.
 
         """
+        report = self.registry.get_result(res_name)
+        if report is not None:
+            return report
+        
         if not kwargs:
             kwargs = {}
 
         try:
             schema = Schema(constraints)
         except:
-            warn("Invalid constraints format.")
+            warnings.warn("Invalid constraints format.")
         finally:
             schema = Schema(descriptor=schema_path)
 
         if not schema or schema is None:
-            warn("No valid table schema is provided! " +
+            warnings.warn("No valid table schema is provided! " +
                  "Report will results valid by default.")
 
         resource = Resource(path=data_path, schema=schema)
         report = frictionless.validate_resource(resource, **kwargs)
+        end = report.time
+        
+        self.registry.add_result(res_name, report, end)
 
         return report
 
@@ -108,4 +116,4 @@ class ValidationPluginFrictionless(Validation):
         self.validate_report(obj)
         dict_report = dict(obj)
 
-        return [RenderTuple(dict_report, cfg.FN_FULL_REPORT)]
+        return [RenderTuple(dict_report, FN_REPORT)]

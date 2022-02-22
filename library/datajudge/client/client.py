@@ -7,22 +7,18 @@ and create runs.
 from __future__ import annotations
 
 import typing
-from typing import Any, List, Optional, Union
 import uuid
+from typing import Any, List, Optional, Union
 
 from slugify import slugify
 
-from datajudge.utils import config as cfg
 from datajudge.utils.factories import get_md_store, get_stores, get_run
 
 # For type checking -> avoids circular imports
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
     from datajudge.run import Run
-    from datajudge.utils.config import RunConfig
-
-
-store_cfg = Optional[List[Union[cfg.StoreConfig, dict]]]
+    from datajudge.utils.config import RunConfig, StoreConfig
 
 
 class Client:
@@ -40,6 +36,8 @@ class Client:
 
     Methods
     -------
+    add_store :
+        Add new artifact store to client StoreRegistry
     create_run :
         Create a new run.
     log_metadata :
@@ -48,16 +46,14 @@ class Client:
         Persist artifact to the artifact store.
     fetch_artifact :
         Fetch artifact from backend storage.
-    get_data_resource_uri :
-        Return the URI of a Data Resource.
 
     """
 
     def __init__(self,
-                 project_name: Optional[str] = cfg.DEFAULT_PROJ,
-                 metadata_store_config: store_cfg = None,
-                 store_configs: store_cfg = None,
-                 tmp_dir: Optional[str] = cfg.DEFAULT_TMP
+                 project_name: Optional[str] = "project",
+                 metadata_store_config: Optional[List[StoreConfig]] = None,
+                 store_configs: Optional[List[StoreConfig]] = None,
+                 tmp_dir: Optional[str] = "./djruns/tmp"
                  ) -> None:
         """
         Client constructor.
@@ -101,7 +97,7 @@ class Client:
         return default
 
     def add_store(self,
-                  config: Union[cfg.StoreConfig, dict]
+                  config: Union[StoreConfig, dict]
                   ) -> None:
         """
         Add a new store to the client internal registry.
@@ -131,7 +127,7 @@ class Client:
     def create_run(self,
                    data_resource: DataResource,
                    run_config: RunConfig,
-                   experiment_title: Optional[str] = cfg.DEFAULT_EXP,
+                   experiment_title: Optional[str] = "experiment",
                    run_id: Optional[str] = None,
                    overwrite: Optional[bool] = False) -> Run:
         """
@@ -259,16 +255,6 @@ class Client:
         else:
             in_store = self._store_registry.get(store_name).get("store")
         return in_store.fetch_artifact(uri, self.tmp_dir)
-
-    def get_data_resource_uri(self,
-                              exp_name: str,
-                              run_id: str) -> str:
-        """
-        Method that wrap 'get_data_resource_uri' of the
-        metadata store. Return DataResource URI.
-        """
-        return self._metadata_store.get_data_resource_uri(exp_name,
-                                                          run_id)
 
     @property
     def tmp_dir(self) -> str:

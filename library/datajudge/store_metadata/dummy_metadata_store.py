@@ -51,10 +51,3 @@ class DummyMetadataStore(MetadataStore):
         """
         Return none.
         """
-
-    def get_data_resource_uri(self,
-                              exp_name: str,
-                              run_id: str) -> str:
-        """
-        Return none.
-        """
