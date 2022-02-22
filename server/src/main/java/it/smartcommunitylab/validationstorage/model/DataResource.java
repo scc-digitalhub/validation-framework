@@ -3,7 +3,6 @@ package it.smartcommunitylab.validationstorage.model;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -17,8 +16,7 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 @Table(name = "data_resource", uniqueConstraints = @UniqueConstraint(columnNames = { "package_id", "name" }))
 public class DataResource {
     @Id
-    @GeneratedValue
-    private long id;
+    private String id;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
@@ -28,11 +26,11 @@ public class DataResource {
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "package_id")
-    private long packageId;
+    private String packageId;
     
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "store_id")
-    private long storeId;
+    private String storeId;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
@@ -47,11 +45,11 @@ public class DataResource {
     @Embedded
     private Dataset dataset;
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -63,11 +61,11 @@ public class DataResource {
         this.projectId = projectId;
     }
 
-    public long getPackageId() {
+    public String getPackageId() {
         return packageId;
     }
 
-    public void setPackageId(long packageId) {
+    public void setPackageId(String packageId) {
         this.packageId = packageId;
     }
 
@@ -79,11 +77,11 @@ public class DataResource {
         this.name = name;
     }
 
-    public long getStoreId() {
+    public String getStoreId() {
         return storeId;
     }
 
-    public void setStoreId(long storeId) {
+    public void setStoreId(String storeId) {
         this.storeId = storeId;
     }
 

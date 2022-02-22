@@ -13,6 +13,8 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
  */
 @Valid
 public class ProjectDTO {
+    private String id;
+    
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String name;
@@ -24,9 +26,17 @@ public class ProjectDTO {
     
     private Set<String> experimentIds;
     
-    private Set<Long> packageIds;
+    private Set<String> packageIds;
     
-    private Set<Long> storeIds;
+    private Set<String> storeIds;
+    
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -60,19 +70,19 @@ public class ProjectDTO {
         this.experimentIds = experimentIds;
     }
 
-    public Set<Long> getPackageIds() {
+    public Set<String> getPackageIds() {
         return packageIds;
     }
 
-    public void setPackageIds(Set<Long> packageIds) {
+    public void setPackageIds(Set<String> packageIds) {
         this.packageIds = packageIds;
     }
 
-    public Set<Long> getStoreIds() {
+    public Set<String> getStoreIds() {
         return storeIds;
     }
 
-    public void setStoreIds(Set<Long> storeIds) {
+    public void setStoreIds(Set<String> storeIds) {
         this.storeIds = storeIds;
     }
     

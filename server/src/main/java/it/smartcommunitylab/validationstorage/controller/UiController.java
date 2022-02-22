@@ -28,8 +28,8 @@ import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.RunEnvironment;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
-import it.smartcommunitylab.validationstorage.model.RunShortReport;
-import it.smartcommunitylab.validationstorage.model.RunShortSchema;
+import it.smartcommunitylab.validationstorage.model.RunValidationReport;
+import it.smartcommunitylab.validationstorage.model.RunDataSchema;
 import it.smartcommunitylab.validationstorage.model.dto.ProjectDTO;
 import it.smartcommunitylab.validationstorage.service.ArtifactMetadataService;
 import it.smartcommunitylab.validationstorage.service.RunDataProfileService;
@@ -38,8 +38,8 @@ import it.smartcommunitylab.validationstorage.service.ExperimentService;
 import it.smartcommunitylab.validationstorage.service.ProjectService;
 import it.smartcommunitylab.validationstorage.service.RunEnvironmentService;
 import it.smartcommunitylab.validationstorage.service.RunMetadataService;
-import it.smartcommunitylab.validationstorage.service.RunShortReportService;
-import it.smartcommunitylab.validationstorage.service.RunShortSchemaService;
+import it.smartcommunitylab.validationstorage.service.RunValidationReportService;
+import it.smartcommunitylab.validationstorage.service.RunDataSchemaService;
 import it.smartcommunitylab.validationstorage.service.UiService;
 
 /**
@@ -68,9 +68,9 @@ public class UiController {
     @Autowired
     private RunMetadataService runMetadataService;
     @Autowired
-    private RunShortReportService shortReportService;
+    private RunValidationReportService shortReportService;
     @Autowired
-    private RunShortSchemaService shortSchemaService;
+    private RunDataSchemaService shortSchemaService;
 
     // Project
     @PreAuthorize("permitAll()")
@@ -198,28 +198,28 @@ public class UiController {
     }
 
     // ShortReport
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_SHORT_REPORT)
-    public ResponseEntity<RunShortReport> findShortReportByRunId(@PathVariable String projectId,
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_VALIDATION_REPORT)
+    public ResponseEntity<RunValidationReport> findShortReportByRunId(@PathVariable String projectId,
             @PathVariable String experimentId,
             @PathVariable String runId) {
         return ResponseEntity.ok(uiService.findShortReportByRunId(projectId, experimentId, runId));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_SHORT_REPORT + "/{id}")
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_VALIDATION_REPORT + "/{id}")
     public ResponseEntity<Void> deleteShortReportById(@PathVariable String projectId, @PathVariable String id) {
         shortReportService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();
     }
 
     // ShortSchema
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_SHORT_SCHEMA)
-    public ResponseEntity<RunShortSchema> findShortSchemaByRunId(@PathVariable String projectId,
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_SCHEMA)
+    public ResponseEntity<RunDataSchema> findShortSchemaByRunId(@PathVariable String projectId,
             @PathVariable String experimentId,
             @PathVariable String runId) {
         return ResponseEntity.ok(uiService.findShortSchemaByRunId(projectId, experimentId, runId));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_SHORT_SCHEMA + "/{id}")
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_DATA_SCHEMA + "/{id}")
     public ResponseEntity<Void> deleteShortSchemaById(@PathVariable String projectId, @PathVariable String id) {
         shortSchemaService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();

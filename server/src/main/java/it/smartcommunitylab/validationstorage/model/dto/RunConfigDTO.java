@@ -1,5 +1,7 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
+import java.util.List;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -9,6 +11,8 @@ import it.smartcommunitylab.validationstorage.model.RunConfigImpl;
 
 @Valid
 public class RunConfigDTO {
+    private String id;
+    
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
@@ -17,13 +21,21 @@ public class RunConfigDTO {
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String experimentId;
     
-    private RunConfigImpl snapshot;
+    private List<RunConfigImpl> snapshot;
     
-    private RunConfigImpl profiling;
+    private List<RunConfigImpl> profiling;
     
-    private RunConfigImpl schemaInference;
+    private List<RunConfigImpl> schemaInference;
     
-    private RunConfigImpl validation;
+    private List<RunConfigImpl> validation;
+    
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getProjectId() {
         return projectId;
@@ -41,35 +53,35 @@ public class RunConfigDTO {
         this.experimentId = experimentId;
     }
 
-    public RunConfigImpl getSnapshot() {
+    public List<RunConfigImpl> getSnapshot() {
         return snapshot;
     }
 
-    public void setSnapshot(RunConfigImpl snapshot) {
+    public void setSnapshot(List<RunConfigImpl> snapshot) {
         this.snapshot = snapshot;
     }
 
-    public RunConfigImpl getProfiling() {
+    public List<RunConfigImpl> getProfiling() {
         return profiling;
     }
 
-    public void setProfiling(RunConfigImpl profiling) {
+    public void setProfiling(List<RunConfigImpl> profiling) {
         this.profiling = profiling;
     }
 
-    public RunConfigImpl getSchemaInference() {
+    public List<RunConfigImpl> getSchemaInference() {
         return schemaInference;
     }
 
-    public void setSchemaInference(RunConfigImpl schemaInference) {
+    public void setSchemaInference(List<RunConfigImpl> schemaInference) {
         this.schemaInference = schemaInference;
     }
 
-    public RunConfigImpl getValidation() {
+    public List<RunConfigImpl> getValidation() {
         return validation;
     }
 
-    public void setValidation(RunConfigImpl validation) {
+    public void setValidation(List<RunConfigImpl> validation) {
         this.validation = validation;
     }
     

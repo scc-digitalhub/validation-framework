@@ -23,8 +23,8 @@ import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepositor
 import it.smartcommunitylab.validationstorage.repository.RunDataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
-import it.smartcommunitylab.validationstorage.repository.RunShortReportRepository;
-import it.smartcommunitylab.validationstorage.repository.RunShortSchemaRepository;
+import it.smartcommunitylab.validationstorage.repository.RunValidationReportRepository;
+import it.smartcommunitylab.validationstorage.repository.RunDataSchemaRepository;
 
 @Service
 public class RunMetadataService {
@@ -40,9 +40,9 @@ public class RunMetadataService {
     @Autowired
     private RunEnvironmentRepository runEnvironmentRepository;
     @Autowired
-    private RunShortReportRepository shortReportRepository;
+    private RunValidationReportRepository shortReportRepository;
     @Autowired
-    private RunShortSchemaRepository shortSchemaRepository;
+    private RunDataSchemaRepository shortSchemaRepository;
     
     @Autowired
     private ProjectService projectService;

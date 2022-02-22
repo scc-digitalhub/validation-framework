@@ -11,6 +11,8 @@ import it.smartcommunitylab.validationstorage.model.TypedConstraint;
 
 @Valid
 public class ConstraintDTO {
+    private String id;
+    
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
@@ -35,6 +37,14 @@ public class ConstraintDTO {
     private int errorSeverity;
     
     private TypedConstraint constraint;
+    
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getProjectId() {
         return projectId;

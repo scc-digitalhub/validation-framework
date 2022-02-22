@@ -15,14 +15,14 @@ import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.model.RunDataProfile;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
 import it.smartcommunitylab.validationstorage.model.RunSummary;
-import it.smartcommunitylab.validationstorage.model.RunShortReport;
+import it.smartcommunitylab.validationstorage.model.RunValidationReport;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepository;
 import it.smartcommunitylab.validationstorage.repository.RunDataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
-import it.smartcommunitylab.validationstorage.repository.RunShortReportRepository;
-import it.smartcommunitylab.validationstorage.repository.RunShortSchemaRepository;
+import it.smartcommunitylab.validationstorage.repository.RunValidationReportRepository;
+import it.smartcommunitylab.validationstorage.repository.RunDataSchemaRepository;
 
 /**
  * Service for run summaries.
@@ -32,7 +32,7 @@ public class RunSummaryService {
     @Autowired
     private RunMetadataRepository runMetadataRepository;
     @Autowired
-    private RunShortReportRepository shortReportRepository;
+    private RunValidationReportRepository shortReportRepository;
     @Autowired
     private RunDataProfileRepository dataProfileRepository;
     
@@ -43,7 +43,7 @@ public class RunSummaryService {
     @Autowired
     private RunEnvironmentRepository runEnvironmentRepository;
     @Autowired
-    private RunShortSchemaRepository shortSchemaRepository;
+    private RunDataSchemaRepository shortSchemaRepository;
     
     /**
      * Returns a list of run summaries for the provided experiment
@@ -154,7 +154,7 @@ public class RunSummaryService {
     private RunSummary buildRunSummaryFromRunMetadataDocument(String projectId, String experimentId, RunMetadata runMetadata) {
         String runId = runMetadata.getRunId();
         
-        RunShortReport shortReport = getShortReport(projectId, experimentId, runId);
+        RunValidationReport shortReport = getShortReport(projectId, experimentId, runId);
         
         RunSummary runSummary = new RunSummary(runMetadata.getId(), projectId, experimentId, runId, runMetadata.getCreated());
         
@@ -213,8 +213,8 @@ public class RunSummaryService {
      * @param runId RunID.
      * @return ShortReport document.
      */
-    private RunShortReport getShortReport(String projectId, String experimentId, String runId) {
-        List<RunShortReport> documents = shortReportRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+    private RunValidationReport getShortReport(String projectId, String experimentId, String runId) {
+        List<RunValidationReport> documents = shortReportRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
         return null;

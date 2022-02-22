@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public abstract class TypedError {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     
-    private long constraintId;
+    private String constraintId;
     
     private String type;
     
@@ -30,11 +30,11 @@ public abstract class TypedError {
         throw new IllegalArgumentException("Invalid error type.");
     }
     
-    public long getConstraintId() {
+    public String getConstraintId() {
         return constraintId;
     }
 
-    public void setConstraintId(long constraintId) {
+    public void setConstraintId(String constraintId) {
         this.constraintId = constraintId;
     }
 

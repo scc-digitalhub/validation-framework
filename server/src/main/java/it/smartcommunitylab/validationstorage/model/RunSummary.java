@@ -39,9 +39,9 @@ public class RunSummary {
 
     private RunMetadata runMetadata;
 
-    private RunShortReport shortReport;
+    private RunValidationReport shortReport;
 
-    private RunShortSchema shortSchema;
+    private RunDataSchema shortSchema;
 
     public RunSummary(String id, String projectId, String experimentId, String runId, Date created) {
         this.id = id;
@@ -111,19 +111,19 @@ public class RunSummary {
         this.runMetadata = runMetadata;
     }
 
-    public RunShortReport getShortReport() {
+    public RunValidationReport getShortReport() {
         return shortReport;
     }
     
-    public void setShortReport(RunShortReport shortReport) {
+    public void setShortReport(RunValidationReport shortReport) {
         this.shortReport = shortReport;
     }
 
-    public RunShortSchema getShortSchema() {
+    public RunDataSchema getShortSchema() {
         return shortSchema;
     }
     
-    public void setShortSchema(RunShortSchema shortSchema) {
+    public void setShortSchema(RunDataSchema shortSchema) {
         this.shortSchema = shortSchema;
     }
     

@@ -1,67 +1,47 @@
-package it.smartcommunitylab.validationstorage.model;
+package it.smartcommunitylab.validationstorage.model.dto;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Lob;
-import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import org.springframework.data.annotation.Id;
-
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.repository.HashMapConverter;
-import it.smartcommunitylab.validationstorage.repository.TypedErrorConverter;
+import it.smartcommunitylab.validationstorage.model.TypedError;
 
 /**
- * Short report on the validation's result.
+ * Request object: short report on the validation's result.
  */
-@Entity
-@Table(name = "run_short_report")
-public class RunShortReport {
-    @Id
-    @GeneratedValue
-    private long id;
-
-    @NotBlank
+public class RunValidationReportDTO {
+    private String id;
+    
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    @Column(name = "project_id")
     private String projectId;
     
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    @Column(name = "experiment_id")
     private String experimentId;
     
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    @Column(name = "run_id")
     private String runId;
     
+    private ConstraintDTO constraint;
+    
+    @NotNull
     private Boolean valid;
     
-    @Lob
-    @Convert(converter = TypedErrorConverter.class)
     List<TypedError> errors;
 
     /**
      * May contain extra information.
      */
-    @Lob
-    @Convert(converter = HashMapConverter.class)
     private Map<String, Serializable> contents;
-
-    public long getId() {
+    
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -89,6 +69,14 @@ public class RunShortReport {
         this.runId = runId;
     }
     
+    public ConstraintDTO getConstraint() {
+        return constraint;
+    }
+
+    public void setConstraint(ConstraintDTO constraint) {
+        this.constraint = constraint;
+    }
+
     public boolean isValid() {
         return valid != null ? valid.booleanValue() : false;
     }
@@ -100,7 +88,15 @@ public class RunShortReport {
     public void setValid(Boolean valid) {
         this.valid = valid;
     }
-
+    
+    public List<TypedError> getErrors() {
+        return errors;
+    }
+    
+    public void setErrors(List<TypedError> errors) {
+        this.errors = errors;
+    }
+    
     public Map<String, Serializable> getContents() {
         return contents;
     }

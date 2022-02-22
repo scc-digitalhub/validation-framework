@@ -5,7 +5,6 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -19,8 +18,7 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 @Table(name = "data_package", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "name" }))
 public class DataPackage {
     @Id
-    @GeneratedValue
-    private long id;
+    private String id;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
@@ -37,11 +35,11 @@ public class DataPackage {
     @OneToMany(mappedBy = "packageId", fetch = FetchType.LAZY)
     private List<DataResource> resources;
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

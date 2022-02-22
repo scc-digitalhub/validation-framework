@@ -25,8 +25,8 @@ import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunConfigRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
-import it.smartcommunitylab.validationstorage.repository.RunShortReportRepository;
-import it.smartcommunitylab.validationstorage.repository.RunShortSchemaRepository;
+import it.smartcommunitylab.validationstorage.repository.RunValidationReportRepository;
+import it.smartcommunitylab.validationstorage.repository.RunDataSchemaRepository;
 
 @Service
 public class ExperimentService {

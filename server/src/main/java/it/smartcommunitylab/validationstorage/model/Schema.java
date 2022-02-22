@@ -2,31 +2,29 @@ package it.smartcommunitylab.validationstorage.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
 public class Schema {
     @Id
-    @GeneratedValue
-    private long id;
+    private String id;
 
     @Column(name = "resource_id")
-    private long resourceId;
+    private String resourceId;
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public long getResourceId() {
+    public String getResourceId() {
         return resourceId;
     }
 
-    public void setResourceId(long resourceId) {
+    public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
     }
 

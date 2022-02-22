@@ -1,16 +1,16 @@
 package it.smartcommunitylab.validationstorage.repository;
 
-import it.smartcommunitylab.validationstorage.model.RunShortSchema;
+import it.smartcommunitylab.validationstorage.model.RunDataSchema;
 
 import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
 
-public interface RunShortSchemaRepository extends CrudRepository<RunShortSchema, String> {
+public interface RunDataSchemaRepository extends CrudRepository<RunDataSchema, String> {
     
-    List<RunShortSchema> findByProjectId(String projectId);
+    List<RunDataSchema> findByProjectId(String projectId);
     
-    List<RunShortSchema> findByRunId(String runId);
+    List<RunDataSchema> findByRunId(String runId);
     
     void deleteByProjectId(String projectId);
     

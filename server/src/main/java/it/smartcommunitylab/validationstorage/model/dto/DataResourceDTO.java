@@ -9,11 +9,13 @@ import it.smartcommunitylab.validationstorage.model.Dataset;
 
 @Valid
 public class DataResourceDTO {
+    private String id;
+    
     private String projectId;
     
-    private long packageId;
+    private String packageId;
     
-    private long storeId;
+    private String storeId;
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
@@ -22,9 +24,17 @@ public class DataResourceDTO {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
     
-    private long schemaId;
+    private SchemaDTO schema;
     
     private Dataset dataset;
+    
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getProjectId() {
         return projectId;
@@ -34,19 +44,19 @@ public class DataResourceDTO {
         this.projectId = projectId;
     }
 
-    public long getPackageId() {
+    public String getPackageId() {
         return packageId;
     }
 
-    public void setPackageId(long packageId) {
+    public void setPackageId(String packageId) {
         this.packageId = packageId;
     }
 
-    public long getStoreId() {
+    public String getStoreId() {
         return storeId;
     }
 
-    public void setStoreId(long storeId) {
+    public void setStoreId(String storeId) {
         this.storeId = storeId;
     }
 
@@ -66,12 +76,12 @@ public class DataResourceDTO {
         this.title = title;
     }
 
-    public long getSchema() {
-        return schemaId;
+    public SchemaDTO getSchema() {
+        return schema;
     }
 
-    public void setSchema(long schemaId) {
-        this.schemaId = schemaId;
+    public void setSchema(SchemaDTO schema) {
+        this.schema = schema;
     }
 
     public Dataset getDataset() {

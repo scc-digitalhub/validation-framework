@@ -8,16 +8,16 @@ import it.smartcommunitylab.validationstorage.model.dto.RunDataProfileDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunDataResourceDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunEnvironmentDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunMetadataDTO;
-import it.smartcommunitylab.validationstorage.model.dto.RunShortReportDTO;
-import it.smartcommunitylab.validationstorage.model.dto.RunShortSchemaDTO;
+import it.smartcommunitylab.validationstorage.model.dto.RunValidationReportDTO;
+import it.smartcommunitylab.validationstorage.model.dto.RunDataSchemaDTO;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepository;
 import it.smartcommunitylab.validationstorage.repository.RunDataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.RunRepository;
-import it.smartcommunitylab.validationstorage.repository.RunShortReportRepository;
-import it.smartcommunitylab.validationstorage.repository.RunShortSchemaRepository;
+import it.smartcommunitylab.validationstorage.repository.RunValidationReportRepository;
+import it.smartcommunitylab.validationstorage.repository.RunDataSchemaRepository;
 
 public class RunService {
     @Autowired
@@ -39,10 +39,10 @@ public class RunService {
     private RunDataResourceRepository runDataResourceRepository;
     
     @Autowired
-    private RunShortReportRepository runShortReportRepository;
+    private RunValidationReportRepository runValidationReportRepository;
     
     @Autowired
-    private RunShortSchemaRepository runShortSchemaRepository;
+    private RunDataSchemaRepository runDataSchemaRepository;
     
     // Run
     public RunDTO createRun(RunDTO request) {
@@ -164,43 +164,43 @@ public class RunService {
         // TODO Auto-generated method stub
     }
     
-    // RunShortReport
-    public RunShortReportDTO createRunShortReport(RunShortReportDTO request) {
+    // RunValidationReport
+    public RunValidationReportDTO createRunValidationReport(RunValidationReportDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunShortReportDTO findRunShortReportById(String id) {
+    public RunValidationReportDTO findRunValidationReportById(String id) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunShortReportDTO updateRunShortReport(String id, RunShortReportDTO request) {
+    public RunValidationReportDTO updateRunValidationReport(String id, RunValidationReportDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public void deleteRunShortReport(String id) {
+    public void deleteRunValidationReport(String id) {
         // TODO Auto-generated method stub
     }
     
-    // RunShortSchema
-    public RunShortSchemaDTO createRunShortSchema(RunShortSchemaDTO request) {
+    // RunDataSchema
+    public RunDataSchemaDTO createRunDataSchema(RunDataSchemaDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunShortSchemaDTO findRunShortSchemaById(String id) {
+    public RunDataSchemaDTO findRunDataSchemaById(String id) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunShortSchemaDTO updateRunShortSchema(String id, RunShortSchemaDTO request) {
+    public RunDataSchemaDTO updateRunDataSchema(String id, RunDataSchemaDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public void deleteRunShortSchema(String id) {
+    public void deleteRunDataSchema(String id) {
         // TODO Auto-generated method stub
     }
 }

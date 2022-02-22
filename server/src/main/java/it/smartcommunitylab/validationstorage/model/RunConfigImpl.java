@@ -6,6 +6,8 @@ import javax.persistence.Embeddable;
 public class RunConfigImpl {
     private Boolean enable;
     
+    private String type;
+    
     private String library;
 
     public Boolean getEnable() {
@@ -19,6 +21,14 @@ public class RunConfigImpl {
     public void setEnable(Boolean enable) {
         this.enable = enable;
     }
+    
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public String getLibrary() {
         return library;
@@ -27,4 +37,5 @@ public class RunConfigImpl {
     public void setLibrary(String library) {
         this.library = library;
     }
+    
 }

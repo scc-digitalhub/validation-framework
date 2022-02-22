@@ -18,8 +18,8 @@ import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.RunEnvironment;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
-import it.smartcommunitylab.validationstorage.model.RunShortReport;
-import it.smartcommunitylab.validationstorage.model.RunShortSchema;
+import it.smartcommunitylab.validationstorage.model.RunValidationReport;
+import it.smartcommunitylab.validationstorage.model.RunDataSchema;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepository;
 import it.smartcommunitylab.validationstorage.repository.RunDataResourceRepository;
@@ -27,8 +27,8 @@ import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
-import it.smartcommunitylab.validationstorage.repository.RunShortReportRepository;
-import it.smartcommunitylab.validationstorage.repository.RunShortSchemaRepository;
+import it.smartcommunitylab.validationstorage.repository.RunValidationReportRepository;
+import it.smartcommunitylab.validationstorage.repository.RunDataSchemaRepository;
 
 /**
  * Service for when the UI needs different behavior from the default service for the document.
@@ -50,9 +50,9 @@ public class UiService {
     @Autowired
     private RunEnvironmentRepository runEnvironmentRepository;
     @Autowired
-    private RunShortReportRepository shortReportRepository;
+    private RunValidationReportRepository shortReportRepository;
     @Autowired
-    private RunShortSchemaRepository shortSchemaRepository;
+    private RunDataSchemaRepository shortSchemaRepository;
     
     // Project
     @PostFilter(ValidationStorageConstants.POSTFILTER_ID)
@@ -112,16 +112,16 @@ public class UiService {
     }
 
     // ShortReport
-    public RunShortReport findShortReportByRunId(String projectId, String experimentId, String runId) {
-        List<RunShortReport> documents = shortReportRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+    public RunValidationReport findShortReportByRunId(String projectId, String experimentId, String runId) {
+        List<RunValidationReport> documents = shortReportRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
         throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");
     }
 
     // ShortSchema
-    public RunShortSchema findShortSchemaByRunId(String projectId, String experimentId, String runId) {
-        List<RunShortSchema> documents = shortSchemaRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
+    public RunDataSchema findShortSchemaByRunId(String projectId, String experimentId, String runId) {
+        List<RunDataSchema> documents = shortSchemaRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
             return documents.get(0);
         throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");

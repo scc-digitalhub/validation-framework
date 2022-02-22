@@ -17,8 +17,8 @@ public class ValidationStorageConstants {
     public static final String RUN_DATA_PROFILE = "data-profile";
     public static final String RUN_ENVIRONMENT = "run-environment";
     public static final String RUN_METADATA = "run-metadata";
-    public static final String RUN_SHORT_REPORT = "short-report";
-    public static final String RUN_SHORT_SCHEMA = "short-schema";
+    public static final String RUN_VALIDATION_REPORT = "validation-report";
+    public static final String RUN_DATA_SCHEMA = "data-schema";
     
     // RunMetadata documents act as representatives for the run they refer to, and are used as base to build
     // run summaries. This is especially important for the UI, which bases its list of runs on run summaries.

@@ -54,7 +54,7 @@ public class Run {
     private List<ArtifactMetadata> artifactMetadata;
     
     @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
-    @Column(name = "run_data_profile")
+    @Column(name = "run_data_profiles")
     private List<RunDataProfile> runDataProfiles;
     
     @OneToMany(mappedBy="run_id")
@@ -62,16 +62,22 @@ public class Run {
     private List<RunDataResource> runDataResources;
     
     @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
-    @Column(name = "run_short_report")
-    private List<RunShortReport> runShortReports;
+    @Column(name = "run_validation_reports")
+    private List<RunValidationReport> runValiationReports;
     
     @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
-    @Column(name = "run_short_schema")
-    private List<RunShortSchema> runShortSchemas;
+    @Column(name = "run_data_schemas")
+    private List<RunDataSchema> runDataSchemas;
     
     private String status;
     
-    private Boolean valid;
+    private String validationResult;
+    
+    private String profileResult;
+    
+    private String schemaResult;
+    
+    private String snapshotResult;
 
     public String getId() {
         return id;
@@ -153,20 +159,20 @@ public class Run {
         this.runDataResources = runDataResources;
     }
 
-    public List<RunShortReport> getRunShortReports() {
-        return runShortReports;
+    public List<RunValidationReport> getRunValidationReports() {
+        return runValiationReports;
     }
 
-    public void setRunShortReports(List<RunShortReport> runShortReports) {
-        this.runShortReports = runShortReports;
+    public void setRunValidationReports(List<RunValidationReport> runValiationReports) {
+        this.runValiationReports = runValiationReports;
     }
 
-    public List<RunShortSchema> getRunShortSchemas() {
-        return runShortSchemas;
+    public List<RunDataSchema> getRunDataSchemas() {
+        return runDataSchemas;
     }
 
-    public void setRunShortSchemas(List<RunShortSchema> runShortSchemas) {
-        this.runShortSchemas = runShortSchemas;
+    public void setRunDataSchemas(List<RunDataSchema> runDataSchemas) {
+        this.runDataSchemas = runDataSchemas;
     }
 
     public String getStatus() {
@@ -177,12 +183,36 @@ public class Run {
         this.status = status;
     }
 
-    public Boolean getValid() {
-        return valid;
+    public String getValidationResult() {
+        return validationResult;
     }
 
-    public void setValid(Boolean valid) {
-        this.valid = valid;
+    public void setValidationResult(String validationResult) {
+        this.validationResult = validationResult;
+    }
+
+    public String getProfileResult() {
+        return profileResult;
+    }
+
+    public void setProfileResult(String profileResult) {
+        this.profileResult = profileResult;
+    }
+
+    public String getSchemaResult() {
+        return schemaResult;
+    }
+
+    public void setSchemaResult(String schemaResult) {
+        this.schemaResult = schemaResult;
+    }
+
+    public String getSnapshotResult() {
+        return snapshotResult;
+    }
+
+    public void setSnapshotResult(String snapshotResult) {
+        this.snapshotResult = snapshotResult;
     }
 
 }

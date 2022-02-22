@@ -1,14 +1,24 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
 public class SchemaDTO {
-    private long resourceId;
-
-    public long getResourceId() {
-        return resourceId;
+    private String id;
+    
+    private DataResourceDTO resource;
+    
+    public String getId() {
+        return id;
     }
 
-    public void setResourceId(long resourceId) {
-        this.resourceId = resourceId;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public DataResourceDTO getResource() {
+        return resource;
+    }
+
+    public void setResource(DataResourceDTO resource) {
+        this.resource = resource;
     }
     
 }

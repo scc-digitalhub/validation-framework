@@ -1,6 +1,7 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Map;
 
 import javax.validation.constraints.NotBlank;
@@ -12,22 +13,34 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
  * Request object: lists metadata about a run.
  */
 public class RunMetadataDTO {
+    private String id;
+    
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private long experimentId;
+    private String experimentId;
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private long runId;
+    private String runId;
+    
+    private Date created;
 
     /**
      * May contain extra information.
      */
     private Map<String, Serializable> contents;
+    
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getProjectId() {
         return projectId;
@@ -37,20 +50,28 @@ public class RunMetadataDTO {
         this.projectId = projectId;
     }
 
-    public long getExperimentId() {
+    public String getExperimentId() {
         return experimentId;
     }
 
-    public void setExperimentId(long experimentId) {
+    public void setExperimentId(String experimentId) {
         this.experimentId = experimentId;
     }
 
-    public long getRunId() {
+    public String getRunId() {
         return runId;
     }
 
-    public void setRunId(long runId) {
+    public void setRunId(String runId) {
         this.runId = runId;
+    }
+    
+    public Date getCreated() {
+        return created;
+    }
+
+    public void setCreated(Date created) {
+        this.created = created;
     }
 
     public Map<String, Serializable> getContents() {

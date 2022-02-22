@@ -4,7 +4,6 @@ import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
@@ -21,8 +20,7 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 @Table(name = "run_data_profile", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "experiment_name", "run_name" }))
 public class RunDataProfile {
     @Id
-    @GeneratedValue
-    private long id;
+    private String id;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
@@ -38,17 +36,19 @@ public class RunDataProfile {
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "run_id")
     private String runId;
+    
+    private String resourceId;
 
     /**
      * May contain extra information.
      */
     private Map<String, ?> contents;
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -74,6 +74,14 @@ public class RunDataProfile {
 
     public void setRunId(String runId) {
         this.runId = runId;
+    }
+
+    public String getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
     }
 
     public Map<String, ?> getContents() {

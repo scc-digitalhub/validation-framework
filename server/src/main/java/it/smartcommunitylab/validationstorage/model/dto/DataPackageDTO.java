@@ -10,6 +10,8 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Valid
 public class DataPackageDTO {
+    private String id;
+    
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
@@ -21,7 +23,15 @@ public class DataPackageDTO {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
     
-    private Set<Long> resources;
+    private Set<String> resourceIds;
+    
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getProjectId() {
         return projectId;
@@ -47,12 +57,12 @@ public class DataPackageDTO {
         this.title = title;
     }
 
-    public Set<Long> getResources() {
-        return resources;
+    public Set<String> getResourceIds() {
+        return resourceIds;
     }
 
-    public void setResources(Set<Long> resources) {
-        this.resources = resources;
+    public void setResourceIds(Set<String> resourceIds) {
+        this.resourceIds = resourceIds;
     }
     
 }

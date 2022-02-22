@@ -1,16 +1,16 @@
 package it.smartcommunitylab.validationstorage.repository;
 
-import it.smartcommunitylab.validationstorage.model.RunShortReport;
+import it.smartcommunitylab.validationstorage.model.RunValidationReport;
 
 import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
 
-public interface RunShortReportRepository extends CrudRepository<RunShortReport, String> {
+public interface RunValidationReportRepository extends CrudRepository<RunValidationReport, String> {
     
-    List<RunShortReport> findByProjectId(String projectId);
+    List<RunValidationReport> findByProjectId(String projectId);
     
-    List<RunShortReport> findByRunId(String runId);
+    List<RunValidationReport> findByRunId(String runId);
     
     void deleteByProjectId(String projectId);
     

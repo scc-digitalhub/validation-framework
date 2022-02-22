@@ -12,22 +12,32 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
  * Request object: short report on the validation's result.
  */
 public class RunEnvironmentDTO {
+    private String id;
+    
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private long experimentId;
+    private String experimentId;
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private long runId;
+    private String runId;
 
     /**
      * May contain extra information.
      */
     private Map<String, Serializable> contents;
+    
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getProjectId() {
         return projectId;
@@ -37,19 +47,19 @@ public class RunEnvironmentDTO {
         this.projectId = projectId;
     }
 
-    public long getExperimentId() {
+    public String getExperimentId() {
         return experimentId;
     }
 
-    public void setExperimentId(long experimentId) {
+    public void setExperimentId(String experimentId) {
         this.experimentId = experimentId;
     }
 
-    public long getRunId() {
+    public String getRunId() {
         return runId;
     }
 
-    public void setRunId(long runId) {
+    public void setRunId(String runId) {
         this.runId = runId;
     }
 

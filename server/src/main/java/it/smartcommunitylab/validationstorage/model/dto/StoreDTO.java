@@ -12,6 +12,8 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Valid
 public class StoreDTO {
+    private String id;
+    
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
@@ -27,9 +29,17 @@ public class StoreDTO {
     
     private Map<String, Serializable> config;
     
-    private boolean isDefault;
+    private Boolean isDefault;
     
-    private Set<Long> resources;
+    private Set<DataResourceDTO> resources;
+    
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getProjectId() {
         return projectId;
@@ -72,18 +82,22 @@ public class StoreDTO {
     }
 
     public boolean isDefault() {
+        return isDefault != null ? isDefault.booleanValue() : false;
+    }
+
+    public Boolean getIsDefault() {
         return isDefault;
     }
 
-    public void setDefault(boolean isDefault) {
+    public void setIsDefault(Boolean isDefault) {
         this.isDefault = isDefault;
     }
 
-    public Set<Long> getResources() {
+    public Set<DataResourceDTO> getResources() {
         return resources;
     }
 
-    public void setResources(Set<Long> resources) {
+    public void setResources(Set<DataResourceDTO> resources) {
         this.resources = resources;
     }
     

@@ -13,6 +13,8 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
  */
 @Valid
 public class ExperimentDTO {
+    private String id;
+    
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
@@ -26,13 +28,21 @@ public class ExperimentDTO {
     
     private Set<String> runs;
     
-    private Set<Long> runConfigIds;
+    private Set<String> runConfigIds;
     
-    private Set<Long> resourceIds;
+    private Set<String> resourceIds;
 
-    private Set<Long> constraintIds;
+    private Set<String> constraintIds;
     
     private Set<String> tags;
+    
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getProjectId() {
         return projectId;
@@ -66,27 +76,27 @@ public class ExperimentDTO {
         this.runs = runs;
     }
 
-    public Set<Long> getRunConfigIds() {
+    public Set<String> getRunConfigIds() {
         return runConfigIds;
     }
 
-    public void setRunConfigIds(Set<Long> runConfigIds) {
+    public void setRunConfigIds(Set<String> runConfigIds) {
         this.runConfigIds = runConfigIds;
     }
 
-    public Set<Long> getResourceIds() {
+    public Set<String> getResourceIds() {
         return resourceIds;
     }
 
-    public void setResourceIds(Set<Long> resourceIds) {
+    public void setResourceIds(Set<String> resourceIds) {
         this.resourceIds = resourceIds;
     }
 
-    public Set<Long> getConstraintIds() {
+    public Set<String> getConstraintIds() {
         return constraintIds;
     }
 
-    public void setConstraintIds(Set<Long> constraintIds) {
+    public void setConstraintIds(Set<String> constraintIds) {
         this.constraintIds = constraintIds;
     }
 

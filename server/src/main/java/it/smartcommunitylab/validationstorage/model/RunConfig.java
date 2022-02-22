@@ -1,9 +1,10 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -13,8 +14,7 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 @Entity
 public class RunConfig {
     @Id
-    @GeneratedValue
-    private long id;
+    private String id;
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
@@ -27,22 +27,22 @@ public class RunConfig {
     private String experimentId;
     
     @Embedded
-    private RunConfigImpl snapshot;
+    private List<RunConfigImpl> snapshot;
     
     @Embedded
-    private RunConfigImpl profiling;
+    private List<RunConfigImpl> profiling;
     
     @Embedded
-    private RunConfigImpl schemaInference;
+    private List<RunConfigImpl> schemaInference;
     
     @Embedded
-    private RunConfigImpl validation;
+    private List<RunConfigImpl> validation;
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -62,35 +62,35 @@ public class RunConfig {
         this.experimentId = experimentId;
     }
 
-    public RunConfigImpl getSnapshot() {
+    public List<RunConfigImpl> getSnapshot() {
         return snapshot;
     }
 
-    public void setSnapshot(RunConfigImpl snapshot) {
+    public void setSnapshot(List<RunConfigImpl> snapshot) {
         this.snapshot = snapshot;
     }
 
-    public RunConfigImpl getProfiling() {
+    public List<RunConfigImpl> getProfiling() {
         return profiling;
     }
 
-    public void setProfiling(RunConfigImpl profiling) {
+    public void setProfiling(List<RunConfigImpl> profiling) {
         this.profiling = profiling;
     }
 
-    public RunConfigImpl getSchemaInference() {
+    public List<RunConfigImpl> getSchemaInference() {
         return schemaInference;
     }
 
-    public void setSchemaInference(RunConfigImpl schemaInference) {
+    public void setSchemaInference(List<RunConfigImpl> schemaInference) {
         this.schemaInference = schemaInference;
     }
 
-    public RunConfigImpl getValidation() {
+    public List<RunConfigImpl> getValidation() {
         return validation;
     }
 
-    public void setValidation(RunConfigImpl validation) {
+    public void setValidation(List<RunConfigImpl> validation) {
         this.validation = validation;
     }
     

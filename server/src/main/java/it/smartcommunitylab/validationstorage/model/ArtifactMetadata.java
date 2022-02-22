@@ -2,7 +2,6 @@ package it.smartcommunitylab.validationstorage.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
@@ -16,8 +15,7 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 @Entity
 public class ArtifactMetadata {
     @Id
-    @GeneratedValue
-    private long id;
+    private String id;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
@@ -44,11 +42,11 @@ public class ArtifactMetadata {
      */
     private String uri;
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

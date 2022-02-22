@@ -6,7 +6,6 @@ import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
@@ -20,8 +19,7 @@ import it.smartcommunitylab.validationstorage.repository.HashMapConverter;
 @Table(name = "stores", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "name" }))
 public class Store {
     @Id
-    @GeneratedValue
-    private long id;
+    private String id;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
@@ -45,11 +43,11 @@ public class Store {
     @Column(name = "is_default")
     private Boolean isDefault;
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
