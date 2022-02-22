@@ -1,14 +1,14 @@
 """
-ShortSchema module.
+DatajudgeSchema module.
 Implementation of a Short Schema common structure.
 """
 from collections import namedtuple
 from typing import List
 
 
-class ShortSchema:
+class DatajudgeSchema:
     """
-    ShortSchema object consisting in a succint
+    DatajudgeSchema object consisting in a succint
     version of an inferred data schema produced
     by some validation framework.
 
@@ -18,8 +18,6 @@ class ShortSchema:
         Validation library name.
     lib_version : str
         Validation library version.
-    data_resource_uri : str
-        URI that point to the resource.
     duration : float
         Time required by the inference process.
     fields : list
@@ -33,12 +31,10 @@ class ShortSchema:
     def __init__(self,
                  lib_name: str,
                  lib_version: str,
-                 data_resource_uri: str,
                  duration: float,
                  fields: List[namedtuple]) -> None:
         self.lib_name = lib_name
         self.lib_version = lib_version
-        self.data_resource_uri = data_resource_uri
         self.duration = duration
         self.fields = fields
 
@@ -57,7 +53,6 @@ class ShortSchema:
         schema = {
             "libraryName": self.lib_name,
             "libraryVersion": self.lib_version,
-            "dataResourceUri": self.data_resource_uri,
             "duration": self.duration,
             "fields": fields,
         }

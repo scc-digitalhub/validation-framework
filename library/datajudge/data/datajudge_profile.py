@@ -1,12 +1,12 @@
 """
-ShortProfile module.
+DatajudgeProfile module.
 Implementation of a Short Profile common structure.
 """
 
 
-class ShortProfile:
+class DatajudgeProfile:
     """
-    ShortProfile object consisting in a succint
+    DatajudgeProfile object consisting in a succint
     version of an inferred data profile produced
     by some profiling framework.
 
@@ -33,14 +33,12 @@ class ShortProfile:
     def __init__(self,
                  lib_name: str,
                  lib_version: str,
-                 data_resource_uri: str,
                  duration: float,
                  stats: dict,
                  fields: dict,
                  ) -> None:
         self.lib_name = lib_name
         self.lib_version = lib_version
-        self.data_resource_uri = data_resource_uri
         self.duration = duration
         self.stats = stats
         self.fields = fields
@@ -52,7 +50,6 @@ class ShortProfile:
         schema = {
             "libraryName": self.lib_name,
             "libraryVersion": self.lib_version,
-            "dataResourceUri": self.data_resource_uri,
             "duration": self.duration,
             "stats": self.stats,
             "fields": self.fields,

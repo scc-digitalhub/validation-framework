@@ -1,6 +1,6 @@
 """
 DataResource module.
-Implementation of a DataResource object similar to the one defined 
+Implementation of a DataResource object similar to the one defined
 in frictionless-data specifications.
 """
 from typing import List, Mapping, Optional, Union

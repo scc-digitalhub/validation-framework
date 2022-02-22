@@ -3,6 +3,7 @@ Frictionless implementation of inference plugin.
 """
 from __future__ import annotations
 
+import time
 import typing
 from typing import List, Optional
 
@@ -13,7 +14,7 @@ from frictionless.schema import Schema
 import datajudge.utils.config as cfg
 from datajudge.run.inference.inference_plugin import (Inference, RenderTuple,
                                                       SchemaTuple)
-from datajudge.utils.utils import guess_mediatype, timer, warn
+from datajudge.utils.utils import guess_mediatype, warn
 
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
@@ -58,42 +59,52 @@ class InferencePluginFrictionless(Inference):
                      ) -> list:
         """
         Parse an inferred schema and return a field list for
-        standardized ShortSchema.
+        standardized DatajudgeSchema.
         """
 
         field_infer = schema_inferred.get("fields", [])
-        short_schema_fields = []
+        dj_schema_fields = []
 
         for fi in field_infer:
             fname = fi.get("name", "")
             ftype = fi.get("type", "")
-            short_schema_fields.append(SchemaTuple(fname, ftype))
-        if short_schema_fields:
-            return short_schema_fields
+            dj_schema_fields.append(SchemaTuple(fname, ftype))
+        if dj_schema_fields:
+            return dj_schema_fields
         return [SchemaTuple("", "")]
 
-    def validate_schema(self,
-                        schema: Optional[Schema] = None) -> None:
+    def validate_schema(self, schema: Schema) -> None:
         """
-        Validate frictionless schema before log/persist it.
+        Validate frictionless schema before persist it.
         """
-        if schema is not None and not isinstance(schema, Schema):
+        if not isinstance(schema, Schema):
             raise TypeError("Expected frictionless schema!")
 
-    @timer
-    def infer_schema(self,
-                     data_path: str) -> Schema:
+    def infer(self,
+              res_name: str,
+              data_path: str) -> Schema:
         """
-        Method that call infer on a frictionless Resource
-        and return an inferred schema.
+        Method that call infer on a resource and return an
+        inferred schema.
         """
-        schema = describe_schema(data_path)
-        if schema is None:
-            warn("Unable to infer schema.")
-        return schema
+        inferred = self.registry.get_result(res_name)
+        if inferred is not None:
+            return inferred
 
-    def infer_resource(self,
-                       data_path: str) -> Resource:
+        # Execute inference and measure time
+        start = time.perf_counter()
+        inferred = describe_schema(data_path)
+        end = round(time.perf_counter() - start, 2)
+
+        if inferred is None:
+            warn("Unable to infer schema.")
+            return
+
+        self.registry.add_result(res_name, inferred, end)
+
+        return inferred
+
+    def infer_resource(self, data_path: str) -> Resource:
         """
         Infer on resource.
         """
@@ -102,8 +113,7 @@ class InferencePluginFrictionless(Inference):
         resource.expand()
         return resource
 
-    def render_object(self,
-                      obj: Schema) -> List[RenderTuple]:
+    def render_object(self, obj: Schema) -> List[RenderTuple]:
         """
         Return a rendered profile ready to be persisted as artifact.
         """

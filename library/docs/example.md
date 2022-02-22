@@ -51,13 +51,13 @@ with run:
 When we log the short report, the library executes the validation process with the `frictionless` method `validate_resource`.
 
 ```python
-    run.log_short_report()
+    run.log_DJ_REPORT()
 ```
 
 Then we can log a schematic version of the data schema ...
 
 ```python
-    run.log_short_schema()
+    run.log_DJ_SCHEMA()
 ```
 
 ... and a short and anonymized version of the report produced by `pandas_profiling`.

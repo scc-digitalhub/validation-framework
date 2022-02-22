@@ -2,13 +2,12 @@
 Profiling plugin abstract class module.
 """
 # pylint: disable=import-error,invalid-name
-import typing
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from typing import Any, List, Optional
 
-if typing.TYPE_CHECKING:
-    from datajudge.data import DataResource
+from datajudge.run.results_registry import ResultsRegistry
+
 
 ProfileTuple = namedtuple("ProfileTuple",
                           ("duration", "stats", "fields"))
@@ -22,9 +21,9 @@ class Profiling(metaclass=ABCMeta):
     """
 
     def __init__(self) -> None:
-
         self.lib_name = None
         self.lib_version = None
+        self.registry = ResultsRegistry()
         self.update_library_info()
 
     @abstractmethod
@@ -35,7 +34,8 @@ class Profiling(metaclass=ABCMeta):
 
     @abstractmethod
     def parse_profile(self,
-                      profile: Any) -> ProfileTuple:
+                      profile: Any,
+                      res_name: str) -> ProfileTuple:
         """
         Parse a data profile.
         """
@@ -50,6 +50,7 @@ class Profiling(metaclass=ABCMeta):
 
     @abstractmethod
     def profile(self,
+                res_name: str,
                 data_path: str,
                 resource: Any,
                 profiler_kwargs: Optional[dict] = None

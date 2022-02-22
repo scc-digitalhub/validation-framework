@@ -65,12 +65,12 @@ run = client.create_run(data, "frictionless")
 with run:
 
     # The validation process is started automatically
-    run.log_short_report()
+    run.log_DJ_REPORT()
     run.persist_report()
 
     # or manually
     report = run.validate_resource()
-    run.log_short_report(report)
+    run.log_DJ_REPORT(report)
     run.persist_report(report)
 
 ```
@@ -96,7 +96,7 @@ with run:
     report = validate_resource(resource, schema=schema)
 
     # Use run method to log/persist report
-    run.log_short_report(report)
+    run.log_DJ_REPORT(report)
     run.persist_report(report)
 
 ```

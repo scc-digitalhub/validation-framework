@@ -100,7 +100,7 @@ class Client:
             raise ValueError("Please configure one store as default.")
         return default
 
-    def add_store(self, 
+    def add_store(self,
                   config: Union[cfg.StoreConfig, dict]
                   ) -> None:
         """
@@ -165,7 +165,7 @@ class Client:
         run_id = self._get_run_id(run_id)
 
         self._metadata_store.init_run(experiment_name,
-                                      run_id, 
+                                      run_id,
                                       overwrite)
 
         run_metadata_uri = self._metadata_store.get_run_metadata_uri(experiment_name,

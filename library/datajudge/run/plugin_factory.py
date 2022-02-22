@@ -5,7 +5,8 @@ from typing import Any
 
 from datajudge.run.inference import InferencePluginFrictionless
 from datajudge.run.validation import ValidationPluginFrictionless
-from datajudge.run.profiling import InferencePluginPandasProfiling
+from datajudge.run.profiling import (ProfilePluginPandasProfiling,
+                                     ProfilePluginFrictionless)
 from datajudge.utils import config as cfg
 
 
@@ -17,7 +18,8 @@ PLUGIN_REGISTRY = {
         "frictionless": ValidationPluginFrictionless
         },
     "profiling": {
-        "pandas_profiling": InferencePluginPandasProfiling
+        "pandas_profiling": ProfilePluginPandasProfiling,
+        "frictionless": ProfilePluginFrictionless
         },
     "snapshot": {}
 }

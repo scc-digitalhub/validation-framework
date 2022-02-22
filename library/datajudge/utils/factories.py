@@ -59,7 +59,7 @@ ARTIFACT_STORE_REGISTRY = {
 def cfg_conversion(config: Union[StoreConfig, dict]) -> StoreConfig:
     """
     Try to convert a store configuration in a StoreConfig model.
-    """    
+    """   
     if not isinstance(config, StoreConfig):
         try:
             return StoreConfig(**config)
@@ -90,7 +90,7 @@ def get_md_store(project_name: str,
     """
     if config is None:
         return METADATA_STORE_REGISTRY["dummy"](None, None)
-    
+   
     cfg = cfg_conversion(config)
     scheme = get_uri_scheme(cfg.path)
     new_uri = resolve_uri_metadata(cfg.path, scheme, project_name)
@@ -118,7 +118,7 @@ def get_stores(store_configs: Union[dict, StoreConfig, list]
     """
     if store_configs is None:
         return {
-            "dummy": {
+            "_dummy": {
                 "store": ARTIFACT_STORE_REGISTRY["dummy"](None, None),
                 "is_default": True
             }
@@ -135,11 +135,11 @@ def get_stores(store_configs: Union[dict, StoreConfig, list]
             obj = ARTIFACT_STORE_REGISTRY[scheme](new_uri, cfg.config)
             stores[cfg.name] = {
                 "store": obj,
-                "is_default": cfg.isDefault 
+                "is_default": cfg.isDefault
             }
         except KeyError as k_err:
             raise KeyError from k_err
-    
+   
     return stores
 
 

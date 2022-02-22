@@ -1,12 +1,12 @@
 """
-ShortReport module.
+DatajudgeReport module.
 Implementation of a Short Report common structure.
 """
 # pylint: disable=too-many-arguments
 from typing import List, Mapping
 
 
-class ShortReport:
+class DatajudgeReport:
     """
     Short report object consisting in a partial version of
     the full report produced by the validation library.
@@ -39,13 +39,11 @@ class ShortReport:
     def __init__(self,
                  lib_name: str,
                  lib_version: str,
-                 data_resource_uri: str,
                  duration: float,
                  valid: bool,
                  errors: List[Mapping]) -> None:
         self.lib_name = lib_name
         self.lib_version = lib_version
-        self.data_resource_uri = data_resource_uri
         self.duration = duration
         self.valid = valid
         self.errors = errors
@@ -57,7 +55,6 @@ class ShortReport:
         report = {
             "libraryName": self.lib_name,
             "libraryVersion": self.lib_version,
-            "dataResourceUri": self.data_resource_uri,
             "duration": self.duration,
             "valid": self.valid,
             "errors": self.errors,

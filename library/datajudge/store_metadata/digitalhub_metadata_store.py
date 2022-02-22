@@ -33,9 +33,9 @@ class DigitalHubMetadataStore(MetadataStore):
         self._key_vault = {
             self._RUN_METADATA: [],
             self._DATA_RESOURCE: [],
-            self._SHORT_REPORT: [],
-            self._SHORT_SCHEMA: [],
-            self._DATA_PROFILE: [],
+            self._DJ_REPORT: [],
+            self._DJ_SCHEMA: [],
+            self._DJ_PROFILE: [],
             self._ARTIFACT_METADATA: [],
             self._RUN_ENV: []
         }
@@ -43,9 +43,9 @@ class DigitalHubMetadataStore(MetadataStore):
         self._endpoints = {
             self._RUN_METADATA: cfg.API_RUN_METADATA,
             self._DATA_RESOURCE: cfg.API_DATA_RESOURCE,
-            self._SHORT_REPORT: cfg.API_SHORT_REPORT,
-            self._SHORT_SCHEMA: cfg.API_SHORT_SCHEMA,
-            self._DATA_PROFILE: cfg.API_DATA_PROFILE,
+            self._DJ_REPORT: cfg.API_DJ_REPORT,
+            self._DJ_SCHEMA: cfg.API_DJ_SCHEMA,
+            self._DJ_PROFILE: cfg.API_DJ_PROFILE,
             self._ARTIFACT_METADATA: cfg.API_ARTIFACT_METADATA,
             self._RUN_ENV: cfg.API_RUN_ENV
         }

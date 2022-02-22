@@ -24,9 +24,9 @@ class LocalMetadataStore(MetadataStore):
         self._filenames = {
             self._RUN_METADATA: cfg.FN_RUN_METADATA,
             self._DATA_RESOURCE: cfg.FN_DATA_RESOURCE,
-            self._SHORT_REPORT: cfg.FN_SHORT_REPORT,
-            self._SHORT_SCHEMA: cfg.FN_SHORT_SCHEMA,
-            self._DATA_PROFILE: cfg.FN_DATA_PROFILE,
+            self._DJ_REPORT: cfg.FN_DJ_REPORT,
+            self._DJ_SCHEMA: cfg.FN_DJ_SCHEMA,
+            self._DJ_PROFILE: cfg.FN_DJ_PROFILE,
             self._ARTIFACT_METADATA: cfg.FN_ARTIFACT_METADATA,
             self._RUN_ENV: cfg.FN_RUN_ENV,
         }
