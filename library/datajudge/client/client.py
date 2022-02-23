@@ -115,15 +115,6 @@ class Client:
 
         self._store_registry[key] = dict_store[key]
 
-    @staticmethod
-    def _get_run_id(run_id: Optional[str] = None) -> str:
-        """
-        Return a string UID for a Run.
-        """
-        if run_id:
-            return run_id
-        return uuid.uuid4().hex
-
     def create_run(self,
                    data_resource: DataResource,
                    run_config: RunConfig,
@@ -262,6 +253,15 @@ class Client:
         Return temporary dir name.
         """
         return self._tmp_dir
+
+    @staticmethod
+    def _get_run_id(run_id: Optional[str] = None) -> str:
+        """
+        Return a string UID for a Run.
+        """
+        if run_id:
+            return run_id
+        return uuid.uuid4().hex
 
     def __repr__(self) -> str:
         return str(self.__dict__)

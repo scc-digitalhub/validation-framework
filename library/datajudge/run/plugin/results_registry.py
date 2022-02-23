@@ -21,7 +21,8 @@ class ResultsRegistry:
     def add_result(self,
                    res_name: str,
                    result: Any,
-                   time: float) -> None:
+                   time: Optional[float] = None
+                   ) -> None:
         """
         Add new result to registry.
         """

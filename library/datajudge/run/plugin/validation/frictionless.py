@@ -8,12 +8,7 @@ from typing import List, Optional
 import frictionless
 from frictionless import Report, Resource, Schema
 
-from datajudge.run.validation.validation_plugin import (RenderTuple,
-                                                        ReportTuple,
-                                                        Validation)
-
-
-FN_REPORT = "report_frictionless.json"
+from datajudge.run.plugin.validation.validation_plugin import Validation
 
 
 class ValidationPluginFrictionless(Validation):
@@ -31,7 +26,7 @@ class ValidationPluginFrictionless(Validation):
     def parse_report(self,
                      report: Report,
                      schema_path: Optional[str] = None
-                     ) -> ReportTuple:
+                     ) -> tuple:
         """
         Parse the report produced by frictionless.
         """
@@ -56,7 +51,7 @@ class ValidationPluginFrictionless(Validation):
                                                .get("severity", 5)
                         break
 
-        return ReportTuple(duration, valid, errors)
+        return self.get_report_tuple(duration, valid, errors)
 
     def validate_report(self,
                         report: Report) -> None:
@@ -107,13 +102,12 @@ class ValidationPluginFrictionless(Validation):
 
         return report
 
-    def render_object(self,
-                      obj: Report) -> List[RenderTuple]:
+    def render_artifact(self,
+                        obj: Report) -> List[tuple]:
         """
         Return a rendered profile ready to be persisted as artifact.
         """
-
         self.validate_report(obj)
-        dict_report = dict(obj)
-
-        return [RenderTuple(dict_report, FN_REPORT)]
+        report = dict(obj)
+        filename = self._fn_report.format("frictionless.json")
+        return [self.get_render_tuple(report, filename)]

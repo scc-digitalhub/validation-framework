@@ -58,14 +58,7 @@ class SnapshotConfig(BaseModel):
     library: Optional[str] = None
 
 
-Configs = Union[ValidationConfig,
-                InferenceConfig,
-                ProfilingConfig,
-                SnapshotConfig]
-
-
 class RunConfig(BaseModel):
-
     # validation: Optional[List[ValidationConfig]] = ValidationConfig()
     # inference: Optional[List[InferenceConfig]] = InferenceConfig()
     # profiling: Optional[List[ProfilingConfig]] = ProfilingConfig()

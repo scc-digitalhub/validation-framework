@@ -3,11 +3,7 @@ Dummy implementation of inference plugin.
 """
 from typing import Any, List
 
-from datajudge.run.inference.inference_plugin import (Inference, RenderTuple,
-                                                      SchemaTuple)
-
-
-FN_SCHEMA = "schema_dummy.json"
+from datajudge.run.plugin.inference.inference_plugin import Inference
 
 
 class InferencePluginDummy(Inference):
@@ -17,10 +13,8 @@ class InferencePluginDummy(Inference):
 
     def update_library_info(self) -> None:
         """
-        Update run's info about the inference framework used.
+        Do nothing.
         """
-        self.lib_name = None
-        self.lib_version = None
 
     def parse_schema(self,
                      schema_inferred: Any
@@ -28,7 +22,7 @@ class InferencePluginDummy(Inference):
         """
         Return empty schema tuple.
         """
-        return [SchemaTuple("", "")]
+        return [self.get_schema_tuple(None, None)]
 
     def validate_schema(self, schema: Any) -> None:
         """
@@ -45,14 +39,14 @@ class InferencePluginDummy(Inference):
         inferred = self.registry.get_result(res_name)
         if inferred is not None:
             return inferred
-
         inferred = {}
-        self.registry.add_result(res_name, inferred, None)
-
+        self.registry.add_result(res_name, inferred)
         return inferred
 
-    def render_object(self, obj: Any) -> List[RenderTuple]:
+    def render_artifact(self, obj: Any) -> List[tuple]:
         """
         Return a dummy profile to be persisted as artifact.
         """
-        return [RenderTuple({}, FN_SCHEMA)]
+        schema = dict()
+        filename = self._fn_schema.format("dummy.json")
+        return [self.get_render_tuple(schema, filename)]

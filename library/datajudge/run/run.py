@@ -5,12 +5,11 @@ Run module.
 from __future__ import annotations
 
 import typing
-import warnings
 from typing import Any, Optional, Union
 
 from datajudge.data import (BlobLog, EnvLog, DatajudgeProfile,
                             DatajudgeReport, DatajudgeSchema)
-from datajudge.run.plugin_factory import get_plugin
+from datajudge.run.run_plugin import RunPlugin
 from datajudge.utils import config as cfg
 from datajudge.utils.file_utils import clean_all
 from datajudge.utils.uri_utils import get_name_from_uri
@@ -61,7 +60,7 @@ class Run:
 
     """
 
-    # Constants
+    # Constants to describe metadata types
 
     _RUN_METADATA = cfg.MT_RUN_METADATA
     _RUN_ENV = cfg.MT_RUN_ENV
@@ -87,15 +86,7 @@ class Run:
         self._data = None
 
         # Plugin
-        self._inf_plugin = get_plugin(
-            self.run_info.run_config.inference,
-            "inference")
-        self._val_plugin = get_plugin(
-            self.run_info.run_config.validation,
-            "validation")
-        self._pro_plugin = get_plugin(
-            self.run_info.run_config.profiling,
-            "profiling")
+        self.plugin = RunPlugin(self.run_info.run_config)
 
         # To remove
         self._val_schema = None
@@ -116,11 +107,7 @@ class Run:
         """
         Get libraries info used by plugins.
         """
-        self.run_info.run_libraries =  {
-            "validation": self._val_plugin.get_lib(),
-            "inference": self._inf_plugin.get_lib(),
-            "profiling":self._pro_plugin.get_lib(),
-        }
+        self.run_info.run_libraries =  self.plugin.get_info()
 
     def _log_run(self) -> None:
         """
@@ -198,7 +185,7 @@ class Run:
         """
         Check objects to persist, render and persist them.
         """
-        rendered = plugin.render_object(object)
+        rendered = plugin.render_artifact(object)
         for obj in rendered:
             self.persist_artifact(obj.object,
                                   obj.filename)
@@ -263,10 +250,9 @@ class Run:
         Execute schema inference over a resource.
         Return the schema inferred by the inference framework.
         """
-        self._check_plugin(self._inf_plugin)
         self.fetch_input_data()
-        return self._inf_plugin.infer(self.data_resource.name,
-                                      self._data)
+        return self.plugin.inf.infer(self.data_resource.name,
+                                     self._data)
 
     def infer_datajudge(self) -> dict:
         """
@@ -274,12 +260,7 @@ class Run:
         Return the schema inferred by datajudge.
         """
         schema = self.infer_wrapper()
-        parsed = self._inf_plugin.parse_schema(schema)
-        return DatajudgeSchema(self._inf_plugin.lib_name,
-                               self._inf_plugin.lib_version,
-                               self._inf_plugin.registry.get_time(
-                                               self.data_resource.name),
-                               parsed)
+        return self.plugin.inf.render_datajudge(schema, self.data_resource.name)
 
     def infer(self) -> tuple:
         """
@@ -315,7 +296,7 @@ class Run:
             An inferred schema object produced by a validation library.
 
         """
-        self._render_obj(self._inf_plugin, schema)
+        self._render_obj(self.plugin.inf, schema)
 
     # Validation
 
@@ -333,14 +314,13 @@ class Run:
             Specific framework arguments.
 
         """
-        self._check_plugin(self._val_plugin)
         self.fetch_input_data()
         self.fetch_validation_schema()
-        return self._val_plugin.validate(self.data_resource.name,
-                                         self._data,
-                                         constraints,
-                                         self._val_schema,
-                                         val_kwargs)
+        return self.plugin.val.validate(self.data_resource.name,
+                                        self._data,
+                                        constraints,
+                                        self._val_schema,
+                                        val_kwargs)
       
     def validate_datajudge(self,
                            constraints: Optional[dict] = None,
@@ -359,13 +339,7 @@ class Run:
 
         """
         report = self.validate_wrapper(constraints, val_kwargs)
-        parsed = self._val_plugin.parse_report(report,
-                                               self._val_schema)
-        return DatajudgeReport(self._val_plugin.lib_name,
-                               self._val_plugin.lib_version,
-                               parsed.time,
-                               parsed.valid,
-                               parsed.errors)
+        return self.plugin.val.render_datajudge(report, self.data_resource.name, self._val_schema)
 
     def validate(self,
                  constraints: Optional[dict] = None,
@@ -415,7 +389,7 @@ class Run:
             An report object produced by a validation library.
 
         """
-        self._render_obj(self._val_plugin, report)
+        self._render_obj(self.plugin.val, report)
 
     # Profiling
 
@@ -430,11 +404,10 @@ class Run:
             Kwargs passed to profiler.
 
         """
-        self._check_plugin(self._pro_plugin)
         self.fetch_input_data()
-        return self._pro_plugin.profile(self.data_resource.name,
-                                        self._data,
-                                        profiler_kwargs)
+        return self.plugin.pro.profile(self.data_resource.name,
+                                       self._data,
+                                       profiler_kwargs)
 
     def profile_datajudge(self,
                           profiler_kwargs: dict = None
@@ -450,13 +423,7 @@ class Run:
 
         """
         profile = self.profile_wrapper(profiler_kwargs)
-        parsed = self._pro_plugin.parse_profile(profile,
-                                                self.data_resource.name)
-        return DatajudgeProfile(self._pro_plugin.lib_name,
-                                self._pro_plugin.lib_version,
-                                parsed.duration,
-                                parsed.stats,
-                                parsed.fields)
+        return self.plugin.pro.render_datajudge(profile, self.data_resource.name)
 
     def profile(self,
                 profiler_kwargs: dict = None) -> tuple:
@@ -499,7 +466,7 @@ class Run:
             A profile object produced by a profiling library.
 
         """
-        self._render_obj(self._pro_plugin, profile)
+        self._render_obj(self.plugin.pro, profile)
 
     # Input data
 
@@ -541,15 +508,6 @@ class Run:
         return self._client.fetch_artifact(uri)
 
     # Utils
-
-    @staticmethod
-    def _check_plugin(plugin: Any) -> None:
-        """
-        Check plugin existence
-        """
-        if plugin is None:
-            raise RuntimeError("Please configure the plugin " +
-                               "in the run configuration.")
 
     @staticmethod
     def _check_type(obj: Any, obj_type: Any) -> None:

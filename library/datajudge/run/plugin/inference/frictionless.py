@@ -9,11 +9,7 @@ import frictionless
 from frictionless import describe_schema
 from frictionless.schema import Schema
 
-from datajudge.run.inference.inference_plugin import (Inference, RenderTuple,
-                                                      SchemaTuple)
-
-
-FN_SCHEMA = "schema_frictionless.json"
+from datajudge.run.plugin.inference.inference_plugin import Inference
 
 
 class InferencePluginFrictionless(Inference):
@@ -42,10 +38,10 @@ class InferencePluginFrictionless(Inference):
         for fi in field_infer:
             fname = fi.get("name", "")
             ftype = fi.get("type", "")
-            dj_schema_fields.append(SchemaTuple(fname, ftype))
+            dj_schema_fields.append(self.get_schema_tuple(fname, ftype))
         if dj_schema_fields:
             return dj_schema_fields
-        return [SchemaTuple("", "")]
+        return [self.get_schema_tuple(None, None)]
 
     def validate_schema(self, schema: Schema) -> None:
         """
@@ -78,12 +74,11 @@ class InferencePluginFrictionless(Inference):
 
         return inferred
 
-    def render_object(self, obj: Schema) -> List[RenderTuple]:
+    def render_artifact(self, obj: Schema) -> List[tuple]:
         """
         Return a rendered profile ready to be persisted as artifact.
         """
-
         self.validate_schema(obj)
-        dict_schema = dict(obj)
-
-        return [RenderTuple(dict_schema, FN_SCHEMA)]
+        schema = dict(obj)
+        filename = self._fn_schema.format("frictionless.json")
+        return [self.get_render_tuple(schema, filename)]

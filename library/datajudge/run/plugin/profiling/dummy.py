@@ -4,12 +4,7 @@ Dummy implementation of profiling plugin.
 # pylint: disable=import-error,invalid-name
 from typing import Any, List, Optional
 
-from datajudge.run.profiling.profiling_plugin import (ProfileTuple,
-                                                      Profiling,
-                                                      RenderTuple)
-
-
-FN_PROFILE_JSON = "profile_dummy.json"
+from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 
 
 class ProfilePluginDummy(Profiling):
@@ -19,18 +14,16 @@ class ProfilePluginDummy(Profiling):
 
     def update_library_info(self) -> None:
         """
-        Update run's info about the validation framework used.
+        Do nothing.
         """
-        self.lib_name = None
-        self.lib_version = None
 
     def parse_profile(self,
                       profile: Any,
-                      res_name: str) -> ProfileTuple:
+                      res_name: str) -> tuple:
         """
         Return none.
         """
-        return ProfileTuple(None, {}, {})
+        return self.get_profile_tuple(None, {}, {})
 
     def validate_profile(self, profile: Any) -> None:
         """
@@ -49,11 +42,13 @@ class ProfilePluginDummy(Profiling):
         if profile is not None:
             return profile
         profile = {}
-        self.registry.add_result(res_name, profile, None)
+        self.registry.add_result(res_name, profile)
         return profile
 
-    def render_object(self, obj: Any) -> List[RenderTuple]:
+    def render_artifact(self, obj: Any) -> List[tuple]:
         """
         Return a dummy profile to be persisted as artifact.
         """
-        return [RenderTuple({}, FN_PROFILE_JSON)]
+        profile = dict()
+        filename = self._fn_profile.format("dummy.json")
+        return [self.get_render_tuple(profile, filename)]
