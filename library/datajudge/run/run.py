@@ -9,7 +9,7 @@ from typing import Any, Optional, Union
 
 from datajudge.data import (BlobLog, EnvLog, DatajudgeProfile,
                             DatajudgeReport, DatajudgeSchema)
-from datajudge.run.run_plugin import RunPlugin
+from datajudge.run.run_plugin_handler import PluginHandler
 from datajudge.utils import config as cfg
 from datajudge.utils.file_utils import clean_all
 from datajudge.utils.uri_utils import get_name_from_uri
@@ -86,7 +86,7 @@ class Run:
         self._data = None
 
         # Plugin
-        self.plugin = RunPlugin(self.run_info.run_config)
+        self.plugin_handler = PluginHandler(self.run_info.run_config)
 
         # To remove
         self._val_schema = None
@@ -107,7 +107,7 @@ class Run:
         """
         Get libraries info used by plugins.
         """
-        self.run_info.run_libraries =  self.plugin.get_info()
+        self.run_info.run_libraries =  self.plugin_handler.get_info()
 
     def _log_run(self) -> None:
         """
@@ -179,17 +179,6 @@ class Run:
         metadata = self._get_artifact_metadata(uri, src_name)
         self._log_metadata(metadata, self._ARTIFACT_METADATA)
 
-    def _render_obj(self,
-                    plugin: Any,
-                    object: Any) -> None:
-        """
-        Check objects to persist, render and persist them.
-        """
-        rendered = plugin.render_artifact(object)
-        for obj in rendered:
-            self.persist_artifact(obj.object,
-                                  obj.filename)
-
     def persist_artifact(self,
                          src: Any,
                          src_name: Optional[str] = None,
@@ -245,26 +234,47 @@ class Run:
 
     # Inference
 
-    def infer_wrapper(self) -> tuple:
+    def infer_wrapper(self,
+                      inference_kwargs: Optional[dict] = None) -> Any:
         """
         Execute schema inference over a resource.
-        Return the schema inferred by the inference framework.
+
+        Parameters
+        ----------
+        inference_kwargs : dict, default = None
+            Mappers for specific framework arguments.
+
         """
         self.fetch_input_data()
-        return self.plugin.inf.infer(self.data_resource.name,
-                                     self._data)
+        return self.plugin_handler.infer(self.data_resource.name,
+                                         self._data,
+                                         inference_kwargs)
 
-    def infer_datajudge(self) -> dict:
+    def infer_datajudge(self,
+                        inference_kwargs: Optional[dict] = None) -> dict:
         """
-        Execute schema inference over a resource.
-        Return the schema inferred by datajudge.
+        Produce datajudge inference schema.
+        
+        Parameters
+        ----------
+        inference_kwargs : dict, default = None
+            Mappers for specific framework arguments.
+
         """
         schema = self.infer_wrapper()
-        return self.plugin.inf.render_datajudge(schema, self.data_resource.name)
+        return self.plugin_handler.render_schema(schema,
+                                                 self.data_resource.name)
 
-    def infer(self) -> tuple:
+    def infer(self,
+              inference_kwargs: Optional[dict] = None) -> tuple:
         """
         Execute schema inference over a resource.
+        
+        Parameters
+        ----------
+        inference_kwargs : dict, default = None
+            Mappers for specific framework arguments.
+
         """
         schema = self.infer_wrapper()
         schema_dj = self.infer_datajudge()
@@ -296,13 +306,16 @@ class Run:
             An inferred schema object produced by a validation library.
 
         """
-        self._render_obj(self.plugin.inf, schema)
+        rendered = self.plugin_handler.render_schema(schema)
+        for obj in rendered:
+            self.persist_artifact(obj.object,
+                                  obj.filename)
 
     # Validation
 
     def validate_wrapper(self,
                          constraints: Optional[dict] = None,
-                         val_kwargs: Optional[dict] = None) -> Any:
+                         validation_kwargs: Optional[dict] = None) -> Any:
         """
         Execute validation of a resource.
 
@@ -310,40 +323,42 @@ class Run:
         ----------
         constraints : dict, default = None
             Constraints from configuration.
-        val_kwargs : dict, default = None
-            Specific framework arguments.
+        validation_kwargs : dict, default = None
+            Mappers for specific framework arguments.
 
         """
         self.fetch_input_data()
         self.fetch_validation_schema()
-        return self.plugin.val.validate(self.data_resource.name,
-                                        self._data,
-                                        constraints,
-                                        self._val_schema,
-                                        val_kwargs)
+        return self.plugin_handler.validate(
+                                    self.data_resource.name,
+                                    self._data,
+                                    constraints,
+                                    self._val_schema,
+                                    validation_kwargs)
       
     def validate_datajudge(self,
                            constraints: Optional[dict] = None,
-                           val_kwargs: Optional[dict] = None
+                           validation_kwargs: Optional[dict] = None
                            ) -> dict:
         """
-        Execute schema inference over a resource.
-        Return the schema inferred by datajudge.
+        Produce datajudge validation report.
 
         Parameters
         ----------
         constraints : dict, default = None
             Constraints from configuration.
-        val_kwargs : dict, default = None
-            Specific framework arguments.
+        validation_kwargs : dict, default = None
+            Mappers for specific framework arguments
 
         """
-        report = self.validate_wrapper(constraints, val_kwargs)
-        return self.plugin.val.render_datajudge(report, self.data_resource.name, self._val_schema)
+        report = self.validate_wrapper(constraints, validation_kwargs)
+        return self.plugin_handler.render_report(report,
+                                                 self.data_resource.name,
+                                                 self._val_schema)
 
     def validate(self,
                  constraints: Optional[dict] = None,
-                 val_kwargs: Optional[dict] = None) -> tuple:
+                 validation_kwargs: Optional[dict] = None) -> tuple:
         """
         Execute validation over a resource.
 
@@ -351,11 +366,11 @@ class Run:
         ----------
         constraints : dict, default = None
             Constraints from configuration.
-        val_kwargs : dict, default = None
-            Specific framework arguments.
+        validation_kwargs : dict, default = None
+            Mappers for specific framework arguments.
 
         """
-        report = self.validate_wrapper(constraints, val_kwargs)
+        report = self.validate_wrapper(constraints, validation_kwargs)
         report_dj = self.validate_datajudge()
         return report, report_dj
       
@@ -389,7 +404,10 @@ class Run:
             An report object produced by a validation library.
 
         """
-        self._render_obj(self.plugin.val, report)
+        rendered = self.plugin_handler.render_report(report)
+        for obj in rendered:
+            self.persist_artifact(obj.object,
+                                  obj.filename)
 
     # Profiling
 
@@ -405,9 +423,9 @@ class Run:
 
         """
         self.fetch_input_data()
-        return self.plugin.pro.profile(self.data_resource.name,
-                                       self._data,
-                                       profiler_kwargs)
+        return self.plugin_handler.profile(self.data_resource.name,
+                                           self._data,
+                                           profiler_kwargs)
 
     def profile_datajudge(self,
                           profiler_kwargs: dict = None
@@ -423,17 +441,17 @@ class Run:
 
         """
         profile = self.profile_wrapper(profiler_kwargs)
-        return self.plugin.pro.render_datajudge(profile, self.data_resource.name)
+        return self.plugin_handler.pro.render_datajudge(profile, self.data_resource.name)
 
     def profile(self,
-                profiler_kwargs: dict = None) -> tuple:
+                profiler_kwargs: Optional[dict] = None) -> tuple:
         """
         Execute profiling over a resource.
        
         Parameters
         ----------
         profiler_kwargs : dict, default = None
-            Kwargs passed to profiler.
+            Mappers for specific framework arguments.
 
         """
         profile = self.profile_wrapper(profiler_kwargs)
@@ -466,7 +484,10 @@ class Run:
             A profile object produced by a profiling library.
 
         """
-        self._render_obj(self.plugin.pro, profile)
+        rendered = self.plugin_handler.render_profile(profile)
+        for obj in rendered:
+            self.persist_artifact(obj.object,
+                                  obj.filename)
 
     # Input data
 

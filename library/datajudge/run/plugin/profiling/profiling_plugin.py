@@ -46,7 +46,13 @@ class Profiling(Plugin, metaclass=ABCMeta):
         """
         Generate a data profile.
         """
-        
+
+    def execute(self, *args, **kwargs) -> Any:
+        """
+        Execute plugin main operation.
+        """
+        return self.profile(*args, **kwargs)
+
     def render_datajudge(self,
                          profile: Any,
                          res_name: str) -> DatajudgeProfile:

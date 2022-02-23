@@ -32,16 +32,23 @@ PLUGINS = {
 }
 
 
-def get_plugin(config: List[dict],
-               typology: str) -> Any:
+def get_plugin(config: dict,
+               typology: str) -> list:
     """
-    Factory method that returns a run plugin.
+    Factory method that creates run plugins.
     """
+    plugin_list = {}
     if config is None:
-        return PLUGINS[typology]["dummy"]()
+        plugin_list["dummy"] = PLUGINS[typology]["dummy"]()
+        return plugin_list
     if config.enabled:
-        try:
-            return PLUGINS[typology][config.library]()
-        except KeyError as k_err:
-            raise NotImplementedError from k_err
-    return PLUGINS[typology]["dummy"]()
+        if not isinstance(config.library, list):
+            config.library = [config.library]
+        for lib in config.library:
+            try:
+                plugin_list[lib] = PLUGINS[typology][lib]()
+            except KeyError as k_err:
+                raise NotImplementedError from k_err
+        return plugin_list
+    plugin_list["dummy"] = PLUGINS[typology]["dummy"]()
+    return plugin_list

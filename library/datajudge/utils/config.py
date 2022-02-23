@@ -40,29 +40,25 @@ class ConstLib(BaseModel):
 
 class ValidationConfig(BaseModel):
     enabled: bool = False
-    library: Optional[str] = None
+    library: Optional[Union[str, List[str]]] = None
 
 
 class InferenceConfig(BaseModel):
     enabled: bool = False
-    library: Optional[str] = None
+    library: Optional[Union[str, List[str]]] = None
 
 
 class ProfilingConfig(BaseModel):
     enabled: bool = False
-    library: Optional[str] = None
+    library: Optional[Union[str, List[str]]] = None
 
 
 class SnapshotConfig(BaseModel):
     enabled: bool = False
-    library: Optional[str] = None
+    library: Optional[Union[str, List[str]]] = None
 
 
 class RunConfig(BaseModel):
-    # validation: Optional[List[ValidationConfig]] = ValidationConfig()
-    # inference: Optional[List[InferenceConfig]] = InferenceConfig()
-    # profiling: Optional[List[ProfilingConfig]] = ProfilingConfig()
-    # snapshot: Optional[List[SnapshotConfig]] = SnapshotConfig()
     validation: Optional[ValidationConfig] = ValidationConfig()
     inference: Optional[InferenceConfig] = InferenceConfig()
     profiling: Optional[ProfilingConfig] = ProfilingConfig()

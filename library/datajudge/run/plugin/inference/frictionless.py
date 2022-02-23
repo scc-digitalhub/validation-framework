@@ -3,7 +3,7 @@ Frictionless implementation of inference plugin.
 """
 import time
 import warnings
-from typing import List
+from typing import List, Optional
 
 import frictionless
 from frictionless import describe_schema
@@ -52,7 +52,8 @@ class InferencePluginFrictionless(Inference):
 
     def infer(self,
               res_name: str,
-              data_path: str) -> Schema:
+              data_path: str,
+              infer_kwargs: Optional[dict] = None) -> Schema:
         """
         Method that call infer on a resource and return an
         inferred schema.
@@ -61,9 +62,11 @@ class InferencePluginFrictionless(Inference):
         if inferred is not None:
             return inferred
 
+        infer_kwargs = self.get_args(infer_kwargs)
+
         # Execute inference and measure time
         start = time.perf_counter()
-        inferred = describe_schema(data_path)
+        inferred = describe_schema(data_path, **infer_kwargs)
         end = round(time.perf_counter() - start, 2)
 
         if inferred is None:

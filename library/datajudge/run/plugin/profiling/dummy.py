@@ -38,17 +38,12 @@ class ProfilePluginDummy(Profiling):
         """
         Generate dummy profile.
         """
-        profile = self.registry.get_result(res_name)
-        if profile is not None:
-            return profile
-        profile = {}
-        self.registry.add_result(res_name, profile)
-        return profile
+        return {}
 
     def render_artifact(self, obj: Any) -> List[tuple]:
         """
         Return a dummy profile to be persisted as artifact.
         """
-        profile = dict()
+        profile = {}
         filename = self._fn_profile.format("dummy.json")
         return [self.get_render_tuple(profile, filename)]

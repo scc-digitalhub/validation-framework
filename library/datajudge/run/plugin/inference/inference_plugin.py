@@ -40,10 +40,17 @@ class Inference(Plugin, metaclass=ABCMeta):
     @abstractmethod
     def infer(self,
               res_name: str,
-              data_path: str) -> Any:
+              data_path: str,
+              infer_kwargs: Optional[dict] = None) -> Any:
         """
         Inference method for schema.
         """
+
+    def execute(self, *args, **kwargs) -> Any:
+        """
+        Execute plugin main operation.
+        """
+        return self.infer(*args, **kwargs)
 
     def render_datajudge(self,
                          schema: Any,

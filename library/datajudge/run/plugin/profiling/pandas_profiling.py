@@ -91,8 +91,7 @@ class ProfilePluginPandasProfiling(Profiling):
         if profile is not None:
             return profile
 
-        if profiler_kwargs is None:
-            profiler_kwargs = {}
+        profiler_kwargs = self.get_args(profiler_kwargs)
 
         file_format, pandas_kwargs = self._infer_args(data_path)
         df = self._read_df(data_path,

@@ -69,8 +69,7 @@ class ProfilePluginFrictionless(Profiling):
         if profile is not None:
             return profile
 
-        if profiler_kwargs is None:
-            profiler_kwargs = {}
+        profiler_kwargs = self.get_args(profiler_kwargs)
 
         start = time.perf_counter()
         profile = Resource(data_path, **profiler_kwargs)

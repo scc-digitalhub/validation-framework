@@ -43,11 +43,17 @@ class Validation(Plugin, metaclass=ABCMeta):
                  data_path: str,
                  constraints: Optional[dict] = None,
                  schema_path: Optional[str] = None,
-                 kwargs: Optional[dict] = None) -> Any:
+                 valid_kwargs: Optional[dict] = None) -> Any:
         """
         Validate a resource.
         """
-    
+
+    def execute(self, *args, **kwargs) -> Any:
+        """
+        Execute plugin main operation.
+        """
+        return self.validate(*args, **kwargs)
+
     def render_datajudge(self,
                          report: Any,
                          res_name: str,

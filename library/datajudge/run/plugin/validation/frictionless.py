@@ -66,7 +66,7 @@ class ValidationPluginFrictionless(Validation):
                  data_path: str,
                  constraints: Optional[dict] = None,
                  schema_path: Optional[str] = None,
-                 kwargs: Optional[dict] = None) -> Report:
+                 valid_kwargs: Optional[dict] = None) -> Report:
         """
         Validate a Data Resource.
 
@@ -79,9 +79,8 @@ class ValidationPluginFrictionless(Validation):
         report = self.registry.get_result(res_name)
         if report is not None:
             return report
-        
-        if not kwargs:
-            kwargs = {}
+
+        valid_kwargs = self.get_args(valid_kwargs)
 
         try:
             schema = Schema(constraints)
@@ -95,7 +94,7 @@ class ValidationPluginFrictionless(Validation):
                  "Report will results valid by default.")
 
         resource = Resource(path=data_path, schema=schema)
-        report = frictionless.validate_resource(resource, **kwargs)
+        report = frictionless.validate_resource(resource, **valid_kwargs)
         end = report.time
         
         self.registry.add_result(res_name, report, end)

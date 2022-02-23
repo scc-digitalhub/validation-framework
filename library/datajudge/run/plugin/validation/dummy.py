@@ -36,22 +36,17 @@ class ValidationPluginDummy(Validation):
                  data_path: str,
                  constraints: Optional[dict] = None,
                  schema_path: Optional[str] = None,
-                 kwargs: Optional[dict] = None) -> dict:
+                 valid_kwargs: Optional[dict] = None) -> dict:
         """
-        Return fake empty report.
+        Generate dummy report.
         """
-        report = self.registry.get_result(res_name)
-        if report is not None:
-            return report
-        report = {}
-        self.registry.add_result(res_name, report, None)
-        return report
+        return {}
 
     def render_artifact(self,
                         obj: Any) -> List[tuple]:
         """
         Return a dummy report to be persisted as artifact.
         """
-        report = dict(obj)
+        report = {}
         filename = self._fn_report.format("dummy.json")
         return [self.get_render_tuple(report, filename)]

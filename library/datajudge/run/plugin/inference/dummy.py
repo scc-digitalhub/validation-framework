@@ -1,7 +1,7 @@
 """
 Dummy implementation of inference plugin.
 """
-from typing import Any, List
+from typing import Any, List, Optional
 
 from datajudge.run.plugin.inference.inference_plugin import Inference
 
@@ -31,22 +31,17 @@ class InferencePluginDummy(Inference):
 
     def infer(self,
               res_name: str,
-              data_path: str) -> Any:
+              data_path: str,
+              infer_kwargs: Optional[dict] = None) -> Any:
         """
-        Method that call infer on a resource and return an
-        inferred schema.
+        Generate dummy schema.
         """
-        inferred = self.registry.get_result(res_name)
-        if inferred is not None:
-            return inferred
-        inferred = {}
-        self.registry.add_result(res_name, inferred)
-        return inferred
+        return {}
 
     def render_artifact(self, obj: Any) -> List[tuple]:
         """
-        Return a dummy profile to be persisted as artifact.
+        Return a dummy schema to be persisted as artifact.
         """
-        schema = dict()
+        schema = {}
         filename = self._fn_schema.format("dummy.json")
         return [self.get_render_tuple(schema, filename)]
