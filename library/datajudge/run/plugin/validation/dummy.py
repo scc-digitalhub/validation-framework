@@ -17,10 +17,7 @@ class ValidationPluginDummy(Validation):
         Do nothing.
         """
 
-    def parse_report(self,
-                     report: Any,
-                     schema_path: Optional[str] = None
-                     ) -> tuple:
+    def parse_report(self, report: Any) -> tuple:
         """
         Return none.
         """
@@ -41,6 +38,13 @@ class ValidationPluginDummy(Validation):
         Generate dummy report.
         """
         return {}
+
+    @staticmethod
+    def get_outcome(obj: Any) -> str:
+        """
+        Return status of the execution.
+        """
+        return "valid"
 
     def render_artifact(self,
                         obj: Any) -> List[tuple]:

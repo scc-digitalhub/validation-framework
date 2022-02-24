@@ -7,9 +7,7 @@ from __future__ import annotations
 import typing
 from typing import Any, Optional, Union
 
-from datajudge.data import (BlobLog, EnvLog, DatajudgeProfile,
-                            DatajudgeReport, DatajudgeSchema)
-from datajudge.run.run_plugin_handler import PluginHandler
+from datajudge.data import BlobLog, EnvLog
 from datajudge.utils import config as cfg
 from datajudge.utils.file_utils import clean_all
 from datajudge.utils.uri_utils import get_name_from_uri
@@ -17,8 +15,7 @@ from datajudge.utils.utils import data_listify, get_time
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
-    from datajudge.data import DataResource
-    from datajudge.run import RunInfo
+    from datajudge.run import RunInfo, PluginHandler
 
 
 class Run:
@@ -73,41 +70,22 @@ class Run:
 
     def __init__(self,
                  run_info: RunInfo,
-                 data_resource: DataResource,
+                 plugin_handler: PluginHandler,
                  client: Client,
                  overwrite: bool) -> None:
 
-        self.data_resource = data_resource
-        self._client = client
         self.run_info = run_info
+        self._client = client
+        self.plugin_handler = plugin_handler
         self._overwrite = overwrite
 
         # Local temp paths
         self._data = None
 
-        # Plugin
-        self.plugin_handler = PluginHandler(self.run_info.run_config)
-
         # To remove
         self._val_schema = None
 
-        # Update run info
-        self._get_resource()
-        self._get_plugin_info()
-
     # Run methods
-
-    def _get_resource(self) -> None:
-        """
-        Insert packages/resources into Run Info.
-        """
-        self.run_info.data_resource = self.data_resource.to_dict()
-
-    def _get_plugin_info(self) -> None:
-        """
-        Get libraries info used by plugins.
-        """
-        self.run_info.run_libraries =  self.plugin_handler.get_info()
 
     def _log_run(self) -> None:
         """
@@ -139,8 +117,8 @@ class Run:
                        self.run_info.experiment_name,
                        self.run_info.experiment_title,
                        cfg.DATAJUDGE_VERSION,
-                       self.data_resource.name,
-                       self.data_resource.path,
+                       self.run_info.data_resource.get("name"),
+                       self.run_info.data_resource.get("path"),
                        content).to_dict()
 
     def _log_metadata(self,
@@ -221,7 +199,8 @@ class Run:
 
         """
 
-        metadata = self.data_resource.get_metadata()
+        # To do, basic inference metadata?
+        metadata = {}
 
         # Data
         data = self.fetch_input_data()
@@ -246,7 +225,7 @@ class Run:
 
         """
         self.fetch_input_data()
-        return self.plugin_handler.infer(self.data_resource.name,
+        return self.plugin_handler.infer(self.run_info.data_resource.get("name"),
                                          self._data,
                                          inference_kwargs)
 
@@ -261,9 +240,8 @@ class Run:
             Mappers for specific framework arguments.
 
         """
-        schema = self.infer_wrapper()
-        return self.plugin_handler.render_schema(schema,
-                                                 self.data_resource.name)
+        schema = self.infer_wrapper(inference_kwargs)
+        return self.plugin_handler.produce_schema(schema)
 
     def infer(self,
               inference_kwargs: Optional[dict] = None) -> tuple:
@@ -280,8 +258,7 @@ class Run:
         schema_dj = self.infer_datajudge()
         return schema, schema_dj
 
-    def log_schema(self,
-                   schema: DatajudgeSchema) -> None:
+    def log_schema(self, schema: dict) -> None:
         """
         Log datajudge schema.
 
@@ -292,8 +269,7 @@ class Run:
 
         """
         self._check_metadata_uri()
-        self._check_type(schema, DatajudgeSchema)
-        metadata = self._get_blob(schema.to_dict())
+        metadata = self._get_blob(schema)
         self._log_metadata(metadata, self._DJ_SCHEMA)
 
     def persist_schema(self, schema: Any) -> None:
@@ -330,7 +306,7 @@ class Run:
         self.fetch_input_data()
         self.fetch_validation_schema()
         return self.plugin_handler.validate(
-                                    self.data_resource.name,
+                                    self.run_info.data_resource.get("name"),
                                     self._data,
                                     constraints,
                                     self._val_schema,
@@ -352,9 +328,7 @@ class Run:
 
         """
         report = self.validate_wrapper(constraints, validation_kwargs)
-        return self.plugin_handler.render_report(report,
-                                                 self.data_resource.name,
-                                                 self._val_schema)
+        return self.plugin_handler.produce_report(report)
 
     def validate(self,
                  constraints: Optional[dict] = None,
@@ -374,24 +348,18 @@ class Run:
         report_dj = self.validate_datajudge()
         return report, report_dj
       
-    def log_report(self,
-                   report: DatajudgeReport
-                   ) -> None:
+    def log_report(self, report: dict) -> None:
         """
         Log short report.
 
         Parameters
         ----------
-        report : Any
-            A report object to be logged. If it is not
-            provided, the run will check its own report attribute.
-        kwargs : dict, default = None
-            Validation arguments.
+        report : dict
+            A datajudge report to be logged.
 
         """
         self._check_metadata_uri()
-        self._check_type(report, DatajudgeReport)
-        metadata = self._get_blob(report.to_dict())
+        metadata = self._get_blob(report)
         self._log_metadata(metadata, self._DJ_REPORT)
 
     def persist_report(self, report: Any) -> None:
@@ -423,7 +391,7 @@ class Run:
 
         """
         self.fetch_input_data()
-        return self.plugin_handler.profile(self.data_resource.name,
+        return self.plugin_handler.profile(self.run_info.data_resource.get("name"),
                                            self._data,
                                            profiler_kwargs)
 
@@ -441,7 +409,7 @@ class Run:
 
         """
         profile = self.profile_wrapper(profiler_kwargs)
-        return self.plugin_handler.pro.render_datajudge(profile, self.data_resource.name)
+        return self.plugin_handler.produce_profile(profile)
 
     def profile(self,
                 profiler_kwargs: Optional[dict] = None) -> tuple:
@@ -458,20 +426,18 @@ class Run:
         profile_dj = self.profile_datajudge()
         return profile, profile_dj
 
-    def log_profile(self,
-                    profile: DatajudgeProfile) -> None:
+    def log_profile(self, profile: dict) -> None:
         """
         Log a data profile.
 
         Parameters
         ----------
         profile : Any
-            A profile report to be logged.
+            A datajudge profile to be logged.
 
         """
         self._check_metadata_uri()
-        self._check_type(profile, DatajudgeProfile)
-        metadata = self._get_blob(profile.to_dict())
+        metadata = self._get_blob(profile)
         self._log_metadata(metadata, self._DJ_PROFILE)
 
     def persist_profile(self, profile: Any) -> None:
@@ -496,7 +462,7 @@ class Run:
         Fetch data from backend and return temp file path.
         """
         if self._data is None:
-            path = self.data_resource.path
+            path = self.run_info.data_resource.get("path")
             if isinstance(path, list):
                 self._data = [self.fetch_artifact(i) for i in path]
             else:
@@ -507,10 +473,11 @@ class Run:
         """
         Fetch validation schema from backend and return temp file path.
         """
-        if self.data_resource.schema is None:
+        if self.run_info.data_resource.get("schema") is None:
             return
         if self._val_schema is None:
-            self._val_schema = self.fetch_artifact(self.data_resource.schema)
+            self._val_schema = self.fetch_artifact(
+                self.run_info.data_resource.get("schema"))
         return self._val_schema
 
     def fetch_artifact(self,
@@ -529,14 +496,6 @@ class Run:
         return self._client.fetch_artifact(uri)
 
     # Utils
-
-    @staticmethod
-    def _check_type(obj: Any, obj_type: Any) -> None:
-        """
-        Check object type.
-        """
-        if not isinstance(obj, obj_type):
-            raise TypeError("Wrong type object passed.")
 
     def _check_metadata_uri(self) -> None:
         """
@@ -572,8 +531,6 @@ class Run:
             self.run_info.end_status = "interrupted"
         elif exc_type in (AttributeError, ):
             self.run_info.end_status = "failed"
-        elif self.run_info.data_resource_uri is None:
-            self.run_info.end_status = "invalid"
         else:
             self.run_info.end_status = "failed"
         self.run_info.finished = get_time()

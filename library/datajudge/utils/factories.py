@@ -8,13 +8,19 @@ from __future__ import annotations
 import typing
 from typing import Tuple, Union
 
-from datajudge.run import RunInfo, Run
-from datajudge.store_artifact import (AzureArtifactStore, FTPArtifactStore,
-                                      HTTPArtifactStore, LocalArtifactStore,
-                                      S3ArtifactStore, DummyArtifactStore)
+from datajudge.run import Run, RunInfo, PluginHandler
+from datajudge.run.plugin import (InferencePluginDummy,
+                                  InferencePluginFrictionless,
+                                  ProfilePluginDummy,
+                                  ProfilePluginFrictionless,
+                                  ProfilePluginPandasProfiling,
+                                  ValidationPluginDummy,
+                                  ValidationPluginFrictionless)
+from datajudge.store_artifact import (AzureArtifactStore, DummyArtifactStore,
+                                      FTPArtifactStore, HTTPArtifactStore,
+                                      LocalArtifactStore, S3ArtifactStore)
 from datajudge.store_metadata import (DigitalHubMetadataStore,
-                                      LocalMetadataStore,
-                                      DummyMetadataStore)
+                                      DummyMetadataStore, LocalMetadataStore)
 from datajudge.utils import config as cfg
 from datajudge.utils.config import StoreConfig
 from datajudge.utils.file_utils import get_absolute_path
@@ -25,9 +31,11 @@ if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
     from datajudge.store_artifact import ArtifactStore
     from datajudge.store_metadata import MetadataStore
+    from datajudge.utils.config import RunConfig
 
 
 # Schemes
+
 LOCAL_SCHEME = ["", "file"]
 HTTP_SCHEME = ["http", "https"]
 S3_SCHEME = ["s3"]
@@ -35,6 +43,7 @@ AZURE_SCHEME = ["wasb", "wasbs"]
 FTP_SCHEME = ["ftp"]
 
 # Registries
+
 METADATA_STORE_REGISTRY = {
     "": LocalMetadataStore,
     "file": LocalMetadataStore,
@@ -55,6 +64,23 @@ ARTIFACT_STORE_REGISTRY = {
     "dummy": DummyArtifactStore,
 }
 
+PLUGIN_REGISTRY = {
+    "inference": {
+        "dummy": InferencePluginDummy,
+        "frictionless": InferencePluginFrictionless,
+        },
+    "validation": {
+        "dummy": ValidationPluginDummy,
+        "frictionless": ValidationPluginFrictionless,
+        },
+    "profiling": {
+        "dummy": ProfilePluginDummy,
+        "frictionless": ProfilePluginFrictionless,
+        "pandas_profiling": ProfilePluginPandasProfiling,
+        },
+    "snapshot": {
+    }
+}
 
 def cfg_conversion(config: Union[StoreConfig, dict]) -> StoreConfig:
     """
@@ -143,8 +169,42 @@ def get_stores(store_configs: Union[dict, StoreConfig, list]
     return stores
 
 
+def get_plugin(config: dict,
+               typology: str) -> list:
+    """
+    Factory method that creates run plugins.
+    """
+    plugin_list = {}
+    if config is None:
+        plugin_list["dummy"] = PLUGIN_REGISTRY[typology]["dummy"]()
+        return plugin_list
+    if config.enabled:
+        if not isinstance(config.library, list):
+            config.library = [config.library]
+        for lib in config.library:
+            try:
+                plugin_list[lib] = PLUGIN_REGISTRY[typology][lib]()
+            except KeyError as k_err:
+                raise NotImplementedError from k_err
+        return plugin_list
+    plugin_list["dummy"] = PLUGIN_REGISTRY[typology]["dummy"]()
+    return plugin_list
+
+
+def get_plugin_handler(run_config: RunConfig) -> PluginHandler:
+    """
+    Build a plugin handler for the run.
+    """
+    inference = get_plugin(run_config.inference, "inference")
+    validation = get_plugin(run_config.validation, "validation")
+    profiling = get_plugin(run_config.profiling, "profiling")
+    return PluginHandler(inference,
+                         validation,
+                         profiling)
+    
+
 def get_run(run_info_args: Tuple[str],
-            data_resource: DataResource,
+            run_plugin_handler: PluginHandler,
             client: Client,
             overwrite: bool) -> Run:
     """
@@ -153,7 +213,7 @@ def get_run(run_info_args: Tuple[str],
     try:
         run_info = RunInfo(*run_info_args)
         return Run(run_info,
-                   data_resource,
+                   run_plugin_handler,
                    client,
                    overwrite)
 

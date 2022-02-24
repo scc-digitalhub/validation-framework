@@ -77,6 +77,15 @@ class InferencePluginFrictionless(Inference):
 
         return inferred
 
+    @staticmethod
+    def get_outcome(obj: Schema) -> str:
+        """
+        Return status of the execution.
+        """
+        if obj is not None and obj != {}:
+            return "valid"
+        return "invalid"
+
     def render_artifact(self, obj: Schema) -> List[tuple]:
         """
         Return a rendered profile ready to be persisted as artifact.

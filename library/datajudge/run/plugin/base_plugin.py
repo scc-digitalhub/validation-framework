@@ -6,10 +6,48 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from typing import Any, List, Optional
 
-from datajudge.run.plugin.results_registry import ResultsRegistry
-
 
 RenderTuple = namedtuple("RenderTuple", ("object", "filename"))
+
+
+class ResultsRegistry:
+    """
+    Registry where to cache results over resources.
+    """
+
+    def __init__(self) -> None:
+        self._registry = None
+        self.setup()
+   
+    def setup(self):
+        if self._registry is None:
+            self._registry = {}
+       
+    def add_result(self,
+                   res_name: str,
+                   result: Any,
+                   time: Optional[float] = None
+                   ) -> None:
+        """
+        Add new result to registry.
+        """
+        self._registry[res_name] = {
+            "result": result,
+            "time": time
+        }
+   
+    def get_result(self,
+                   res_name: str) -> Optional[Any]:
+        """
+        Get result for named resource.
+        """
+        return self._registry.get(res_name, {}).get("result")
+
+    def get_time(self, res_name: str) -> Optional[float]:
+        """
+        Get execution time.
+        """
+        return self._registry.get(res_name, {}).get("time")
 
 
 class Plugin(metaclass=ABCMeta):
@@ -30,6 +68,13 @@ class Plugin(metaclass=ABCMeta):
     def execute(self, *args, **kwargs) -> Any:
         """
         Execute main plugin operation.
+        """
+
+    @staticmethod
+    @abstractmethod
+    def get_outcome(obj: Any) -> str:
+        """
+        Return status of the execution.
         """
 
     @abstractmethod

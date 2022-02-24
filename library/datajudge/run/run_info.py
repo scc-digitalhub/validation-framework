@@ -3,15 +3,9 @@ RunInfo module.
 Implementation of the basic Run's metadata.
 """
 # pylint: disable=too-many-instance-attributes,too-many-arguments
-from __future__ import annotations
-
-import typing
 from typing import Optional
 
 from datajudge.utils.utils import get_time
-
-if typing.TYPE_CHECKING:
-    from datajudge.utils.config import RunConfig
 
 class RunInfo:
     """
@@ -44,8 +38,10 @@ class RunInfo:
     def __init__(self,
                  experiment_title: str,
                  experiment_name: str,
+                 data_resource: dict,
                  run_id: str,
-                 run_config: RunConfig,
+                 run_config: dict,
+                 run_libraries: dict,
                  run_metadata_uri: Optional[str] = None,
                  run_artifacts_uri: Optional[str] = None) -> None:
 
@@ -54,12 +50,11 @@ class RunInfo:
 
         self.run_id = run_id
         self.run_config = run_config
-        self.run_libraries = None
+        self.run_libraries = run_libraries
         self.run_metadata_uri = run_metadata_uri
         self.run_artifacts_uri = run_artifacts_uri
 
-        self.data_resource_uri = None
-        self.data_resource = None
+        self.data_resource = data_resource
 
         self.created = get_time()
         self.begin_status = None
@@ -75,11 +70,10 @@ class RunInfo:
             "experimentTitle": self.experiment_title,
             "experimentName": self.experiment_name,
             "runId": self.run_id,
-            "runConfig": self.run_config.dict(exclude_none=True, by_alias=True),
+            "runConfig": self.run_config,
             "runLibraries": self.run_libraries,
             "runMetadataUri": self.run_metadata_uri,
             "runArtifactsUri": self.run_artifacts_uri,
-            "dataResourceUri": self.data_resource_uri,
             "dataResource": self.data_resource,
             "created": self.created,
             "beginStatus": self.begin_status,

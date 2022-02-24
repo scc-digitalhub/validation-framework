@@ -40,6 +40,13 @@ class ProfilePluginDummy(Profiling):
         """
         return {}
 
+    @staticmethod
+    def get_outcome(obj: Any) -> str:
+        """
+        Return status of the execution.
+        """
+        return "valid"
+
     def render_artifact(self, obj: Any) -> List[tuple]:
         """
         Return a dummy profile to be persisted as artifact.

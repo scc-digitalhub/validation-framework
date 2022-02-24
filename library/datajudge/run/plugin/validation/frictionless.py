@@ -24,33 +24,16 @@ class ValidationPluginFrictionless(Validation):
         self.lib_version = frictionless.__version__
 
     def parse_report(self,
-                     report: Report,
-                     schema_path: Optional[str] = None
+                     report: Report
                      ) -> tuple:
         """
         Parse the report produced by frictionless.
         """
-        # Extract values from report
         duration = report.get("time")
         valid = report.get("valid")
         spec = ["fieldName", "rowNumber", "code", "note", "description"]
         flat_report = report.flatten(spec=spec)
         errors = [dict(zip(spec, err)) for err in flat_report]
-
-        # Error severity mapping.
-        # See documentation for the validation schema integration.
-        schema = Schema(descriptor=schema_path)
-
-        if schema:
-            val_fields = schema.get("fields")
-            for err in errors:
-                error_field = err.get("fieldName")
-                for field in val_fields:
-                    if field.get("name") == error_field:
-                        err["severity"] = field.get("errors", {})\
-                                               .get("severity", 5)
-                        break
-
         return self.get_report_tuple(duration, valid, errors)
 
     def validate_report(self,
@@ -100,6 +83,15 @@ class ValidationPluginFrictionless(Validation):
         self.registry.add_result(res_name, report, end)
 
         return report
+
+    @staticmethod
+    def get_outcome(obj: Report) -> str:
+        """
+        Return status of the execution.
+        """
+        if obj.get("valid", False):
+            return "valid"
+        return "invalid"
 
     def render_artifact(self,
                         obj: Report) -> List[tuple]:

@@ -56,12 +56,11 @@ class Validation(Plugin, metaclass=ABCMeta):
 
     def render_datajudge(self,
                          report: Any,
-                         res_name: str,
-                         val_schema: str) -> DatajudgeReport:
+                         res_name: str) -> DatajudgeReport:
         """
         Return a DatajudgeReport.
         """    
-        parsed = self.parse_report(report, val_schema)
+        parsed = self.parse_report(report)
         return DatajudgeReport(self.lib_name,
                                self.lib_version,
                                parsed.time,

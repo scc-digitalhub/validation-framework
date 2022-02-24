@@ -12,7 +12,8 @@ from typing import Any, List, Optional, Union
 
 from slugify import slugify
 
-from datajudge.utils.factories import get_md_store, get_stores, get_run
+from datajudge.run.run_plugin_handler import PluginHandler
+from datajudge.utils.factories import get_md_store, get_plugin_handler, get_stores, get_run
 
 # For type checking -> avoids circular imports
 if typing.TYPE_CHECKING:
@@ -160,15 +161,19 @@ class Client:
         run_artifacts_uri = self._default_store.get_run_artifacts_uri(experiment_name,
                                                                       run_id)
 
+        run_plugin_handler = get_plugin_handler(run_config)
+
         run_info_args = (experiment_title,
                          experiment_name,
+                         data_resource.to_dict(),
                          run_id,
-                         run_config,
+                         run_config.dict(exclude_none=True, by_alias=True),
+                         run_plugin_handler.get_info(),
                          run_metadata_uri,
                          run_artifacts_uri)
 
         run = get_run(run_info_args,
-                      data_resource,
+                      run_plugin_handler,
                       self,
                       overwrite)
 
