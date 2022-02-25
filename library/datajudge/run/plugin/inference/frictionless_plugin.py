@@ -1,6 +1,7 @@
 """
 Frictionless implementation of inference plugin.
 """
+# pylint: disable=import-error
 import time
 import warnings
 from typing import List, Optional
@@ -35,10 +36,11 @@ class InferencePluginFrictionless(Inference):
         field_infer = schema_inferred.get("fields", [])
         dj_schema_fields = []
 
-        for fi in field_infer:
-            fname = fi.get("name", "")
-            ftype = fi.get("type", "")
-            dj_schema_fields.append(self.get_schema_tuple(fname, ftype))
+        for field in field_infer:
+            field_name = field.get("name", "")
+            field_type = field.get("type", "")
+            dj_schema_fields.append(self.get_schema_tuple(field_name,
+                                                          field_type))
         if dj_schema_fields:
             return dj_schema_fields
         return [self.get_schema_tuple(None, None)]
@@ -71,7 +73,7 @@ class InferencePluginFrictionless(Inference):
 
         if inferred is None:
             warnings.warn("Unable to infer schema.")
-            return
+            return None
 
         self.registry.add_result(res_name, inferred, end)
 

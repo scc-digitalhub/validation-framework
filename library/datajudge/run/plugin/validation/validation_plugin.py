@@ -59,7 +59,7 @@ class Validation(Plugin, metaclass=ABCMeta):
                          res_name: str) -> DatajudgeReport:
         """
         Return a DatajudgeReport.
-        """    
+        """
         parsed = self.parse_report(report)
         return DatajudgeReport(self.lib_name,
                                self.lib_version,

@@ -3,7 +3,7 @@ DataPackage module.
 Implementation of a DataPackage object as defined in frictionless
 specifications and with datajudge modification.
 """
-# pylint: disable=import-error,invalid-name
+# pylint: disable=import-error,invalid-name,too-many-arguments
 from __future__ import annotations
 
 import typing

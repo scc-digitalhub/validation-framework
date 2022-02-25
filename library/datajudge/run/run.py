@@ -188,7 +188,7 @@ class Run:
 
     def persist_data(self,
                      data_name: Optional[Union[str, list]] = None
-                    ) -> None:
+                     ) -> None:
         """
         Persist input data as artifact.
 
@@ -225,15 +225,16 @@ class Run:
 
         """
         self.fetch_input_data()
-        return self.plugin_handler.infer(self.run_info.data_resource.get("name"),
-                                         self._data,
-                                         inference_kwargs)
+        return self.plugin_handler.infer(
+                            self.run_info.data_resource.get("name"),
+                            self._data,
+                            inference_kwargs)
 
     def infer_datajudge(self,
                         inference_kwargs: Optional[dict] = None) -> dict:
         """
         Produce datajudge inference schema.
-        
+
         Parameters
         ----------
         inference_kwargs : dict, default = None
@@ -247,14 +248,14 @@ class Run:
               inference_kwargs: Optional[dict] = None) -> tuple:
         """
         Execute schema inference over a resource.
-        
+
         Parameters
         ----------
         inference_kwargs : dict, default = None
             Mappers for specific framework arguments.
 
         """
-        schema = self.infer_wrapper()
+        schema = self.infer_wrapper(inference_kwargs)
         schema_dj = self.infer_datajudge()
         return schema, schema_dj
 
@@ -311,7 +312,7 @@ class Run:
                                     constraints,
                                     self._val_schema,
                                     validation_kwargs)
-      
+
     def validate_datajudge(self,
                            constraints: Optional[dict] = None,
                            validation_kwargs: Optional[dict] = None
@@ -347,7 +348,7 @@ class Run:
         report = self.validate_wrapper(constraints, validation_kwargs)
         report_dj = self.validate_datajudge()
         return report, report_dj
-      
+
     def log_report(self, report: dict) -> None:
         """
         Log short report.
@@ -391,9 +392,10 @@ class Run:
 
         """
         self.fetch_input_data()
-        return self.plugin_handler.profile(self.run_info.data_resource.get("name"),
-                                           self._data,
-                                           profiler_kwargs)
+        return self.plugin_handler.profile(
+                                self.run_info.data_resource.get("name"),
+                                self._data,
+                                profiler_kwargs)
 
     def profile_datajudge(self,
                           profiler_kwargs: dict = None
@@ -401,7 +403,7 @@ class Run:
         """
         Execute schema inference over a resource.
         Return the schema inferred by datajudge.
-       
+
         Parameters
         ----------
         profiler_kwargs : dict, default = None
@@ -415,7 +417,7 @@ class Run:
                 profiler_kwargs: Optional[dict] = None) -> tuple:
         """
         Execute profiling over a resource.
-       
+
         Parameters
         ----------
         profiler_kwargs : dict, default = None
@@ -474,7 +476,7 @@ class Run:
         Fetch validation schema from backend and return temp file path.
         """
         if self.run_info.data_resource.get("schema") is None:
-            return
+            return None
         if self._val_schema is None:
             self._val_schema = self.fetch_artifact(
                 self.run_info.data_resource.get("schema"))
@@ -503,7 +505,7 @@ class Run:
         """
         if self.run_info.run_metadata_uri is None:
             raise AttributeError("Please configure a metadata store.")
-   
+
     def _check_artifact_uri(self) -> None:
         """
         Check artifact uri existence.

@@ -5,6 +5,7 @@ from typing import Any
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 
+
 class DummyArtifactStore(ArtifactStore):
     """
     Dummy artifact store object implementation.

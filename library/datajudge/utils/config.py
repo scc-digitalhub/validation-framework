@@ -1,8 +1,10 @@
 """
 Configuration for filenames, endpoints, etc.
 """
-from typing import Any, List, Optional, Union
-from pydantic import BaseModel, Field
+from typing import List, Optional, Union
+from typing_extensions import Literal
+
+from pydantic import BaseModel
 
 
 class StoreConfig(BaseModel):
@@ -13,29 +15,32 @@ class StoreConfig(BaseModel):
     config: Optional[dict] = None
 
 
-class FrictionlessConst(BaseModel):
-    name: str
-    schema_: dict = Field(alias="schema")
-
-
-class DatajudgeConstList(BaseModel):
+class ConstraintFrictionless:
+    id: str
+    type: Literal["frictionless"]
     title: str
     name: str
-    query: str
-    expect: str
-    value: Optional[Any] = None
-    errors: dict
+    resources: List[str]
+    field: str
+    constraint: str
+    value: str
+    severity: int
 
-       
-class DatajudgeConst(BaseModel):
+
+class ConstraintsDatajudge(BaseModel):
+    id: str
+    type: Literal["datajudge"]
+    title: str
     name: str
-    path: str
-    constraintsList: List[DatajudgeConstList]
+    resources: List[str]
+    query: str
+    expext: str
+    severity: int
 
-       
-class ConstLib(BaseModel):
-    frictionless: FrictionlessConst = None
-    datajudge: List[DatajudgeConst] = None
+
+class ConstraintsConfig(BaseModel):
+    constraints: List[Union[ConstraintFrictionless,
+                            ConstraintsDatajudge]]
 
 
 class ValidationConfig(BaseModel):

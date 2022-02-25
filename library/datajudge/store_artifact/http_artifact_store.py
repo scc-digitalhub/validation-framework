@@ -4,7 +4,7 @@ Implementation of REST artifact store.
 import json
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import IO, Any, Optional, Tuple
+from typing import Any, Optional, Tuple
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import check_path, get_path

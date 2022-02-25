@@ -1,7 +1,6 @@
 """
 Base abstract Run Plugin module.
 """
-
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from typing import Any, List, Optional
@@ -18,11 +17,14 @@ class ResultsRegistry:
     def __init__(self) -> None:
         self._registry = None
         self.setup()
-   
+
     def setup(self):
+        """
+        Set registry as mapper.
+        """
         if self._registry is None:
             self._registry = {}
-       
+
     def add_result(self,
                    res_name: str,
                    result: Any,
@@ -35,7 +37,7 @@ class ResultsRegistry:
             "result": result,
             "time": time
         }
-   
+
     def get_result(self,
                    res_name: str) -> Optional[Any]:
         """
@@ -51,7 +53,10 @@ class ResultsRegistry:
 
 
 class Plugin(metaclass=ABCMeta):
-    
+    """
+    Base plugin abstract class.
+    """
+
     def __init__(self) -> None:
         self.lib_name = None
         self.lib_version = None

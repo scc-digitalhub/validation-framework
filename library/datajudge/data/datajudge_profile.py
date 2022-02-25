@@ -2,6 +2,7 @@
 DatajudgeProfile module.
 Implementation of a Short Profile common structure.
 """
+# pylint: disable=too-many-arguments
 
 
 class DatajudgeProfile:

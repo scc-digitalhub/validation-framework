@@ -1,20 +1,15 @@
 """
-Run plugins registry module.
+Run plugins handler module.
 """
-from __future__ import annotations
 from dataclasses import dataclass
-
-import typing
 from typing import Any, List
-
-from datajudge.run.plugin.plugin_factory import get_plugin
-
-if typing.TYPE_CHECKING:
-    from datajudge import RunConfig
 
 
 @dataclass
 class ArtifactWrapper:
+    """
+    Simple mapper for artifacts.
+    """
     res_name: str
     library: str
     result: Any
@@ -22,12 +17,20 @@ class ArtifactWrapper:
 
 
 class PluginHandler:
-    
+    """
+    Run plugin handler.
+
+    This class create a layer of abstraction between the Run
+    and its plugins.
+    This allows to wrap the plagin methods and run operation
+    before or after the actual execution.
+
+    """
+
     def __init__(self,
                  inference_plugin: Any,
                  validation_plugin: Any,
                  profiling_plugin: Any) -> None:
-
         self._inference_plugins = inference_plugin
         self._validation_plugins = validation_plugin
         self._profiling_plugins = profiling_plugin
@@ -43,20 +46,21 @@ class PluginHandler:
         Wrapper for plugins validate methods.
         """
         return self.execute(self.val, *args, **kwargs)
-    
+
     def profile(self, *args, **kwargs) -> List[ArtifactWrapper]:
         """
         Wrapper for plugins profile methods.
         """
         return self.execute(self.pro, *args, **kwargs)
 
-    def execute(self, plugin: Any, *args, **kwargs) -> List[ArtifactWrapper]:
+    @staticmethod
+    def execute(plugin: Any, *args, **kwargs) -> List[ArtifactWrapper]:
         """
         Wrap plugin main execution method.
         """
-        # Weak
+        # Weak move
         res_name = args[0]
-        
+
         results = []
         for lib in plugin:
             library = plugin[lib].lib_name
@@ -83,8 +87,8 @@ class PluginHandler:
         """
         return self.produce_log(self.pro, objects)
 
-    def produce_log(self, 
-                    plugins: Any,
+    @staticmethod
+    def produce_log(plugins: Any,
                     objects: List[ArtifactWrapper]) -> dict:
         """
         Wrapper for plugins parsing methods.
@@ -96,38 +100,33 @@ class PluginHandler:
         for obj in objects:
             for lib in plugins:
                 if lib == obj.library:
-                    result = plugins[lib].render_datajudge(obj.result, obj.res_name)
+                    result = plugins[lib].render_datajudge(obj.result,
+                                                           obj.res_name)
                     log["reports"].append(result.to_dict())
             if obj.outcome == "invalid":
                 log["result"] = "invalid"
         return log
 
-    def render_schema(self,
-                      schema: Any
-                    ) -> list:
+    def render_schema(self, schema: Any) -> list:
         """
         Render a list of schemas to be persisted.
         """
         return self.render_objects(schema, self.inf)
-    
-    def render_report(self,
-                      report: Any
-                      ) -> list:
+
+    def render_report(self, report: Any) -> list:
         """
         Render a list of reports to be persisted.
         """
         return self.render_objects(report, self.val)
 
-    def render_profile(self,
-                       profile: Any
-                       ) -> list:
+    def render_profile(self, profile: Any) -> list:
         """
         Render a list of profiles to be persisted.
         """
         return self.render_objects(profile, self.pro)
 
-    def render_objects(self,
-                       objects: List[ArtifactWrapper],
+    @staticmethod
+    def render_objects(objects: List[ArtifactWrapper],
                        plugin: Any
                        ) -> list:
         """
@@ -144,6 +143,9 @@ class PluginHandler:
         return artifacts
 
     def get_info(self) -> dict:
+        """
+        Return libraries of plugins.
+        """
         return {
             "validation": [self.val[lib].libraries() for lib in self.val],
             "inference": [self.inf[lib].libraries() for lib in self.inf],
@@ -152,12 +154,21 @@ class PluginHandler:
 
     @property
     def inf(self) -> Any:
+        """
+        Inference plugin getter.
+        """
         return self._inference_plugins
 
     @property
     def val(self) -> Any:
+        """
+        Validation plugin getter.
+        """
         return self._validation_plugins
 
     @property
     def pro(self) -> Any:
+        """
+        Profiling plugin getter.
+        """
         return self._profiling_plugins

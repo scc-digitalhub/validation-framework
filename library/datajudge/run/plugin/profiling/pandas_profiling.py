@@ -66,7 +66,7 @@ class ProfilePluginPandasProfiling(Profiling):
 
         return self.get_profile_tuple(duration, stats, fields)
 
-    def validate_profile(self, profile: ProfileReport ) -> None:
+    def validate_profile(self, profile: ProfileReport) -> None:
         """
         Validate the profile.
         """
@@ -98,7 +98,7 @@ class ProfilePluginPandasProfiling(Profiling):
                            file_format,
                            **pandas_kwargs)
         profile = ProfileReport(df, **profiler_kwargs)
-   
+
         time = json.loads(profile.to_json())\
                    .get("analysis", {})\
                    .get("duration")
@@ -157,7 +157,7 @@ class ProfilePluginPandasProfiling(Profiling):
         res = Resource(data_path)
         res.infer()
         res.expand()
-       
+
         file_format = res.get("format", "csv")
         pandas_args = {
             "sep": res.get("dialect", {}).get("delimiter", ","),
@@ -180,7 +180,7 @@ class ProfilePluginPandasProfiling(Profiling):
 
         strio_html = write_bytesio(string_html)
         strio_json = write_bytesio(string_json)
-        
+
         json_filename = self._fn_profile.format("pandas_profiling.json")
         html_filename = self._fn_profile.format("pandas_profiling.html")
 

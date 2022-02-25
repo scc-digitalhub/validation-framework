@@ -30,9 +30,7 @@ class Inference(Plugin, metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def validate_schema(self,
-                        schema: Optional[Any] = None
-                        ) -> None:
+    def validate_schema(self, schema: Any) -> None:
         """
         Validate a schema before log/persist it.
         """
@@ -57,7 +55,7 @@ class Inference(Plugin, metaclass=ABCMeta):
                          res_name: str) -> DatajudgeSchema:
         """
         Return a DatajudgeSchema.
-        """   
+        """
         parsed = self.parse_schema(schema)
         return DatajudgeSchema(self.lib_name,
                                self.lib_version,

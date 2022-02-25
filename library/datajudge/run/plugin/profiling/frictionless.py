@@ -33,7 +33,7 @@ class ProfilePluginFrictionless(Profiling):
 
         # Profile preparation
         rep = profile.to_dict()
-       
+
         duration = self.registry.get_time(res_name)
         fields = rep.get("schema", {}).get("fields")
         try:

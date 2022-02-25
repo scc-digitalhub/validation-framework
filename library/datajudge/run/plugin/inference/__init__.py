@@ -1,5 +1,7 @@
-from datajudge.run.plugin.inference.frictionless import InferencePluginFrictionless
-from datajudge.run.plugin.inference.dummy import InferencePluginDummy
+from datajudge.run.plugin.inference.frictionless_plugin import \
+                                        InferencePluginFrictionless
+from datajudge.run.plugin.inference.dummy_plugin import \
+                                        InferencePluginDummy
 
 __all__ = [
     "InferencePluginDummy",

@@ -74,4 +74,3 @@ class Profiling(Plugin, metaclass=ABCMeta):
         Return ProfileTuple.
         """
         return ProfileTuple(duration, stats, fields)
-

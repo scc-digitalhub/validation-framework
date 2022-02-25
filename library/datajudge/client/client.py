@@ -3,7 +3,7 @@ Client module.
 Implementation of a Client object to interact with storages
 and create runs.
 """
-# pylint: disable=import-error,too-many-arguments
+# pylint: disable=import-error, too-many-arguments
 from __future__ import annotations
 
 import typing
@@ -12,8 +12,8 @@ from typing import Any, List, Optional, Union
 
 from slugify import slugify
 
-from datajudge.run.run_plugin_handler import PluginHandler
-from datajudge.utils.factories import get_md_store, get_plugin_handler, get_stores, get_run
+from datajudge.utils.factories import (get_md_store, get_plugin_handler,
+                                       get_run, get_stores)
 
 # For type checking -> avoids circular imports
 if typing.TYPE_CHECKING:
@@ -63,9 +63,9 @@ class Client:
         ----------
         project_name : str
             The id of the project, needed for the rest metadata store.
-        metadata_store_config : StoreConfig or dict or list, default = StoreConfig
+        metadata_store_config : StoreConfig or dict or list, default = None
             Dictionary containing configuration for the store.
-        stores_config : StoreConfig or dict or list, default = StoreConfig
+        stores_config : StoreConfig or dict or list, default = None
             Dictionary containing configuration for the store.
         tmp_dir : str
             Default temporary folder where to download data.
@@ -87,12 +87,12 @@ class Client:
             return self._store_registry.get(key).get("store")
 
         default = None
-        for _, v in self._store_registry.items():
-            if v.get("is_default", False):
+        for _, value in self._store_registry.items():
+            if value.get("is_default", False):
                 if default is None:
-                    default = v.get("store")
+                    default = value.get("store")
                 else:
-                    raise ValueError("Please configure only one store as default.")
+                    raise ValueError("Configure only one store as default.")
         if default is None:
             raise ValueError("Please configure one store as default.")
         return default
@@ -156,10 +156,12 @@ class Client:
                                       run_id,
                                       overwrite)
 
-        run_metadata_uri = self._metadata_store.get_run_metadata_uri(experiment_name,
-                                                                     run_id)
-        run_artifacts_uri = self._default_store.get_run_artifacts_uri(experiment_name,
-                                                                      run_id)
+        run_metadata_uri = self._metadata_store.get_run_metadata_uri(
+                                                            experiment_name,
+                                                            run_id)
+        run_artifacts_uri = self._default_store.get_run_artifacts_uri(
+                                                            experiment_name,
+                                                            run_id)
 
         run_plugin_handler = get_plugin_handler(run_config)
 

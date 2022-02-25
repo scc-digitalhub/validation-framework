@@ -67,19 +67,19 @@ class ValidationPluginFrictionless(Validation):
 
         try:
             schema = Schema(constraints)
-        except:
+        except Exception:
             warnings.warn("Invalid constraints format.")
         finally:
             schema = Schema(descriptor=schema_path)
 
         if not schema or schema is None:
             warnings.warn("No valid table schema is provided! " +
-                 "Report will results valid by default.")
+                          "Report will results valid by default.")
 
         resource = Resource(path=data_path, schema=schema)
         report = frictionless.validate_resource(resource, **valid_kwargs)
         end = report.time
-        
+
         self.registry.add_result(res_name, report, end)
 
         return report

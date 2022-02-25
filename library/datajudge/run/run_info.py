@@ -7,6 +7,7 @@ from typing import Optional
 
 from datajudge.utils.utils import get_time
 
+
 class RunInfo:
     """
     Run's metadata.

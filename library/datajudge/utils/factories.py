@@ -28,7 +28,6 @@ from datajudge.utils.uri_utils import check_url, get_uri_scheme, rebuild_uri
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
-    from datajudge.data import DataResource
     from datajudge.store_artifact import ArtifactStore
     from datajudge.store_metadata import MetadataStore
     from datajudge.utils.config import RunConfig
@@ -82,10 +81,11 @@ PLUGIN_REGISTRY = {
     }
 }
 
+
 def cfg_conversion(config: Union[StoreConfig, dict]) -> StoreConfig:
     """
     Try to convert a store configuration in a StoreConfig model.
-    """   
+    """
     if not isinstance(config, StoreConfig):
         try:
             return StoreConfig(**config)
@@ -109,19 +109,19 @@ def resolve_uri_metadata(uri: str,
 
 
 def get_md_store(project_name: str,
-                 config: Union[dict, StoreConfig]
+                 store_config: Union[dict, StoreConfig]
                  ) -> MetadataStore:
     """
     Function that returns metadata stores.
     """
-    if config is None:
+    if store_config is None:
         return METADATA_STORE_REGISTRY["dummy"](None, None)
-   
-    cfg = cfg_conversion(config)
-    scheme = get_uri_scheme(cfg.path)
-    new_uri = resolve_uri_metadata(cfg.path, scheme, project_name)
+
+    config = cfg_conversion(store_config)
+    scheme = get_uri_scheme(config.path)
+    new_uri = resolve_uri_metadata(config.path, scheme, project_name)
     try:
-        return METADATA_STORE_REGISTRY[scheme](new_uri, cfg.config)
+        return METADATA_STORE_REGISTRY[scheme](new_uri, config.config)
     except KeyError as k_err:
         raise KeyError from k_err
 
@@ -153,19 +153,19 @@ def get_stores(store_configs: Union[dict, StoreConfig, list]
     if not isinstance(store_configs, list):
         store_configs = [store_configs]
     stores = {}
-    for cfg in store_configs:
-        cfg = cfg_conversion(cfg)
-        scheme = get_uri_scheme(cfg.path)
-        new_uri = resolve_artifact_uri(cfg.path, scheme)
+    for config in store_configs:
+        config = cfg_conversion(config)
+        scheme = get_uri_scheme(config.path)
+        new_uri = resolve_artifact_uri(config.path, scheme)
         try:
-            obj = ARTIFACT_STORE_REGISTRY[scheme](new_uri, cfg.config)
-            stores[cfg.name] = {
+            obj = ARTIFACT_STORE_REGISTRY[scheme](new_uri, config.config)
+            stores[config.name] = {
                 "store": obj,
-                "is_default": cfg.isDefault
+                "is_default": config.isDefault
             }
         except KeyError as k_err:
             raise KeyError from k_err
-   
+
     return stores
 
 
@@ -201,7 +201,7 @@ def get_plugin_handler(run_config: RunConfig) -> PluginHandler:
     return PluginHandler(inference,
                          validation,
                          profiling)
-    
+
 
 def get_run(run_info_args: Tuple[str],
             run_plugin_handler: PluginHandler,
