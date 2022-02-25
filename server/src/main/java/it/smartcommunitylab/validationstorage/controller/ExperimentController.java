@@ -22,51 +22,50 @@ import org.springframework.web.bind.annotation.RestController;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.dto.ExperimentDTO;
+import it.smartcommunitylab.validationstorage.model.dto.RunDTO;
 import it.smartcommunitylab.validationstorage.service.ExperimentService;
 
 @RestController
-@RequestMapping(value = "/api/project")
+@RequestMapping(value = ValidationStorageConstants.ENDPOINT_ROOT + ValidationStorageConstants.PATH_PROJECT)
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class ExperimentController {
     @Autowired
     private ExperimentService service;
     
     @PostMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT)
-    public ResponseEntity<Experiment> create(@PathVariable String projectId, @RequestBody @Valid ExperimentDTO request, Authentication authentication) {
-        return ResponseEntity.ok(service.create(projectId, request, authentication.getName()));
+    public ResponseEntity<ExperimentDTO> create(@PathVariable String projectId, @RequestBody @Valid ExperimentDTO request) {
+        return ResponseEntity.ok(service.createExperiment(projectId, request));
     }
     
     @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT)
-    public ResponseEntity<List<Experiment>> findByProjectId(
+    public ResponseEntity<List<ExperimentDTO>> find(
             @PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId,
-            @RequestParam("runId") Optional<String> runId,
-            @RequestParam("search") Optional<String> search) {
-        return ResponseEntity.ok(service.findByProjectId(projectId, experimentId, runId, search));
+            @RequestParam("experimentName") Optional<String> experimentName) {
+        return ResponseEntity.ok(service.findExperiments(projectId, experimentName));
     }
     
     @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{id}")
-    public ResponseEntity<Experiment> findById(@PathVariable String projectId, @PathVariable String id) {
-        return ResponseEntity.ok(service.findById(projectId, id));
+    public ResponseEntity<ExperimentDTO> findById(@PathVariable String projectId, @PathVariable String id) {
+        return ResponseEntity.ok(service.findExperimentById(projectId, id));
     }
 
     @PutMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{id}")
-    public ResponseEntity<Experiment> update(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid ExperimentDTO request) {
-        return ResponseEntity.ok(service.update(projectId, id, request));
+    public ResponseEntity<ExperimentDTO> update(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid ExperimentDTO request) {
+        return ResponseEntity.ok(service.updateExperiment(projectId, id, request));
     }
 
     @DeleteMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable String projectId, @PathVariable String id) {
-        service.deleteById(projectId, id);
+    public ResponseEntity<Void> delete(@PathVariable String projectId, @PathVariable String id) {
+        service.deleteExperiment(projectId, id);
         return ResponseEntity.ok().build();
     }
-
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT)
-    public ResponseEntity<Void> deleteByProjectId(
+    
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{id}/" + ValidationStorageConstants.RUN)
+    public ResponseEntity<RunDTO> createRun(
             @PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId,
-            @RequestParam("runId") Optional<String> runId) {
-        service.deleteByProjectId(projectId, experimentId, runId);
-        return ResponseEntity.ok().build();
+            @PathVariable String id,
+            @RequestBody @Valid RunDTO request) {
+        return ResponseEntity.ok(service.createRun(projectId, id, request));
     }
+    
 }

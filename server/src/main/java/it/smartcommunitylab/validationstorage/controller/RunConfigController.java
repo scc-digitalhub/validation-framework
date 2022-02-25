@@ -22,51 +22,44 @@ import org.springframework.web.bind.annotation.RestController;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.RunConfig;
 import it.smartcommunitylab.validationstorage.model.dto.RunConfigDTO;
+import it.smartcommunitylab.validationstorage.service.ExperimentService;
 import it.smartcommunitylab.validationstorage.service.RunConfigService;
 
 @RestController
-@RequestMapping(value = "/api/project")
+@RequestMapping(value = ValidationStorageConstants.ENDPOINT_ROOT + ValidationStorageConstants.PATH_PROJECT)
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunConfigController {
     @Autowired
-    private RunConfigService service;
+    private ExperimentService service;
     
-    @PostMapping("/{projectId}/" + ValidationStorageConstants.RUN_CONFIG)
-    public ResponseEntity<RunConfig> create(@PathVariable String projectId, @RequestBody @Valid RunConfigDTO request, Authentication authentication) {
-        return ResponseEntity.ok(service.create(projectId, request, authentication.getName()));
-    }
-    
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN_CONFIG)
-    public ResponseEntity<List<RunConfig>> findByProjectId(
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN_CONFIG)
+    public ResponseEntity<RunConfigDTO> create(
             @PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId,
-            @RequestParam("runId") Optional<String> runId,
-            @RequestParam("search") Optional<String> search) {
-        return ResponseEntity.ok(service.findByProjectId(projectId, experimentId, runId, search));
+            @PathVariable String experimentId,
+            @RequestBody @Valid RunConfigDTO request) {
+        return ResponseEntity.ok(service.createRunConfig(projectId, experimentId, request));
     }
     
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN_CONFIG + "/{id}")
-    public ResponseEntity<RunConfig> findById(@PathVariable String projectId, @PathVariable String id) {
-        return ResponseEntity.ok(service.findById(projectId, id));
-    }
-
-    @PutMapping("/{projectId}/" + ValidationStorageConstants.RUN_CONFIG + "/{id}")
-    public ResponseEntity<RunConfig> update(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid RunConfigDTO request) {
-        return ResponseEntity.ok(service.update(projectId, id, request));
-    }
-
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_CONFIG + "/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable String projectId, @PathVariable String id) {
-        service.deleteById(projectId, id);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RESOURCE)
-    public ResponseEntity<Void> deleteByProjectId(
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN_CONFIG)
+    public ResponseEntity<RunConfigDTO> find(
             @PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId,
-            @RequestParam("runId") Optional<String> runId) {
-        service.deleteByProjectId(projectId, experimentId, runId);
+            @PathVariable String experimentId) {
+        return ResponseEntity.ok(service.findRunConfig(projectId, experimentId));
+    }
+
+    @PutMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN_CONFIG)
+    public ResponseEntity<RunConfigDTO> update(
+            @PathVariable String projectId,
+            @PathVariable String experimentId,
+            @RequestBody @Valid RunConfigDTO request) {
+        return ResponseEntity.ok(service.updateRunConfig(projectId, experimentId, request));
+    }
+
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN_CONFIG)
+    public ResponseEntity<Void> delete(
+            @PathVariable String projectId,
+            @PathVariable String experimentId) {
+        service.deleteRunConfig(projectId, experimentId);
         return ResponseEntity.ok().build();
     }
 }

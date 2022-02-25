@@ -1,18 +1,19 @@
 package it.smartcommunitylab.validationstorage.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import it.smartcommunitylab.validationstorage.model.dto.ArtifactMetadataDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunDataProfileDTO;
-import it.smartcommunitylab.validationstorage.model.dto.RunDataResourceDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunEnvironmentDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunMetadataDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunValidationReportDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunDataSchemaDTO;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepository;
-import it.smartcommunitylab.validationstorage.repository.RunDataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.RunRepository;
@@ -36,71 +37,68 @@ public class RunService {
     private RunDataProfileRepository runDataProfileRepository;
     
     @Autowired
-    private RunDataResourceRepository runDataResourceRepository;
-    
-    @Autowired
     private RunValidationReportRepository runValidationReportRepository;
     
     @Autowired
     private RunDataSchemaRepository runDataSchemaRepository;
     
     // Run
-    public RunDTO createRun(RunDTO request) {
+    public RunDTO createRun(String projectId, RunDTO request) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public List<RunDTO> findRuns(String projectId, Optional<String> experimentName) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunDTO findRunById(String id) {
+    public RunDTO findRunById(String projectId, String id) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunDTO updateRun(String id, RunDTO request) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-   
-    public void deleteRun(String id) {
+    public void deleteRun(String projectId, String id) {
         // TODO Auto-generated method stub
     }
     
     // RunMetadata
-    public RunMetadataDTO createRunMetadata(RunMetadataDTO request) {
+    public RunMetadataDTO createRunMetadata(String projectId, String runId, RunMetadataDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunMetadataDTO findRunMetadataById(String id) {
+    public RunMetadataDTO findRunMetadata(String projectId, String runId) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunMetadataDTO updateRunMetadata(String id, RunMetadataDTO request) {
+    public RunMetadataDTO updateRunMetadata(String projectId, String runId, RunMetadataDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public void deleteRunMetadata(String id) {
+    public void deleteRunMetadata(String projectId, String runId) {
         // TODO Auto-generated method stub
     }
     
     // RunEnvironment
-    public RunEnvironmentDTO createRunEnvironment(RunEnvironmentDTO request) {
+    public RunEnvironmentDTO createRunEnvironment(String projectId, String runId, RunEnvironmentDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunEnvironmentDTO findRunEnvironmentById(String id) {
+    public RunEnvironmentDTO findRunEnvironment(String projectId, String runId) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunEnvironmentDTO updateRunEnvironment(String id, RunEnvironmentDTO request) {
+    public RunEnvironmentDTO updateRunEnvironment(String projectId, String runId, RunEnvironmentDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public void deleteRunEnvironment(String id) {
+    public void deleteRunEnvironment(String projectId, String runId) {
         // TODO Auto-generated method stub
     }
     
@@ -125,82 +123,92 @@ public class RunService {
     }
     
     // RunDataProfile
-    public RunDataProfileDTO createRunDataProfile(RunDataProfileDTO request) {
+    public List<RunDataProfileDTO> createRunDataProfiles(String projectId, String runId, String result, List<RunDataProfileDTO> reports) {
         // TODO Auto-generated method stub
         return null;
-    }
-   
-    public RunDataProfileDTO findRunDataProfileById(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-   
-    public RunDataProfileDTO updateRunDataProfile(String id, RunDataProfileDTO request) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-   
-    public void deleteRunDataProfile(String id) {
-        // TODO Auto-generated method stub
     }
     
-    // RunDataResource
-    public RunDataResourceDTO createRunDataResource(RunDataResourceDTO request) {
+    public List<RunDataProfileDTO> findRunDataProfiles(String projectId, String runId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public RunDataProfileDTO findRunDataProfileById(String projectId, String runId, String id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public String findProfileResult(String projectId, String runId) {
+     // TODO Auto-generated method stub
+        return null;
+    }
+   
+    public List<RunDataProfileDTO> updateRunDataProfiles(String projectId, String runId, String result, List<RunDataProfileDTO> reports) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunDataResourceDTO findRunDataResourceById(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-   
-    public RunDataResourceDTO updateRunDataResource(String id, RunDataResourceDTO request) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-   
-    public void deleteRunDataResource(String id) {
+    public void deleteRunDataProfiles(String projectId, String runId) {
         // TODO Auto-generated method stub
     }
     
     // RunValidationReport
-    public RunValidationReportDTO createRunValidationReport(RunValidationReportDTO request) {
+    public List<RunValidationReportDTO> createRunValidationReports(String projectId, String runId, String result, List<RunValidationReportDTO> reports) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public List<RunValidationReportDTO> findRunValidationReports(String projectId, String runId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public RunValidationReportDTO findRunValidationReportById(String projectId, String runId, String id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public String findValidationResult(String projectId, String runId) {
+     // TODO Auto-generated method stub
+        return null;
+    }
+   
+    public List<RunValidationReportDTO> updateRunValidationReports(String projectId, String runId, String result, List<RunValidationReportDTO> reports) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunValidationReportDTO findRunValidationReportById(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-   
-    public RunValidationReportDTO updateRunValidationReport(String id, RunValidationReportDTO request) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-   
-    public void deleteRunValidationReport(String id) {
+    public void deleteRunValidationReports(String projectId, String runId) {
         // TODO Auto-generated method stub
     }
     
     // RunDataSchema
-    public RunDataSchemaDTO createRunDataSchema(RunDataSchemaDTO request) {
+    public List<RunDataSchemaDTO> createRunDataSchemas(String projectId, String runId, String result, List<RunDataSchemaDTO> reports) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public List<RunDataSchemaDTO> findRunDataSchemas(String projectId, String runId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public RunDataSchemaDTO findRunDataSchemaById(String projectId, String runId, String id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public String findSchemaResult(String projectId, String runId) {
+     // TODO Auto-generated method stub
+        return null;
+    }
+   
+    public List<RunDataSchemaDTO> updateRunDataSchemas(String projectId, String runId, String result, List<RunDataSchemaDTO> reports) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunDataSchemaDTO findRunDataSchemaById(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-   
-    public RunDataSchemaDTO updateRunDataSchema(String id, RunDataSchemaDTO request) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-   
-    public void deleteRunDataSchema(String id) {
+    public void deleteRunDataSchemas(String projectId, String runId) {
         // TODO Auto-generated method stub
     }
 }

@@ -23,51 +23,44 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
 import it.smartcommunitylab.validationstorage.model.dto.RunMetadataDTO;
 import it.smartcommunitylab.validationstorage.service.RunMetadataService;
+import it.smartcommunitylab.validationstorage.service.RunService;
 
 @RestController
-@RequestMapping(value = "/api/project")
+@RequestMapping(value = ValidationStorageConstants.ENDPOINT_ROOT + ValidationStorageConstants.PATH_PROJECT)
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunMetadataController {
     @Autowired
-    private RunMetadataService documentService;
+    private RunService service;
 
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN_METADATA + "/{id}")
-    public ResponseEntity<RunMetadata> findDocumentById(@PathVariable String projectId, @PathVariable String id) {
-        return ResponseEntity.ok(documentService.findDocumentById(projectId, id));
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_METADATA)
+    public ResponseEntity<RunMetadataDTO> create(
+            @PathVariable String projectId,
+            @PathVariable String runId,
+            @RequestBody @Valid RunMetadataDTO request) {
+        return ResponseEntity.ok(service.createRunMetadata(projectId, runId, request));
+    }
+    
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_METADATA)
+    public ResponseEntity<RunMetadataDTO> find(
+            @PathVariable String projectId,
+            @PathVariable String runId) {
+        return ResponseEntity.ok(service.findRunMetadata(projectId, runId));
     }
 
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN_METADATA)
-    public ResponseEntity<List<RunMetadata>> findDocuments(@PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId,
-            @RequestParam("runId") Optional<String> runId,
-            @RequestParam("search") Optional<String> search) {
-        return ResponseEntity.ok(documentService.findDocumentsByProjectId(projectId, experimentId, runId, search));
+    @PutMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_METADATA)
+    public ResponseEntity<RunMetadataDTO> update(
+            @PathVariable String projectId,
+            @PathVariable String runId,
+            @RequestBody @Valid RunMetadataDTO request) {
+        return ResponseEntity.ok(service.updateRunMetadata(projectId, runId, request));
     }
 
-    @PostMapping("/{projectId}/" + ValidationStorageConstants.RUN_METADATA)
-    public ResponseEntity<RunMetadata> createDocument(@PathVariable String projectId,
-            @RequestParam("overwrite") Optional<String> overwrite,
-            @RequestBody @Valid RunMetadataDTO request,
-            Authentication authentication) {
-        return ResponseEntity.ok(documentService.createDocument(projectId, request, overwrite, authentication.getName()));
-    }
-
-    @PutMapping("/{projectId}/" + ValidationStorageConstants.RUN_METADATA + "/{id}")
-    public ResponseEntity<RunMetadata> updateDocument(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid RunMetadataDTO request) {
-        return ResponseEntity.ok(documentService.updateDocument(projectId, id, request));
-    }
-
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_METADATA + "/{id}")
-    public ResponseEntity<Void> deleteDocumentById(@PathVariable String projectId, @PathVariable String id) {
-        documentService.deleteDocumentById(projectId, id);
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_METADATA)
+    public ResponseEntity<Void> delete(
+            @PathVariable String projectId,
+            @PathVariable String runId) {
+        service.deleteRunMetadata(projectId, runId);
         return ResponseEntity.ok().build();
     }
-
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_METADATA)
-    public ResponseEntity<Void> deleteDocuments(@PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId,
-            @RequestParam("runId") Optional<String> runId) {
-        documentService.deleteDocumentsByProjectId(projectId, experimentId, runId);
-        return ResponseEntity.ok().build();
-    }
+    
 }

@@ -22,51 +22,40 @@ import org.springframework.web.bind.annotation.RestController;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.Store;
 import it.smartcommunitylab.validationstorage.model.dto.StoreDTO;
+import it.smartcommunitylab.validationstorage.service.DataResourceService;
 import it.smartcommunitylab.validationstorage.service.StoreService;
 
 @RestController
-@RequestMapping(value = "/api/project")
+@RequestMapping(value = ValidationStorageConstants.ENDPOINT_ROOT + ValidationStorageConstants.PATH_PROJECT)
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class StoreController {
     @Autowired
-    private StoreService service;
+    private DataResourceService service;
     
-    @PostMapping("/{projectId}/" + ValidationStorageConstants.RUN_CONFIG)
-    public ResponseEntity<Store> create(@PathVariable String projectId, @RequestBody @Valid StoreDTO request, Authentication authentication) {
-        return ResponseEntity.ok(service.create(projectId, request, authentication.getName()));
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.STORE)
+    public ResponseEntity<StoreDTO> create(@PathVariable String projectId, @RequestBody @Valid StoreDTO request) {
+        return ResponseEntity.ok(service.createStore(projectId, request));
     }
     
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN_CONFIG)
-    public ResponseEntity<List<Store>> findByProjectId(
-            @PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId,
-            @RequestParam("runId") Optional<String> runId,
-            @RequestParam("search") Optional<String> search) {
-        return ResponseEntity.ok(service.findByProjectId(projectId, experimentId, runId, search));
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.STORE)
+    public ResponseEntity<List<StoreDTO>> find(@PathVariable String projectId) {
+        return ResponseEntity.ok(service.findStores(projectId));
     }
     
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN_CONFIG + "/{id}")
-    public ResponseEntity<Store> findById(@PathVariable String projectId, @PathVariable String id) {
-        return ResponseEntity.ok(service.findById(projectId, id));
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.STORE + "/{id}")
+    public ResponseEntity<StoreDTO> findById(@PathVariable String projectId, @PathVariable String id) {
+        return ResponseEntity.ok(service.findStoreById(projectId, id));
     }
 
-    @PutMapping("/{projectId}/" + ValidationStorageConstants.RUN_CONFIG + "/{id}")
-    public ResponseEntity<Store> update(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid StoreDTO request) {
-        return ResponseEntity.ok(service.update(projectId, id, request));
+    @PutMapping("/{projectId}/" + ValidationStorageConstants.STORE + "/{id}")
+    public ResponseEntity<StoreDTO> update(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid StoreDTO request) {
+        return ResponseEntity.ok(service.updateStore(projectId, id, request));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN_CONFIG + "/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable String projectId, @PathVariable String id) {
-        service.deleteById(projectId, id);
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.STORE + "/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String projectId, @PathVariable String id) {
+        service.deleteStore(projectId, id);
         return ResponseEntity.ok().build();
     }
-
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RESOURCE)
-    public ResponseEntity<Void> deleteByProjectId(
-            @PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId,
-            @RequestParam("runId") Optional<String> runId) {
-        service.deleteByProjectId(projectId, experimentId, runId);
-        return ResponseEntity.ok().build();
-    }
+    
 }

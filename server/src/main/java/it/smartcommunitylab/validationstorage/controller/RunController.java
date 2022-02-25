@@ -24,43 +24,33 @@ import it.smartcommunitylab.validationstorage.model.dto.RunDTO;
 import it.smartcommunitylab.validationstorage.service.RunService;
 
 @RestController
-@RequestMapping(value = "/api/project")
+@RequestMapping(value = ValidationStorageConstants.ENDPOINT_ROOT + ValidationStorageConstants.PATH_PROJECT)
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunController {
     @Autowired
     private RunService service;
     
     @PostMapping("/{projectId}/" + ValidationStorageConstants.RUN)
-    public ResponseEntity<Run> create(@PathVariable String projectId, @RequestBody @Valid RunDTO request, Authentication authentication) {
-        return ResponseEntity.ok(service.create(projectId, request, authentication.getName()));
+    public ResponseEntity<RunDTO> create(@PathVariable String projectId, @RequestBody @Valid RunDTO request) {
+        return ResponseEntity.ok(service.createRun(projectId, request));
     }
     
     @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN)
-    public ResponseEntity<List<Run>> findByProjectId(
+    public ResponseEntity<List<RunDTO>> find(
             @PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId,
-            @RequestParam("runId") Optional<String> runId,
-            @RequestParam("search") Optional<String> search) {
-        return ResponseEntity.ok(service.findByProjectId(projectId, experimentId, runId, search));
+            @RequestParam("experimentName") Optional<String> experimentName) {
+        return ResponseEntity.ok(service.findRuns(projectId, experimentName));
     }
     
     @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{id}")
-    public ResponseEntity<Run> findById(@PathVariable String projectId, @PathVariable String id) {
-        return ResponseEntity.ok(service.findById(projectId, id));
+    public ResponseEntity<RunDTO> findById(@PathVariable String projectId, @PathVariable String id) {
+        return ResponseEntity.ok(service.findRunById(projectId, id));
     }
 
     @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable String projectId, @PathVariable String id) {
-        service.deleteById(projectId, id);
+    public ResponseEntity<Void> delete(@PathVariable String projectId, @PathVariable String id) {
+        service.deleteRun(projectId, id);
         return ResponseEntity.ok().build();
     }
-
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN)
-    public ResponseEntity<Void> deleteByProjectId(
-            @PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId,
-            @RequestParam("runId") Optional<String> runId) {
-        service.deleteByProjectId(projectId, experimentId, runId);
-        return ResponseEntity.ok().build();
-    }
+    
 }

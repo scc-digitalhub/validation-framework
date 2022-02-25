@@ -23,50 +23,48 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.Constraint;
 import it.smartcommunitylab.validationstorage.model.dto.ConstraintDTO;
 import it.smartcommunitylab.validationstorage.service.ConstraintService;
+import it.smartcommunitylab.validationstorage.service.ExperimentService;
 
 @RestController
-@RequestMapping(value = "/api/project")
+@RequestMapping(value = ValidationStorageConstants.ENDPOINT_ROOT + ValidationStorageConstants.PATH_PROJECT)
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class ConstraintController {
     @Autowired
-    private ConstraintService service;
+    private ExperimentService service;
     
-    @PostMapping("/{projectId}/" + ValidationStorageConstants.CONSTRAINT)
-    public ResponseEntity<Constraint> create(@PathVariable String projectId, @RequestBody @Valid ConstraintDTO request, Authentication authentication) {
-        return ResponseEntity.ok(service.create(projectId, request, authentication.getName()));
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.CONSTRAINT)
+    public ResponseEntity<ConstraintDTO> create(@PathVariable String projectId, @PathVariable String experimentId, @RequestBody @Valid ConstraintDTO request) {
+        return ResponseEntity.ok(service.createConstraint(projectId, experimentId, request));
     }
     
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.CONSTRAINT)
-    public ResponseEntity<List<Constraint>> findByProjectId(
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.CONSTRAINT)
+    public ResponseEntity<List<ConstraintDTO>> find(@PathVariable String projectId, @PathVariable String experimentId) {
+        return ResponseEntity.ok(service.findConstraints(projectId, experimentId));
+    }
+    
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.CONSTRAINT + "/{id}")
+    public ResponseEntity<ConstraintDTO> findById(
             @PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId,
-            @RequestParam("runId") Optional<String> runId,
-            @RequestParam("search") Optional<String> search) {
-        return ResponseEntity.ok(service.findByProjectId(projectId, experimentId, runId, search));
-    }
-    
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.CONSTRAINT + "/{id}")
-    public ResponseEntity<Constraint> findById(@PathVariable String projectId, @PathVariable String id) {
-        return ResponseEntity.ok(service.findById(projectId, id));
+            @PathVariable String experimentId,
+            @PathVariable String id) {
+        return ResponseEntity.ok(service.findConstraintById(projectId, experimentId, id));
     }
 
-    @PutMapping("/{projectId}/" + ValidationStorageConstants.CONSTRAINT + "/{id}")
-    public ResponseEntity<Constraint> update(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid ConstraintDTO request) {
-        return ResponseEntity.ok(service.update(projectId, id, request));
-    }
-
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.CONSTRAINT + "/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable String projectId, @PathVariable String id) {
-        service.deleteById(projectId, id);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RESOURCE)
-    public ResponseEntity<Void> deleteByProjectId(
+    @PutMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.CONSTRAINT + "/{id}")
+    public ResponseEntity<ConstraintDTO> update(
             @PathVariable String projectId,
-            @RequestParam("experimentId") Optional<String> experimentId,
-            @RequestParam("runId") Optional<String> runId) {
-        service.deleteByProjectId(projectId, experimentId, runId);
+            @PathVariable String experimentId,
+            @PathVariable String id,
+            @RequestBody @Valid ConstraintDTO request) {
+        return ResponseEntity.ok(service.updateConstraint(projectId, experimentId, id, request));
+    }
+
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.CONSTRAINT + "/{id}")
+    public ResponseEntity<Void> delete(
+            @PathVariable String projectId,
+            @PathVariable String experimentId,
+            @PathVariable String id) {
+        service.deleteConstraint(projectId, experimentId, id);
         return ResponseEntity.ok().build();
     }
 }

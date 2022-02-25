@@ -28,17 +28,22 @@ public class ProjectService {
     @Autowired
     private ProjectRepository repository;
     
-    public Project createProject(ProjectDTO request) {
+    public ProjectDTO createProject(ProjectDTO request) {
      // TODO Auto-generated method stub
         return null;
     }
     
-    public Project findProjectById(String id) {
+    public List<ProjectDTO> findProjects() {
+        // TODO Auto-generated method stub
+           return null;
+       }
+    
+    public ProjectDTO findProjectById(String id) {
      // TODO Auto-generated method stub
         return null;
     }
     
-    public Project updateProject(String id, ProjectDTO request) {
+    public ProjectDTO updateProject(String id, ProjectDTO request) {
      // TODO Auto-generated method stub
         return null;
     }

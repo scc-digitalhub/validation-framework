@@ -17,6 +17,7 @@ import it.smartcommunitylab.validationstorage.model.dto.ConstraintDTO;
 import it.smartcommunitylab.validationstorage.model.dto.DataPackageDTO;
 import it.smartcommunitylab.validationstorage.model.dto.ExperimentDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunConfigDTO;
+import it.smartcommunitylab.validationstorage.model.dto.RunDTO;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ConstraintRepository;
 import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepository;
@@ -40,62 +41,77 @@ public class ExperimentService {
     private RunConfigRepository runConfigRepository;
     
     // Experiment
-    public ExperimentDTO createExperiment(ExperimentDTO request) {
+    public ExperimentDTO createExperiment(String projectId, ExperimentDTO request) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public List<ExperimentDTO> findExperiments(String projectId, Optional<String> experimentName) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public ExperimentDTO findExperimentById(String id) {
+    public ExperimentDTO findExperimentById(String projectId, String id) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public ExperimentDTO updateExperiment(String id, ExperimentDTO request) {
+    public ExperimentDTO updateExperiment(String projectId, String id, ExperimentDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public void deleteExperiment(String id) {
+    public void deleteExperiment(String projectId, String id) {
         // TODO Auto-generated method stub
     }
     
+    public RunDTO createRun(String projectId, String id, RunDTO request) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
     // Constraint
-    public ConstraintDTO createConstraint(ConstraintDTO request) {
+    public ConstraintDTO createConstraint(String projectId, String experimentId, ConstraintDTO request) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public List<ConstraintDTO> findConstraints(String projectId, String experimentId) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public ConstraintDTO findConstraintById(String id) {
+    public ConstraintDTO findConstraintById(String projectId, String experimentId, String id) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public ConstraintDTO updateConstraint(String id, ConstraintDTO request) {
+    public ConstraintDTO updateConstraint(String projectId, String experimentId, String id, ConstraintDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public void deleteConstraint(String id) {
+    public void deleteConstraint(String projectId, String experimentId, String id) {
         // TODO Auto-generated method stub
     }
     
     // RunConfig
-    public RunConfigDTO createRunConfig(RunConfigDTO request) {
+    public RunConfigDTO createRunConfig(String projectId, String experimentId, RunConfigDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunConfigDTO findRunConfigById(String id) {
+    public RunConfigDTO findRunConfig(String projectId, String experimentId) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public RunConfigDTO updateRunConfig(String id, RunConfigDTO request) {
+    public RunConfigDTO updateRunConfig(String projectId, String experimentId, RunConfigDTO request) {
         // TODO Auto-generated method stub
         return null;
     }
    
-    public void deleteRunConfig(String id) {
+    public void deleteRunConfig(String projectId, String experimentId) {
         // TODO Auto-generated method stub
     }
 

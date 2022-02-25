@@ -18,12 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.dto.ProjectDTO;
 import it.smartcommunitylab.validationstorage.service.ProjectService;
 
 @RestController
-@RequestMapping(value = "/api/project")
+@RequestMapping(value = ValidationStorageConstants.ENDPOINT_ROOT + ValidationStorageConstants.PATH_PROJECT)
 @PreAuthorize(ValidationStorageConstants.PREAUTH_ID)
 public class ProjectController {
     @Autowired
@@ -31,29 +30,29 @@ public class ProjectController {
     
     @PreAuthorize(ValidationStorageConstants.PREAUTH_REQUEST_ID)
     @PostMapping
-    public ResponseEntity<Project> create(@RequestBody @Valid ProjectDTO request, Authentication authentication) {
-        return ResponseEntity.ok(service.create(request, authentication.getName()));
+    public ResponseEntity<ProjectDTO> create(@RequestBody @Valid ProjectDTO request) {
+        return ResponseEntity.ok(service.createProject(request));
     }
     
     @PreAuthorize("permitAll()")
     @GetMapping
-    public ResponseEntity<List<Project>> find() {
-        return ResponseEntity.ok(service.find());
+    public ResponseEntity<List<ProjectDTO>> find() {
+        return ResponseEntity.ok(service.findProjects());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Project> findById(@PathVariable String id) {
-        return ResponseEntity.ok(service.findById(id));
+    public ResponseEntity<ProjectDTO> findById(@PathVariable String id) {
+        return ResponseEntity.ok(service.findProjectById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Project> update(@PathVariable String id, @RequestBody @Valid ProjectDTO request) {
-        return ResponseEntity.ok(service.update(id, request));
+    public ResponseEntity<ProjectDTO> update(@PathVariable String id, @RequestBody @Valid ProjectDTO request) {
+        return ResponseEntity.ok(service.updateProject(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable String id) {
-        service.deleteById(id);
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        service.deleteProject(id);
         return ResponseEntity.ok().build();
     }
 }
