@@ -17,6 +17,12 @@ class ValidationPluginDummy(Validation):
         Do nothing.
         """
 
+    def rebuild_constraint(self,
+                           constraints: Any) -> None:
+        """
+        Do nothing.
+        """
+
     def parse_report(self, report: Any) -> tuple:
         """
         Return none.
@@ -31,7 +37,6 @@ class ValidationPluginDummy(Validation):
     def validate(self,
                  res_name: str,
                  data_path: str,
-                 constraints: Optional[dict] = None,
                  schema_path: Optional[str] = None,
                  valid_kwargs: Optional[dict] = None) -> dict:
         """

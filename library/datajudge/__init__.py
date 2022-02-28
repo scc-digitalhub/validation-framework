@@ -8,4 +8,4 @@ from datajudge.utils.config import RunConfig, StoreConfig
 __all__ = ["Client",
            "DataResource",
            "RunConfig",
-           "StoreConfig"]
+           "StoreConfig",]

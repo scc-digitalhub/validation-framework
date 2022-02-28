@@ -1,6 +1,7 @@
 """
 Common generic utils.
 """
+# pylint: disable=import-error
 from datetime import datetime
 from typing import Any, Optional, Tuple
 
@@ -25,6 +26,7 @@ def time_to_sec(timestr: Optional[str] = None) -> float:
                       parsed.second +
                       parsed.microsecond / 1000000)
         return round(total_time, 4)
+    return None
 
 
 def data_listify(data: Any,

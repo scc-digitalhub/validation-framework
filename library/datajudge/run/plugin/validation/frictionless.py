@@ -2,6 +2,9 @@
 Frictionless implementation of validation plugin.
 """
 # pylint: disable=import-error,invalid-name
+from __future__ import annotations
+
+import typing
 import warnings
 from typing import List, Optional
 
@@ -9,6 +12,9 @@ import frictionless
 from frictionless import Report, Resource, Schema
 
 from datajudge.run.plugin.validation.validation_plugin import Validation
+
+if typing.TYPE_CHECKING:
+    from datajudge.utils.config import ConstraintsDatajudge
 
 
 class ValidationPluginFrictionless(Validation):
@@ -22,6 +28,57 @@ class ValidationPluginFrictionless(Validation):
         """
         self.lib_name = frictionless.__name__
         self.lib_version = frictionless.__version__
+
+    def rebuild_constraint(self,
+                           constraints: List[ConstraintsDatajudge]) -> None:
+        """
+        Rebuild input constraints.
+        """
+        resources = {}
+
+        for con in constraints:
+            resource = con.resources[0]
+            if resource not in resources:
+                resources[resource] = {}
+
+        for res in resources:
+
+            fields = {}
+            schema = {
+                "fields": []
+            }
+            self.registry.register_resource(res)
+
+            for con in constraints:
+
+                field_name = con.field
+                val = con.value
+                con_type = con.constraint
+
+                if con.resources[0] == res:
+                    if field_name not in fields:
+                        fields[field_name] = {
+                            "name": field_name,
+                            "type": None,
+                            "error": {
+                                "severity": con.severity
+                            },
+                            "constraints": {}
+                        }
+
+                    if con_type == "Type":
+                        fields[field_name]["type"] = val
+
+                    elif con_type == "Format":
+                        fields[field_name]["format"] = val
+
+                    else:
+                        fields[field_name]["constraints"][con_type] = val
+
+            for _, con in fields.items():
+                schema["fields"].append(con)
+
+            self.registry.add_constraints(res, schema)
 
     def parse_report(self,
                      report: Report
@@ -47,15 +104,13 @@ class ValidationPluginFrictionless(Validation):
     def validate(self,
                  res_name: str,
                  data_path: str,
-                 constraints: Optional[dict] = None,
-                 schema_path: Optional[str] = None,
                  valid_kwargs: Optional[dict] = None) -> Report:
         """
         Validate a Data Resource.
 
         Parameters
         ----------
-        **kwargs : dict
+        **valid_kwargs : dict
             Keywords args for frictionless.validate_resource method.
 
         """
@@ -65,15 +120,11 @@ class ValidationPluginFrictionless(Validation):
 
         valid_kwargs = self.get_args(valid_kwargs)
 
-        try:
-            schema = Schema(constraints)
-        except Exception:
-            warnings.warn("Invalid constraints format.")
-        finally:
-            schema = Schema(descriptor=schema_path)
+        constraints = self.registry.get_constraints(res_name)
+        schema = Schema(constraints)
 
-        if not schema or schema is None:
-            warnings.warn("No valid table schema is provided! " +
+        if not schema:
+            warnings.warn("No table schema is provided! " +
                           "Report will results valid by default.")
 
         resource = Resource(path=data_path, schema=schema)

@@ -5,6 +5,7 @@ Common S3 utils.
 from typing import IO, Type
 
 import botocore.client
+from botocore.exceptions import ClientError
 
 
 s3_client = Type["botocore.client.S3"]
@@ -18,7 +19,7 @@ def check_bucket(client: s3_client,
     try:
         client.head_bucket(Bucket=bucket)
         return True
-    except Exception:
+    except ClientError:
         return False
 
 

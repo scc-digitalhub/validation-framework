@@ -50,7 +50,7 @@ class Run:
         Persist an artifact in the artifact store.
     persist_data :
         Persist input data.
-    fetch_input_data :
+    fetch_data :
         Fetch input data from artifact store.
     fetch_artifact :
         Fetch an artifact from artifact store.
@@ -76,14 +76,11 @@ class Run:
 
         self.run_info = run_info
         self._client = client
-        self.plugin_handler = plugin_handler
+        self._plugin_handler = plugin_handler
         self._overwrite = overwrite
 
         # Local temp paths
         self._data = None
-
-        # To remove
-        self._val_schema = None
 
     # Run methods
 
@@ -91,8 +88,6 @@ class Run:
         """
         Log run's metadata.
         """
-        if self.run_info.run_metadata_uri is None:
-            return
         metadata = self._get_blob(self.run_info.to_dict())
         self._log_metadata(metadata, self._RUN_METADATA)
 
@@ -100,8 +95,6 @@ class Run:
         """
         Log run's enviroment details.
         """
-        if self.run_info.run_metadata_uri is None:
-            return
         env_data = EnvLog().to_dict()
         metadata = self._get_blob(env_data)
         self._log_metadata(metadata, self._RUN_ENV)
@@ -117,8 +110,8 @@ class Run:
                        self.run_info.experiment_name,
                        self.run_info.experiment_title,
                        cfg.DATAJUDGE_VERSION,
-                       self.run_info.data_resource.get("name"),
-                       self.run_info.data_resource.get("path"),
+                       self.run_info.data_resource.name,
+                       self.run_info.data_resource.path,
                        content).to_dict()
 
     def _log_metadata(self,
@@ -203,13 +196,52 @@ class Run:
         metadata = {}
 
         # Data
-        data = self.fetch_input_data()
+        data = self.fetch_data()
         data, data_name = data_listify(data, data_name)
         for idx, path in enumerate(data):
             # try to infer source name if no name is passed
             src_name = data_name[idx] if data_name[idx] is not None \
                                       else get_name_from_uri(path)
             self.persist_artifact(data[idx], src_name, metadata)
+
+    def fetch_data(self) -> str:
+        """
+        Fetch data from backend and return temp file path.
+        """
+        if self._data is None:
+            path = self.run_info.data_resource.path
+            if isinstance(path, list):
+                self._data = [self.fetch_artifact(i) for i in path]
+            else:
+                self._data = self.fetch_artifact(path)
+        return self._data
+
+    def fetch_artifact(self,
+                       uri: str) -> str:
+        """
+        Fetch artifact from backend.
+
+        Parameters
+        ----------
+        uri : str
+            URI of artifact to fetch.
+        """
+        self._check_artifacts_uri()
+        return self._client.fetch_artifact(uri)
+
+    def _check_metadata_uri(self) -> None:
+        """
+        Check metadata uri existence.
+        """
+        if self.run_info.run_metadata_uri is None:
+            raise AttributeError("Please configure a metadata store.")
+
+    def _check_artifacts_uri(self) -> None:
+        """
+        Check artifact uri existence.
+        """
+        if self.run_info.run_artifacts_uri is None:
+            raise AttributeError("Please configure a artifact store.")
 
     # Inference
 
@@ -224,9 +256,9 @@ class Run:
             Mappers for specific framework arguments.
 
         """
-        self.fetch_input_data()
-        return self.plugin_handler.infer(
-                            self.run_info.data_resource.get("name"),
+        self.fetch_data()
+        return self._plugin_handler.infer(
+                            self.run_info.data_resource.name,
                             self._data,
                             inference_kwargs)
 
@@ -242,7 +274,7 @@ class Run:
 
         """
         schema = self.infer_wrapper(inference_kwargs)
-        return self.plugin_handler.produce_schema(schema)
+        return self._plugin_handler.produce_schema(schema)
 
     def infer(self,
               inference_kwargs: Optional[dict] = None) -> tuple:
@@ -283,7 +315,7 @@ class Run:
             An inferred schema object produced by a validation library.
 
         """
-        rendered = self.plugin_handler.render_schema(schema)
+        rendered = self._plugin_handler.render_schema(schema)
         for obj in rendered:
             self.persist_artifact(obj.object,
                                   obj.filename)
@@ -291,7 +323,7 @@ class Run:
     # Validation
 
     def validate_wrapper(self,
-                         constraints: Optional[dict] = None,
+                         constraints: Optional[Any] = None,
                          validation_kwargs: Optional[dict] = None) -> Any:
         """
         Execute validation of a resource.
@@ -304,13 +336,11 @@ class Run:
             Mappers for specific framework arguments.
 
         """
-        self.fetch_input_data()
-        self.fetch_validation_schema()
-        return self.plugin_handler.validate(
-                                    self.run_info.data_resource.get("name"),
+        self.fetch_data()
+        return self._plugin_handler.validate(
+                                    self.run_info.data_resource.name,
                                     self._data,
                                     constraints,
-                                    self._val_schema,
                                     validation_kwargs)
 
     def validate_datajudge(self,
@@ -329,7 +359,7 @@ class Run:
 
         """
         report = self.validate_wrapper(constraints, validation_kwargs)
-        return self.plugin_handler.produce_report(report)
+        return self._plugin_handler.produce_report(report)
 
     def validate(self,
                  constraints: Optional[dict] = None,
@@ -373,7 +403,7 @@ class Run:
             An report object produced by a validation library.
 
         """
-        rendered = self.plugin_handler.render_report(report)
+        rendered = self._plugin_handler.render_report(report)
         for obj in rendered:
             self.persist_artifact(obj.object,
                                   obj.filename)
@@ -391,9 +421,9 @@ class Run:
             Kwargs passed to profiler.
 
         """
-        self.fetch_input_data()
-        return self.plugin_handler.profile(
-                                self.run_info.data_resource.get("name"),
+        self.fetch_data()
+        return self._plugin_handler.profile(
+                                self.run_info.data_resource.name,
                                 self._data,
                                 profiler_kwargs)
 
@@ -411,7 +441,7 @@ class Run:
 
         """
         profile = self.profile_wrapper(profiler_kwargs)
-        return self.plugin_handler.produce_profile(profile)
+        return self._plugin_handler.produce_profile(profile)
 
     def profile(self,
                 profiler_kwargs: Optional[dict] = None) -> tuple:
@@ -452,66 +482,10 @@ class Run:
             A profile object produced by a profiling library.
 
         """
-        rendered = self.plugin_handler.render_profile(profile)
+        rendered = self._plugin_handler.render_profile(profile)
         for obj in rendered:
             self.persist_artifact(obj.object,
                                   obj.filename)
-
-    # Input data
-
-    def fetch_input_data(self) -> str:
-        """
-        Fetch data from backend and return temp file path.
-        """
-        if self._data is None:
-            path = self.run_info.data_resource.get("path")
-            if isinstance(path, list):
-                self._data = [self.fetch_artifact(i) for i in path]
-            else:
-                self._data = self.fetch_artifact(path)
-        return self._data
-
-    def fetch_validation_schema(self) -> str:
-        """
-        Fetch validation schema from backend and return temp file path.
-        """
-        if self.run_info.data_resource.get("schema") is None:
-            return None
-        if self._val_schema is None:
-            self._val_schema = self.fetch_artifact(
-                self.run_info.data_resource.get("schema"))
-        return self._val_schema
-
-    def fetch_artifact(self,
-                       uri: str) -> str:
-        """
-        Fetch artifact from backend.
-
-        Parameters
-        ----------
-        uri : str
-            URI of artifact to fetch.
-        """
-        if self.run_info.run_artifacts_uri is None:
-            raise AttributeError("Please configure an artifact store.")
-
-        return self._client.fetch_artifact(uri)
-
-    # Utils
-
-    def _check_metadata_uri(self) -> None:
-        """
-        Check metadata uri existence.
-        """
-        if self.run_info.run_metadata_uri is None:
-            raise AttributeError("Please configure a metadata store.")
-
-    def _check_artifact_uri(self) -> None:
-        """
-        Check artifact uri existence.
-        """
-        if self.run_info.run_artifact_uri is None:
-            raise AttributeError("Please configure a artifact store.")
 
     # Context manager
 

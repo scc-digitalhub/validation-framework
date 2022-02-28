@@ -1,7 +1,8 @@
 """
 Configuration for filenames, endpoints, etc.
 """
-from typing import List, Optional, Union
+# pylint: disable=too-few-public-methods,import-error,missing-class-docstring
+from typing import Any, List, Optional, Union
 from typing_extensions import Literal
 
 from pydantic import BaseModel
@@ -15,7 +16,7 @@ class StoreConfig(BaseModel):
     config: Optional[dict] = None
 
 
-class ConstraintFrictionless:
+class ConstraintsFrictionless(BaseModel):
     id: str
     type: Literal["frictionless"]
     title: str
@@ -23,7 +24,7 @@ class ConstraintFrictionless:
     resources: List[str]
     field: str
     constraint: str
-    value: str
+    value: Any
     severity: int
 
 
@@ -38,9 +39,9 @@ class ConstraintsDatajudge(BaseModel):
     severity: int
 
 
-class ConstraintsConfig(BaseModel):
-    constraints: List[Union[ConstraintFrictionless,
-                            ConstraintsDatajudge]]
+# class ConstraintsConfig(BaseModel):
+#     constraints: List[Union[ConstraintsFrictionless,
+#                             ConstraintsDatajudge]]
 
 
 class ValidationConfig(BaseModel):

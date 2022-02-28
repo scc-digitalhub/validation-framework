@@ -21,6 +21,12 @@ class Validation(Plugin, metaclass=ABCMeta):
     _fn_report = "report_{}"
 
     @abstractmethod
+    def rebuild_constraint(self) -> Any:
+        """
+        Rebuild input constraints.
+        """
+
+    @abstractmethod
     def parse_report(self,
                      report: Any,
                      schema_path: Optional[str] = None
@@ -41,8 +47,6 @@ class Validation(Plugin, metaclass=ABCMeta):
     def validate(self,
                  res_name: str,
                  data_path: str,
-                 constraints: Optional[dict] = None,
-                 schema_path: Optional[str] = None,
                  valid_kwargs: Optional[dict] = None) -> Any:
         """
         Validate a resource.

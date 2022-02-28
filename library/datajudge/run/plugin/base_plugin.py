@@ -15,15 +15,32 @@ class ResultsRegistry:
     """
 
     def __init__(self) -> None:
-        self._registry = None
-        self.setup()
+        self._registry = {}
 
-    def setup(self):
+    def register_resource(self,
+                          res_name: str) -> None:
         """
-        Set registry as mapper.
+        Add resource on register.
         """
-        if self._registry is None:
-            self._registry = {}
+        if res_name not in self._registry:
+            self._registry[res_name] = {}
+
+    def add_constraints(self,
+                        res_name: str,
+                        constraints: dict) -> None:
+        """
+        Add constraints to a resource.
+        """
+        self._registry[res_name] = {
+            "constraints": constraints
+        }
+
+    def get_constraints(self,
+                        res_name: str) -> dict:
+        """
+        Get constraints for a resource.
+        """
+        return self._registry.get(res_name, {}).get("constraints")
 
     def add_result(self,
                    res_name: str,

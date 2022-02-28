@@ -3,9 +3,15 @@ RunInfo module.
 Implementation of the basic Run's metadata.
 """
 # pylint: disable=too-many-instance-attributes,too-many-arguments
+from __future__ import annotations
+
+import typing
 from typing import Optional
 
 from datajudge.utils.utils import get_time
+
+if typing.TYPE_CHECKING:
+    from datajudge.data import DataResource
 
 
 class RunInfo:
@@ -39,7 +45,7 @@ class RunInfo:
     def __init__(self,
                  experiment_title: str,
                  experiment_name: str,
-                 data_resource: dict,
+                 data_resource: DataResource,
                  run_id: str,
                  run_config: dict,
                  run_libraries: dict,
@@ -75,7 +81,7 @@ class RunInfo:
             "runLibraries": self.run_libraries,
             "runMetadataUri": self.run_metadata_uri,
             "runArtifactsUri": self.run_artifacts_uri,
-            "dataResource": self.data_resource,
+            "dataResource": self.data_resource.to_dict(),
             "created": self.created,
             "beginStatus": self.begin_status,
             "started": self.started,

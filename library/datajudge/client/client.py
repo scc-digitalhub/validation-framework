@@ -167,7 +167,7 @@ class Client:
 
         run_info_args = (experiment_title,
                          experiment_name,
-                         data_resource.to_dict(),
+                         data_resource,
                          run_id,
                          run_config.dict(exclude_none=True, by_alias=True),
                          run_plugin_handler.get_info(),
