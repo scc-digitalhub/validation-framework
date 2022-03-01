@@ -37,8 +37,7 @@ class ValidationPluginDummy(Validation):
     def validate(self,
                  res_name: str,
                  data_path: str,
-                 schema_path: Optional[str] = None,
-                 valid_kwargs: Optional[dict] = None) -> dict:
+                 exec_args: dict) -> dict:
         """
         Generate dummy report.
         """

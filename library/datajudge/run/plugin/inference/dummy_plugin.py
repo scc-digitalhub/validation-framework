@@ -32,7 +32,7 @@ class InferencePluginDummy(Inference):
     def infer(self,
               res_name: str,
               data_path: str,
-              infer_kwargs: Optional[dict] = None) -> Any:
+              exec_args: dict) -> Any:
         """
         Generate dummy schema.
         """

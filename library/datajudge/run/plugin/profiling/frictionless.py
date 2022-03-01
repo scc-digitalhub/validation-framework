@@ -54,30 +54,26 @@ class ProfilePluginFrictionless(Profiling):
     def profile(self,
                 res_name: str,
                 data_path: str,
-                profiler_kwargs: Optional[dict] = None
+                exec_args: dict
                 ) -> Resource:
         """
         Generate frictionless profile.
 
         Parameters
         ----------
-        **profiler_kwargs : dict, default = None
+        **exec_args : dict, default = None
             Parameters for frictionless.Resource.
 
         """
-        profile = self.registry.get_result(res_name)
-        if profile is not None:
-            return profile
-
-        profiler_kwargs = self.get_args(profiler_kwargs)
-
         start = time.perf_counter()
-        profile = Resource(data_path, **profiler_kwargs)
+        profile = Resource(data_path, **exec_args)
         profile.infer()
         profile.expand()
         end = round(time.perf_counter() - start, 2)
 
-        self.registry.add_result(res_name, profile, end)
+        result = self.get_outcome(profile)
+
+        self.registry.add_result(res_name, profile, result, end)
 
         return profile
 

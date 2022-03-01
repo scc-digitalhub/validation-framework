@@ -1,7 +1,6 @@
 """
 Run plugins handler module.
 """
-from copy import copy, deepcopy
 from dataclasses import dataclass
 from typing import Any, List
 
@@ -36,53 +35,120 @@ class PluginHandler:
         self._validation_plugins = validation_plugin
         self._profiling_plugins = profiling_plugin
 
-    def infer(self, *args, **kwargs) -> List[ArtifactWrapper]:
+    def infer(self,
+              res_name: str,
+              data_path: str,
+              exec_args: dict,
+              *args, **kwargs) -> List[ArtifactWrapper]:
         """
         Wrapper for plugins infer methods.
         """
-        return self.execute(self.inf, *args, **kwargs)
+        return self.get_cached_results(self.inf,
+                                       res_name,
+                                       data_path,
+                                       exec_args,
+                                       *args, **kwargs)
 
-    def validate(self, *args, **kwargs) -> List[ArtifactWrapper]:
+    def validate(self,
+                 res_name: str,
+                 data_path: str,
+                 constraints: list,
+                 exec_args: dict,
+                 *args, **kwargs) -> List[ArtifactWrapper]:
         """
         Wrapper for plugins validate methods.
         """
-        lib_const = {}
-        
-        # To avoid second call
-        if args[2] is not None:    
-            
-            for con in args[2]:
-                if con.type not in lib_const:
-                    lib_const[con.type] = []
-                lib_const[con.type].append(con)
+        const_type = {}
 
-            for lib in lib_const:
-                for plug in self.val:
-                    if lib == self.val[plug].lib_name:
-                        self.val[plug].rebuild_constraint(lib_const[lib])
+        # Loop through constraints and extract 
+        # resources and constraints for a specific plugin.
+        for constraint in constraints:
+            if constraint.type not in const_type:
+                const_type[constraint.type] = {
+                                        "res": [],
+                                        "const": []
+                                    }
+            const_type[constraint.type]["const"].append(constraint)
+            const_type[constraint.type]["res"].extend(constraint.resources)
 
-        return self.execute(self.val, args[0], args[1], args[3], **kwargs)
+        # Plugin rebuild constraints and register resources
+        # needed by validation and constraints related.
+        for library, values in const_type.items():
+            for plugin in self.val:
+                if library == self.val[plugin].lib_name:
+                    [self.val[plugin].registry.register_resource(res)
+                     for res in  values["res"]]
+                    self.val[plugin].rebuild_constraint(values["const"])
 
-    def profile(self, *args, **kwargs) -> List[ArtifactWrapper]:
+        return self.get_cached_results(self.val,
+                                       res_name,
+                                       data_path,
+                                       exec_args,
+                                       *args, **kwargs)
+
+    def profile(self, 
+                res_name: str,
+                data_path: str,
+                exec_args: dict,
+                *args, **kwargs) -> List[ArtifactWrapper]:
         """
         Wrapper for plugins profile methods.
         """
-        return self.execute(self.pro, *args, **kwargs)
+        return self.get_cached_results(self.pro,
+                                       res_name,
+                                       data_path,
+                                       exec_args,
+                                       *args, **kwargs)
 
+    def get_cached_results(self, 
+                           plugin: Any,
+                           res_name: str,
+                           data_path: str,
+                           exec_args: dict,
+                           *args, **kwargs) -> Any:
+        
+        # Loop over plugin registry registry and try to fetch
+        # cached results.
+        results = []
+        for lib in plugin:
+            result = plugin[lib].registry.get_result(res_name)
+            if result is not None:
+                outcome = plugin[lib].registry.get_outcome(res_name)
+                results.append(ArtifactWrapper(res_name,
+                                               lib,
+                                               result,
+                                               outcome))
+
+        if len(results) != len(plugin):
+            return self.execute(plugin,
+                                res_name,
+                                data_path,
+                                exec_args,
+                                *args, **kwargs)
+        return results
+    
     @staticmethod
-    def execute(plugin: Any, *args, **kwargs) -> List[ArtifactWrapper]:
+    def execute(plugin: Any,
+                res_name: str,
+                data_path: str,
+                exec_args: dict,
+                *args, **kwargs) -> List[ArtifactWrapper]:
         """
         Wrap plugin main execution method.
         """
-        # Weak move
-        res_name = args[0]
+        if exec_args is None:
+            exec_args = {}
 
         results = []
         for lib in plugin:
-            library = plugin[lib].lib_name
-            result = plugin[lib].execute(*args, **kwargs)
-            outcome = plugin[lib].get_outcome(result)
-            results.append(ArtifactWrapper(res_name, library, result, outcome))
+            plugin[lib].registry.register_resource(res_name)
+            result = plugin[lib].execute(res_name,
+                                         data_path,
+                                         exec_args.get(lib, {}),
+                                         *args,
+                                         **kwargs)
+            outcome = plugin[lib].registry.get_outcome(res_name)
+            results.append(ArtifactWrapper(res_name, lib, result, outcome))
         return results
 
     def produce_schema(self, objects: List[ArtifactWrapper]) -> dict:
@@ -121,6 +187,10 @@ class PluginHandler:
                     log["reports"].append(result.to_dict())
             if obj.outcome == "invalid":
                 log["result"] = "invalid"
+
+        if len(log["reports"]) != len(plugins):
+            log["result"] = "invalid"
+
         return log
 
     def render_schema(self, schema: Any) -> list:

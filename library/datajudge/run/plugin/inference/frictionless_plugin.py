@@ -55,30 +55,22 @@ class InferencePluginFrictionless(Inference):
     def infer(self,
               res_name: str,
               data_path: str,
-              infer_kwargs: Optional[dict] = None) -> Schema:
+              exec_args: dict) -> Schema:
         """
         Method that call infer on a resource and return an
         inferred schema.
         """
-        inferred = self.registry.get_result(res_name)
-        if inferred is not None:
-            return inferred
-
-        infer_kwargs = self.get_args(infer_kwargs)
-
         # Execute inference and measure time
         start = time.perf_counter()
-        inferred = describe_schema(data_path, **infer_kwargs)
+        inferred = describe_schema(data_path, **exec_args)
         end = round(time.perf_counter() - start, 2)
 
-        if inferred is None:
-            warnings.warn("Unable to infer schema.")
-            return None
+        result = self.get_outcome(inferred)
 
-        self.registry.add_result(res_name, inferred, end)
+        self.registry.add_result(res_name, inferred, result, end)
 
         return inferred
-
+    
     @staticmethod
     def get_outcome(obj: Schema) -> str:
         """

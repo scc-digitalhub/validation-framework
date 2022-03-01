@@ -41,7 +41,7 @@ class Profiling(Plugin, metaclass=ABCMeta):
                 res_name: str,
                 data_path: str,
                 resource: Any,
-                profiler_kwargs: Optional[dict] = None
+                exec_args: dict
                 ) -> Any:
         """
         Generate a data profile.

@@ -246,13 +246,13 @@ class Run:
     # Inference
 
     def infer_wrapper(self,
-                      inference_kwargs: Optional[dict] = None) -> Any:
+                      exec_args: Optional[dict] = None) -> Any:
         """
         Execute schema inference over a resource.
 
         Parameters
         ----------
-        inference_kwargs : dict, default = None
+        exec_args : dict, default = None
             Mappers for specific framework arguments.
 
         """
@@ -260,35 +260,35 @@ class Run:
         return self._plugin_handler.infer(
                             self.run_info.data_resource.name,
                             self._data,
-                            inference_kwargs)
+                            exec_args)
 
     def infer_datajudge(self,
-                        inference_kwargs: Optional[dict] = None) -> dict:
+                        exec_args: Optional[dict] = None) -> dict:
         """
         Produce datajudge inference schema.
 
         Parameters
         ----------
-        inference_kwargs : dict, default = None
+        exec_args : dict, default = None
             Mappers for specific framework arguments.
 
         """
-        schema = self.infer_wrapper(inference_kwargs)
+        schema = self.infer_wrapper(exec_args)
         return self._plugin_handler.produce_schema(schema)
 
     def infer(self,
-              inference_kwargs: Optional[dict] = None) -> tuple:
+              exec_args: Optional[dict] = None) -> tuple:
         """
         Execute schema inference over a resource.
 
         Parameters
         ----------
-        inference_kwargs : dict, default = None
+        exec_args : dict, default = None
             Mappers for specific framework arguments.
 
         """
-        schema = self.infer_wrapper(inference_kwargs)
-        schema_dj = self.infer_datajudge()
+        schema = self.infer_wrapper(exec_args)
+        schema_dj = self.infer_datajudge(exec_args)
         return schema, schema_dj
 
     def log_schema(self, schema: dict) -> None:
@@ -324,7 +324,7 @@ class Run:
 
     def validate_wrapper(self,
                          constraints: Optional[Any] = None,
-                         validation_kwargs: Optional[dict] = None) -> Any:
+                         exec_args: Optional[dict] = None) -> Any:
         """
         Execute validation of a resource.
 
@@ -332,7 +332,7 @@ class Run:
         ----------
         constraints : dict, default = None
             Constraints from configuration.
-        validation_kwargs : dict, default = None
+        exec_args : dict, default = None
             Mappers for specific framework arguments.
 
         """
@@ -341,11 +341,11 @@ class Run:
                                     self.run_info.data_resource.name,
                                     self._data,
                                     constraints,
-                                    validation_kwargs)
+                                    exec_args)
 
     def validate_datajudge(self,
                            constraints: Optional[dict] = None,
-                           validation_kwargs: Optional[dict] = None
+                           exec_args: Optional[dict] = None
                            ) -> dict:
         """
         Produce datajudge validation report.
@@ -354,16 +354,16 @@ class Run:
         ----------
         constraints : dict, default = None
             Constraints from configuration.
-        validation_kwargs : dict, default = None
+        exec_args : dict, default = None
             Mappers for specific framework arguments
 
         """
-        report = self.validate_wrapper(constraints, validation_kwargs)
+        report = self.validate_wrapper(constraints, exec_args)
         return self._plugin_handler.produce_report(report)
 
     def validate(self,
                  constraints: Optional[dict] = None,
-                 validation_kwargs: Optional[dict] = None) -> tuple:
+                 exec_args: Optional[dict] = None) -> tuple:
         """
         Execute validation over a resource.
 
@@ -371,12 +371,12 @@ class Run:
         ----------
         constraints : dict, default = None
             Constraints from configuration.
-        validation_kwargs : dict, default = None
+        exec_args : dict, default = None
             Mappers for specific framework arguments.
 
         """
-        report = self.validate_wrapper(constraints, validation_kwargs)
-        report_dj = self.validate_datajudge()
+        report = self.validate_wrapper(constraints, exec_args)
+        report_dj = self.validate_datajudge(constraints, exec_args)
         return report, report_dj
 
     def log_report(self, report: dict) -> None:
@@ -411,13 +411,13 @@ class Run:
     # Profiling
 
     def profile_wrapper(self,
-                        profiler_kwargs: dict = None) -> Any:
+                        exec_args: dict = None) -> Any:
         """
         Execute profiling on a resource.
 
         Parameters
         ----------
-        profiler_kwargs : dict, default = None
+        exec_args : dict, default = None
             Kwargs passed to profiler.
 
         """
@@ -425,10 +425,10 @@ class Run:
         return self._plugin_handler.profile(
                                 self.run_info.data_resource.name,
                                 self._data,
-                                profiler_kwargs)
+                                exec_args)
 
     def profile_datajudge(self,
-                          profiler_kwargs: dict = None
+                          exec_args: dict = None
                           ) -> dict:
         """
         Execute schema inference over a resource.
@@ -436,26 +436,26 @@ class Run:
 
         Parameters
         ----------
-        profiler_kwargs : dict, default = None
+        exec_args : dict, default = None
             Kwargs passed to profiler.
 
         """
-        profile = self.profile_wrapper(profiler_kwargs)
+        profile = self.profile_wrapper(exec_args)
         return self._plugin_handler.produce_profile(profile)
 
     def profile(self,
-                profiler_kwargs: Optional[dict] = None) -> tuple:
+                exec_args: Optional[dict] = None) -> tuple:
         """
         Execute profiling over a resource.
 
         Parameters
         ----------
-        profiler_kwargs : dict, default = None
+        exec_args : dict, default = None
             Mappers for specific framework arguments.
 
         """
-        profile = self.profile_wrapper(profiler_kwargs)
-        profile_dj = self.profile_datajudge()
+        profile = self.profile_wrapper(exec_args)
+        profile_dj = self.profile_datajudge(exec_args)
         return profile, profile_dj
 
     def log_profile(self, profile: dict) -> None:

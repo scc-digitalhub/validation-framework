@@ -47,7 +47,7 @@ class Validation(Plugin, metaclass=ABCMeta):
     def validate(self,
                  res_name: str,
                  data_path: str,
-                 valid_kwargs: Optional[dict] = None) -> Any:
+                 exec_args: dict) -> Any:
         """
         Validate a resource.
         """

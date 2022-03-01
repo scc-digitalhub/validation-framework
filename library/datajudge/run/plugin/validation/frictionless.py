@@ -5,8 +5,7 @@ Frictionless implementation of validation plugin.
 from __future__ import annotations
 
 import typing
-import warnings
-from typing import List, Optional
+from typing import List
 
 import frictionless
 from frictionless import Report, Resource, Schema
@@ -47,7 +46,6 @@ class ValidationPluginFrictionless(Validation):
             schema = {
                 "fields": []
             }
-            self.registry.register_resource(res)
 
             for con in constraints:
 
@@ -104,34 +102,26 @@ class ValidationPluginFrictionless(Validation):
     def validate(self,
                  res_name: str,
                  data_path: str,
-                 valid_kwargs: Optional[dict] = None) -> Report:
+                 exec_args: dict) -> Report:
         """
         Validate a Data Resource.
 
         Parameters
         ----------
-        **valid_kwargs : dict
+        **exec_args : dict
             Keywords args for frictionless.validate_resource method.
 
         """
-        report = self.registry.get_result(res_name)
-        if report is not None:
-            return report
-
-        valid_kwargs = self.get_args(valid_kwargs)
-
         constraints = self.registry.get_constraints(res_name)
         schema = Schema(constraints)
 
-        if not schema:
-            warnings.warn("No table schema is provided! " +
-                          "Report will results valid by default.")
-
         resource = Resource(path=data_path, schema=schema)
-        report = frictionless.validate_resource(resource, **valid_kwargs)
+        report = frictionless.validate_resource(resource, **exec_args)
         end = report.time
+        
+        result = self.get_outcome(report)
 
-        self.registry.add_result(res_name, report, end)
+        self.registry.add_result(res_name, report, result, end)
 
         return report
 

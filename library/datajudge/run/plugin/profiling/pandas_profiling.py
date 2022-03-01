@@ -76,28 +76,22 @@ class ProfilePluginPandasProfiling(Profiling):
     def profile(self,
                 res_name: str,
                 data_path: str,
-                profiler_kwargs: Optional[dict] = None
+                exec_args: dict
                 ) -> ProfileReport:
         """
         Generate pandas_profiling profile.
 
         Parameters
         ----------
-        **profiler_kwargs : dict, default = None
+        **exec_args : dict, default = None
             Parameters for pandas_profiling.ProfileReport.
 
         """
-        profile = self.registry.get_result(res_name)
-        if profile is not None:
-            return profile
-
-        profiler_kwargs = self.get_args(profiler_kwargs)
-
         file_format, pandas_kwargs = self._infer_args(data_path)
         df = self._read_df(data_path,
                            file_format,
                            **pandas_kwargs)
-        profile = ProfileReport(df, **profiler_kwargs)
+        profile = ProfileReport(df, **exec_args)
 
         time = json.loads(profile.to_json())\
                    .get("analysis", {})\

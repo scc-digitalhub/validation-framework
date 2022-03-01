@@ -39,7 +39,7 @@ class Inference(Plugin, metaclass=ABCMeta):
     def infer(self,
               res_name: str,
               data_path: str,
-              infer_kwargs: Optional[dict] = None) -> Any:
+              exec_args: dict) -> Any:
         """
         Inference method for schema.
         """

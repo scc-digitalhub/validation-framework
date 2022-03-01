@@ -33,7 +33,7 @@ class ProfilePluginDummy(Profiling):
     def profile(self,
                 res_name: str,
                 data_path: str,
-                profiler_kwargs: Optional[dict] = None
+                exec_args: dict
                 ) -> dict:
         """
         Generate dummy profile.

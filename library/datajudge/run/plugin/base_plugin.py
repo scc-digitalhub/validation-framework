@@ -3,70 +3,12 @@ Base abstract Run Plugin module.
 """
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
-from typing import Any, List, Optional
+from typing import Any, List
+
+from datajudge.run.plugin.plugin_registry import PluginRegistry
 
 
 RenderTuple = namedtuple("RenderTuple", ("object", "filename"))
-
-
-class ResultsRegistry:
-    """
-    Registry where to cache results over resources.
-    """
-
-    def __init__(self) -> None:
-        self._registry = {}
-
-    def register_resource(self,
-                          res_name: str) -> None:
-        """
-        Add resource on register.
-        """
-        if res_name not in self._registry:
-            self._registry[res_name] = {}
-
-    def add_constraints(self,
-                        res_name: str,
-                        constraints: dict) -> None:
-        """
-        Add constraints to a resource.
-        """
-        self._registry[res_name] = {
-            "constraints": constraints
-        }
-
-    def get_constraints(self,
-                        res_name: str) -> dict:
-        """
-        Get constraints for a resource.
-        """
-        return self._registry.get(res_name, {}).get("constraints")
-
-    def add_result(self,
-                   res_name: str,
-                   result: Any,
-                   time: Optional[float] = None
-                   ) -> None:
-        """
-        Add new result to registry.
-        """
-        self._registry[res_name] = {
-            "result": result,
-            "time": time
-        }
-
-    def get_result(self,
-                   res_name: str) -> Optional[Any]:
-        """
-        Get result for named resource.
-        """
-        return self._registry.get(res_name, {}).get("result")
-
-    def get_time(self, res_name: str) -> Optional[float]:
-        """
-        Get execution time.
-        """
-        return self._registry.get(res_name, {}).get("time")
 
 
 class Plugin(metaclass=ABCMeta):
@@ -77,7 +19,7 @@ class Plugin(metaclass=ABCMeta):
     def __init__(self) -> None:
         self.lib_name = None
         self.lib_version = None
-        self.registry = ResultsRegistry()
+        self.registry = PluginRegistry()
         self.update_library_info()
 
     @abstractmethod
@@ -110,15 +52,6 @@ class Plugin(metaclass=ABCMeta):
         """
         Return a rendered report ready to be persisted as artifact.
         """
-
-    def get_args(self,
-                 args: Optional[dict] = None) -> dict:
-        """
-        Return keywords arguments for execution.
-        """
-        if args is not None:
-            return args.get(self.lib_name, {})
-        return {}
 
     @staticmethod
     def get_render_tuple(obj: Any, filename: str) -> RenderTuple:
