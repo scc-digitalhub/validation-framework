@@ -77,14 +77,13 @@ class ProfilePluginFrictionless(Profiling):
 
         return profile
 
-    @staticmethod
-    def get_outcome(obj: Resource) -> str:
+    def get_outcome(self, obj: Resource) -> str:
         """
         Return status of the execution.
         """
         if obj is not None and obj != {}:
-            return "valid"
-        return "invalid"
+            return self._VALID_STATUS
+        return self._INVALID_STATUS
 
     def render_artifact(self,
                         obj: Resource) -> List[tuple]:

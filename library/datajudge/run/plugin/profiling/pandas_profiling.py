@@ -102,14 +102,13 @@ class ProfilePluginPandasProfiling(Profiling):
 
         return profile
 
-    @staticmethod
-    def get_outcome(obj: ProfileReport) -> str:
+    def get_outcome(self, obj: ProfileReport) -> str:
         """
         Return status of the execution.
         """
         if obj is not None:
-            return "valid"
-        return "invalid"
+            return self._VALID_STATUS
+        return self._INVALID_STATUS
 
     @staticmethod
     def _read_df(path: Union[str, List[str]],

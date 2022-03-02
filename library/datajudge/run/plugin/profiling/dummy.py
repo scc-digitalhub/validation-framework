@@ -40,12 +40,11 @@ class ProfilePluginDummy(Profiling):
         """
         return {}
 
-    @staticmethod
-    def get_outcome(obj: Any) -> str:
+    def get_outcome(self, obj: Any) -> str:
         """
         Return status of the execution.
         """
-        return "valid"
+        return self._VALID_STATUS
 
     def render_artifact(self, obj: Any) -> List[tuple]:
         """

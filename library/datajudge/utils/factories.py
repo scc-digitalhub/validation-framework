@@ -216,6 +216,5 @@ def get_run(run_info_args: Tuple[str],
                    run_plugin_handler,
                    client,
                    overwrite)
-
-    except KeyError as k_err:
-        raise NotImplementedError from k_err
+    except Exception as ex:
+        raise ex

@@ -70,15 +70,14 @@ class InferencePluginFrictionless(Inference):
         self.registry.add_result(res_name, inferred, result, end)
 
         return inferred
-    
-    @staticmethod
-    def get_outcome(obj: Schema) -> str:
+
+    def get_outcome(self, obj: Schema) -> str:
         """
         Return status of the execution.
         """
         if obj is not None and obj != {}:
-            return "valid"
-        return "invalid"
+            return self._VALID_STATUS
+        return self._INVALID_STATUS
 
     def render_artifact(self, obj: Schema) -> List[tuple]:
         """

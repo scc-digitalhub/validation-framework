@@ -16,6 +16,9 @@ class Plugin(metaclass=ABCMeta):
     Base plugin abstract class.
     """
 
+    _VALID_STATUS = "valid"
+    _INVALID_STATUS = "invalid"
+
     def __init__(self) -> None:
         self.lib_name = None
         self.lib_version = None
@@ -36,7 +39,7 @@ class Plugin(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def get_outcome(obj: Any) -> str:
+    def get_outcome(self, obj: Any) -> str:
         """
         Return status of the execution.
         """

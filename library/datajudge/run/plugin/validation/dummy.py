@@ -2,7 +2,7 @@
 Dummy implementation of validation plugin.
 """
 # pylint: disable=import-error,invalid-name
-from typing import Any, List, Optional
+from typing import Any, List
 
 from datajudge.run.plugin.validation.validation_plugin import Validation
 
@@ -17,8 +17,7 @@ class ValidationPluginDummy(Validation):
         Do nothing.
         """
 
-    def rebuild_constraint(self,
-                           constraints: Any) -> None:
+    def rebuild_constraint(self, constraints: Any) -> None:
         """
         Do nothing.
         """
@@ -43,15 +42,13 @@ class ValidationPluginDummy(Validation):
         """
         return {}
 
-    @staticmethod
-    def get_outcome(obj: Any) -> str:
+    def get_outcome(self, obj: Any) -> str:
         """
         Return status of the execution.
         """
-        return "valid"
+        return self._VALID_STATUS
 
-    def render_artifact(self,
-                        obj: Any) -> List[tuple]:
+    def render_artifact(self, obj: Any) -> List[tuple]:
         """
         Return a dummy report to be persisted as artifact.
         """

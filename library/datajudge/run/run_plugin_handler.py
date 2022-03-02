@@ -60,7 +60,7 @@ class PluginHandler:
         """
         const_type = {}
 
-        # Loop through constraints and extract 
+        # Loop through constraints and extract
         # resources and constraints for a specific plugin.
         for constraint in constraints:
             if constraint.type not in const_type:
@@ -86,7 +86,7 @@ class PluginHandler:
                                        exec_args,
                                        *args, **kwargs)
 
-    def profile(self, 
+    def profile(self,
                 res_name: str,
                 data_path: str,
                 exec_args: dict,
@@ -100,13 +100,13 @@ class PluginHandler:
                                        exec_args,
                                        *args, **kwargs)
 
-    def get_cached_results(self, 
+    def get_cached_results(self,
                            plugin: Any,
                            res_name: str,
                            data_path: str,
                            exec_args: dict,
                            *args, **kwargs) -> Any:
-        
+
         # Loop over plugin registry registry and try to fetch
         # cached results.
         results = []
@@ -126,7 +126,7 @@ class PluginHandler:
                                 exec_args,
                                 *args, **kwargs)
         return results
-    
+
     @staticmethod
     def execute(plugin: Any,
                 res_name: str,
