@@ -17,6 +17,8 @@ public interface RunValidationReportRepository extends CrudRepository<RunValidat
     void deleteByExperimentId(String experimentId);
     
     void deleteByRunId(String runId);
+    
+    void deleteByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
 
 //    List<RunShortReport> findByProjectIdAndExperimentId(String projectId, String experimentId);
 //

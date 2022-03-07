@@ -32,34 +32,38 @@ public class RunMetadataController {
     @Autowired
     private RunService service;
 
-    @PostMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_METADATA)
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_METADATA)
     public ResponseEntity<RunMetadataDTO> create(
             @PathVariable String projectId,
+            @PathVariable String experimentId,
             @PathVariable String runId,
             @RequestBody @Valid RunMetadataDTO request) {
-        return ResponseEntity.ok(service.createRunMetadata(projectId, runId, request));
+        return ResponseEntity.ok(service.createRunMetadata(projectId, experimentId, runId, request));
     }
     
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_METADATA)
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_METADATA)
     public ResponseEntity<RunMetadataDTO> find(
             @PathVariable String projectId,
+            @PathVariable String experimentId,
             @PathVariable String runId) {
-        return ResponseEntity.ok(service.findRunMetadata(projectId, runId));
+        return ResponseEntity.ok(service.findRunMetadata(projectId, experimentId, runId));
     }
 
-    @PutMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_METADATA)
+    @PutMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_METADATA)
     public ResponseEntity<RunMetadataDTO> update(
             @PathVariable String projectId,
+            @PathVariable String experimentId,
             @PathVariable String runId,
             @RequestBody @Valid RunMetadataDTO request) {
-        return ResponseEntity.ok(service.updateRunMetadata(projectId, runId, request));
+        return ResponseEntity.ok(service.updateRunMetadata(projectId, experimentId, runId, request));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_METADATA)
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_METADATA)
     public ResponseEntity<Void> delete(
             @PathVariable String projectId,
+            @PathVariable String experimentId,
             @PathVariable String runId) {
-        service.deleteRunMetadata(projectId, runId);
+        service.deleteRunMetadata(projectId, experimentId, runId);
         return ResponseEntity.ok().build();
     }
     

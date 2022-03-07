@@ -1,5 +1,6 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
@@ -46,7 +47,7 @@ public class RunMetadata {
     /**
      * May contain extra information.
      */
-    private Map<String, ?> contents;
+    private Map<String, Serializable> contents;
 
     public String getId() {
         return id;
@@ -88,11 +89,11 @@ public class RunMetadata {
         this.created = created;
     }
 
-    public Map<String, ?> getContents() {
+    public Map<String, Serializable> getContents() {
         return contents;
     }
 
-    public void setContents(Map<String, ?> contents) {
+    public void setContents(Map<String, Serializable> contents) {
         this.contents = contents;
     }
     

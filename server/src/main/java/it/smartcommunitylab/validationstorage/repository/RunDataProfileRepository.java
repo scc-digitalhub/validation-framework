@@ -17,6 +17,8 @@ public interface RunDataProfileRepository extends CrudRepository<RunDataProfile,
     void deleteByExperimentId(String experimentId);
     
     void deleteByRunId(String runId);
+    
+    void deleteByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
 
 //    List<RunDataProfile> findByProjectIdAndExperimentId(String projectId, String experimentId);
 //

@@ -1,7 +1,10 @@
 package it.smartcommunitylab.validationstorage.service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PostFilter;
@@ -11,16 +14,20 @@ import org.springframework.util.ObjectUtils;
 import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.DataPackage;
+import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Project;
+import it.smartcommunitylab.validationstorage.model.Store;
 import it.smartcommunitylab.validationstorage.model.dto.ProjectDTO;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
+import it.smartcommunitylab.validationstorage.repository.DataPackageRepository;
 import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepository;
-import it.smartcommunitylab.validationstorage.repository.RunDataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.RunValidationReportRepository;
+import it.smartcommunitylab.validationstorage.repository.StoreRepository;
 import it.smartcommunitylab.validationstorage.repository.RunDataSchemaRepository;
 
 @Service
@@ -28,19 +35,84 @@ public class ProjectService {
     @Autowired
     private ProjectRepository repository;
     
+    @Autowired
+    private ExperimentRepository experimentRepository;
+    
+    @Autowired
+    private DataPackageRepository dataPackageRepository;
+    
+    @Autowired
+    private StoreRepository storeRepository;
+    
+    private Project getProject(String id) {
+        if (ObjectUtils.isEmpty(id))
+            return null;
+
+        Optional<Project> o = repository.findById(id);
+        if (o.isPresent()) {
+            return o.get();
+        }
+        
+        return null;
+    }
+    
+    private ProjectDTO makeDTO(Project source) {
+        ProjectDTO dto = new ProjectDTO();
+        
+        String id = source.getName();
+        
+        dto.setName(id);
+        dto.setTitle(source.getTitle());
+        dto.setDescription(source.getDescription());
+        
+        Set<String> experimentIds = new HashSet<String>();
+        List<Experiment> experiments = experimentRepository.findByProjectId(id);
+        for (Experiment i : experiments) {
+            experimentIds.add(i.getId());
+        }
+        dto.setExperimentIds(experimentIds);
+        
+        Set<String> packageIds = new HashSet<String>();
+        List<DataPackage> packages = dataPackageRepository.findByProjectId(id);
+        for (DataPackage i : packages) {
+            packageIds.add(i.getId());
+        }
+        dto.setPackageIds(packageIds);
+        
+        Set<String> storeIds = new HashSet<String>();
+        List<Store> stores = storeRepository.findByProjectId(id);
+        for (Store i : stores) {
+            storeIds.add(i.getId());
+        }
+        dto.setStoreIds(storeIds);
+        
+        return dto;
+    }
+    
     public ProjectDTO createProject(ProjectDTO request) {
      // TODO Auto-generated method stub
         return null;
     }
     
+    @PostFilter(ValidationStorageConstants.POSTFILTER_ID)
     public List<ProjectDTO> findProjects() {
-        // TODO Auto-generated method stub
-           return null;
-       }
+        List<ProjectDTO> dtos = new ArrayList<ProjectDTO>();
+        
+        Iterable<Project> results = repository.findAll();
+        for (Project r : results) {
+            dtos.add(makeDTO(r));
+        }
+        
+        return dtos;
+    }
     
     public ProjectDTO findProjectById(String id) {
-     // TODO Auto-generated method stub
-        return null;
+        Project document = getProject(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
+        
+        return makeDTO(document);
     }
     
     public ProjectDTO updateProject(String id, ProjectDTO request) {
@@ -49,7 +121,8 @@ public class ProjectService {
     }
     
     public void deleteProject(String id) {
-     // TODO Auto-generated method stub
+        // TODO
+        repository.deleteById(id);
     }
 
 //    @Autowired

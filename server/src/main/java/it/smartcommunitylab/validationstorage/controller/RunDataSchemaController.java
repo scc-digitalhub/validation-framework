@@ -26,58 +26,63 @@ public class RunDataSchemaController {
     @Autowired
     private RunService service;
 
-    @PostMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_SCHEMA)
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_SCHEMA)
     public ResponseEntity<SchemaResultDTO> create(
             @PathVariable String projectId,
+            @PathVariable String experimentId,
             @PathVariable String runId,
             @RequestBody @Valid SchemaResultDTO request) {
         
         SchemaResultDTO response = new SchemaResultDTO();
-        response.setReports(service.createRunDataSchemas(projectId, runId, request.getResult(), request.getReports()));
+        response.setReports(service.createRunDataSchemas(projectId, experimentId, runId, request.getResult(), request.getReports()));
         response.setResult(request.getResult());
         
         return ResponseEntity.ok(response);
     }
     
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_SCHEMA)
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_SCHEMA)
     public ResponseEntity<SchemaResultDTO> find(
             @PathVariable String projectId,
+            @PathVariable String experimentId,
             @PathVariable String runId) {
         
         SchemaResultDTO response = new SchemaResultDTO();
-        response.setReports(service.findRunDataSchemas(projectId, runId));
-        response.setResult(service.findSchemaResult(projectId, runId));
+        response.setReports(service.findRunDataSchemas(projectId, experimentId, runId));
+        response.setResult(service.findSchemaResult(projectId, experimentId, runId));
         
         return ResponseEntity.ok(response);
     }
     
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_SCHEMA + "/{id}")
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_SCHEMA + "/{id}")
     public ResponseEntity<RunDataSchemaDTO> findById(
             @PathVariable String projectId,
+            @PathVariable String experimentId,
             @PathVariable String runId,
             @PathVariable String id) {
         
-        return ResponseEntity.ok(service.findRunDataSchemaById(projectId, runId, id));
+        return ResponseEntity.ok(service.findRunDataSchemaById(projectId, experimentId, runId, id));
     }
 
-    @PutMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_SCHEMA)
+    @PutMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_SCHEMA)
     public ResponseEntity<SchemaResultDTO> update(
             @PathVariable String projectId,
+            @PathVariable String experimentId,
             @PathVariable String runId,
             @RequestBody @Valid SchemaResultDTO request) {
         
         SchemaResultDTO response = new SchemaResultDTO();
-        response.setReports(service.updateRunDataSchemas(projectId, runId, request.getResult(), request.getReports()));
+        response.setReports(service.updateRunDataSchemas(projectId, experimentId, runId, request.getResult(), request.getReports()));
         response.setResult(request.getResult());
         
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_SCHEMA)
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_SCHEMA)
     public ResponseEntity<Void> delete(
             @PathVariable String projectId,
+            @PathVariable String experimentId,
             @PathVariable String runId) {
-        service.deleteRunDataSchemas(projectId, runId);
+        service.deleteRunDataSchemas(projectId, experimentId, runId);
         return ResponseEntity.ok().build();
     }
     

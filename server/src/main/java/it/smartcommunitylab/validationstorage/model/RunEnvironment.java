@@ -1,5 +1,6 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import javax.persistence.Column;
@@ -40,7 +41,7 @@ public class RunEnvironment {
     /**
      * May contain extra information.
      */
-    private Map<String, ?> contents;
+    private Map<String, Serializable> contents;
 
     public String getId() {
         return id;
@@ -74,11 +75,11 @@ public class RunEnvironment {
         this.runId = runId;
     }
 
-    public Map<String, ?> getContents() {
+    public Map<String, Serializable> getContents() {
         return contents;
     }
 
-    public void setContents(Map<String, ?> contents) {
+    public void setContents(Map<String, Serializable> contents) {
         this.contents = contents;
     }
     

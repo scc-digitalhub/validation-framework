@@ -26,7 +26,9 @@ public class ExperimentDTO {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
     
-    private Set<String> runs;
+    private String description;
+    
+    private Set<String> runIds;
     
     private Set<String> runConfigIds;
     
@@ -67,13 +69,21 @@ public class ExperimentDTO {
     public void setTitle(String title) {
         this.title = title;
     }
-
-    public Set<String> getRuns() {
-        return runs;
+    
+    public String getDescription() {
+        return description;
     }
 
-    public void setRuns(Set<String> runs) {
-        this.runs = runs;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Set<String> getRunIds() {
+        return runIds;
+    }
+
+    public void setRunIds(Set<String> runIds) {
+        this.runIds = runIds;
     }
 
     public Set<String> getRunConfigIds() {

@@ -20,8 +20,6 @@ public class RunDTO {
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String experimentId;
     
-    private String experimentName;
-    
     private RunConfigDTO runConfig;
     
     private List<ConstraintDTO> constraints;
@@ -50,14 +48,6 @@ public class RunDTO {
 
     public void setExperimentId(String experimentId) {
         this.experimentId = experimentId;
-    }
-
-    public String getExperimentName() {
-        return experimentName;
-    }
-
-    public void setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
     }
 
     public RunConfigDTO getRunConfig() {

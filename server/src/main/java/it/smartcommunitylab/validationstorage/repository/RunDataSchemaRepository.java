@@ -17,6 +17,8 @@ public interface RunDataSchemaRepository extends CrudRepository<RunDataSchema, S
     void deleteByExperimentId(String experimentId);
     
     void deleteByRunId(String runId);
+    
+    void deleteByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
 
 //    List<RunShortSchema> findByProjectIdAndExperimentId(String projectId, String experimentId);
 //

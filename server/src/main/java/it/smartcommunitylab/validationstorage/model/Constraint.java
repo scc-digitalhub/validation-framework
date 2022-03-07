@@ -92,11 +92,11 @@ public class Constraint {
         this.title = title;
     }
 
-    public Set<String> getResources() {
+    public Set<String> getResourceIds() {
         return resourceIds;
     }
 
-    public void setResources(Set<String> resourceIds) {
+    public void setResourceIds(Set<String> resourceIds) {
         this.resourceIds = resourceIds;
     }
 

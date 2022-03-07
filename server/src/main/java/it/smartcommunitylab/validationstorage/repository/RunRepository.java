@@ -9,6 +9,8 @@ import it.smartcommunitylab.validationstorage.model.Run;
 
 public interface RunRepository extends CrudRepository<Run, String> {
     
+    List<Run> findByProjectIdAndExperimentId(String projectId, String experimentId);
+    
     List<Run> findByExperimentId(String experimentId);
     
     List<Run> findByExperimentId(String experimentId, Pageable pageable);
@@ -16,5 +18,7 @@ public interface RunRepository extends CrudRepository<Run, String> {
     void deleteByProjectId(String projectId);
     
     void deleteByExperimentId(String experimentId);
+    
+    void deleteByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
     
 }

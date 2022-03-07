@@ -15,7 +15,7 @@ public interface ExperimentRepository extends CrudRepository<Experiment, String>
     
     List<Experiment> findByProjectIdAndTagsIn(String projectId, List<String> tags, Pageable pageable);
 
-//    List<Experiment> findByProjectIdAndExperimentId(String projectId, String experimentId);
+    List<Experiment> findByProjectIdAndName(String projectId, String Name);
 
     void deleteByProjectId(String projectId);
 

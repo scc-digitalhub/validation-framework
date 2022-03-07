@@ -10,13 +10,15 @@ public interface RunEnvironmentRepository extends CrudRepository<RunEnvironment,
     
     List<RunEnvironment> findByProjectId(String projectId);
     
-    List<RunEnvironment> findByRunId(String runId);
+    List<RunEnvironment> findByProjectIdAndRunId(String projectId, String runId);
     
     void deleteByProjectId(String projectId);
     
     void deleteByExperimentId(String experimentId);
     
     void deleteByRunId(String runId);
+    
+    void deleteByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
 
 //    List<RunEnvironment> findByProjectIdAndExperimentId(String projectId, String experimentId);
 //

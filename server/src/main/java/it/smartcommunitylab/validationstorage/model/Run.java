@@ -57,10 +57,6 @@ public class Run {
     @Column(name = "run_data_profiles")
     private List<RunDataProfile> runDataProfiles;
     
-    @OneToMany(mappedBy="run_id")
-    @Column(name = "run_data_resources")
-    private List<RunDataResource> runDataResources;
-    
     @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
     @Column(name = "run_validation_reports")
     private List<RunValidationReport> runValiationReports;
@@ -149,14 +145,6 @@ public class Run {
 
     public void setRunDataProfiles(List<RunDataProfile> runDataProfiles) {
         this.runDataProfiles = runDataProfiles;
-    }
-
-    public List<RunDataResource> getRunDataResources() {
-        return runDataResources;
-    }
-
-    public void setRunDataResources(List<RunDataResource> runDataResources) {
-        this.runDataResources = runDataResources;
     }
 
     public List<RunValidationReport> getRunValidationReports() {

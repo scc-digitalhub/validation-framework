@@ -32,34 +32,38 @@ public class RunEnvironmentController {
     @Autowired
     private RunService service;
 
-    @PostMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_ENVIRONMENT)
+    @PostMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_ENVIRONMENT)
     public ResponseEntity<RunEnvironmentDTO> create(
             @PathVariable String projectId,
+            @PathVariable String experimentId,
             @PathVariable String runId,
             @RequestBody @Valid RunEnvironmentDTO request) {
-        return ResponseEntity.ok(service.createRunEnvironment(projectId, runId, request));
+        return ResponseEntity.ok(service.createRunEnvironment(projectId, experimentId, runId, request));
     }
     
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_ENVIRONMENT)
+    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_ENVIRONMENT)
     public ResponseEntity<RunEnvironmentDTO> find(
             @PathVariable String projectId,
+            @PathVariable String experimentId,
             @PathVariable String runId) {
-        return ResponseEntity.ok(service.findRunEnvironment(projectId, runId));
+        return ResponseEntity.ok(service.findRunEnvironment(projectId, experimentId, runId));
     }
 
-    @PutMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_ENVIRONMENT)
+    @PutMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_ENVIRONMENT)
     public ResponseEntity<RunEnvironmentDTO> update(
             @PathVariable String projectId,
+            @PathVariable String experimentId,
             @PathVariable String runId,
             @RequestBody @Valid RunEnvironmentDTO request) {
-        return ResponseEntity.ok(service.updateRunEnvironment(projectId, runId, request));
+        return ResponseEntity.ok(service.updateRunEnvironment(projectId, experimentId, runId, request));
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_ENVIRONMENT)
+    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_ENVIRONMENT)
     public ResponseEntity<Void> delete(
             @PathVariable String projectId,
+            @PathVariable String experimentId,
             @PathVariable String runId) {
-        service.deleteRunEnvironment(projectId, runId);
+        service.deleteRunEnvironment(projectId, experimentId, runId);
         return ResponseEntity.ok().build();
     }
     

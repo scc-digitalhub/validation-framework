@@ -10,13 +10,15 @@ public interface RunMetadataRepository extends CrudRepository<RunMetadata, Strin
     
     List<RunMetadata> findByProjectId(String projectId);
     
-    List<RunMetadata> findByRunId(String runId);
+    List<RunMetadata> findByProjectIdAndRunId(String projectId, String runId);
     
     void deleteByProjectId(String projectId);
     
     void deleteByExperimentId(String experimentId);
     
     void deleteByRunId(String runId);
+    
+    void deleteByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
 
 //    List<RunMetadata> findByProjectIdAndExperimentId(String projectId, String experimentId);
 //

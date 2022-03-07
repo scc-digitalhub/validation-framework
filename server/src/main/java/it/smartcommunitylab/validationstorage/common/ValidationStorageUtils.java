@@ -15,4 +15,9 @@ public class ValidationStorageUtils {
     public static String normalizeString(String input) {
         return Normalizer.normalize(input.toLowerCase(), Normalizer.Form.NFKD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
     }
+    
+    public static void checkIdMatch(String id1, String id2) {
+        if (!id1.equals(id2))
+            throw new IdMismatchException("The project/experiment ID specified in the path does not match the equivalent field in the document.");
+    }
 }
