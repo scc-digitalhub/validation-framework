@@ -13,7 +13,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.persistence.UniqueConstraint;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.repository.HashMapConverter;
+import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
 
 @Entity
 @Table(name = "stores", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "name" }))

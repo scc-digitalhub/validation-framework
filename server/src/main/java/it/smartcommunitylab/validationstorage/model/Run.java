@@ -12,12 +12,13 @@ import javax.persistence.Lob;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import org.springframework.data.annotation.Id;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.repository.HashMapConverter;
+import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
 
 @Entity
 public class Run {
@@ -34,14 +35,25 @@ public class Run {
     @Column(name = "experiment_id")
     private String experimentId;
     
-    @OneToOne()
+    // Copied from the experiment's current RunConfig, cannot be modified
+    @OneToOne
     @Column(name = "run_config")
     private RunConfig runConfig;
+    
+    // Copied from the experiment's package, cannot be modified
+    @OneToOne
+    @Column(name = "data_package")
+    private DataPackage dataPackage;
     
     @Lob
     @Convert(converter = HashMapConverter.class)
     private Map<String, Serializable> constraints;
     
+    @NotNull
+    @Column(name = "run_status")
+    private RunResult runStatus;
+    
+    // These documents are populated as results are obtained
     @OneToOne()
     @Column(name = "run_metadata")
     private RunMetadata runMetadata;
@@ -51,6 +63,7 @@ public class Run {
     private RunEnvironment runEnvironment;
     
     @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
+    @Column(name = "artifact_metadata")
     private List<ArtifactMetadata> artifactMetadata;
     
     @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
@@ -65,15 +78,30 @@ public class Run {
     @Column(name = "run_data_schemas")
     private List<RunDataSchema> runDataSchemas;
     
-    private String status;
+    @Column(name = "validation_result")
+    private RunResult validationResult;
     
-    private String validationResult;
+    @Column(name = "profile_result")
+    private RunResult profileResult;
     
-    private String profileResult;
+    @Column(name = "schema_result")
+    private RunResult schemaResult;
     
-    private String schemaResult;
+    @Column(name = "snapshot_result")
+    private RunResult snapshotResult;
     
-    private String snapshotResult;
+    public enum RunResult {
+        PENDING("pending"),
+        RUNNING("running"),
+        SUCCESS("success"),
+        ERROR("error");
+        
+        public final String label;
+        
+        private RunResult(String label) {
+            this.label = label;
+        }
+    }
 
     public String getId() {
         return id;
@@ -107,12 +135,28 @@ public class Run {
         this.runConfig = runConfig;
     }
 
+    public DataPackage getDataPackage() {
+        return dataPackage;
+    }
+
+    public void setDataPackage(DataPackage dataPackage) {
+        this.dataPackage = dataPackage;
+    }
+
     public Map<String, Serializable> getConstraints() {
         return constraints;
     }
 
     public void setConstraints(Map<String, Serializable> constraints) {
         this.constraints = constraints;
+    }
+
+    public RunResult getRunStatus() {
+        return runStatus;
+    }
+
+    public void setRunStatus(RunResult runStatus) {
+        this.runStatus = runStatus;
     }
 
     public RunMetadata getRunMetadata() {
@@ -147,11 +191,11 @@ public class Run {
         this.runDataProfiles = runDataProfiles;
     }
 
-    public List<RunValidationReport> getRunValidationReports() {
+    public List<RunValidationReport> getRunValiationReports() {
         return runValiationReports;
     }
 
-    public void setRunValidationReports(List<RunValidationReport> runValiationReports) {
+    public void setRunValiationReports(List<RunValidationReport> runValiationReports) {
         this.runValiationReports = runValiationReports;
     }
 
@@ -163,44 +207,38 @@ public class Run {
         this.runDataSchemas = runDataSchemas;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getValidationResult() {
+    public RunResult getValidationResult() {
         return validationResult;
     }
 
-    public void setValidationResult(String validationResult) {
+    public void setValidationResult(RunResult validationResult) {
         this.validationResult = validationResult;
     }
 
-    public String getProfileResult() {
+    public RunResult getProfileResult() {
         return profileResult;
     }
 
-    public void setProfileResult(String profileResult) {
+    public void setProfileResult(RunResult profileResult) {
         this.profileResult = profileResult;
     }
 
-    public String getSchemaResult() {
+    public RunResult getSchemaResult() {
         return schemaResult;
     }
 
-    public void setSchemaResult(String schemaResult) {
+    public void setSchemaResult(RunResult schemaResult) {
         this.schemaResult = schemaResult;
     }
 
-    public String getSnapshotResult() {
+    public RunResult getSnapshotResult() {
         return snapshotResult;
     }
 
-    public void setSnapshotResult(String snapshotResult) {
+    public void setSnapshotResult(RunResult snapshotResult) {
         this.snapshotResult = snapshotResult;
     }
+
+    
 
 }

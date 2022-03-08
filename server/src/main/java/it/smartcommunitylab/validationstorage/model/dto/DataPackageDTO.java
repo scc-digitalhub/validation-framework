@@ -23,6 +23,8 @@ public class DataPackageDTO {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
     
+    private String type;
+    
     private Set<String> resourceIds;
     
     public String getId() {
@@ -55,6 +57,14 @@ public class DataPackageDTO {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+    
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public Set<String> getResourceIds() {

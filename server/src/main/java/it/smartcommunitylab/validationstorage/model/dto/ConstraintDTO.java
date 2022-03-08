@@ -7,7 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.model.TypedConstraint;
+import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 
 @Valid
 public class ConstraintDTO {

@@ -1,4 +1,4 @@
-package it.smartcommunitylab.validationstorage.model;
+package it.smartcommunitylab.validationstorage.typed;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -6,7 +6,12 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public abstract class TypedConstraint {
+public abstract class TypedConstraint implements Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 4330448684174457132L;
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
     
     private String type;

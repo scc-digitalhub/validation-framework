@@ -1,31 +1,36 @@
 package it.smartcommunitylab.validationstorage.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.Convert;
+import javax.persistence.Embeddable;
+import javax.persistence.Lob;
+import javax.persistence.Transient;
 
-@Entity
+import it.smartcommunitylab.validationstorage.converter.TypedSchemaConverter;
+import it.smartcommunitylab.validationstorage.typed.TypedSchema;
+
+@Embeddable
 public class Schema {
-    @Id
-    private String id;
+    @Transient
+    private String type;
+    
+    @Lob
+    @Convert(converter = TypedSchemaConverter.class)
+    private TypedSchema schema;
 
-    @Column(name = "resource_id")
-    private String resourceId;
-
-    public String getId() {
-        return id;
+    public String getType() {
+        return type;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public String getResourceId() {
-        return resourceId;
+    public TypedSchema getSchema() {
+        return schema;
     }
 
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
+    public void setSchema(TypedSchema schema) {
+        this.schema = schema;
     }
 
 }

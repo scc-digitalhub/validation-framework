@@ -15,8 +15,11 @@ import javax.validation.constraints.Pattern;
 import org.springframework.data.annotation.Id;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.repository.HashMapConverter;
-import it.smartcommunitylab.validationstorage.repository.TypedErrorConverter;
+import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
+import it.smartcommunitylab.validationstorage.converter.TypedConstraintConverter;
+import it.smartcommunitylab.validationstorage.converter.TypedErrorConverter;
+import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
+import it.smartcommunitylab.validationstorage.typed.TypedError;
 
 /**
  * Short report on the validation's result.
@@ -42,7 +45,11 @@ public class RunValidationReport {
     @Column(name = "run_id")
     private String runId;
     
-    private String constraintId;
+    private String type;
+    
+    @Lob
+    @Convert(converter = TypedConstraintConverter.class)
+    private TypedConstraint constraint;
     
     private Boolean valid;
     
@@ -89,16 +96,20 @@ public class RunValidationReport {
         this.runId = runId;
     }
 
-    public String getConstraintId() {
-        return constraintId;
+    public String getType() {
+        return type;
     }
 
-    public void setConstraintId(String constraintId) {
-        this.constraintId = constraintId;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public boolean isValid() {
-        return valid != null ? valid.booleanValue() : false;
+    public TypedConstraint getConstraint() {
+        return constraint;
+    }
+
+    public void setConstraint(TypedConstraint constraint) {
+        this.constraint = constraint;
     }
 
     public Boolean getValid() {
@@ -107,6 +118,10 @@ public class RunValidationReport {
 
     public void setValid(Boolean valid) {
         this.valid = valid;
+    }
+    
+    public boolean isValid() {
+        return valid != null ? valid.booleanValue() : false;
     }
 
     public List<TypedError> getErrors() {

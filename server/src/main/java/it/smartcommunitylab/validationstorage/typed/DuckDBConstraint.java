@@ -1,4 +1,4 @@
-package it.smartcommunitylab.validationstorage.model;
+package it.smartcommunitylab.validationstorage.typed;
 
 public class DuckDBConstraint extends TypedConstraint {
     private String query;

@@ -1,4 +1,4 @@
-package it.smartcommunitylab.validationstorage.repository;
+package it.smartcommunitylab.validationstorage.converter;
 
 import java.util.Set;
 

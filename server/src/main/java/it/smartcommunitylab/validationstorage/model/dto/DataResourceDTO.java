@@ -6,6 +6,7 @@ import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.Dataset;
+import it.smartcommunitylab.validationstorage.model.Schema;
 
 @Valid
 public class DataResourceDTO {
@@ -13,7 +14,7 @@ public class DataResourceDTO {
     
     private String projectId;
     
-    private String packageId;
+    private String packageName;
     
     private String storeId;
     
@@ -24,10 +25,12 @@ public class DataResourceDTO {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
     
-    private SchemaDTO schema;
+    private String type;
+    
+    private Schema schema;
     
     private Dataset dataset;
-    
+
     public String getId() {
         return id;
     }
@@ -43,13 +46,13 @@ public class DataResourceDTO {
     public void setProjectId(String projectId) {
         this.projectId = projectId;
     }
-
-    public String getPackageId() {
-        return packageId;
+    
+    public String getPackageName() {
+        return packageName;
     }
 
-    public void setPackageId(String packageId) {
-        this.packageId = packageId;
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
     }
 
     public String getStoreId() {
@@ -75,12 +78,20 @@ public class DataResourceDTO {
     public void setTitle(String title) {
         this.title = title;
     }
+    
+    public String getType() {
+        return type;
+    }
 
-    public SchemaDTO getSchema() {
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Schema getSchema() {
         return schema;
     }
 
-    public void setSchema(SchemaDTO schema) {
+    public void setSchema(Schema schema) {
         this.schema = schema;
     }
 

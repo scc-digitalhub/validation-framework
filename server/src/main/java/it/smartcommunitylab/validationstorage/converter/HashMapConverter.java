@@ -1,20 +1,20 @@
-package it.smartcommunitylab.validationstorage.repository;
+package it.smartcommunitylab.validationstorage.converter;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.Map;
 
 import javax.persistence.AttributeConverter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import it.smartcommunitylab.validationstorage.model.TypedError;
-
-public class TypedErrorConverter implements AttributeConverter<TypedError, String> {
+public class HashMapConverter implements AttributeConverter<Map<String, Serializable>, String> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public String convertToDatabaseColumn(TypedError map) {
+    public String convertToDatabaseColumn(Map<String, Serializable> map) {
 
         String json = null;
         if (map != null) {
@@ -26,13 +26,14 @@ public class TypedErrorConverter implements AttributeConverter<TypedError, Strin
         return json;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public TypedError convertToEntityAttribute(String json) {
+    public Map<String, Serializable> convertToEntityAttribute(String json) {
 
-        TypedError map = null;
+        Map<String, Serializable> map = null;
         if (json != null) {
             try {
-                map = objectMapper.readValue(json, TypedError.class);
+                map = objectMapper.readValue(json, Map.class);
             } catch (final IOException e) {
             }
 

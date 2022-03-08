@@ -37,7 +37,7 @@ public class RunDataProfile {
     @Column(name = "run_id")
     private String runId;
     
-    private String resourceId;
+    private String resourceName;
 
     /**
      * May contain extra information.
@@ -76,12 +76,12 @@ public class RunDataProfile {
         this.runId = runId;
     }
 
-    public String getResourceId() {
-        return resourceId;
+    public String getResourceName() {
+        return resourceName;
     }
 
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
+    public void setResourceName(String resourceName) {
+        this.resourceName = resourceName;
     }
 
     public Map<String, ?> getContents() {

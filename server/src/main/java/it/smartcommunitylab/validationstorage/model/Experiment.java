@@ -4,8 +4,7 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
@@ -35,8 +34,13 @@ public class Experiment {
     
     private String description;
     
-    @OneToMany(fetch = FetchType.LAZY)
-    private List<DataResource> resources;
+    @OneToOne
+    @Column(name = "run_config")
+    private RunConfig runConfig;
+    
+    @OneToOne
+    @Column(name = "data_package")
+    private DataPackage dataPackage;
 
     private List<String> tags;
 
@@ -80,12 +84,20 @@ public class Experiment {
         this.description = description;
     }
 
-    public List<DataResource> getResources() {
-        return resources;
+    public RunConfig getRunConfig() {
+        return runConfig;
     }
 
-    public void setResources(List<DataResource> resources) {
-        this.resources = resources;
+    public void setRunConfig(RunConfig runConfig) {
+        this.runConfig = runConfig;
+    }
+
+    public DataPackage getDataPackage() {
+        return dataPackage;
+    }
+
+    public void setDataPackage(DataPackage dataPackage) {
+        this.dataPackage = dataPackage;
     }
 
     public List<String> getTags() {

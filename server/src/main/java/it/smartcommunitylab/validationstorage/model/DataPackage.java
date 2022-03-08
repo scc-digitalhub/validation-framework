@@ -6,7 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
@@ -31,8 +31,10 @@ public class DataPackage {
 
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
+    
+    private String type;
 
-    @OneToMany(mappedBy = "packageId", fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
     private List<DataResource> resources;
 
     public String getId() {
@@ -65,6 +67,14 @@ public class DataPackage {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public List<DataResource> getResources() {

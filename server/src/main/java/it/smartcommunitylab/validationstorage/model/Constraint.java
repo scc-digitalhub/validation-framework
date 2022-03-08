@@ -1,5 +1,6 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -11,11 +12,17 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.repository.StringSetConverter;
-import it.smartcommunitylab.validationstorage.repository.TypedConstraintConverter;
+import it.smartcommunitylab.validationstorage.converter.StringSetConverter;
+import it.smartcommunitylab.validationstorage.converter.TypedConstraintConverter;
+import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 
 @Entity
-public class Constraint {
+public class Constraint implements Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -7275307509940681567L;
+
     @Id
     private String id;
     
@@ -130,6 +137,10 @@ public class Constraint {
 
     public void setConstraint(TypedConstraint constraint) {
         this.constraint = constraint;
+    }
+
+    public static long getSerialversionuid() {
+        return serialVersionUID;
     }
     
 }

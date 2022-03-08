@@ -8,7 +8,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.model.TypedError;
+import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
+import it.smartcommunitylab.validationstorage.typed.TypedError;
 
 /**
  * Request object: short report on the validation's result.
@@ -25,7 +26,9 @@ public class RunValidationReportDTO {
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String runId;
     
-    private ConstraintDTO constraint;
+    private String type;
+    
+    private TypedConstraint constraint;
     
     @NotNull
     private Boolean valid;
@@ -69,11 +72,19 @@ public class RunValidationReportDTO {
         this.runId = runId;
     }
     
-    public ConstraintDTO getConstraint() {
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+    
+    public TypedConstraint getConstraint() {
         return constraint;
     }
 
-    public void setConstraint(ConstraintDTO constraint) {
+    public void setConstraint(TypedConstraint constraint) {
         this.constraint = constraint;
     }
 

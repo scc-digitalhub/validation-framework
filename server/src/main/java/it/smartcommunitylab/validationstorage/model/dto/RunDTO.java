@@ -7,6 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.Run.RunResult;
 
 @Valid
 public class RunDTO {
@@ -22,9 +23,11 @@ public class RunDTO {
     
     private RunConfigDTO runConfig;
     
+    private DataPackageDTO dataPackage;
+    
     private List<ConstraintDTO> constraints;
     
-    private List<DataResourceDTO> resources;
+    private RunResult runStatus;
 
     public String getId() {
         return id;
@@ -58,6 +61,14 @@ public class RunDTO {
         this.runConfig = runConfig;
     }
 
+    public DataPackageDTO getDataPackage() {
+        return dataPackage;
+    }
+
+    public void setDataPackage(DataPackageDTO dataPackage) {
+        this.dataPackage = dataPackage;
+    }
+
     public List<ConstraintDTO> getConstraints() {
         return constraints;
     }
@@ -66,12 +77,12 @@ public class RunDTO {
         this.constraints = constraints;
     }
 
-    public List<DataResourceDTO> getResources() {
-        return resources;
+    public RunResult getRunStatus() {
+        return runStatus;
     }
 
-    public void setResources(List<DataResourceDTO> resources) {
-        this.resources = resources;
+    public void setRunStatus(RunResult runStatus) {
+        this.runStatus = runStatus;
     }
     
 }

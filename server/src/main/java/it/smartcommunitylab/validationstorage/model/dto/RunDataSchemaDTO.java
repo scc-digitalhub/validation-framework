@@ -7,6 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.typed.TypedSchema;
 
 /**
  * Request object: schema of the data.
@@ -27,6 +28,10 @@ public class RunDataSchemaDTO {
     private String runId;
     
     private DataResourceDTO resource;
+    
+    private String type;
+    
+    private TypedSchema schema;
 
     /**
      * May contain extra information.
@@ -79,6 +84,22 @@ public class RunDataSchemaDTO {
 
     public void setContents(Map<String, Serializable> contents) {
         this.contents = contents;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public TypedSchema getSchema() {
+        return schema;
+    }
+
+    public void setSchema(TypedSchema schema) {
+        this.schema = schema;
     }
     
 }

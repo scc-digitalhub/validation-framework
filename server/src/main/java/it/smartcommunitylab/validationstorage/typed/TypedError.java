@@ -1,4 +1,4 @@
-package it.smartcommunitylab.validationstorage.model;
+package it.smartcommunitylab.validationstorage.typed;
 
 import java.io.Serializable;
 import java.util.Map;
