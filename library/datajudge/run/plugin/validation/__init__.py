@@ -1,8 +1,8 @@
 from datajudge.run.plugin.validation.frictionless import \
-                                        ValidationPluginFrictionless
-from datajudge.run.plugin.validation.dummy import ValidationPluginDummy
+                                        ValidationBuilderFrictionless
+from datajudge.run.plugin.validation.dummy import ValidationBuilderDummy
 
 __all__ = [
-    "ValidationPluginDummy",
-    "ValidationPluginFrictionless"
+    "ValidationBuilderDummy",
+    "ValidationBuilderFrictionless"
 ]

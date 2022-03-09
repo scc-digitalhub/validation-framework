@@ -1,19 +1,19 @@
-from datajudge.run.plugin.base_plugin import Plugin
-from datajudge.run.plugin.inference import (InferencePluginDummy,
-                                            InferencePluginFrictionless)
-from datajudge.run.plugin.profiling import (ProfilePluginDummy,
-                                            ProfilePluginFrictionless,
-                                            ProfilePluginPandasProfiling)
-from datajudge.run.plugin.validation import (ValidationPluginDummy,
-                                             ValidationPluginFrictionless)
+from datajudge.run.plugin.base_plugin import PluginBuilder
+from datajudge.run.plugin.inference import (InferenceBuilderDummy,
+                                            InferenceBuilderFrictionless)
+from datajudge.run.plugin.profiling import (ProfileBuilderDummy,
+                                            ProfileBuilderFrictionless,
+                                            ProfileBuilderPandasProfiling)
+from datajudge.run.plugin.validation import (ValidationBuilderDummy,
+                                             ValidationBuilderFrictionless)
 
 __all__ = [
-    "Plugin",
-    "InferencePluginDummy",
-    "InferencePluginFrictionless",
-    "ProfilePluginDummy",
-    "ProfilePluginFrictionless",
-    "ProfilePluginPandasProfiling",
-    "ValidationPluginDummy",
-    "ValidationPluginFrictionless",
+    "PluginBuilder",
+    "InferenceBuilderDummy",
+    "InferenceBuilderFrictionless",
+    "ProfileBuilderDummy",
+    "ProfileBuilderFrictionless",
+    "ProfileBuilderPandasProfiling",
+    "ValidationBuilderDummy",
+    "ValidationBuilderFrictionless",
 ]

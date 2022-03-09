@@ -1,69 +1,59 @@
 """
-Dummy implementation of validation plugin.
+Dummy implementation of inference plugin.
 """
-# pylint: disable=import-error,invalid-name
 from __future__ import annotations
 
 import typing
-from typing import Any, List
+from typing import List
 
+from datajudge.run.plugin.inference.inference_plugin import Inference
 from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationResult
 
 if typing.TYPE_CHECKING:
     from datajudge import DataResource
+    from datajudge.run.plugin.base_plugin import Result
+    from datajudge.run.plugin.inference.inference_plugin import SchemaTuple
 
 
-class ValidationPluginDummy(Validation):
+class InferencePluginDummy(Inference):
     """
-    Dummy implementation of validation plugin.
+    Dummy implementation of inference plugin.
     """
 
     def __init__(self) -> None:
         super().__init__()
         self.resource = None
-        self.constraints = None
         self.exec_args = None
 
     def setup(self,
               resource: DataResource,
-              constraints: dict,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
         self.resource = resource
-        self.constraints = constraints
         self.exec_args = exec_args
 
-    def validate(self) -> dict:
-        """
-        Do nothing.
-        """
-        constraints = self.rebuild_constraints()
-        return {}
-
-    def rebuild_constraints(self) -> dict:
+    def infer(self) -> dict:
         """
         Do nothing.
         """
         return {}
 
-    def produce_report(self,
-                       obj: ValidationResult) -> tuple:
+    def produce_schema(self, obj: Result) -> List[SchemaTuple]:
         """
         Do nothing.
         """
-        return self.get_report_tuple(None, None, None, None)
+        return [self.get_schema_tuple(None, None)]
 
     def render_artifact(self, obj: dict) -> List[tuple]:
         """
-        Return a dummy report to be persisted as artifact.
+        Return a dummy schema to be persisted as artifact.
         """
         artifacts = []
-        report = obj
-        filename = self._fn_report.format("dummy.json")
-        artifacts.append(self.get_render_tuple(report, filename))
+        schema = obj
+        filename = self._fn_schema.format("dummy.json")
+        artifacts.append(self.get_render_tuple(schema, filename))
         return artifacts
 
     @staticmethod
@@ -81,20 +71,20 @@ class ValidationPluginDummy(Validation):
         return None
 
 
-class ValidationBuilderDummy(PluginBuilder):
+class InferenceBuilderDummy(PluginBuilder):
     """
-    Validation plugin builder.
+    Inference plugin builder.
     """
     def build(self,
               package: list,
               exec_args: dict,
-              constraints: list) -> ValidationPluginDummy:
+              *args) -> InferencePluginDummy:
         """
         Build a plugin.
         """
         plugins = []
         for resource in package:
-            plugin = ValidationPluginDummy()
-            plugin.setup(resource, constraints, exec_args)
+            plugin = InferencePluginDummy()
+            plugin.setup(resource, exec_args)
             plugins.append(plugin)
         return plugins

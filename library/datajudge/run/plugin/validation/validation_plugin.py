@@ -2,15 +2,29 @@
 Validation plugin abstract class module.
 """
 # pylint: disable=import-error,invalid-name
+import time
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
-from typing import Any, Optional
+from typing import Any
 
 from datajudge.data.datajudge_report import DatajudgeReport
-from datajudge.run.plugin.base_plugin import Plugin
+from datajudge.run.plugin.base_plugin import Plugin, Result
 
 
-ReportTuple = namedtuple("ReportTuple", ("time", "valid", "errors"))
+ReportTuple = namedtuple("ReportTuple", ("time", "constraint", "valid", "errors"))
+
+
+class ValidationResult(Result):
+    """
+    Extend Result class.
+    """
+    def __init__(self,
+                 artifact: Any = None,
+                 status: str = None,
+                 time: float = None,
+                 constraint: dict = None) -> None:
+        super().__init__(artifact, status, time)
+        self.constraint = constraint
 
 
 class Validation(Plugin, metaclass=ABCMeta):
@@ -20,62 +34,60 @@ class Validation(Plugin, metaclass=ABCMeta):
 
     _fn_report = "report_{}"
 
+    def execute(self) -> Result:
+        """
+        Method that call specific execution.
+        """
+        try:
+            self.result.status = self._STATUS_RUNNING
+            start = time.perf_counter()
+            self.result.artifact = self.validate()
+            self.result.time = round(time.perf_counter() - start, 2)
+            self.result.status = self._STATUS_FINISHED
+        except Exception:
+            self.result.status = self._STATUS_ERROR
+
+        return self.result
+
     @abstractmethod
-    def rebuild_constraint(self) -> Any:
+    def validate(self) -> Any:
+        """
+        Validate a resource.
+        """
+
+    @abstractmethod
+    def rebuild_constraints(self) -> Any:
         """
         Rebuild input constraints.
         """
 
     @abstractmethod
-    def parse_report(self,
-                     report: Any,
-                     schema_path: Optional[str] = None
-                     ) -> ReportTuple:
+    def produce_report(self,
+                       obj: ValidationResult) -> ReportTuple:
         """
-        Parse the report produced by the validation framework.
+        Produce datajudge report by parsing framework
+        results.
         """
-
-    @abstractmethod
-    def validate_report(self,
-                        report: Optional[Any] = None
-                        ) -> None:
-        """
-        Check a report before log/persist it.
-        """
-
-    @abstractmethod
-    def validate(self,
-                 res_name: str,
-                 data_path: str,
-                 exec_args: dict) -> Any:
-        """
-        Validate a resource.
-        """
-
-    def execute(self, *args, **kwargs) -> Any:
-        """
-        Execute plugin main operation.
-        """
-        return self.validate(*args, **kwargs)
 
     def render_datajudge(self,
-                         report: Any,
-                         res_name: str) -> DatajudgeReport:
+                         obj: ValidationResult) -> DatajudgeReport:
         """
         Return a DatajudgeReport.
         """
-        parsed = self.parse_report(report)
-        return DatajudgeReport(self.lib_name,
-                               self.lib_version,
+        parsed = self.produce_report(obj)
+        return DatajudgeReport(self.get_lib_name(),
+                               self.get_lib_version(),
                                parsed.time,
+                               parsed.constraint,
                                parsed.valid,
                                parsed.errors)
 
     @staticmethod
     def get_report_tuple(time: float,
+                         constraint: dict,
                          valid: bool,
                          errors: list) -> ReportTuple:
         """
         Return ReportTuple.
         """
-        return ReportTuple(time, valid, errors)
+        return ReportTuple(time, constraint, valid, errors)

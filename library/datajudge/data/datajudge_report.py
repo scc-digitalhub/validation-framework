@@ -5,23 +5,17 @@ Implementation of a Short Report common structure.
 # pylint: disable=too-many-arguments
 from typing import List, Mapping
 
+from datajudge.data.datajudge_base_report import DatajudgeBaseReport
 
-class DatajudgeReport:
+
+class DatajudgeReport(DatajudgeBaseReport):
     """
-    Short report object consisting in a partial version of
-    the full report produced by the validation library.
+    Short report object consisting in a succint
+    version of a report produced by some validation
+    library.
 
     Attributes
     ----------
-    lib_name : str
-        Validation library name.
-    lib_version : str
-        Validation library version.
-    data_resource_uri : str
-        URI that point to the resource.
-    duration : float
-        Time required by the validation process.
-        Derived from the validation report.
     valid : bool
         Validation outcome.
         Derived from the validation report.
@@ -29,26 +23,21 @@ class DatajudgeReport:
         List of errors found by validation process.
         Derived from the validation report.
 
-    Methods
-    -------
-    to_dict :
-        Transform the object in a dictionary.
-
     """
 
     def __init__(self,
                  lib_name: str,
                  lib_version: str,
                  duration: float,
+                 constraint: dict,
                  valid: bool,
                  errors: List[Mapping]) -> None:
-        self.lib_name = lib_name
-        self.lib_version = lib_version
-        self.duration = duration
+        super().__init__(lib_name, lib_version, duration)
+        self.constraint = constraint
         self.valid = valid
         self.errors = errors
 
-    def to_dict(self) -> dict:
+    def dict(self) -> dict:
         """
         Return a dictionary of the attributes.
         """
@@ -56,10 +45,8 @@ class DatajudgeReport:
             "libraryName": self.lib_name,
             "libraryVersion": self.lib_version,
             "duration": self.duration,
+            "constraint": self.constraint,
             "valid": self.valid,
             "errors": self.errors,
         }
         return report
-
-    def __repr__(self) -> str:
-        return str(self.to_dict())

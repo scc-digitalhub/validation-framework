@@ -29,7 +29,12 @@ class LocalMetadataStore(MetadataStore):
             self._ARTIFACT_METADATA: cfg.FN_ARTIFACT_METADATA,
             self._RUN_ENV: cfg.FN_RUN_ENV,
         }
-        self._artifact_count = 0
+        self._cnt = {
+            self._DJ_REPORT: 0,
+            self._DJ_SCHEMA: 0,
+            self._DJ_PROFILE: 0,
+            self._ARTIFACT_METADATA: 0,
+        }
 
     def init_run(self,
                  exp_name: str,
@@ -79,9 +84,9 @@ class LocalMetadataStore(MetadataStore):
         Return source path based on input source type.
         """
         filename = self._filenames[src_type]
-        if src_type == self._ARTIFACT_METADATA:
-            filename = filename.format(self._artifact_count)
-            self._artifact_count += 1
+        if src_type in self._cnt:
+            filename = filename.format(self._cnt[src_type])
+            self._cnt[src_type] += 1
         return get_path(dst, filename)
 
     def get_run_metadata_uri(self,

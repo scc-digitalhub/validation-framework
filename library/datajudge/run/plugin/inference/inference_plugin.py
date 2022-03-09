@@ -2,15 +2,22 @@
 Inference plugin abstract class module.
 """
 # pylint: disable=import-error,invalid-name
+from __future__ import annotations
+
+import time
+import typing
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
-from typing import Any, Optional
+from typing import Any, List
 
 from datajudge.data import DatajudgeSchema
 from datajudge.run.plugin.base_plugin import Plugin
 
+if typing.TYPE_CHECKING:
+    from datajudge.run.plugin.base_plugin import Result
 
-SchemaTuple = namedtuple("SchemaTuple", ("name", "type"))
+
+SchemaTuple = namedtuple("SchemaTuple", ("time", "fields"))
 
 
 class Inference(Plugin, metaclass=ABCMeta):
@@ -20,47 +27,45 @@ class Inference(Plugin, metaclass=ABCMeta):
 
     _fn_schema = "schema_{}"
 
-    @abstractmethod
-    def parse_schema(self,
-                     schema_inferred: Any
-                     ) -> list:
+    def execute(self) -> Result:
         """
-        Parse the inferred schema produced by the validation
-        framework.
+        Method that call specific execution.
         """
+        try:
+            self.result.status = self._STATUS_RUNNING
+            start = time.perf_counter()
+            self.result.artifact = self.infer()
+            self.result.time = round(time.perf_counter() - start, 2)
+            self.result.status = self._STATUS_FINISHED
+        except Exception:
+            self.result.status = self._STATUS_ERROR
+
+        return self.result
 
     @abstractmethod
-    def validate_schema(self, schema: Any) -> None:
-        """
-        Validate a schema before log/persist it.
-        """
-
-    @abstractmethod
-    def infer(self,
-              res_name: str,
-              data_path: str,
-              exec_args: dict) -> Any:
+    def infer(self) -> Any:
         """
         Inference method for schema.
         """
 
-    def execute(self, *args, **kwargs) -> Any:
+    @abstractmethod
+    def produce_schema(self,
+                       obj: Result) -> List[SchemaTuple]:
         """
-        Execute plugin main operation.
+        Produce datajudge schema by parsing framework
+        results.
         """
-        return self.infer(*args, **kwargs)
 
     def render_datajudge(self,
-                         schema: Any,
-                         res_name: str) -> DatajudgeSchema:
+                         obj: Result) -> DatajudgeSchema:
         """
         Return a DatajudgeSchema.
         """
-        parsed = self.parse_schema(schema)
-        return DatajudgeSchema(self.lib_name,
-                               self.lib_version,
-                               self.registry.get_time(res_name),
-                               parsed)
+        parsed = self.produce_schema(obj)
+        return DatajudgeSchema(self.get_lib_name(),
+                               self.get_lib_version(),
+                               parsed.time,
+                               parsed.fields)
 
     @staticmethod
     def get_schema_tuple(name: str,

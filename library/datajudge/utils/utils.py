@@ -3,9 +3,7 @@ Common generic utils.
 """
 # pylint: disable=import-error
 from datetime import datetime
-from typing import Any, Optional, Tuple
-
-import dateutil.parser as parser
+from typing import Any, Tuple
 
 
 def get_time() -> str:
@@ -13,20 +11,6 @@ def get_time() -> str:
     Return ISO 8601 time with timezone info.
     """
     return datetime.now().astimezone().isoformat(timespec="milliseconds")
-
-
-def time_to_sec(timestr: Optional[str] = None) -> float:
-    """
-    Convert a time string to a float.
-    """
-    if timestr is not None:
-        parsed = parser.parse(timestr)
-        total_time = (parsed.hour * 60 * 60 +
-                      parsed.minute * 60 +
-                      parsed.second +
-                      parsed.microsecond / 1000000)
-        return round(total_time, 4)
-    return None
 
 
 def data_listify(data: Any,

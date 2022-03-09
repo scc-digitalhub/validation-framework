@@ -84,13 +84,13 @@ class Client:
         """
         if len(self._store_registry) == 1:
             key = next(iter(self._store_registry))
-            return self._store_registry.get(key).get("store")
+            return self._store_registry.get(key)
 
         default = None
         for _, value in self._store_registry.items():
             if value.get("is_default", False):
                 if default is None:
-                    default = value.get("store")
+                    default = value
                 else:
                     raise ValueError("Configure only one store as default.")
         if default is None:
@@ -117,7 +117,7 @@ class Client:
         self._store_registry[key] = dict_store[key]
 
     def create_run(self,
-                   data_resource: DataResource,
+                   resources: Union[List[DataResource], DataResource],
                    run_config: RunConfig,
                    experiment_title: Optional[str] = "experiment",
                    run_id: Optional[str] = None,
@@ -159,21 +159,21 @@ class Client:
         run_metadata_uri = self._metadata_store.get_run_metadata_uri(
                                                             experiment_name,
                                                             run_id)
-        run_artifacts_uri = self._default_store.get_run_artifacts_uri(
-                                                            experiment_name,
-                                                            run_id)
+        run_artifacts_uri = self._default_store.get("store").get_run_artifacts_uri(
+                                                                experiment_name,
+                                                                run_id)
+
+        if not isinstance(resources, list):
+            resources = [resources]
 
         run_plugin_handler = get_plugin_handler(run_config)
-
         run_info_args = (experiment_title,
                          experiment_name,
-                         data_resource,
+                         resources,
                          run_id,
-                         run_config.dict(exclude_none=True, by_alias=True),
-                         run_plugin_handler.get_info(),
+                         run_config,
                          run_metadata_uri,
                          run_artifacts_uri)
-
         run = get_run(run_info_args,
                       run_plugin_handler,
                       self,
@@ -227,7 +227,10 @@ class Client:
             Optional metadata to attach on artifact.
 
         """
-        self._default_store.persist_artifact(src, dst, src_name, metadata)
+        self._default_store.get("store").persist_artifact(src,
+                                                          dst,
+                                                          src_name,
+                                                          metadata)
 
     def fetch_artifact(self,
                        uri: str,
@@ -248,11 +251,9 @@ class Client:
             Path to temp file
 
         """
-        if store_name is None:
-            in_store = self._default_store
-        else:
-            in_store = self._store_registry.get(store_name).get("store")
-        return in_store.fetch_artifact(uri, self.tmp_dir)
+        store = self._store_registry.get(store_name, self._default_store)\
+                                    .get("store")
+        return store.fetch_artifact(uri, self.tmp_dir)
 
     @property
     def tmp_dir(self) -> str:

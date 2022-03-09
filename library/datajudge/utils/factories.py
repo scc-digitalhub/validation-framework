@@ -8,14 +8,7 @@ from __future__ import annotations
 import typing
 from typing import Tuple, Union
 
-from datajudge.run import Run, RunInfo, PluginHandler
-from datajudge.run.plugin import (InferencePluginDummy,
-                                  InferencePluginFrictionless,
-                                  ProfilePluginDummy,
-                                  ProfilePluginFrictionless,
-                                  ProfilePluginPandasProfiling,
-                                  ValidationPluginDummy,
-                                  ValidationPluginFrictionless)
+from datajudge.run import Run, RunInfo, RunHandler
 from datajudge.store_artifact import (AzureArtifactStore, DummyArtifactStore,
                                       FTPArtifactStore, HTTPArtifactStore,
                                       LocalArtifactStore, S3ArtifactStore)
@@ -61,24 +54,6 @@ ARTIFACT_STORE_REGISTRY = {
     "https": HTTPArtifactStore,
     "ftp": FTPArtifactStore,
     "dummy": DummyArtifactStore,
-}
-
-PLUGIN_REGISTRY = {
-    "inference": {
-        "dummy": InferencePluginDummy,
-        "frictionless": InferencePluginFrictionless,
-        },
-    "validation": {
-        "dummy": ValidationPluginDummy,
-        "frictionless": ValidationPluginFrictionless,
-        },
-    "profiling": {
-        "dummy": ProfilePluginDummy,
-        "frictionless": ProfilePluginFrictionless,
-        "pandas_profiling": ProfilePluginPandasProfiling,
-        },
-    "snapshot": {
-    }
 }
 
 
@@ -169,42 +144,15 @@ def get_stores(store_configs: Union[dict, StoreConfig, list]
     return stores
 
 
-def get_plugin(config: dict,
-               typology: str) -> list:
-    """
-    Factory method that creates run plugins.
-    """
-    plugin_list = {}
-    if config is None:
-        plugin_list["dummy"] = PLUGIN_REGISTRY[typology]["dummy"]()
-        return plugin_list
-    if config.enabled:
-        if not isinstance(config.library, list):
-            config.library = [config.library]
-        for lib in config.library:
-            try:
-                plugin_list[lib] = PLUGIN_REGISTRY[typology][lib]()
-            except KeyError as k_err:
-                raise NotImplementedError from k_err
-        return plugin_list
-    plugin_list["dummy"] = PLUGIN_REGISTRY[typology]["dummy"]()
-    return plugin_list
-
-
-def get_plugin_handler(run_config: RunConfig) -> PluginHandler:
+def get_plugin_handler(run_config: RunConfig) -> RunHandler:
     """
     Build a plugin handler for the run.
     """
-    inference = get_plugin(run_config.inference, "inference")
-    validation = get_plugin(run_config.validation, "validation")
-    profiling = get_plugin(run_config.profiling, "profiling")
-    return PluginHandler(inference,
-                         validation,
-                         profiling)
+    return RunHandler(run_config)
 
 
 def get_run(run_info_args: Tuple[str],
-            run_plugin_handler: PluginHandler,
+            run_plugin_handler: RunHandler,
             client: Client,
             overwrite: bool) -> Run:
     """

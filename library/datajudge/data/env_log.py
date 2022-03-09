@@ -29,7 +29,7 @@ class EnvLog:
         self.cpu_core = os.cpu_count()
         self.ram = round_ram()
 
-    def to_dict(self) -> dict:
+    def dict(self) -> dict:
         """
         Return a dictionary.
         """
@@ -43,4 +43,4 @@ class EnvLog:
         return env_data
 
     def __repr__(self) -> str:
-        return str(self.to_dict())
+        return str(self.dict())

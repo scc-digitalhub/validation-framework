@@ -1,11 +1,11 @@
 from datajudge.run.plugin.profiling.pandas_profiling import \
-                                        ProfilePluginPandasProfiling
+                                        ProfileBuilderPandasProfiling
 from datajudge.run.plugin.profiling.frictionless import \
-                                        ProfilePluginFrictionless
-from datajudge.run.plugin.profiling.dummy import ProfilePluginDummy
+                                        ProfileBuilderFrictionless
+from datajudge.run.plugin.profiling.dummy import ProfileBuilderDummy
 
 __all__ = [
-    "ProfilePluginDummy",
-    "ProfilePluginPandasProfiling",
-    "ProfilePluginFrictionless"
+    "ProfileBuilderDummy",
+    "ProfileBuilderPandasProfiling",
+    "ProfileBuilderFrictionless"
 ]

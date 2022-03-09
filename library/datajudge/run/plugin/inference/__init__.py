@@ -1,9 +1,9 @@
-from datajudge.run.plugin.inference.frictionless_plugin import \
-                                        InferencePluginFrictionless
-from datajudge.run.plugin.inference.dummy_plugin import \
-                                        InferencePluginDummy
+from datajudge.run.plugin.inference.frictionless import \
+                                        InferenceBuilderFrictionless
+from datajudge.run.plugin.inference.dummy import \
+                                        InferenceBuilderDummy
 
 __all__ = [
-    "InferencePluginDummy",
-    "InferencePluginFrictionless",
+    "InferenceBuilderDummy",
+    "InferenceBuilderFrictionless",
 ]

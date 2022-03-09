@@ -5,10 +5,26 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from typing import Any, List
 
-from datajudge.run.plugin.plugin_registry import PluginRegistry
+import datajudge
 
 
 RenderTuple = namedtuple("RenderTuple", ("object", "filename"))
+
+
+class Result:
+    """
+    Simple class to aggregate result of
+    plugin operation.
+    """
+    def __init__(self,
+                 artifact: Any = None,
+                 datajudge_doc: Any = None,
+                 status: str = None,
+                 time: float = None) -> None:
+        self.artifact = artifact
+        self.datajudge_doc = datajudge_doc
+        self.status = status
+        self.time = time
 
 
 class Plugin(metaclass=ABCMeta):
@@ -16,44 +32,44 @@ class Plugin(metaclass=ABCMeta):
     Base plugin abstract class.
     """
 
-    _VALID_STATUS = "valid"
-    _INVALID_STATUS = "invalid"
+    _STATUS_INIT = "created"
+    _STATUS_RUNNING = "executing"
+    _STATUS_FINISHED = "finished"
+    _STATUS_ERROR = "error"
 
     def __init__(self) -> None:
-        self.lib_name = None
-        self.lib_version = None
-        self.registry = PluginRegistry()
-        self.update_library_info()
+        self.lib_name = self.get_lib_name()
+        self.lib_version = self.get_lib_version()
+        self.result = Result(status=self._STATUS_INIT)
 
     @abstractmethod
-    def update_library_info(self) -> None:
+    def setup(self, *args, **kwargs) -> None:
         """
-        Update run's info about the validation framework used.
+        Configure a plugin.
         """
 
     @abstractmethod
-    def execute(self, *args, **kwargs) -> Any:
+    def execute(self) -> Result:
         """
         Execute main plugin operation.
         """
 
-    @staticmethod
-    @abstractmethod
-    def get_outcome(self, obj: Any) -> str:
+    def get_result(self) -> Result:
         """
         Return status of the execution.
         """
+        return self.result
 
     @abstractmethod
-    def render_datajudge(self, *args, **kwargs) -> Any:
+    def render_datajudge(self, obj: Result) -> Any:
         """
-        Return a DataJudge report.
+        Produce datajudge output.
         """
 
     @abstractmethod
-    def render_artifact(self, obj: Any) -> List[tuple]:
+    def render_artifact(self, obj: Result) -> Any:
         """
-        Return a rendered report ready to be persisted as artifact.
+        Render an artifact to be persisted.
         """
 
     @staticmethod
@@ -63,11 +79,34 @@ class Plugin(metaclass=ABCMeta):
         """
         return RenderTuple(obj, filename)
 
-    def libraries(self) -> dict:
+    @staticmethod
+    @abstractmethod
+    def get_lib_name() -> str:
+        """
+        Get library name.
+        """
+
+    @staticmethod
+    @abstractmethod
+    def get_lib_version() -> str:
+        """
+        Get library version.
+        """
+
+    def get_libraries(self) -> dict:
         """
         Get libraries infos.
         """
         return {
-                "libName": self.lib_name,
-                "libVersion": self.lib_version
+            "libName": self.lib_name,
+            "libVersion": self.lib_version
         }
+
+
+class PluginBuilder:
+    
+    @abstractmethod
+    def build(self, *args, **kwargs) -> List[Plugin]:
+        """
+        Build a list of plugin.
+        """

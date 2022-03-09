@@ -24,7 +24,7 @@ class BlobLog:
 
     Methods
     -------
-    to_dict :
+    dict :
         Transform the object in a dictionary.
 
     """
@@ -34,18 +34,14 @@ class BlobLog:
                  experiment_name: str,
                  experiment_title: str,
                  datajudge_version: str,
-                 resource_name: str,
-                 resource_path: str,
                  contents: dict) -> None:
         self.run_id = run_id
         self.experiment_name = experiment_name
         self.experiment_title = experiment_title
         self.datajudge_version = datajudge_version
-        self.resource_name = resource_name
-        self.resource_path = resource_path
         self.contents = contents
 
-    def to_dict(self) -> dict:
+    def dict(self) -> dict:
         """
         Return a dictionary.
         """
@@ -54,11 +50,9 @@ class BlobLog:
             "experimentName": self.experiment_name,
             "experimentTitle": self.experiment_title,
             "datajudgeVersion": self.datajudge_version,
-            "resourceName": self.resource_name,
-            "resourcePath": self.resource_path,
             **self.contents
         }
         return run_dict
 
     def __repr__(self) -> str:
-        return str(self.to_dict())
+        return str(self.dict())

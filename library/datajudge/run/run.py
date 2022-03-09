@@ -15,7 +15,8 @@ from datajudge.utils.utils import data_listify, get_time
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
-    from datajudge.run import RunInfo, PluginHandler
+    from datajudge.run import RunInfo, RunHandler
+    from datajudge.utils.config import RunConfig
 
 
 class Run:
@@ -24,7 +25,7 @@ class Run:
     The Run is the main interface to interact with data, metadata and
     operational framework. With the Run, you can infer, validate and profile
     resources, log and persist data and metadata.
-    It interacts both with the Client and the Data Resource/Package.
+    It interacts both with the Client and the Data Resource/resources.
 
     Methods
     -------
@@ -70,17 +71,14 @@ class Run:
 
     def __init__(self,
                  run_info: RunInfo,
-                 plugin_handler: PluginHandler,
+                 plugin_handler: RunHandler,
                  client: Client,
                  overwrite: bool) -> None:
 
         self.run_info = run_info
         self._client = client
-        self._plugin_handler = plugin_handler
+        self._run_handler = plugin_handler
         self._overwrite = overwrite
-
-        # Local temp paths
-        self._data = None
 
     # Run methods
 
@@ -88,14 +86,14 @@ class Run:
         """
         Log run's metadata.
         """
-        metadata = self._get_blob(self.run_info.to_dict())
+        metadata = self._get_blob(self.run_info.dict())
         self._log_metadata(metadata, self._RUN_METADATA)
 
     def _log_env(self) -> None:
         """
         Log run's enviroment details.
         """
-        env_data = EnvLog().to_dict()
+        env_data = EnvLog().dict()
         metadata = self._get_blob(env_data)
         self._log_metadata(metadata, self._RUN_ENV)
 
@@ -110,9 +108,7 @@ class Run:
                        self.run_info.experiment_name,
                        self.run_info.experiment_title,
                        cfg.DATAJUDGE_VERSION,
-                       self.run_info.data_resource.name,
-                       self.run_info.data_resource.path,
-                       content).to_dict()
+                       content).dict()
 
     def _log_metadata(self,
                       metadata: dict,
@@ -204,20 +200,22 @@ class Run:
                                       else get_name_from_uri(path)
             self.persist_artifact(data[idx], src_name, metadata)
 
-    def fetch_data(self) -> str:
+    def fetch_data(self) -> None:
         """
         Fetch data from backend and return temp file path.
         """
-        if self._data is None:
-            path = self.run_info.data_resource.path
-            if isinstance(path, list):
-                self._data = [self.fetch_artifact(i) for i in path]
-            else:
-                self._data = self.fetch_artifact(path)
-        return self._data
+        for res in self.run_info.resources:
+            if res.tmp_pth is None:
+                if isinstance(res.path, list):
+                    res.tmp_pth = [self.fetch_artifact(i, store_name=res.store) 
+                                   for i in res.path]
+                else:
+                    res.tmp_pth = self.fetch_artifact(res.path, 
+                                                      store_name=res.store)
 
     def fetch_artifact(self,
-                       uri: str) -> str:
+                       uri: str,
+                       store_name: Optional[str] = None) -> str:
         """
         Fetch artifact from backend.
 
@@ -227,7 +225,7 @@ class Run:
             URI of artifact to fetch.
         """
         self._check_artifacts_uri()
-        return self._client.fetch_artifact(uri)
+        return self._client.fetch_artifact(uri, store_name)
 
     def _check_metadata_uri(self) -> None:
         """
@@ -257,10 +255,7 @@ class Run:
 
         """
         self.fetch_data()
-        return self._plugin_handler.infer(
-                            self.run_info.data_resource.name,
-                            self._data,
-                            exec_args)
+        return self._run_handler.infer(self.run_info.resources, exec_args)
 
     def infer_datajudge(self,
                         exec_args: Optional[dict] = None) -> dict:
@@ -273,8 +268,8 @@ class Run:
             Mappers for specific framework arguments.
 
         """
-        schema = self.infer_wrapper(exec_args)
-        return self._plugin_handler.produce_schema(schema)
+        self.infer_wrapper(exec_args)
+        return self._run_handler.produce_schema()
 
     def infer(self,
               exec_args: Optional[dict] = None) -> tuple:
@@ -291,7 +286,7 @@ class Run:
         schema_dj = self.infer_datajudge(exec_args)
         return schema, schema_dj
 
-    def log_schema(self, schema: dict) -> None:
+    def log_schema(self, schemas: list) -> None:
         """
         Log datajudge schema.
 
@@ -302,10 +297,11 @@ class Run:
 
         """
         self._check_metadata_uri()
-        metadata = self._get_blob(schema)
-        self._log_metadata(metadata, self._DJ_SCHEMA)
+        for schema in schemas:
+            metadata = self._get_blob(schema.dict())
+            self._log_metadata(metadata, self._DJ_SCHEMA)
 
-    def persist_schema(self, schema: Any) -> None:
+    def persist_schema(self) -> None:
         """
         Persist an inferred schema produced by a validation framework.
 
@@ -315,33 +311,31 @@ class Run:
             An inferred schema object produced by a validation library.
 
         """
-        rendered = self._plugin_handler.render_schema(schema)
+        rendered = self._run_handler.persist_schema()
         for obj in rendered:
             self.persist_artifact(obj.object,
-                                  obj.filename)
+                                    obj.filename)
 
     # Validation
 
     def validate_wrapper(self,
-                         constraints: Optional[Any] = None,
+                         constraints: RunConfig,
                          exec_args: Optional[dict] = None) -> Any:
         """
         Execute validation of a resource.
 
         Parameters
         ----------
-        constraints : dict, default = None
+        constraints : dict
             Constraints from configuration.
         exec_args : dict, default = None
             Mappers for specific framework arguments.
 
         """
         self.fetch_data()
-        return self._plugin_handler.validate(
-                                    self.run_info.data_resource.name,
-                                    self._data,
-                                    constraints,
-                                    exec_args)
+        return self._run_handler.validate(self.run_info.resources,
+                                          constraints,
+                                          exec_args)
 
     def validate_datajudge(self,
                            constraints: Optional[dict] = None,
@@ -358,8 +352,8 @@ class Run:
             Mappers for specific framework arguments
 
         """
-        report = self.validate_wrapper(constraints, exec_args)
-        return self._plugin_handler.produce_report(report)
+        self.validate_wrapper(constraints, exec_args)
+        return self._run_handler.produce_report()
 
     def validate(self,
                  constraints: Optional[dict] = None,
@@ -379,7 +373,7 @@ class Run:
         report_dj = self.validate_datajudge(constraints, exec_args)
         return report, report_dj
 
-    def log_report(self, report: dict) -> None:
+    def log_report(self, reports: list) -> None:
         """
         Log short report.
 
@@ -390,10 +384,11 @@ class Run:
 
         """
         self._check_metadata_uri()
-        metadata = self._get_blob(report)
-        self._log_metadata(metadata, self._DJ_REPORT)
+        for report in reports:
+            metadata = self._get_blob(report.dict())
+            self._log_metadata(metadata, self._DJ_REPORT)
 
-    def persist_report(self, report: Any) -> None:
+    def persist_report(self) -> None:
         """
         Persist a report produced by a validation framework.
 
@@ -403,10 +398,10 @@ class Run:
             An report object produced by a validation library.
 
         """
-        rendered = self._plugin_handler.render_report(report)
+        rendered = self._run_handler.persist_report()
         for obj in rendered:
             self.persist_artifact(obj.object,
-                                  obj.filename)
+                                obj.filename)
 
     # Profiling
 
@@ -422,10 +417,7 @@ class Run:
 
         """
         self.fetch_data()
-        return self._plugin_handler.profile(
-                                self.run_info.data_resource.name,
-                                self._data,
-                                exec_args)
+        return self._run_handler.profile(self.run_info.resources, exec_args)
 
     def profile_datajudge(self,
                           exec_args: dict = None
@@ -440,8 +432,8 @@ class Run:
             Kwargs passed to profiler.
 
         """
-        profile = self.profile_wrapper(exec_args)
-        return self._plugin_handler.produce_profile(profile)
+        self.profile_wrapper(exec_args)
+        return self._run_handler.produce_profile()
 
     def profile(self,
                 exec_args: Optional[dict] = None) -> tuple:
@@ -458,7 +450,7 @@ class Run:
         profile_dj = self.profile_datajudge(exec_args)
         return profile, profile_dj
 
-    def log_profile(self, profile: dict) -> None:
+    def log_profile(self, profiles: list) -> None:
         """
         Log a data profile.
 
@@ -469,10 +461,11 @@ class Run:
 
         """
         self._check_metadata_uri()
-        metadata = self._get_blob(profile)
-        self._log_metadata(metadata, self._DJ_PROFILE)
+        for profile in profiles:
+            metadata = self._get_blob(profile.dict())
+            self._log_metadata(metadata, self._DJ_PROFILE)
 
-    def persist_profile(self, profile: Any) -> None:
+    def persist_profile(self) -> None:
         """
         Persist a data profile produced by a profiling framework.
 
@@ -482,10 +475,10 @@ class Run:
             A profile object produced by a profiling library.
 
         """
-        rendered = self._plugin_handler.render_profile(profile)
+        rendered = self._run_handler.persist_profile()
         for obj in rendered:
             self.persist_artifact(obj.object,
-                                  obj.filename)
+                                obj.filename)
 
     # Context manager
 
@@ -521,4 +514,4 @@ class Run:
     # Dunders
 
     def __repr__(self) -> str:
-        return str(self.run_info.to_dict())
+        return str(self.run_info.dict())

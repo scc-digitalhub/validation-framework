@@ -16,59 +16,39 @@ class StoreConfig(BaseModel):
     config: Optional[dict] = None
 
 
-class ConstraintsFrictionless(BaseModel):
+class Constraint(BaseModel):
     id: str
-    type: Literal["frictionless"]
     title: str
     name: str
     resources: List[str]
+    severity: int
+
+
+class ConstraintsFrictionless(Constraint):
+    type: Literal["frictionless"]
     field: str
+    field_type: str
     constraint: str
     value: Any
-    severity: int
 
 
-class ConstraintsDatajudge(BaseModel):
-    id: str
+class ConstraintsDatajudge(Constraint):
     type: Literal["datajudge"]
-    title: str
-    name: str
-    resources: List[str]
     query: str
-    expext: str
-    severity: int
+    expect: str
 
 
-# class ConstraintsConfig(BaseModel):
-#     constraints: List[Union[ConstraintsFrictionless,
-#                             ConstraintsDatajudge]]
-
-
-class ValidationConfig(BaseModel):
+class ExecutionConfig(BaseModel):
     enabled: bool = False
     library: Optional[Union[str, List[str]]] = None
-
-
-class InferenceConfig(BaseModel):
-    enabled: bool = False
-    library: Optional[Union[str, List[str]]] = None
-
-
-class ProfilingConfig(BaseModel):
-    enabled: bool = False
-    library: Optional[Union[str, List[str]]] = None
-
-
-class SnapshotConfig(BaseModel):
-    enabled: bool = False
-    library: Optional[Union[str, List[str]]] = None
+    exec_args: Optional[dict] = None
 
 
 class RunConfig(BaseModel):
-    validation: Optional[ValidationConfig] = ValidationConfig()
-    inference: Optional[InferenceConfig] = InferenceConfig()
-    profiling: Optional[ProfilingConfig] = ProfilingConfig()
-    snapshot: Optional[SnapshotConfig] = SnapshotConfig()
+    validation: Optional[ExecutionConfig] = ExecutionConfig()
+    inference: Optional[ExecutionConfig] = ExecutionConfig()
+    profiling: Optional[ExecutionConfig] = ExecutionConfig()
+    snapshot: Optional[ExecutionConfig] = ExecutionConfig()
 
 
 # Datajudge version
@@ -85,9 +65,9 @@ API_RUN_ENV = "/run-environment"
 
 # Filenames metadata
 FN_RUN_METADATA = "run_metadata.json"
-FN_DJ_REPORT = "report.json"
-FN_DJ_SCHEMA = "schema.json"
-FN_DJ_PROFILE = "profile.json"
+FN_DJ_REPORT = "report_{}.json"
+FN_DJ_SCHEMA = "schema_{}.json"
+FN_DJ_PROFILE = "profile_{}.json"
 FN_ARTIFACT_METADATA = "artifact_metadata_{}.json"
 FN_RUN_ENV = "run_env.json"
 
@@ -98,3 +78,8 @@ MT_DJ_SCHEMA = "schema"
 MT_DJ_PROFILE = "profile"
 MT_ARTIFACT_METADATA = "artifact"
 MT_RUN_ENV = "run_env"
+
+# Execution operations
+OP_INF = "inference"
+OP_PRO = "profiling"
+OP_VAL = "validation"
