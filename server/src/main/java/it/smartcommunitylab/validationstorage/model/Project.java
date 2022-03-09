@@ -1,6 +1,7 @@
 package it.smartcommunitylab.validationstorage.model;
 
 import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.validation.constraints.Pattern;
 
 import org.springframework.data.annotation.Id;
@@ -8,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Entity
+@Table(name = "projects")
 public class Project {
     @Id
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)

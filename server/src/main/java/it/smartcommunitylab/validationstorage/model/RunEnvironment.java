@@ -18,7 +18,8 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
  * Short report on the validation's result.
  */
 @Entity
-@Table(name = "run_environment", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "experiment_name", "run_name" }))
+@Table(name = "run_environments", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "experiment_name",
+        "run_name" }))
 public class RunEnvironment {
     @Id
     private String id;
@@ -27,16 +28,19 @@ public class RunEnvironment {
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "project_id")
     private String projectId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "experiment_id")
     private String experimentId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "run_id")
     private String runId;
+
+    @Column(name = "datajudge_version")
+    private String datajudgeVersion;
 
     /**
      * May contain extra information.
@@ -75,6 +79,14 @@ public class RunEnvironment {
         this.runId = runId;
     }
 
+    public String getDatajudgeVersion() {
+        return datajudgeVersion;
+    }
+
+    public void setDatajudgeVersion(String datajudgeVersion) {
+        this.datajudgeVersion = datajudgeVersion;
+    }
+
     public Map<String, Serializable> getContents() {
         return contents;
     }
@@ -82,5 +94,5 @@ public class RunEnvironment {
     public void setContents(Map<String, Serializable> contents) {
         this.contents = contents;
     }
-    
+
 }

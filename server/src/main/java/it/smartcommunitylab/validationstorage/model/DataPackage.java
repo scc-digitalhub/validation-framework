@@ -15,7 +15,7 @@ import javax.validation.constraints.Pattern;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Entity
-@Table(name = "data_package", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "name" }))
+@Table(name = "packages", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "name" }))
 public class DataPackage {
     @Id
     private String id;

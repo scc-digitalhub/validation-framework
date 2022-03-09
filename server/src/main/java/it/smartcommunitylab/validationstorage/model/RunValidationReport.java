@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
@@ -16,16 +17,14 @@ import org.springframework.data.annotation.Id;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
-import it.smartcommunitylab.validationstorage.converter.TypedConstraintConverter;
 import it.smartcommunitylab.validationstorage.converter.TypedErrorConverter;
-import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 import it.smartcommunitylab.validationstorage.typed.TypedError;
 
 /**
  * Short report on the validation's result.
  */
 @Entity
-@Table(name = "run_validation_report")
+@Table(name = "run_validation_reports")
 public class RunValidationReport {
     @Id
     private String id;
@@ -34,25 +33,28 @@ public class RunValidationReport {
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "project_id")
     private String projectId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "experiment_id")
     private String experimentId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "run_id")
     private String runId;
-    
+
     private String type;
-    
-    @Lob
-    @Convert(converter = TypedConstraintConverter.class)
-    private TypedConstraint constraint;
-    
+
+    @Column(name = "constraint_name")
+    private String constraintName;
+
     private Boolean valid;
-    
+
+    @Embedded
+    @Column(name = "metadata")
+    private ReportMetadata metadata;
+
     @Lob
     @Convert(converter = TypedErrorConverter.class)
     List<TypedError> errors;
@@ -104,12 +106,12 @@ public class RunValidationReport {
         this.type = type;
     }
 
-    public TypedConstraint getConstraint() {
-        return constraint;
+    public String getConstraintName() {
+        return constraintName;
     }
 
-    public void setConstraint(TypedConstraint constraint) {
-        this.constraint = constraint;
+    public void setConstraintName(String constraintName) {
+        this.constraintName = constraintName;
     }
 
     public Boolean getValid() {
@@ -119,9 +121,17 @@ public class RunValidationReport {
     public void setValid(Boolean valid) {
         this.valid = valid;
     }
-    
+
     public boolean isValid() {
         return valid != null ? valid.booleanValue() : false;
+    }
+
+    public ReportMetadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(ReportMetadata metadata) {
+        this.metadata = metadata;
     }
 
     public List<TypedError> getErrors() {
@@ -139,5 +149,5 @@ public class RunValidationReport {
     public void setContents(Map<String, Serializable> contents) {
         this.contents = contents;
     }
-    
+
 }

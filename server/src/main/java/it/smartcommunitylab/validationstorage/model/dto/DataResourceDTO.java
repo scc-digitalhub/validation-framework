@@ -4,31 +4,38 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.Dataset;
-import it.smartcommunitylab.validationstorage.model.Schema;
+import it.smartcommunitylab.validationstorage.typed.TypedSchema;
 
 @Valid
+@JsonInclude(Include.NON_NULL)
 public class DataResourceDTO {
     private String id;
-    
+
     private String projectId;
-    
+
     private String packageName;
-    
+
+    // If null, will be the default store
     private String storeId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String name;
-    
+
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
-    
+
     private String type;
-    
-    private Schema schema;
-    
+
+    private TypedSchema schema;
+
+    @JsonUnwrapped
     private Dataset dataset;
 
     public String getId() {
@@ -46,7 +53,7 @@ public class DataResourceDTO {
     public void setProjectId(String projectId) {
         this.projectId = projectId;
     }
-    
+
     public String getPackageName() {
         return packageName;
     }
@@ -78,7 +85,7 @@ public class DataResourceDTO {
     public void setTitle(String title) {
         this.title = title;
     }
-    
+
     public String getType() {
         return type;
     }
@@ -87,11 +94,11 @@ public class DataResourceDTO {
         this.type = type;
     }
 
-    public Schema getSchema() {
+    public TypedSchema getSchema() {
         return schema;
     }
 
-    public void setSchema(Schema schema) {
+    public void setSchema(TypedSchema schema) {
         this.schema = schema;
     }
 
@@ -102,5 +109,5 @@ public class DataResourceDTO {
     public void setDataset(Dataset dataset) {
         this.dataset = dataset;
     }
-    
+
 }

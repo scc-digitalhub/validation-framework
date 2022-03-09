@@ -1,11 +1,15 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
@@ -16,30 +20,44 @@ import it.smartcommunitylab.validationstorage.typed.TypedError;
  */
 public class RunValidationReportDTO {
     private String id;
-    
+
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
-    
+
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String experimentId;
-    
+
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String runId;
-    
+
     private String type;
-    
+
     private TypedConstraint constraint;
-    
+
     @NotNull
     private Boolean valid;
-    
+
     List<TypedError> errors;
 
     /**
      * May contain extra information.
      */
     private Map<String, Serializable> contents;
-    
+
+    public RunValidationReportDTO() {
+        contents = new HashMap<String, Serializable>();
+    }
+
+    @JsonAnyGetter
+    public Map<String, Serializable> getContentMap() {
+        return contents;
+    }
+
+    @JsonAnySetter
+    public void addContent(String key, Serializable value) {
+        contents.put(key, value);
+    }
+
     public String getId() {
         return id;
     }
@@ -71,7 +89,7 @@ public class RunValidationReportDTO {
     public void setRunId(String runId) {
         this.runId = runId;
     }
-    
+
     public String getType() {
         return type;
     }
@@ -79,7 +97,7 @@ public class RunValidationReportDTO {
     public void setType(String type) {
         this.type = type;
     }
-    
+
     public TypedConstraint getConstraint() {
         return constraint;
     }
@@ -99,15 +117,15 @@ public class RunValidationReportDTO {
     public void setValid(Boolean valid) {
         this.valid = valid;
     }
-    
+
     public List<TypedError> getErrors() {
         return errors;
     }
-    
+
     public void setErrors(List<TypedError> errors) {
         this.errors = errors;
     }
-    
+
     public Map<String, Serializable> getContents() {
         return contents;
     }
@@ -115,5 +133,5 @@ public class RunValidationReportDTO {
     public void setContents(Map<String, Serializable> contents) {
         this.contents = contents;
     }
-    
+
 }

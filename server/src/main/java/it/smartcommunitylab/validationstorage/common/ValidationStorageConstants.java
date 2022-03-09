@@ -3,19 +3,9 @@ package it.smartcommunitylab.validationstorage.common;
 public class ValidationStorageConstants {
 
     // Constants used to determine the path of certain end-points
-    public static final String ENDPOINT_ROOT = "/api";
-    public static final String PATH_PROJECT = "/p";
-    public static final String PATH_FRICTIONLESS = "/frictionless";
-    
+    // Only used by UiController and RunSummaryController, when those are fixed, remove these
     public static final String EXPERIMENT = "experiment";
     public static final String RUN = "run";
-    public static final String PACKAGE = "package";
-    public static final String STORE = "store";
-    public static final String RESOURCE = "resource";
-    public static final String SCHEMA = "schema";
-    public static final String CONSTRAINT = "constraint";
-    public static final String RUN_CONFIG = "run-config";
-    
     public static final String ARTIFACT_METADATA = "artifact-metadata";
     public static final String RUN_DATA_PROFILE = "data-profile";
     public static final String RUN_ENVIRONMENT = "environment";

@@ -8,6 +8,8 @@ import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
@@ -17,6 +19,7 @@ import it.smartcommunitylab.validationstorage.converter.TypedConstraintConverter
 import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 
 @Entity
+@Table(name = "constraints", uniqueConstraints = @UniqueConstraint(columnNames = { "experiment_id", "name" }))
 public class Constraint implements Serializable {
     /**
      * 
@@ -25,36 +28,36 @@ public class Constraint implements Serializable {
 
     @Id
     private String id;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "project_id")
     private String projectId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "experiment_id")
     private String experimentId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String name;
 
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
-    
+
     @Lob
     @Column(name = "resource_ids")
     @Convert(converter = StringSetConverter.class)
     private Set<String> resourceIds;
-    
+
     private String type;
-    
+
     private String description;
-    
+
     @Column(name = "error_severity")
-    private int errorSeverity;
-    
+    private Integer errorSeverity;
+
     @Lob
     @Convert(converter = TypedConstraintConverter.class)
     private TypedConstraint constraint;
@@ -123,11 +126,11 @@ public class Constraint implements Serializable {
         this.description = description;
     }
 
-    public int getErrorSeverity() {
+    public Integer getErrorSeverity() {
         return errorSeverity;
     }
 
-    public void setErrorSeverity(int errorSeverity) {
+    public void setErrorSeverity(Integer errorSeverity) {
         this.errorSeverity = errorSeverity;
     }
 
@@ -142,5 +145,5 @@ public class Constraint implements Serializable {
     public static long getSerialversionuid() {
         return serialVersionUID;
     }
-    
+
 }

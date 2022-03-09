@@ -1,10 +1,14 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.typed.TypedSchema;
@@ -14,30 +18,44 @@ import it.smartcommunitylab.validationstorage.typed.TypedSchema;
  */
 public class RunDataSchemaDTO {
     private String id;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String experimentId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String runId;
-    
+
     private DataResourceDTO resource;
-    
+
     private String type;
-    
+
     private TypedSchema schema;
 
     /**
      * May contain extra information.
      */
     private Map<String, Serializable> contents;
-    
+
+    public RunDataSchemaDTO() {
+        contents = new HashMap<String, Serializable>();
+    }
+
+    @JsonAnyGetter
+    public Map<String, Serializable> getContentMap() {
+        return contents;
+    }
+
+    @JsonAnySetter
+    public void addContent(String key, Serializable value) {
+        contents.put(key, value);
+    }
+
     public String getId() {
         return id;
     }
@@ -69,7 +87,7 @@ public class RunDataSchemaDTO {
     public void setRunId(String runId) {
         this.runId = runId;
     }
-    
+
     public DataResourceDTO getResource() {
         return resource;
     }
@@ -101,5 +119,5 @@ public class RunDataSchemaDTO {
     public void setSchema(TypedSchema schema) {
         this.schema = schema;
     }
-    
+
 }

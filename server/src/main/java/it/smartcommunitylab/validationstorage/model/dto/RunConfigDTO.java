@@ -1,34 +1,45 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.RunConfigImpl;
 
 @Valid
+@JsonInclude(Include.NON_NULL)
 public class RunConfigDTO {
     private String id;
-    
-    @NotBlank
+
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
-    
-    @NotBlank
+
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String experimentId;
-    
+
     private List<RunConfigImpl> snapshot;
-    
+
     private List<RunConfigImpl> profiling;
-    
+
+    @JsonProperty("inference")
     private List<RunConfigImpl> schemaInference;
-    
+
     private List<RunConfigImpl> validation;
-    
+
+    public RunConfigDTO() {
+        snapshot = Collections.<RunConfigImpl>emptyList();
+        profiling = Collections.<RunConfigImpl>emptyList();
+        schemaInference = Collections.<RunConfigImpl>emptyList();
+        validation = Collections.<RunConfigImpl>emptyList();
+    }
+
     public String getId() {
         return id;
     }
@@ -84,5 +95,5 @@ public class RunConfigDTO {
     public void setValidation(List<RunConfigImpl> validation) {
         this.validation = validation;
     }
-    
+
 }

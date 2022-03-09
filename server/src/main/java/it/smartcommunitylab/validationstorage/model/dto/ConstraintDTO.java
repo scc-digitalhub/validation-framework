@@ -6,38 +6,40 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 
 @Valid
+@JsonInclude(Include.NON_NULL)
 public class ConstraintDTO {
     private String id;
-    
-    @NotBlank
+
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
-    
-    @NotBlank
+
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String experimentId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String name;
-    
+
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
-    
+
     private Set<String> resourceIds;
-    
-    private String type;
-    
+
     private String description;
-    
-    private int errorSeverity;
-    
+
+    private Integer errorSeverity;
+
+    @JsonUnwrapped
     private TypedConstraint constraint;
-    
+
     public String getId() {
         return id;
     }
@@ -86,14 +88,6 @@ public class ConstraintDTO {
         this.resourceIds = resourceIds;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -102,11 +96,11 @@ public class ConstraintDTO {
         this.description = description;
     }
 
-    public int getErrorSeverity() {
+    public Integer getErrorSeverity() {
         return errorSeverity;
     }
 
-    public void setErrorSeverity(int errorSeverity) {
+    public void setErrorSeverity(Integer errorSeverity) {
         this.errorSeverity = errorSeverity;
     }
 
@@ -117,5 +111,5 @@ public class ConstraintDTO {
     public void setConstraint(TypedConstraint constraint) {
         this.constraint = constraint;
     }
-    
+
 }

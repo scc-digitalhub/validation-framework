@@ -2,7 +2,6 @@ package it.smartcommunitylab.validationstorage.model.dto;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -13,26 +12,24 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 @Valid
 public class StoreDTO {
     private String id;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String name;
-    
+
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
-    
+
     private String path;
-    
+
     private Map<String, Serializable> config;
-    
+
     private Boolean isDefault;
-    
-    private Set<DataResourceDTO> resources;
-    
+
     public String getId() {
         return id;
     }
@@ -81,10 +78,6 @@ public class StoreDTO {
         this.config = config;
     }
 
-    public boolean isDefault() {
-        return isDefault != null ? isDefault.booleanValue() : false;
-    }
-
     public Boolean getIsDefault() {
         return isDefault;
     }
@@ -93,12 +86,8 @@ public class StoreDTO {
         this.isDefault = isDefault;
     }
 
-    public Set<DataResourceDTO> getResources() {
-        return resources;
+    public boolean isDefault() {
+        return isDefault != null ? isDefault.booleanValue() : false;
     }
 
-    public void setResources(Set<DataResourceDTO> resources) {
-        this.resources = resources;
-    }
-    
 }

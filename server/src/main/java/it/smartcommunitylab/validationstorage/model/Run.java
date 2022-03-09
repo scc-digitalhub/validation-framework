@@ -1,6 +1,5 @@
 package it.smartcommunitylab.validationstorage.model;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +10,7 @@ import javax.persistence.FetchType;
 import javax.persistence.Lob;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -19,89 +19,79 @@ import org.springframework.data.annotation.Id;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
+import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 
 @Entity
+@Table(name = "runs")
 public class Run {
     @Id
     private String id;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "project_id")
     private String projectId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "experiment_id")
     private String experimentId;
-    
+
     // Copied from the experiment's current RunConfig, cannot be modified
     @OneToOne
     @Column(name = "run_config")
     private RunConfig runConfig;
-    
-    // Copied from the experiment's package, cannot be modified
-    @OneToOne
-    @Column(name = "data_package")
-    private DataPackage dataPackage;
-    
+
+    // Key is resource's name
     @Lob
     @Convert(converter = HashMapConverter.class)
-    private Map<String, Serializable> constraints;
-    
+    private Map<String, DataResource> resources;
+
+    // Key is constraint's name
+    @Lob
+    @Convert(converter = HashMapConverter.class)
+    private Map<String, TypedConstraint> constraints;
+
     @NotNull
     @Column(name = "run_status")
-    private RunResult runStatus;
-    
+    private RunStatus runStatus;
+
     // These documents are populated as results are obtained
     @OneToOne()
     @Column(name = "run_metadata")
     private RunMetadata runMetadata;
-    
+
     @OneToOne()
     @Column(name = "run_environment")
     private RunEnvironment runEnvironment;
-    
+
     @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
     @Column(name = "artifact_metadata")
     private List<ArtifactMetadata> artifactMetadata;
-    
+
     @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
     @Column(name = "run_data_profiles")
     private List<RunDataProfile> runDataProfiles;
-    
+
     @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
     @Column(name = "run_validation_reports")
     private List<RunValidationReport> runValiationReports;
-    
+
     @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
     @Column(name = "run_data_schemas")
     private List<RunDataSchema> runDataSchemas;
-    
+
     @Column(name = "validation_result")
-    private RunResult validationResult;
-    
+    private RunStatus validationResult;
+
     @Column(name = "profile_result")
-    private RunResult profileResult;
-    
+    private RunStatus profileResult;
+
     @Column(name = "schema_result")
-    private RunResult schemaResult;
-    
+    private RunStatus schemaResult;
+
     @Column(name = "snapshot_result")
-    private RunResult snapshotResult;
-    
-    public enum RunResult {
-        PENDING("pending"),
-        RUNNING("running"),
-        SUCCESS("success"),
-        ERROR("error");
-        
-        public final String label;
-        
-        private RunResult(String label) {
-            this.label = label;
-        }
-    }
+    private RunStatus snapshotResult;
 
     public String getId() {
         return id;
@@ -135,27 +125,27 @@ public class Run {
         this.runConfig = runConfig;
     }
 
-    public DataPackage getDataPackage() {
-        return dataPackage;
+    public Map<String, DataResource> getResources() {
+        return resources;
     }
 
-    public void setDataPackage(DataPackage dataPackage) {
-        this.dataPackage = dataPackage;
+    public void setResources(Map<String, DataResource> resources) {
+        this.resources = resources;
     }
 
-    public Map<String, Serializable> getConstraints() {
+    public Map<String, TypedConstraint> getConstraints() {
         return constraints;
     }
 
-    public void setConstraints(Map<String, Serializable> constraints) {
+    public void setConstraints(Map<String, TypedConstraint> constraints) {
         this.constraints = constraints;
     }
 
-    public RunResult getRunStatus() {
+    public RunStatus getRunStatus() {
         return runStatus;
     }
 
-    public void setRunStatus(RunResult runStatus) {
+    public void setRunStatus(RunStatus runStatus) {
         this.runStatus = runStatus;
     }
 
@@ -207,38 +197,36 @@ public class Run {
         this.runDataSchemas = runDataSchemas;
     }
 
-    public RunResult getValidationResult() {
+    public RunStatus getValidationResult() {
         return validationResult;
     }
 
-    public void setValidationResult(RunResult validationResult) {
+    public void setValidationResult(RunStatus validationResult) {
         this.validationResult = validationResult;
     }
 
-    public RunResult getProfileResult() {
+    public RunStatus getProfileResult() {
         return profileResult;
     }
 
-    public void setProfileResult(RunResult profileResult) {
+    public void setProfileResult(RunStatus profileResult) {
         this.profileResult = profileResult;
     }
 
-    public RunResult getSchemaResult() {
+    public RunStatus getSchemaResult() {
         return schemaResult;
     }
 
-    public void setSchemaResult(RunResult schemaResult) {
+    public void setSchemaResult(RunStatus schemaResult) {
         this.schemaResult = schemaResult;
     }
 
-    public RunResult getSnapshotResult() {
+    public RunStatus getSnapshotResult() {
         return snapshotResult;
     }
 
-    public void setSnapshotResult(RunResult snapshotResult) {
+    public void setSnapshotResult(RunStatus snapshotResult) {
         this.snapshotResult = snapshotResult;
     }
-
-    
 
 }

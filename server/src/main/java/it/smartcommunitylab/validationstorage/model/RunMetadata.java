@@ -1,10 +1,11 @@
 package it.smartcommunitylab.validationstorage.model;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Map;
 
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -39,10 +40,19 @@ public class RunMetadata {
     @Column(name = "run_id")
     private String runId;
 
-    /**
-     * Timestamp of the run's creation, taken from 'contents'. If not specified in 'contents', will be the time of creation of this document.
-     */
-    private Date created;
+    @Column(name = "created_date")
+    private LocalDate createdDate;
+    
+    @Column(name = "started_date")
+    private LocalDate startedDate;
+    
+    @Column(name = "finished_date")
+    private LocalDate finishedDate;
+    
+    private RunStatus status;
+    
+    @Embedded
+    private ReportMetadata metadata;
 
     /**
      * May contain extra information.
@@ -81,12 +91,44 @@ public class RunMetadata {
         this.runId = runId;
     }
 
-    public Date getCreated() {
-        return created;
+    public LocalDate getCreatedDate() {
+        return createdDate;
     }
 
-    public void setCreated(Date created) {
-        this.created = created;
+    public void setCreatedDate(LocalDate createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public LocalDate getStartedDate() {
+        return startedDate;
+    }
+
+    public void setStartedDate(LocalDate startedDate) {
+        this.startedDate = startedDate;
+    }
+
+    public LocalDate getFinishedDate() {
+        return finishedDate;
+    }
+
+    public void setFinishedDate(LocalDate finishedDate) {
+        this.finishedDate = finishedDate;
+    }
+
+    public RunStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(RunStatus status) {
+        this.status = status;
+    }
+
+    public ReportMetadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(ReportMetadata metadata) {
+        this.metadata = metadata;
     }
 
     public Map<String, Serializable> getContents() {

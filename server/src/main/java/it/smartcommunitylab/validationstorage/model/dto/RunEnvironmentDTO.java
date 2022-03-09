@@ -1,10 +1,14 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
@@ -13,15 +17,15 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
  */
 public class RunEnvironmentDTO {
     private String id;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String experimentId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String runId;
@@ -30,7 +34,21 @@ public class RunEnvironmentDTO {
      * May contain extra information.
      */
     private Map<String, Serializable> contents;
-    
+
+    public RunEnvironmentDTO() {
+        contents = new HashMap<String, Serializable>();
+    }
+
+    @JsonAnyGetter
+    public Map<String, Serializable> getContentMap() {
+        return contents;
+    }
+
+    @JsonAnySetter
+    public void addContent(String key, Serializable value) {
+        contents.put(key, value);
+    }
+
     public String getId() {
         return id;
     }
@@ -70,5 +88,5 @@ public class RunEnvironmentDTO {
     public void setContents(Map<String, Serializable> contents) {
         this.contents = contents;
     }
-    
+
 }

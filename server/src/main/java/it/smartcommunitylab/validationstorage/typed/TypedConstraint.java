@@ -14,7 +14,7 @@ public abstract class TypedConstraint implements Serializable {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     
-    private String type;
+    protected String type;
     
     @JsonCreator
     public static TypedConstraint create(Map<String, Serializable> map) {

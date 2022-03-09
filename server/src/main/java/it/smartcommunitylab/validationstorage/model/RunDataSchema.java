@@ -2,6 +2,7 @@ package it.smartcommunitylab.validationstorage.model;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
@@ -19,7 +20,8 @@ import it.smartcommunitylab.validationstorage.typed.TypedSchema;
  * Schema of the data.
  */
 @Entity
-@Table(name = "run_data_schema", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "experiment_name", "run_name" }))
+@Table(name = "run_data_schemas", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "experiment_name",
+        "run_name" }))
 public class RunDataSchema {
     @Id
     private String id;
@@ -28,21 +30,27 @@ public class RunDataSchema {
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "project_id")
     private String projectId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "experiment_id")
     private String experimentId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @Column(name = "run_id")
     private String runId;
-    
+
+    // TODO Evaluate replacement with embedded DataResource
+    @Column(name = "resource_name")
     private String resourceName;
 
     private String type;
-    
+
+    @Embedded
+    @Column(name = "metadata")
+    private ReportMetadata metadata;
+
     @Lob
     @Convert(converter = TypedSchemaConverter.class)
     private TypedSchema schema;
@@ -93,6 +101,14 @@ public class RunDataSchema {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public ReportMetadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(ReportMetadata metadata) {
+        this.metadata = metadata;
     }
 
     public TypedSchema getSchema() {

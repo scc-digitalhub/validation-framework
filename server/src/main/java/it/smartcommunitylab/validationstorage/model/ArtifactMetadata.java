@@ -2,6 +2,7 @@ package it.smartcommunitylab.validationstorage.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
@@ -13,6 +14,7 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
  * Metadata about artifact files related to a run.
  */
 @Entity
+@Table(name = "artifact_metadata")
 public class ArtifactMetadata {
     @Id
     private String id;

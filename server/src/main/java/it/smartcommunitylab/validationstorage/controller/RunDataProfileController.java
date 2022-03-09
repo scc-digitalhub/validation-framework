@@ -3,7 +3,6 @@ package it.smartcommunitylab.validationstorage.controller;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,14 +19,14 @@ import it.smartcommunitylab.validationstorage.model.dto.RunDataProfileDTO;
 import it.smartcommunitylab.validationstorage.service.RunService;
 
 @RestController
-@RequestMapping(value = ValidationStorageConstants.ENDPOINT_ROOT + ValidationStorageConstants.PATH_PROJECT)
+@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentId}/run/{runId}/data-profile")
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunDataProfileController {
     @Autowired
     private RunService service;
 
-    @PostMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_PROFILE)
-    public ResponseEntity<ProfileResultDTO> create(
+    @PostMapping
+    public ProfileResultDTO create(
             @PathVariable String projectId,
             @PathVariable String experimentId,
             @PathVariable String runId,
@@ -37,11 +36,11 @@ public class RunDataProfileController {
         response.setReports(service.createRunDataProfiles(projectId, experimentId, runId, request.getResult(), request.getReports()));
         response.setResult(request.getResult());
         
-        return ResponseEntity.ok(response);
+        return response;
     }
     
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_PROFILE)
-    public ResponseEntity<ProfileResultDTO> find(
+    @GetMapping
+    public ProfileResultDTO find(
             @PathVariable String projectId,
             @PathVariable String experimentId,
             @PathVariable String runId) {
@@ -50,21 +49,21 @@ public class RunDataProfileController {
         response.setReports(service.findRunDataProfiles(projectId, experimentId, runId));
         response.setResult(service.findProfileResult(projectId, experimentId, runId));
         
-        return ResponseEntity.ok(response);
+        return response;
     }
     
-    @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_PROFILE + "/{id}")
-    public ResponseEntity<RunDataProfileDTO> findById(
+    @GetMapping("/{id}")
+    public RunDataProfileDTO findById(
             @PathVariable String projectId,
             @PathVariable String experimentId,
             @PathVariable String runId,
             @PathVariable String id) {
         
-        return ResponseEntity.ok(service.findRunDataProfileById(projectId, experimentId, runId, id));
+        return service.findRunDataProfileById(projectId, experimentId, runId, id);
     }
 
-    @PutMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_PROFILE)
-    public ResponseEntity<ProfileResultDTO> update(
+    @PutMapping
+    public ProfileResultDTO update(
             @PathVariable String projectId,
             @PathVariable String experimentId,
             @PathVariable String runId,
@@ -74,15 +73,14 @@ public class RunDataProfileController {
         response.setReports(service.updateRunDataProfiles(projectId, experimentId, runId, request.getResult(), request.getReports()));
         response.setResult(request.getResult());
         
-        return ResponseEntity.ok(response);
+        return response;
     }
 
-    @DeleteMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN + "/{runId}/" + ValidationStorageConstants.RUN_DATA_PROFILE)
-    public ResponseEntity<Void> delete(
+    @DeleteMapping
+    public void delete(
             @PathVariable String projectId,
             @PathVariable String experimentId,
             @PathVariable String runId) {
         service.deleteRunDataProfiles(projectId, experimentId, runId);
-        return ResponseEntity.ok().build();
     }
 }

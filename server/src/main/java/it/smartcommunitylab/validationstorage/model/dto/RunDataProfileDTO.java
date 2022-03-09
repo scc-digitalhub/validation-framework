@@ -1,10 +1,14 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
@@ -13,26 +17,40 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
  */
 public class RunDataProfileDTO {
     private String id;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String experimentId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String runId;
-    
+
     private DataResourceDTO resource;
 
     /**
      * May contain extra information.
      */
     private Map<String, Serializable> contents;
-    
+
+    public RunDataProfileDTO() {
+        contents = new HashMap<String, Serializable>();
+    }
+
+    @JsonAnyGetter
+    public Map<String, Serializable> getContentMap() {
+        return contents;
+    }
+
+    @JsonAnySetter
+    public void addContent(String key, Serializable value) {
+        contents.put(key, value);
+    }
+
     public String getId() {
         return id;
     }
@@ -64,7 +82,7 @@ public class RunDataProfileDTO {
     public void setRunId(String runId) {
         this.runId = runId;
     }
-    
+
     public DataResourceDTO getResource() {
         return resource;
     }
@@ -80,5 +98,5 @@ public class RunDataProfileDTO {
     public void setContents(Map<String, Serializable> contents) {
         this.contents = contents;
     }
-    
+
 }

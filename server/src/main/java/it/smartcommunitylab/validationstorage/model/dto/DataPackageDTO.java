@@ -1,32 +1,36 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
-import java.util.Set;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Valid
+@JsonInclude(Include.NON_NULL)
 public class DataPackageDTO {
     private String id;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
-    
+
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String name;
-    
+
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
-    
+
     private String type;
-    
-    private Set<String> resourceIds;
-    
+
+    private List<DataResourceDTO> resources;
+
     public String getId() {
         return id;
     }
@@ -58,7 +62,7 @@ public class DataPackageDTO {
     public void setTitle(String title) {
         this.title = title;
     }
-    
+
     public String getType() {
         return type;
     }
@@ -67,12 +71,12 @@ public class DataPackageDTO {
         this.type = type;
     }
 
-    public Set<String> getResourceIds() {
-        return resourceIds;
+    public List<DataResourceDTO> getResources() {
+        return resources;
     }
 
-    public void setResourceIds(Set<String> resourceIds) {
-        this.resourceIds = resourceIds;
+    public void setResources(List<DataResourceDTO> resources) {
+        this.resources = resources;
     }
-    
+
 }

@@ -18,7 +18,7 @@ import javax.validation.constraints.Pattern;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Entity
-@Table(name = "data_resource", uniqueConstraints = @UniqueConstraint(columnNames = { "package_name", "name" }))
+@Table(name = "resources", uniqueConstraints = @UniqueConstraint(columnNames = { "package_name", "name" }))
 public class DataResource {
     @Id
     private String id;

@@ -15,7 +15,7 @@ import org.springframework.data.annotation.Id;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Entity
-@Table(name = "experiment", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "name" }))
+@Table(name = "experiments", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "name" }))
 public class Experiment {
     @Id
     private String id;

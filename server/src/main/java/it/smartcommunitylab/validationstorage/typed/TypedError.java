@@ -9,13 +9,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public abstract class TypedError {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     
-    private String constraintId;
+    protected String constraintId;
     
-    private String type;
+    protected String type;
     
-    private String code;
+    protected String code;
     
-    private String note;
+    protected String note;
     
     @JsonCreator
     public static TypedError create(Map<String, Serializable> map) {
