@@ -5,7 +5,8 @@ Run module.
 from __future__ import annotations
 
 import typing
-from typing import Any, Optional, Union
+from pathlib import Path
+from typing import Any, List, Optional, Union
 
 from datajudge.data import BlobLog, EnvLog
 from datajudge.utils import config as cfg
@@ -80,6 +81,8 @@ class Run:
         self._run_handler = plugin_handler
         self._overwrite = overwrite
 
+        self._filenames = {}
+
     # Run methods
 
     def _log_run(self) -> None:
@@ -146,6 +149,47 @@ class Run:
         metadata = self._get_artifact_metadata(uri, src_name)
         self._log_metadata(metadata, self._ARTIFACT_METADATA)
 
+    def _render_artifact_name(self,
+                              filename: str) -> str:
+        """
+        Return a modified filename to avoid overwriting
+        in persistence.
+        """
+        if filename not in self._filenames:
+            self._filenames[filename] = 0
+        else:
+            self._filenames[filename] += 1
+
+        fnm = Path(filename).stem
+        ext = Path(filename).suffix
+
+        return f"{fnm}_{self._filenames[filename]}{ext}"
+
+    def persist_data(self,
+                     data_name: Optional[Union[str, list]] = None
+                     ) -> None:
+        """
+        Persist input data as artifact.
+
+        Parameters
+        ----------
+        data_name : str or list, default = None
+            Filename(s) for input data.
+
+        """
+
+        # To do, basic inference metadata?
+        metadata = {}
+
+        # Data
+        data = self.fetch_data()
+        data, data_name = data_listify(data, data_name)
+        for idx, path in enumerate(data):
+            # try to infer source name if no name is passed
+            src_name = data_name[idx] if data_name[idx] is not None \
+                                      else get_name_from_uri(path)
+            self.persist_artifact(data[idx], src_name, metadata)
+
     def persist_artifact(self,
                          src: Any,
                          src_name: Optional[str] = None,
@@ -175,31 +219,6 @@ class Run:
                                       metadata=metadata)
         self._log_artifact(src_name)
 
-    def persist_data(self,
-                     data_name: Optional[Union[str, list]] = None
-                     ) -> None:
-        """
-        Persist input data as artifact.
-
-        Parameters
-        ----------
-        data_name : str or list, default = None
-            Filename(s) for input data.
-
-        """
-
-        # To do, basic inference metadata?
-        metadata = {}
-
-        # Data
-        data = self.fetch_data()
-        data, data_name = data_listify(data, data_name)
-        for idx, path in enumerate(data):
-            # try to infer source name if no name is passed
-            src_name = data_name[idx] if data_name[idx] is not None \
-                                      else get_name_from_uri(path)
-            self.persist_artifact(data[idx], src_name, metadata)
-
     def fetch_data(self) -> None:
         """
         Fetch data from backend and return temp file path.
@@ -207,10 +226,10 @@ class Run:
         for res in self.run_info.resources:
             if res.tmp_pth is None:
                 if isinstance(res.path, list):
-                    res.tmp_pth = [self.fetch_artifact(i, store_name=res.store) 
+                    res.tmp_pth = [self.fetch_artifact(i, store_name=res.store)
                                    for i in res.path]
                 else:
-                    res.tmp_pth = self.fetch_artifact(res.path, 
+                    res.tmp_pth = self.fetch_artifact(res.path,
                                                       store_name=res.store)
 
     def fetch_artifact(self,
@@ -254,8 +273,12 @@ class Run:
             Mappers for specific framework arguments.
 
         """
+        schemas = self._run_handler.get_result_schema()
+        if schemas:
+            return schemas
         self.fetch_data()
-        return self._run_handler.infer(self.run_info.resources, exec_args)
+        self._run_handler.infer(self.run_info.resources, exec_args)
+        return self._run_handler.get_result_schema()
 
     def infer_datajudge(self,
                         exec_args: Optional[dict] = None) -> dict:
@@ -268,8 +291,12 @@ class Run:
             Mappers for specific framework arguments.
 
         """
-        self.infer_wrapper(exec_args)
-        return self._run_handler.produce_schema()
+        schemas = self._run_handler.get_datajudge_schema()
+        if schemas:
+            return schemas
+        self.fetch_data()
+        self._run_handler.infer(self.run_info.resources, exec_args)
+        return self._run_handler.get_datajudge_schema()
 
     def infer(self,
               exec_args: Optional[dict] = None) -> tuple:
@@ -286,35 +313,24 @@ class Run:
         schema_dj = self.infer_datajudge(exec_args)
         return schema, schema_dj
 
-    def log_schema(self, schemas: list) -> None:
+    def log_schema(self) -> None:
         """
         Log datajudge schema.
-
-        Parameters
-        ----------
-        schema : dict
-            A datajudge schema to be logged.
-
         """
         self._check_metadata_uri()
-        for schema in schemas:
-            metadata = self._get_blob(schema.dict())
+        objects = self._run_handler.get_datajudge_schema()
+        for obj in objects:
+            metadata = self._get_blob(obj.dict())
             self._log_metadata(metadata, self._DJ_SCHEMA)
 
     def persist_schema(self) -> None:
         """
         Persist an inferred schema produced by a validation framework.
-
-        Parameters
-        ----------
-        schema : Any
-            An inferred schema object produced by a validation library.
-
         """
-        rendered = self._run_handler.persist_schema()
-        for obj in rendered:
+        objects = self._run_handler.get_artifact_schema()
+        for obj in objects:
             self.persist_artifact(obj.object,
-                                    obj.filename)
+                                  self._render_artifact_name(obj.filename))
 
     # Validation
 
@@ -332,10 +348,13 @@ class Run:
             Mappers for specific framework arguments.
 
         """
+        reports = self._run_handler.get_result_report()
+        if reports:
+            return reports
         self.fetch_data()
-        return self._run_handler.validate(self.run_info.resources,
-                                          constraints,
-                                          exec_args)
+        self._run_handler.validate(self.run_info.resources,
+                                   constraints, exec_args)
+        return self._run_handler.get_result_report()
 
     def validate_datajudge(self,
                            constraints: Optional[dict] = None,
@@ -352,8 +371,13 @@ class Run:
             Mappers for specific framework arguments
 
         """
-        self.validate_wrapper(constraints, exec_args)
-        return self._run_handler.produce_report()
+        reports = self._run_handler.get_datajudge_report()
+        if reports:
+            return reports
+        self.fetch_data()
+        self._run_handler.validate(self.run_info.resources,
+                                   constraints, exec_args)
+        return self._run_handler.get_datajudge_report()
 
     def validate(self,
                  constraints: Optional[dict] = None,
@@ -373,40 +397,29 @@ class Run:
         report_dj = self.validate_datajudge(constraints, exec_args)
         return report, report_dj
 
-    def log_report(self, reports: list) -> None:
+    def log_report(self) -> None:
         """
         Log short report.
-
-        Parameters
-        ----------
-        report : dict
-            A datajudge report to be logged.
-
         """
         self._check_metadata_uri()
-        for report in reports:
-            metadata = self._get_blob(report.dict())
+        objects = self._run_handler.get_datajudge_report()
+        for obj in objects:
+            metadata = self._get_blob(obj.dict())
             self._log_metadata(metadata, self._DJ_REPORT)
 
     def persist_report(self) -> None:
         """
         Persist a report produced by a validation framework.
-
-        Parameters
-        ----------
-        report : Any
-            An report object produced by a validation library.
-
         """
-        rendered = self._run_handler.persist_report()
-        for obj in rendered:
+        objects = self._run_handler.get_artifact_report()
+        for obj in objects:
             self.persist_artifact(obj.object,
-                                obj.filename)
+                                  self._render_artifact_name(obj.filename))
 
     # Profiling
 
     def profile_wrapper(self,
-                        exec_args: dict = None) -> Any:
+                        exec_args: dict = None) -> List[Any]:
         """
         Execute profiling on a resource.
 
@@ -416,12 +429,16 @@ class Run:
             Kwargs passed to profiler.
 
         """
+        profiles = self._run_handler.get_result_profile()
+        if profiles:
+            return profiles
         self.fetch_data()
-        return self._run_handler.profile(self.run_info.resources, exec_args)
+        self._run_handler.profile(self.run_info.resources, exec_args)
+        return self._run_handler.get_result_profile()
 
     def profile_datajudge(self,
                           exec_args: dict = None
-                          ) -> dict:
+                          ) -> List[Any]:
         """
         Execute schema inference over a resource.
         Return the schema inferred by datajudge.
@@ -432,8 +449,12 @@ class Run:
             Kwargs passed to profiler.
 
         """
-        self.profile_wrapper(exec_args)
-        return self._run_handler.produce_profile()
+        profiles = self._run_handler.get_datajudge_profile()
+        if profiles:
+            return profiles
+        self.fetch_data()
+        self._run_handler.profile(self.run_info.resources, exec_args)
+        return self._run_handler.get_datajudge_profile()
 
     def profile(self,
                 exec_args: Optional[dict] = None) -> tuple:
@@ -450,35 +471,24 @@ class Run:
         profile_dj = self.profile_datajudge(exec_args)
         return profile, profile_dj
 
-    def log_profile(self, profiles: list) -> None:
+    def log_profile(self) -> None:
         """
         Log a data profile.
-
-        Parameters
-        ----------
-        profile : Any
-            A datajudge profile to be logged.
-
         """
         self._check_metadata_uri()
-        for profile in profiles:
-            metadata = self._get_blob(profile.dict())
+        objects = self._run_handler.get_datajudge_profile()
+        for obj in objects:
+            metadata = self._get_blob(obj.dict())
             self._log_metadata(metadata, self._DJ_PROFILE)
 
     def persist_profile(self) -> None:
         """
         Persist a data profile produced by a profiling framework.
-
-        Parameters
-        ----------
-        profile : Any
-            A profile object produced by a profiling library.
-
         """
-        rendered = self._run_handler.persist_profile()
-        for obj in rendered:
+        objects = self._run_handler.get_artifact_profile()
+        for obj in objects:
             self.persist_artifact(obj.object,
-                                obj.filename)
+                                  self._render_artifact_name(obj.filename))
 
     # Context manager
 

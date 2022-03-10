@@ -17,9 +17,8 @@ class StoreConfig(BaseModel):
 
 
 class Constraint(BaseModel):
-    id: str
-    title: str
     name: str
+    title: str
     resources: List[str]
     severity: int
 

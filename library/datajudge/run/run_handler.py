@@ -27,8 +27,11 @@ class RunHandlerRegistry:
     def __init__(self) -> None:
         self.registry = {}
         self.setup()
-    
+
     def setup(self):
+        """
+        Setup the run handler registry.
+        """
         for ops in [cfg.OP_VAL, cfg.OP_PRO, cfg.OP_INF]:
             self.registry[ops] = {
                 OBJ_RES: [],
@@ -47,11 +50,13 @@ class RunHandlerRegistry:
             self.registry[ops][obj_typ].extend(_object)
         else:
             self.registry[ops][obj_typ].append(_object)
-    
-    def get_cache(self, ops: str, obj_typ: str) -> List[Any]:
+
+    def get_object(self,
+                   ops: str,
+                   obj_typ: str) -> List[Any]:
         """
-        Return plugin results.
-        """        
+        Return object from registry.
+        """
         try:
             return self.registry[ops][obj_typ]
         except KeyError:
@@ -80,10 +85,7 @@ class RunHandler:
         """
         Wrapper for plugins infer methods.
         """
-        results = self._registry.get_cache(cfg.OP_INF, OBJ_RES)
-        if results:
-            return results
-        return self.execute(cfg.OP_INF, resources, exec_args)
+        self.execute(cfg.OP_INF, resources, exec_args)
 
     def validate(self,
                  resources: List[DataResource],
@@ -93,29 +95,23 @@ class RunHandler:
         """
         Wrapper for plugins validate methods.
         """
-        results = self._registry.get_cache(cfg.OP_VAL, OBJ_RES)
-        if results:
-            return results
-        return self.execute(cfg.OP_VAL, resources, exec_args, constraints)
+        self.execute(cfg.OP_VAL, resources, exec_args, constraints)
 
     def profile(self,
                 resources: List[DataResource],
                 exec_args: Optional[dict] = None
-                ) -> list:
+                ) -> None:
         """
         Wrapper for plugins profile methods.
         """
-        results = self._registry.get_cache(cfg.OP_PRO, OBJ_RES)
-        if results:
-            return results
-        return self.execute(cfg.OP_PRO, resources, exec_args)
+        self.execute(cfg.OP_PRO, resources, exec_args)
 
     def execute(self,
                 operation: str,
                 resources: List[DataResource],
                 exec_args: Optional[dict] = None,
                 constraints: Optional[dict] = None
-                ) -> list:
+                ) -> None:
         """
         Wrap plugin main execution method.
         """
@@ -132,63 +128,75 @@ class RunHandler:
             else:
                 plugins.extend(builder.build(resources, exec_args))
 
-        results = []
         for plugin in plugins:
             result = plugin.execute()
             self._registry.register(operation, OBJ_RES, result)
 
             dj_report = plugin.render_datajudge(result)
             self._registry.register(operation, OBJ_REP, dj_report)
-            
+
             rendered_artifact = plugin.render_artifact(result.artifact)
             self._registry.register(operation, OBJ_ART, rendered_artifact)
 
-            results.append(result)
-
-        return results
-
-    def produce_schema(self) -> list:
-        """
-        Wrapper for plugins parsing methods.
-        """
-        return self._registry.get_cache(cfg.OP_INF, OBJ_REP)
-
-    def produce_report(self) -> list:
-        """
-        Wrapper for plugins parsing methods.
-        """
-        return self._registry.get_cache(cfg.OP_VAL, OBJ_REP)
-
-    def produce_profile(self) -> list:
-        """
-        Wrapper for plugins parsing methods.
-        """
-        return self._registry.get_cache(cfg.OP_PRO, OBJ_REP)
-
-    def persist_schema(self) -> list:
+    def get_result_schema(self) -> list:
         """
         Render a list of schemas to be persisted.
         """
-        return self._registry.get_cache(cfg.OP_INF, OBJ_ART)
+        res = []
+        for obj in self._registry.get_object(cfg.OP_INF, OBJ_RES):
+            res.append(obj.artifact)
+        return res
 
-    def persist_report(self) -> list:
+    def get_result_report(self) -> list:
         """
         Render a list of reports to be persisted.
         """
-        return self._registry.get_cache(cfg.OP_VAL, OBJ_ART)
+        res = []
+        for obj in self._registry.get_object(cfg.OP_VAL, OBJ_RES):
+            res.append(obj.artifact)
+        return res
 
-    def persist_profile(self) -> list:
+    def get_result_profile(self) -> list:
         """
         Render a list of profiles to be persisted.
         """
-        return self._registry.get_cache(cfg.OP_PRO, OBJ_ART)
+        res = []
+        for obj in self._registry.get_object(cfg.OP_PRO, OBJ_RES):
+            res.append(obj.artifact)
+        return res
 
-    def get_info(self) -> dict:
+    def get_datajudge_schema(self) -> list:
         """
-        Return libraries of plugins.
+        Wrapper for plugins parsing methods.
         """
-        return {
-            "validation": [self.val[lib].get_libraries() for lib in self.val],
-            "inference": [self.inf[lib].get_libraries() for lib in self.inf],
-            "profiling": [self.pro[lib].get_libraries() for lib in self.pro],
-        }
+        return self._registry.get_object(cfg.OP_INF, OBJ_REP)
+
+    def get_datajudge_report(self) -> list:
+        """
+        Wrapper for plugins parsing methods.
+        """
+        return self._registry.get_object(cfg.OP_VAL, OBJ_REP)
+
+    def get_datajudge_profile(self) -> list:
+        """
+        Wrapper for plugins parsing methods.
+        """
+        return self._registry.get_object(cfg.OP_PRO, OBJ_REP)
+
+    def get_artifact_schema(self) -> list:
+        """
+        Render a list of schemas to be persisted.
+        """
+        return self._registry.get_object(cfg.OP_INF, OBJ_ART)
+
+    def get_artifact_report(self) -> list:
+        """
+        Render a list of reports to be persisted.
+        """
+        return self._registry.get_object(cfg.OP_VAL, OBJ_ART)
+
+    def get_artifact_profile(self) -> list:
+        """
+        Render a list of profiles to be persisted.
+        """
+        return self._registry.get_object(cfg.OP_PRO, OBJ_ART)

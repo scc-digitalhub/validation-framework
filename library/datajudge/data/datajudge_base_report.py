@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 class DatajudgeBaseReport(metaclass=ABCMeta):
     """
     Datajudge base report abstract class
-    
+
     Attributes
     ----------
     lib_name : str
@@ -29,12 +29,12 @@ class DatajudgeBaseReport(metaclass=ABCMeta):
         self.lib_name = lib_name
         self.lib_version = lib_version
         self.duration = duration
-    
+
     @abstractmethod
     def dict(self) -> dict:
         """
         Return a dictionary of the instance.
         """
-    
+
     def __repr__(self) -> str:
         return str(self.dict())
