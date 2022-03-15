@@ -9,9 +9,9 @@ from pydantic import BaseModel
 
 
 class StoreConfig(BaseModel):
-    title: Optional[str] = None
     name: str
-    path: str
+    uri: str
+    title: Optional[str] = None
     isDefault: bool = False
     config: Optional[dict] = None
 

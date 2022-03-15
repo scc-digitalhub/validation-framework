@@ -92,6 +92,15 @@ class Plugin(metaclass=ABCMeta):
         """
         Get library version.
         """
+        
+    def get_library(self) -> dict:
+        """
+        Get library info.
+        """
+        return {
+            "libraryName": self.get_lib_name(),
+            "libraryVersion": self.get_lib_version()
+        }
 
 
 class PluginBuilder:

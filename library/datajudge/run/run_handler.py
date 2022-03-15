@@ -17,6 +17,7 @@ if typing.TYPE_CHECKING:
 OBJ_RES = "results"
 OBJ_REP = "dj_reports"
 OBJ_ART = "rendered_artifacts"
+OBJ_LIB = "libraries"
 
 
 class RunHandlerRegistry:
@@ -36,7 +37,8 @@ class RunHandlerRegistry:
             self.registry[ops] = {
                 OBJ_RES: [],
                 OBJ_REP: [],
-                OBJ_ART: []
+                OBJ_ART: [],
+                OBJ_LIB: []
             }
 
     def register(self,
@@ -137,6 +139,9 @@ class RunHandler:
 
             rendered_artifact = plugin.render_artifact(result.artifact)
             self._registry.register(operation, OBJ_ART, rendered_artifact)
+            
+            libraries = plugin.get_library()
+            self._registry.register(operation, OBJ_LIB, libraries)
 
     def get_result_schema(self) -> list:
         """
