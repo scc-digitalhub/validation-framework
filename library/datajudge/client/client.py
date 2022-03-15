@@ -62,10 +62,10 @@ class Client:
             Default temporary folder where to download data.
 
         """
-        self.client_handler = ClientHandler(project_name,
-                                            metadata_store_config,
-                                            store_configs,
-                                            tmp_dir)
+        self._client_handler = ClientHandler(project_name,
+                                             metadata_store_config,
+                                             store_configs,
+                                             tmp_dir)
 
     def add_store(self,
                   config: Union[StoreConfig, dict]
@@ -78,7 +78,7 @@ class Client:
         config: StoreConfig or dict
 
         """
-        self.client_handler.add_store(config)
+        self._client_handler.add_store(config)
 
     def create_run(self,
                    resources: Union[List[DataResource], DataResource],
@@ -110,11 +110,11 @@ class Client:
             Return a specific Run object.
 
         """
-        return self.client_handler.create_run(resources,
-                                              run_config,
-                                              experiment_title,
-                                              run_id,
-                                              overwrite)
+        return self._client_handler.create_run(resources,
+                                               run_config,
+                                               experiment_title,
+                                               run_id,
+                                               overwrite)
 
     def log_metadata(self,
                      metadata: dict,
@@ -136,7 +136,7 @@ class Client:
             If True, overwrite existent metadata.
 
         """
-        self.client_handler.log_metadata(metadata, dst, src_type, overwrite)
+        self._client_handler.log_metadata(metadata, dst, src_type, overwrite)
 
     def persist_artifact(self,
                          src: Any,
@@ -159,7 +159,7 @@ class Client:
             Optional metadata to attach on artifact.
 
         """
-        self.client_handlert.persist_artifact(src, dst, src_name, metadata)
+        self._client_handler.persist_artifact(src, dst, src_name, metadata)
 
     def fetch_artifact(self,
                        uri: str,
@@ -180,4 +180,4 @@ class Client:
             Path to temp file
 
         """
-        return self.client_handlert.fetch_artifact(uri, store_name)
+        return self._client_handler.fetch_artifact(uri, store_name)
