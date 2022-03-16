@@ -37,8 +37,7 @@ def data_listify(data: Any,
     Check if the source is composed by multiple files.
     Return list of sources and sources names.
     """
-    if not isinstance(data, list):
-        data = [data]
+    data = listify(data)
     if data_name is None:
         data_name = [None for _ in data]
     elif isinstance(data_name, list):

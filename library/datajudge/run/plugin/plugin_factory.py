@@ -1,3 +1,6 @@
+"""
+Plugin factory module.
+"""
 from datajudge.run.plugin import (InferenceBuilderDummy,
                                   InferenceBuilderFrictionless,
                                   ProfileBuilderDummy,
@@ -6,6 +9,8 @@ from datajudge.run.plugin import (InferenceBuilderDummy,
                                   ValidationBuilderDummy,
                                   ValidationBuilderFrictionless)
 from datajudge.utils import config as cfg
+from datajudge.utils.utils import listify
+
 
 BUILDER_REGISTRY = {
     cfg.OP_INF: {
@@ -34,9 +39,7 @@ def get_builder(config: dict,
     builders = {}
     if config.get("enabled", False):
         library = config.get("library")
-        if not isinstance(library, list):
-            library = [library]
-        for lib in library:
+        for lib in listify(library):
             try:
                 builders[lib] = BUILDER_REGISTRY[typology][lib]()
             except KeyError as k_err:
