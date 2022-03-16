@@ -22,7 +22,7 @@ class Client:
 
     The Client is a public interface that exposes methods to interact
     with storages and create runs.
-    
+
     The Client has an handler that registers the stores used in the
     experiments.
 
@@ -62,9 +62,9 @@ class Client:
             Default temporary folder where to download data.
 
         """
-        self._client_handler = ClientHandler(project_name,
-                                             metadata_store_config,
+        self._client_handler = ClientHandler(metadata_store_config,
                                              store_configs,
+                                             project_name,
                                              tmp_dir)
 
     def add_store(self,
@@ -181,3 +181,9 @@ class Client:
 
         """
         return self._client_handler.fetch_artifact(uri, store_name)
+
+    def clean_all(self) -> None:
+        """
+        Clean up temp_dir contents.
+        """
+        self._client_handler.clean_all()

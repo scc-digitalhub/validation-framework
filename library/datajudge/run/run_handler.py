@@ -11,7 +11,7 @@ from datajudge.utils import config as cfg
 
 if typing.TYPE_CHECKING:
     from datajudge import DataResource
-    from datajudge.utils.config import RunConfig
+    from datajudge.utils.config import RunConfig, Constraint
 
 
 OBJ_RES = "results"
@@ -91,7 +91,7 @@ class RunHandler:
 
     def validate(self,
                  resources: List[DataResource],
-                 constraints: dict,
+                 constraints: List[Constraint],
                  exec_args: Optional[dict] = None
                  ) -> list:
         """
@@ -112,7 +112,7 @@ class RunHandler:
                 operation: str,
                 resources: List[DataResource],
                 exec_args: Optional[dict] = None,
-                constraints: Optional[dict] = None
+                constraints: Optional[List[Constraint]] = None
                 ) -> None:
         """
         Wrap plugin main execution method.
@@ -139,7 +139,7 @@ class RunHandler:
 
             rendered_artifact = plugin.render_artifact(result.artifact)
             self._registry.register(operation, OBJ_ART, rendered_artifact)
-            
+
             libraries = plugin.get_library()
             self._registry.register(operation, OBJ_LIB, libraries)
 

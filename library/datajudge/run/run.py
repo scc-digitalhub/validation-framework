@@ -10,14 +10,13 @@ from typing import Any, List, Optional, Union
 
 from datajudge.data import BlobLog, EnvLog
 from datajudge.utils import config as cfg
-from datajudge.utils.file_utils import clean_all
 from datajudge.utils.uri_utils import get_name_from_uri
 from datajudge.utils.utils import data_listify, get_time
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
     from datajudge.run import RunInfo, RunHandler
-    from datajudge.utils.config import RunConfig
+    from datajudge.utils.config import Constraint
 
 
 class Run:
@@ -335,7 +334,7 @@ class Run:
     # Validation
 
     def validate_wrapper(self,
-                         constraints: RunConfig,
+                         constraints: List[Constraint],
                          exec_args: Optional[dict] = None) -> Any:
         """
         Execute validation of a resource.
@@ -512,14 +511,11 @@ class Run:
             self.run_info.end_status = "failed"
         else:
             self.run_info.end_status = "failed"
+
         self.run_info.finished = get_time()
         self._log_run()
 
-        # Cleanup tmp files
-        try:
-            clean_all(self._client.tmp_dir)
-        except FileNotFoundError:
-            pass
+        self._client.clean_all()
 
     # Dunders
 

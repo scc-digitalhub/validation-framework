@@ -3,18 +3,18 @@ ClientHandler module.
 """
 # pylint: disable=import-error
 from __future__ import annotations
-from copy import deepcopy
 
 import typing
 import uuid
-from typing import Any, List, Optional, Tuple, Union
+from copy import deepcopy
+from typing import Any, List, Optional, Union
 
-from slugify import slugify
-
-from datajudge.client.store_factories import get_md_store, get_stores
-from datajudge.data.data_resource import DataResource
+from datajudge.client.store_factory import StoreBuilder
+from datajudge.data import DataResource
 from datajudge.run import Run, RunHandler, RunInfo
 from datajudge.utils.config import RunConfig, StoreConfig
+from datajudge.utils.file_utils import clean_all
+from datajudge.utils.utils import get_slug, listify
 
 if typing.TYPE_CHECKING:
     from datajudge.store_artifact.artifact_store import ArtifactStore
@@ -31,16 +31,16 @@ class ClientHandlerStoreRegistry:
     Registry where to register Stores by type.
     """
     def __init__(self) -> None:
-        self.registry = {}
+        self._registry = {}
         self.setup()
 
     def setup(self) -> None:
         """
         Setup basic registry.
         """
-        self.registry[STORE_TYPE_ARTIFACT] = []
-        self.registry[DEFAULT_STORE] = None
-        self.registry[STORE_TYPE_METADATA] = None
+        self._registry[STORE_TYPE_ARTIFACT] = []
+        self._registry[DEFAULT_STORE] = None
+        self._registry[STORE_TYPE_METADATA] = None
 
     def register(self,
                  store: dict,
@@ -49,19 +49,20 @@ class ClientHandlerStoreRegistry:
         Register a new store.
         """
         if store_type == STORE_TYPE_ARTIFACT:
-            self.registry[STORE_TYPE_ARTIFACT].append(store)
+            self._registry[STORE_TYPE_ARTIFACT].append(store)
         else:
-            self.registry[store_type] = store
+            self._registry[store_type] = store
 
     def update_default_store(self) -> None:
         """
         Select default store in the store registry.
         """
-        stores = self.registry[STORE_TYPE_ARTIFACT]
+        stores = self._registry[STORE_TYPE_ARTIFACT]
         default = None
-        
+
         if len(stores) == 1:
             default = deepcopy(stores[0])
+            default["is_default"] = True
         else:
             for store in stores:
                 if store.get("is_default", False):
@@ -70,13 +71,10 @@ class ClientHandlerStoreRegistry:
                     else:
                         raise ValueError("Configure only one store as default.")
 
-        try:
-            default.pop("is_default")
-            default.pop("name")
-        except KeyError:
-            pass
-        except AttributeError:
-            raise RuntimeError("Please configure one store as default.")
+            try:
+                assert default["is_default"]
+            except AttributeError:
+                raise RuntimeError("Please configure one store as default.")
 
         self.register(default, DEFAULT_STORE)
 
@@ -87,81 +85,89 @@ class ClientHandlerStoreRegistry:
         Return a store from registry.
         """
         if store_type in (STORE_TYPE_METADATA, DEFAULT_STORE):
-            return self.registry[store_type]["store"]
+            return self._registry[store_type]["store"]
 
         if store_type == STORE_TYPE_ARTIFACT:
             if name is not None:
-                for store in self.registry[STORE_TYPE_ARTIFACT]:
+                for store in self._registry[STORE_TYPE_ARTIFACT]:
                     if name == store.get("name"):
                         return store["store"]
-            return self.registry[DEFAULT_STORE]["store"]
+            return self._registry[DEFAULT_STORE]["store"]
 
 
 class ClientHandler:
     """
     Handler layer between the Client interface, stores and factories.
-    
+
     The ClientHandler contain a register where it keeps track of stores.
 
     """
 
     def __init__(self,
-                 md_store_config: Optional[List[StoreConfig]] = None,
-                 store_configs: Optional[List[StoreConfig]] = None,
+                 md_store_config: Optional[StoreConfig] = None,
+                 art_store_configs: Optional[List[StoreConfig]] = None,
                  project_name: Optional[str] = "project",
                  tmp_dir: Optional[str] = "./djruns/tmp") -> None:
-        self._md_store_config = md_store_config
-        self._art_store_config = store_configs
-        self.proj = project_name
-        self.tmp_dir = tmp_dir
-        self.store_registry = ClientHandlerStoreRegistry()
-        self.setup()
 
-    def setup(self) -> None:
-        """
-        Setup the registry and register stores according to
-        configurations provided.
-        """
-        md_store = get_md_store(self._md_store_config, self.proj)
-        self.store_registry.register(md_store, STORE_TYPE_METADATA)
+        self._store_registry = ClientHandlerStoreRegistry()
+        self._store_builder = StoreBuilder(project_name)
+        self.setup(md_store_config, art_store_configs)
 
-        stores = get_stores(self._art_store_config)
-        for store in stores:
-            self.store_registry.register(store, STORE_TYPE_ARTIFACT)
-        self.store_registry.update_default_store()
+        self._tmp_dir = tmp_dir
+
+    def setup(self,
+              md_cfg: Optional[StoreConfig] = None,
+              art_cfg: Optional[List[StoreConfig]] = None
+              ) -> None:
+        """
+        Build stores according to configurations provided
+        and register them into the store registry.
+        """
+
+        # Build metadata store
+        md_store = self._store_builder.build(md_cfg, md_store=True)
+        self._store_registry.register(md_store, STORE_TYPE_METADATA)
+
+        # Build artifact stores
+        for cfg in listify(art_cfg):
+            store = self._store_builder.build(cfg)
+            self._store_registry.register(store, STORE_TYPE_ARTIFACT)
+
+        # Register default store
+        self._store_registry.update_default_store()
 
     def get_md_store(self) -> MetadataStore:
         """
         Get metadata store from registry.
         """
-        return self.store_registry.get_store(STORE_TYPE_METADATA)
+        return self._store_registry.get_store(STORE_TYPE_METADATA)
 
     def get_def_store(self) -> ArtifactStore:
         """
         Get default artifact store from registry.
         """
-        return self.store_registry.get_store(DEFAULT_STORE)
+        return self._store_registry.get_store(DEFAULT_STORE)
 
     def get_art_store(self, name: str) -> ArtifactStore:
         """
         Get artifact store from registry.
         """
-        return self.store_registry.get_store(STORE_TYPE_ARTIFACT, name)
+        return self._store_registry.get_store(STORE_TYPE_ARTIFACT, name)
 
     def add_store(self, config: Union[StoreConfig, dict]) -> None:
         """
         Add an artifact store to the registry.
         """
-        store = get_stores(config)
+        store = self._store_builder.build(config)
         key = next(iter(store))
 
-        check = self.store_registry.get_store(STORE_TYPE_ARTIFACT, key)
+        check = self._store_registry.get_store(STORE_TYPE_ARTIFACT, key)
         if check is not None:
             raise ValueError("There is already a store with that name.\
                               Please choose another.")
 
-        self.store_registry.register(store, STORE_TYPE_ARTIFACT)
-        self.store_registry.update_default_store()
+        self._store_registry.register(store, STORE_TYPE_ARTIFACT)
+        self._store_registry.update_default_store()
 
     def log_metadata(self,
                      src: dict,
@@ -192,7 +198,7 @@ class ClientHandler:
         Persist an artifact from an artifact store.
         """
         store = self.get_art_store(store_name)
-        return store.fetch_artifact(uri, self.tmp_dir)
+        return store.fetch_artifact(uri, self._tmp_dir)
 
     @staticmethod
     def _get_run_id(run_id: Optional[str] = None) -> str:
@@ -213,13 +219,6 @@ class ClientHandler:
         store = self.get_md_store()
         store.init_run(exp_name, run_id, overwrite)
 
-    @staticmethod
-    def _get_slug(title: str) -> str:
-        """
-        Slugify a string.
-        """
-        return slugify(title, max_length=20, separator="_")
-
     def _get_md_uri(self, exp_name: str, run_id: str) -> str:
         """
         Get the metadata URI store location.
@@ -234,15 +233,6 @@ class ClientHandler:
         store = self.get_def_store()
         return store.get_run_artifacts_uri(exp_name, run_id)
 
-    @staticmethod
-    def _listify(obj: Union[List, Tuple, Any]) -> List[Any]:
-        """
-        Check if an object is a list or a tuple and return a list.
-        """
-        if not isinstance(obj, (list, tuple)):
-            obj = [obj]
-        return obj
-
     def create_run(self,
                    resources: Union[List[DataResource], DataResource],
                    run_config: RunConfig,
@@ -252,8 +242,8 @@ class ClientHandler:
         """
         Create a new run.
         """
-        resources = self._listify(resources)
-        experiment_name = self._get_slug(experiment_title)
+        resources = listify(resources)
+        experiment_name = get_slug(experiment_title)
         run_id = self._get_run_id(run_id)
 
         self._init_run(experiment_name, run_id, overwrite)
@@ -270,3 +260,12 @@ class ClientHandler:
                            run_art_uri)
         run = Run(run_info, run_handler, self, overwrite)
         return run
+
+    def clean_all(self) -> None:
+        """
+        Clean up temp_dir contents.
+        """
+        try:
+            clean_all(self._tmp_dir)
+        except FileNotFoundError:
+            pass
