@@ -115,7 +115,7 @@ class RunHandler:
                 constraints: Optional[List[Constraint]] = None
                 ) -> None:
         """
-        Wrap plugin main execution method.
+        Wrap plugins main execution method. The handler create builders to build plugins. Once the plugin are built, the handler execute the main plugin operation (inference, validation or profiling), produce a datajudge report, render the execution artifact ready to be stored and save some library infos. 
         """
         if exec_args is None:
             exec_args = {}
@@ -143,65 +143,62 @@ class RunHandler:
             libraries = plugin.get_library()
             self._registry.register(operation, OBJ_LIB, libraries)
 
+    def get_item(self, ops: str, obj_type: str) -> list:
+        """
+        Get item from registry.
+        """
+        return self._registry.get_object(ops, obj_type)
+
     def get_result_schema(self) -> list:
         """
         Render a list of schemas to be persisted.
         """
-        res = []
-        for obj in self._registry.get_object(cfg.OP_INF, OBJ_RES):
-            res.append(obj.artifact)
-        return res
+        return [obj.artifact for obj in self.get_item(cfg.OP_INF, OBJ_RES)]
 
     def get_result_report(self) -> list:
         """
         Render a list of reports to be persisted.
         """
-        res = []
-        for obj in self._registry.get_object(cfg.OP_VAL, OBJ_RES):
-            res.append(obj.artifact)
-        return res
+        return [obj.artifact for obj in self.get_item(cfg.OP_VAL, OBJ_RES)]
 
     def get_result_profile(self) -> list:
         """
         Render a list of profiles to be persisted.
         """
-        res = []
-        for obj in self._registry.get_object(cfg.OP_PRO, OBJ_RES):
-            res.append(obj.artifact)
-        return res
+        return [obj.artifact for obj in self.get_item(cfg.OP_PRO, OBJ_RES)]
 
     def get_datajudge_schema(self) -> list:
         """
         Wrapper for plugins parsing methods.
         """
-        return self._registry.get_object(cfg.OP_INF, OBJ_REP)
+        return self.get_item(cfg.OP_INF, OBJ_REP)
 
     def get_datajudge_report(self) -> list:
         """
         Wrapper for plugins parsing methods.
         """
-        return self._registry.get_object(cfg.OP_VAL, OBJ_REP)
+        return self.get_item(cfg.OP_VAL, OBJ_REP)
 
     def get_datajudge_profile(self) -> list:
         """
         Wrapper for plugins parsing methods.
         """
-        return self._registry.get_object(cfg.OP_PRO, OBJ_REP)
+        return self.get_item(cfg.OP_PRO, OBJ_REP)
 
     def get_artifact_schema(self) -> list:
         """
         Render a list of schemas to be persisted.
         """
-        return self._registry.get_object(cfg.OP_INF, OBJ_ART)
+        return self.get_item(cfg.OP_INF, OBJ_ART)
 
     def get_artifact_report(self) -> list:
         """
         Render a list of reports to be persisted.
         """
-        return self._registry.get_object(cfg.OP_VAL, OBJ_ART)
+        return self.get_item(cfg.OP_VAL, OBJ_ART)
 
     def get_artifact_profile(self) -> list:
         """
         Render a list of profiles to be persisted.
         """
-        return self._registry.get_object(cfg.OP_PRO, OBJ_ART)
+        return self.get_item(cfg.OP_PRO, OBJ_ART)

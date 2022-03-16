@@ -2,10 +2,20 @@
 Common generic utils.
 """
 # pylint: disable=import-error
+import uuid
 from datetime import datetime
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from slugify import slugify
+
+
+def get_uiid(_id: Optional[str] = None) -> str:
+    """
+    Return an UUID if not provided.
+    """
+    if _id:
+        return _id
+    return uuid.uuid4().hex
 
 
 def get_slug(title: str) -> str:

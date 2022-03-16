@@ -3,7 +3,7 @@ Factories module.
 Contains registries of Stores and Runs and respective
 factory methods.
 """
-from typing import Optional, Union
+from typing import Union
 
 from datajudge.store_artifact import (AzureArtifactStore, DummyArtifactStore,
                                       FTPArtifactStore, HTTPArtifactStore,
@@ -46,6 +46,7 @@ ARTIFACT_STORE_REGISTRY = {
     "dummy": DummyArtifactStore,
 }
 
+
 class StoreBuilder:
 
     def __init__(self, project_id: str) -> None:
@@ -77,7 +78,7 @@ class StoreBuilder:
                                                          cfg.config)
             }
         except KeyError:
-            raise NotImplementedError()
+            raise NotImplementedError
 
     @staticmethod
     def resolve_uri_metadata(uri: str,
@@ -107,7 +108,7 @@ class StoreBuilder:
                 "is_default": cfg.isDefault
             }
         except KeyError:
-            raise NotImplementedError()
+            raise NotImplementedError
 
     @staticmethod
     def resolve_artifact_uri(uri: str, scheme: str) -> str:

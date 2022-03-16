@@ -76,9 +76,10 @@ class Client:
         Parameters
         ----------
         config: StoreConfig or dict
+            Store configuration.
 
         """
-        self._client_handler.add_store(config)
+        self._client_handler.add_artifact_store(config)
 
     def create_run(self,
                    resources: Union[List[DataResource], DataResource],
@@ -177,7 +178,7 @@ class Client:
         Returns
         -------
         str :
-            Path to temp file
+            Path to temp file.
 
         """
         return self._client_handler.fetch_artifact(uri, store_name)

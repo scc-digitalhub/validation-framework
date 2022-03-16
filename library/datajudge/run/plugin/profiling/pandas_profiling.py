@@ -103,8 +103,8 @@ class ProfilePluginPandasProfiling(Profiling):
                 df = pd.read_excel(path, **kwargs)
             return df
 
-        raise ValueError("Invalid extension.",
-                         " Only CSV and XLS supported!")
+        raise ValueError("Invalid extension. \
+                          Only CSV and XLS supported!")
 
     def produce_profile(self,
                         obj: Result) -> tuple:

@@ -1,15 +1,16 @@
 """
 Implementation of S3 artifact store.
 """
+# pylint: disable=import-error
 import json
 from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Any, Optional
 
-# pylint: disable=import-error
 import boto3
-from botocore.client import Config
+
 from datajudge.store_artifact.artifact_store import ArtifactStore
+from datajudge.utils.exceptions import StoreError
 from datajudge.utils.file_utils import check_path, get_path
 from datajudge.utils.io_utils import wrap_string, write_bytesio
 from datajudge.utils.s3_utils import (check_bucket, get_object, s3_client,
@@ -33,7 +34,6 @@ class S3ArtifactStore(ArtifactStore):
         super().__init__(artifact_uri, config)
 
         self.client = self._get_client()
-
         self.bucket = get_uri_netloc(self.artifact_uri)
         self._check_access_to_storage()
 
@@ -87,12 +87,10 @@ class S3ArtifactStore(ArtifactStore):
         Check access to storage.
         """
         if not check_bucket(self.client, self.bucket):
-            raise RuntimeError("No access to s3 bucket!")
+            raise StoreError("No access to s3 bucket!")
 
     def _get_client(self) -> s3_client:
         """
         Return boto client.
         """
-        if "config" not in self.config:
-            self.config["config"] = Config(signature_version='s3v4')
         return boto3.client('s3', **self.config)

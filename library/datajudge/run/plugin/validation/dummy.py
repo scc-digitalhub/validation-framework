@@ -40,7 +40,6 @@ class ValidationPluginDummy(Validation):
         """
         Do nothing.
         """
-        constraints = self.rebuild_constraints()
         return {}
 
     def rebuild_constraints(self) -> dict:

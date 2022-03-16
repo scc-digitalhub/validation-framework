@@ -134,8 +134,7 @@ class ValidationBuilderFrictionless(PluginBuilder):
 
             res_const = []
             for const in constraints:
-                if (resource.name in const.resources and
-                                const.type == "frictionless"):
+                if (resource.name in const.resources and const.type == "frictionless"):
                     res_const.append(const)
 
             base_schema = {"fields": []}

@@ -5,6 +5,7 @@ from typing import Optional
 
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils import config as cfg
+from datajudge.utils.exceptions import RunError
 from datajudge.utils.file_utils import (check_dir, get_path, make_dir,
                                         remove_files, write_json)
 
@@ -69,7 +70,7 @@ class LocalMetadataStore(MetadataStore):
         """
         if check_dir(dst):
             if init and not overwrite:
-                raise OSError("Run already exists, please use another id")
+                raise RunError("Run already exists, please use another id.")
             if init and overwrite:
                 self._artifact_count = 0
                 remove_files(dst)

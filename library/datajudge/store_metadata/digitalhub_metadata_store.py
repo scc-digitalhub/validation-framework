@@ -10,6 +10,7 @@ from requests.models import Response
 
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils import config as cfg
+from datajudge.utils.exceptions import RunError
 from datajudge.utils.rest_utils import api_post_call, api_put_call
 from datajudge.utils.uri_utils import check_url
 
@@ -70,8 +71,8 @@ class DigitalHubMetadataStore(MetadataStore):
             return
 
         if not overwrite and exist:
-            raise RuntimeError("Id already present, please change " +
-                               "it or enable overwrite.")
+            raise RunError("Id already present, please change " +
+                           "it or enable overwrite.")
 
     def log_metadata(self,
                      metadata: dict,

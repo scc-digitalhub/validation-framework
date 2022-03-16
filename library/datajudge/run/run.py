@@ -10,6 +10,7 @@ from typing import Any, List, Optional, Union
 
 from datajudge.data import BlobLog, EnvLog
 from datajudge.utils import config as cfg
+from datajudge.utils.exceptions import StoreError
 from datajudge.utils.uri_utils import get_name_from_uri
 from datajudge.utils.utils import data_listify, get_time
 
@@ -22,10 +23,7 @@ if typing.TYPE_CHECKING:
 class Run:
     """
     Run object.
-    The Run is the main interface to interact with data, metadata and
-    operational framework. With the Run, you can infer, validate and profile
-    resources, log and persist data and metadata.
-    It interacts both with the Client and the Data Resource/resources.
+    The Run is the main interface to interact with data, metadata and operational framework. With the Run, you can infer, validate and profile resources, log and persist data and metadata.
 
     Methods
     -------
@@ -176,6 +174,7 @@ class Run:
             Filename(s) for input data.
 
         """
+        self._check_artifacts_uri()
 
         # To do, basic inference metadata?
         metadata = {}
@@ -207,9 +206,7 @@ class Run:
             Optional metadata to attach on artifact.
 
         """
-        if self.run_info.run_artifacts_uri is None:
-            raise AttributeError("Please configure an artifact store.")
-
+        self._check_artifacts_uri()
         if metadata is None:
             metadata = {}
         self._client.persist_artifact(src,
@@ -225,11 +222,10 @@ class Run:
         for res in self.run_info.resources:
             if res.tmp_pth is None:
                 if isinstance(res.path, list):
-                    res.tmp_pth = [self.fetch_artifact(i, store_name=res.store)
+                    res.tmp_pth = [self.fetch_artifact(i, res.store)
                                    for i in res.path]
                 else:
-                    res.tmp_pth = self.fetch_artifact(res.path,
-                                                      store_name=res.store)
+                    res.tmp_pth = self.fetch_artifact(res.path, res.store)
 
     def fetch_artifact(self,
                        uri: str,
@@ -250,14 +246,14 @@ class Run:
         Check metadata uri existence.
         """
         if self.run_info.run_metadata_uri is None:
-            raise AttributeError("Please configure a metadata store.")
+            raise StoreError("Please configure a metadata store.")
 
     def _check_artifacts_uri(self) -> None:
         """
         Check artifact uri existence.
         """
         if self.run_info.run_artifacts_uri is None:
-            raise AttributeError("Please configure a artifact store.")
+            raise StoreError("Please configure a artifact store.")
 
     # Inference
 
