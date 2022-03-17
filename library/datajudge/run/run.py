@@ -1,29 +1,32 @@
 """
 Run module.
 """
-# pylint: disable=import-error,invalid-name,too-many-instance-attributes
 from __future__ import annotations
 
 import typing
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional
 
 from datajudge.data import BlobLog, EnvLog
 from datajudge.utils import config as cfg
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.uri_utils import get_name_from_uri
-from datajudge.utils.utils import data_listify, get_time
+from datajudge.utils.utils import get_time, listify
 
 if typing.TYPE_CHECKING:
     from datajudge.client import Client
-    from datajudge.run import RunInfo, RunHandler
+    from datajudge.run.run_handler import RunHandler
+    from datajudge.run.run_info import RunInfo
     from datajudge.utils.config import Constraint
 
 
 class Run:
     """
     Run object.
-    The Run is the main interface to interact with data, metadata and operational framework. With the Run, you can infer, validate and profile resources, log and persist data and metadata.
+    The Run is the main interface to interact with data,
+    metadata and operational framework. With the Run, you
+    can infer, validate and profile resources, log and
+    persist data and metadata.
 
     Methods
     -------
@@ -86,14 +89,14 @@ class Run:
         """
         Log run's metadata.
         """
-        metadata = self._get_blob(self.run_info.dict())
+        metadata = self._get_blob(self.run_info.to_dict())
         self._log_metadata(metadata, self._RUN_METADATA)
 
     def _log_env(self) -> None:
         """
         Log run's enviroment details.
         """
-        env_data = EnvLog().dict()
+        env_data = EnvLog().to_dict()
         metadata = self._get_blob(env_data)
         self._log_metadata(metadata, self._RUN_ENV)
 
@@ -108,7 +111,7 @@ class Run:
                        self.run_info.experiment_name,
                        self.run_info.experiment_title,
                        cfg.DATAJUDGE_VERSION,
-                       content).dict()
+                       content).to_dict()
 
     def _log_metadata(self,
                       metadata: dict,
@@ -162,31 +165,16 @@ class Run:
 
         return f"{fnm}_{self._filenames[filename]}{ext}"
 
-    def persist_data(self,
-                     data_name: Optional[Union[str, list]] = None
-                     ) -> None:
+    def persist_data(self) -> None:
         """
         Persist input data as artifact.
-
-        Parameters
-        ----------
-        data_name : str or list, default = None
-            Filename(s) for input data.
-
         """
         self._check_artifacts_uri()
-
-        # To do, basic inference metadata?
-        metadata = {}
-
-        # Data
-        data = self.fetch_data()
-        data, data_name = data_listify(data, data_name)
-        for idx, path in enumerate(data):
-            # try to infer source name if no name is passed
-            src_name = data_name[idx] if data_name[idx] is not None \
-                                      else get_name_from_uri(path)
-            self.persist_artifact(data[idx], src_name, metadata)
+        self.fetch_data()
+        for res in self.run_info.resources:
+            for path in listify(res.tmp_pth):
+                filename = get_name_from_uri(path)
+                self.persist_artifact(path, filename)
 
     def persist_artifact(self,
                          src: Any,
@@ -315,7 +303,7 @@ class Run:
         self._check_metadata_uri()
         objects = self._run_handler.get_datajudge_schema()
         for obj in objects:
-            metadata = self._get_blob(obj.dict())
+            metadata = self._get_blob(obj.to_dict())
             self._log_metadata(metadata, self._DJ_SCHEMA)
 
     def persist_schema(self) -> None:
@@ -399,7 +387,7 @@ class Run:
         self._check_metadata_uri()
         objects = self._run_handler.get_datajudge_report()
         for obj in objects:
-            metadata = self._get_blob(obj.dict())
+            metadata = self._get_blob(obj.to_dict())
             self._log_metadata(metadata, self._DJ_REPORT)
 
     def persist_report(self) -> None:
@@ -473,7 +461,7 @@ class Run:
         self._check_metadata_uri()
         objects = self._run_handler.get_datajudge_profile()
         for obj in objects:
-            metadata = self._get_blob(obj.dict())
+            metadata = self._get_blob(obj.to_dict())
             self._log_metadata(metadata, self._DJ_PROFILE)
 
     def persist_profile(self) -> None:
@@ -516,4 +504,4 @@ class Run:
     # Dunders
 
     def __repr__(self) -> str:
-        return str(self.run_info.dict())
+        return str(self.run_info.to_dict())

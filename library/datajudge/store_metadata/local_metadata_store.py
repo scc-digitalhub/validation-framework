@@ -61,8 +61,8 @@ class LocalMetadataStore(MetadataStore):
         dst = self._build_source_destination(dst, src_type)
         write_json(metadata, dst)
 
-    def _check_dst_folder(self,
-                          dst: str,
+    @staticmethod
+    def _check_dst_folder(dst: str,
                           overwrite: bool,
                           init: Optional[bool] = False) -> None:
         """
@@ -72,7 +72,6 @@ class LocalMetadataStore(MetadataStore):
             if init and not overwrite:
                 raise RunError("Run already exists, please use another id.")
             if init and overwrite:
-                self._artifact_count = 0
                 remove_files(dst)
         else:
             make_dir(dst)

@@ -1,11 +1,10 @@
 """
 Base abstract Run Plugin module.
 """
+# pylint: disable=too-many-arguments,too-few-public-methods
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from typing import Any, List
-
-import datajudge
 
 
 RenderTuple = namedtuple("RenderTuple", ("object", "filename"))
@@ -104,6 +103,9 @@ class Plugin(metaclass=ABCMeta):
 
 
 class PluginBuilder:
+    """
+    Abstract PluginBuilder class.
+    """
 
     @abstractmethod
     def build(self, *args, **kwargs) -> List[Plugin]:

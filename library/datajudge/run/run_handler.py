@@ -115,7 +115,12 @@ class RunHandler:
                 constraints: Optional[List[Constraint]] = None
                 ) -> None:
         """
-        Wrap plugins main execution method. The handler create builders to build plugins. Once the plugin are built, the handler execute the main plugin operation (inference, validation or profiling), produce a datajudge report, render the execution artifact ready to be stored and save some library infos. 
+        Wrap plugins main execution method. The handler create
+        builders to build plugins. Once the plugin are built,
+        the handler execute the main plugin operation
+        (inference, validation or profiling), produce a datajudge
+        report, render the execution artifact ready to be stored
+        and save some library infos.
         """
         if exec_args is None:
             exec_args = {}
@@ -126,7 +131,8 @@ class RunHandler:
         plugins = []
         for _, builder in builders.items():
             if operation == cfg.OP_VAL:
-                plugins.extend(builder.build(resources, exec_args, constraints))
+                plugins.extend(builder.build(resources, exec_args,
+                                             constraints))
             else:
                 plugins.extend(builder.build(resources, exec_args))
 

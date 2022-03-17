@@ -1,7 +1,7 @@
 """
 Frictionless implementation of inference plugin.
 """
-# pylint: disable=import-error
+# pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
 
 import typing

@@ -2,6 +2,7 @@
 DatajudgeSchema module.
 Implementation of a Short Schema common structure.
 """
+# pylint: disable=too-many-arguments,too-few-public-methods
 from datajudge.data.datajudge_base_report import DatajudgeBaseReport
 
 
@@ -25,7 +26,7 @@ class DatajudgeSchema(DatajudgeBaseReport):
         super().__init__(lib_name, lib_version, duration)
         self.fields = fields
 
-    def dict(self) -> dict:
+    def to_dict(self) -> dict:
         """
         Return a dictionary of inferred schema.
         """

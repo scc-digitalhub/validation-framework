@@ -1,7 +1,7 @@
 """
 Frictionless implementation of profiling plugin.
 """
-# pylint: disable=import-error,invalid-name
+# pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
 
 import typing

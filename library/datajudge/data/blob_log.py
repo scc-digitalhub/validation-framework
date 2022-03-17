@@ -41,7 +41,7 @@ class BlobLog:
         self.datajudge_version = datajudge_version
         self.contents = contents
 
-    def dict(self) -> dict:
+    def to_dict(self) -> dict:
         """
         Return a dictionary.
         """
@@ -55,4 +55,4 @@ class BlobLog:
         return run_dict
 
     def __repr__(self) -> str:
-        return str(self.dict())
+        return str(self.to_dict())

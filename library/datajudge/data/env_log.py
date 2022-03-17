@@ -29,7 +29,7 @@ class EnvLog:
         mem = virtual_memory().total
         return str(round(mem / (1024.0 ** 3)))+" GB"
 
-    def dict(self) -> dict:
+    def to_dict(self) -> dict:
         """
         Return a dictionary.
         """
@@ -43,4 +43,4 @@ class EnvLog:
         return env_data
 
     def __repr__(self) -> str:
-        return str(self.dict())
+        return str(self.to_dict())

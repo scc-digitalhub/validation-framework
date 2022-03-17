@@ -1,21 +1,16 @@
 """
-Implementation of REST metadata store designed by Digital Society Lab.
+Implementation of Dummy metadata store.
 """
-# pylint: disable=import-error
-from collections import namedtuple
 from typing import Optional
 
 from datajudge.store_metadata.metadata_store import MetadataStore
-
-
-KeyPairs = namedtuple("KeyPairs", ("run_id", "key"))
 
 
 class DummyMetadataStore(MetadataStore):
     """
     Dummy metadata store object implementation.
 
-    Allows the client to interact store methods.
+    Allows the client to interact with store methods.
 
     """
 

@@ -1,7 +1,7 @@
 """
 Pandas profiling implementation of profiling plugin.
 """
-# pylint: disable=import-error,invalid-name
+# pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods,invalid-name
 from __future__ import annotations
 
 import json

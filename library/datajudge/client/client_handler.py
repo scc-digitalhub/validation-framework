@@ -1,11 +1,10 @@
 """
 ClientHandler module.
 """
-# pylint: disable=import-error
+# pylint: disable=raise-missing-from,too-many-arguments
 from __future__ import annotations
 
 import typing
-from copy import deepcopy
 from typing import Any, List, Optional, Union
 
 from datajudge.client.store_factory import StoreBuilder
@@ -58,14 +57,14 @@ class ClientHandlerStoreRegistry:
         """
         Select default store in the store registry.
 
-        Raise if there are no store to choose from. If only one store is 
-        provided, that one is choosed as default. If multiple stores are 
+        Raise if there are no store to choose from. If only one store is
+        provided, that one is choosed as default. If multiple stores are
         provided, only one store MUST be configured as isDefault.
 
-        When you configure a client without artifact store configuration, the 
-        default store is a Dummy store. There is no option to update the 
-        default store after the client initialization, so, if you do not flag a 
-        store as default, you loose the abilty to persist artifact into a 
+        When you configure a client without artifact store configuration, the
+        default store is a Dummy store. There is no option to update the
+        default store after the client initialization, so, if you do not flag a
+        store as default, you loose the abilty to persist artifact into a
         backend.
 
         """
@@ -110,6 +109,8 @@ class ClientHandlerStoreRegistry:
                         return store["store"]
                 return None
             return self._registry[DEFAULT_STORE]["store"]
+
+        raise StoreError("Invalid store type.")
 
 
 class ClientHandler:
@@ -168,7 +169,8 @@ class ClientHandler:
             self._store_registry.register(store, STORE_TYPE_ARTIFACT)
         else:
             raise StoreError("There is already a store with that name.\
-                              Please choose another name to identify the store.")
+                              Please choose another name to identify \
+                              the store.")
 
     def add_default_store(self) -> None:
         """

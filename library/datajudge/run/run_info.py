@@ -69,7 +69,7 @@ class RunInfo:
         self.end_status = None
         self.finished = None
 
-    def dict(self) -> dict:
+    def to_dict(self) -> dict:
         """
         Return a dictionary of attributes.
         """
@@ -82,7 +82,7 @@ class RunInfo:
             "runLibraries": self.run_libraries,
             "runMetadataUri": self.run_metadata_uri,
             "runArtifactsUri": self.run_artifacts_uri,
-            "resources": [i.dict() for i in self.resources],
+            "resources": [i.to_dict() for i in self.resources],
             "created": self.created,
             "beginStatus": self.begin_status,
             "started": self.started,
@@ -92,4 +92,4 @@ class RunInfo:
         return run_dict
 
     def __repr__(self) -> str:
-        return str(self.dict())
+        return str(self.to_dict())

@@ -1,6 +1,7 @@
 """
 DataResource module.
 """
+# pylint: disable=too-many-arguments,too-few-public-methods
 from typing import Optional, Union
 
 
@@ -45,7 +46,7 @@ class DataResource:
         self.description = description
         self.tmp_pth = None
 
-    def dict(self) -> dict:
+    def to_dict(self) -> dict:
         """
         Return dictionary of non null values.
         """
@@ -60,4 +61,4 @@ class DataResource:
         return data
 
     def __repr__(self) -> str:
-        return str(self.dict())
+        return str(self.to_dict())

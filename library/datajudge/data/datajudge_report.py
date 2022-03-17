@@ -2,7 +2,7 @@
 DatajudgeReport module.
 Implementation of a Short Report common structure.
 """
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments,too-few-public-methods
 from typing import List, Mapping
 
 from datajudge.data.datajudge_base_report import DatajudgeBaseReport
@@ -37,7 +37,7 @@ class DatajudgeReport(DatajudgeBaseReport):
         self.valid = valid
         self.errors = errors
 
-    def dict(self) -> dict:
+    def to_dict(self) -> dict:
         """
         Return a dictionary of the attributes.
         """

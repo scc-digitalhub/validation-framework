@@ -2,6 +2,7 @@
 Exceptions module.
 """
 
+
 class DatajudgeError(Exception):
     """
     Base class for datajudge exception.

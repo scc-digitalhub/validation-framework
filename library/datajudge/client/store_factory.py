@@ -3,6 +3,7 @@ Factories module.
 Contains registries of Stores and Runs and respective
 factory methods.
 """
+# pylint: disable=raise-missing-from
 from typing import Union
 
 from datajudge.store_artifact import (AzureArtifactStore, DummyArtifactStore,
@@ -10,8 +11,7 @@ from datajudge.store_artifact import (AzureArtifactStore, DummyArtifactStore,
                                       LocalArtifactStore, S3ArtifactStore)
 from datajudge.store_metadata import (DigitalHubMetadataStore,
                                       DummyMetadataStore, LocalMetadataStore)
-from datajudge.utils import config as cfg
-from datajudge.utils.config import StoreConfig
+from datajudge.utils.config import API_BASE, StoreConfig
 from datajudge.utils.file_utils import get_absolute_path
 from datajudge.utils.uri_utils import check_url, get_uri_scheme, rebuild_uri
 
@@ -48,17 +48,25 @@ ARTIFACT_STORE_REGISTRY = {
 
 
 class StoreBuilder:
+    """
+    StoreBuilder class.
+
+    In the library workflow, it's associated with
+    a client and a project. It builds stores for a
+    specific client.
+
+    """
 
     def __init__(self, project_id: str) -> None:
         self.project_id = project_id
 
     def build(self,
-              cfg: Union[dict, StoreConfig],
+              config: Union[dict, StoreConfig],
               md_store: bool = False) -> dict:
         """
         Generic build method.
         """
-        cfg = self.cfg_conversion(cfg)
+        cfg = self.cfg_conversion(config)
         scheme = get_uri_scheme(cfg.uri)
         if md_store:
             return self.build_metadata_store(cfg, scheme)
@@ -90,7 +98,7 @@ class StoreBuilder:
         if scheme in [*LOCAL_SCHEME]:
             return get_absolute_path(uri, "metadata")
         if scheme in [*HTTP_SCHEME]:
-            url = uri + cfg.API_BASE + project_name
+            url = uri + API_BASE + project_name
             return check_url(url)
         if scheme in [*DUMMY_SCHEME]:
             return uri

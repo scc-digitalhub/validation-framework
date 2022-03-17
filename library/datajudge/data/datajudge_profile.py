@@ -1,16 +1,15 @@
 """
 DatajudgeProfile module.
-Implementation of a Short Profile common structure.
 """
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments,too-few-public-methods
 from datajudge.data.datajudge_base_report import DatajudgeBaseReport
 
 
 class DatajudgeProfile(DatajudgeBaseReport):
     """
     DatajudgeProfile object consisting in a succint
-    version of an inferred data profile produced
-    by some profiling framework.
+    version of an inferred data profile produced by
+    some profiling framework.
 
     Attributes
     ----------
@@ -30,7 +29,7 @@ class DatajudgeProfile(DatajudgeBaseReport):
         self.stats = stats
         self.fields = fields
 
-    def dict(self) -> dict:
+    def to_dict(self) -> dict:
         """
         Return a dictionary of inferred schema.
         """

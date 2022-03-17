@@ -1,14 +1,15 @@
 """
 Dummy implementation of validation plugin.
 """
-# pylint: disable=import-error,invalid-name
+# pylint: disable=arguments-differ,too-few-public-methods
 from __future__ import annotations
 
 import typing
-from typing import Any, List
+from typing import List
 
 from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationResult
+from datajudge.run.plugin.validation.validation_plugin import (
+    Validation, ValidationResult)
 
 if typing.TYPE_CHECKING:
     from datajudge import DataResource

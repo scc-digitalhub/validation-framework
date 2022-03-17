@@ -1,6 +1,7 @@
 """
 Dummy implementation of inference plugin.
 """
+# pylint: disable=arguments-differ,too-few-public-methods
 from __future__ import annotations
 
 import typing

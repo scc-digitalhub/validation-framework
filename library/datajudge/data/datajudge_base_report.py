@@ -1,3 +1,7 @@
+"""
+Datajudge base report module.
+"""
+# pylint: disable=too-many-arguments,too-few-public-methods
 from abc import ABCMeta, abstractmethod
 
 
@@ -31,10 +35,10 @@ class DatajudgeBaseReport(metaclass=ABCMeta):
         self.duration = duration
 
     @abstractmethod
-    def dict(self) -> dict:
+    def to_dict(self) -> dict:
         """
         Return a dictionary of the instance.
         """
 
     def __repr__(self) -> str:
-        return str(self.dict())
+        return str(self.to_dict())

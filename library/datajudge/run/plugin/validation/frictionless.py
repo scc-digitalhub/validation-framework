@@ -1,18 +1,19 @@
 """
 Frictionless implementation of validation plugin.
 """
-# pylint: disable=import-error,invalid-name
+# pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
-from copy import deepcopy
 
 import typing
+from copy import deepcopy
 from typing import List
 
 import frictionless
 from frictionless import Report, Resource, Schema
 
 from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationResult
+from datajudge.run.plugin.validation.validation_plugin import (
+    Validation, ValidationResult)
 
 if typing.TYPE_CHECKING:
     from datajudge import DataResource
@@ -134,7 +135,8 @@ class ValidationBuilderFrictionless(PluginBuilder):
 
             res_const = []
             for const in constraints:
-                if (resource.name in const.resources and const.type == "frictionless"):
+                if (resource.name in const.resources
+                        and const.type == "frictionless"):
                     res_const.append(const)
 
             base_schema = {"fields": []}
@@ -146,7 +148,9 @@ class ValidationBuilderFrictionless(PluginBuilder):
 
             for const in res_const:
                 plugin = ValidationPluginFrictionless()
-                plugin.setup(resource, (const, deepcopy(base_schema)), exec_args)
+                plugin.setup(resource,
+                             (const, deepcopy(base_schema)),
+                             exec_args)
                 plugins.append(plugin)
 
         return plugins

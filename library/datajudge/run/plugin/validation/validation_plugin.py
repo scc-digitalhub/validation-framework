@@ -1,7 +1,7 @@
 """
 Validation plugin abstract class module.
 """
-# pylint: disable=import-error,invalid-name
+# pylint: disable=too-few-public-methods
 import time
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
@@ -11,7 +11,8 @@ from datajudge.data.datajudge_report import DatajudgeReport
 from datajudge.run.plugin.base_plugin import Plugin, Result
 
 
-ReportTuple = namedtuple("ReportTuple", ("time", "constraint", "valid", "errors"))
+ReportTuple = namedtuple("ReportTuple", ("time", "constraint",
+                                         "valid", "errors"))
 
 
 class ValidationResult(Result):
@@ -21,9 +22,9 @@ class ValidationResult(Result):
     def __init__(self,
                  artifact: Any = None,
                  status: str = None,
-                 time: float = None,
+                 exec_time: float = None,
                  constraint: dict = None) -> None:
-        super().__init__(artifact, status, time)
+        super().__init__(artifact, status, exec_time)
         self.constraint = constraint
 
 
@@ -83,11 +84,11 @@ class Validation(Plugin, metaclass=ABCMeta):
                                parsed.errors)
 
     @staticmethod
-    def get_report_tuple(time: float,
+    def get_report_tuple(exec_time: float,
                          constraint: dict,
                          valid: bool,
                          errors: list) -> ReportTuple:
         """
         Return ReportTuple.
         """
-        return ReportTuple(time, constraint, valid, errors)
+        return ReportTuple(exec_time, constraint, valid, errors)
