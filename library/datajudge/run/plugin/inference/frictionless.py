@@ -11,13 +11,13 @@ import frictionless
 from frictionless import describe_schema
 from frictionless.schema import Schema
 
+from datajudge.data import DatajudgeSchema
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.inference.inference_plugin import Inference
+from datajudge.utils.utils import exec_decorator
 
 if typing.TYPE_CHECKING:
-    from datajudge import DataResource
-    from datajudge.run.plugin.base_plugin import Result
-    from datajudge.run.plugin.inference.inference_plugin import SchemaTuple
+    from datajudge.data.data_resource import DataResource
 
 
 class InferencePluginFrictionless(Inference):
@@ -39,6 +39,7 @@ class InferencePluginFrictionless(Inference):
         self.resource = resource
         self.exec_args = exec_args
 
+    @exec_decorator
     def infer(self) -> Schema:
         """
         Method that call infer on a resource and return an
@@ -48,14 +49,14 @@ class InferencePluginFrictionless(Inference):
                                name=self.resource.name,
                                **self.exec_args)
 
-    def produce_schema(self,
-                       obj: Result) -> List[SchemaTuple]:
+    @exec_decorator
+    def render_datajudge(self) -> DatajudgeSchema:
         """
-        Method that produce a datajudge schema.
+        Return a DatajudgeSchema.
         """
 
-        field_infer = obj.artifact.get("fields", [])
-        duration = obj.time
+        field_infer = self.result.artifact.get("fields", [])
+        duration = self.result.execution_time
 
         dj_schema_fields = []
         if field_infer:
@@ -67,14 +68,18 @@ class InferencePluginFrictionless(Inference):
         else:
             dj_schema_fields = [{"name": None, "type": None}]
 
-        return self.get_schema_tuple(duration, dj_schema_fields)
+        return DatajudgeSchema(self.get_lib_name(),
+                               self.get_lib_version(),
+                               duration,
+                               dj_schema_fields)
 
-    def render_artifact(self, obj: Schema) -> List[tuple]:
+    @exec_decorator
+    def render_artifact(self) -> List[tuple]:
         """
         Return a frictionless schema to be persisted as artifact.
         """
         artifacts = []
-        schema = dict(obj)
+        schema = dict(self.result.artifact)
         filename = self._fn_schema.format("frictionless.json")
         artifacts.append(self.get_render_tuple(schema, filename))
         return artifacts
@@ -100,16 +105,14 @@ class InferenceBuilderFrictionless(PluginBuilder):
     """
 
     def build(self,
-              package: list,
-              exec_args: dict,
-              *args) -> InferencePluginFrictionless:
+              resources: list
+              ) -> InferencePluginFrictionless:
         """
         Build a plugin.
         """
         plugins = []
-        for resource in package:
+        for resource in resources:
             plugin = InferencePluginFrictionless()
-            plugin.setup(resource,
-                         exec_args)
+            plugin.setup(resource, self.exec_args)
             plugins.append(plugin)
         return plugins

@@ -4,20 +4,33 @@ Run handler module.
 from __future__ import annotations
 
 import typing
-from typing import Any, List, Optional
+from typing import Any, List, Union
+from datajudge.data.datajudge_profile import DatajudgeProfile
+from datajudge.data.datajudge_report import DatajudgeReport
+from datajudge.data.datajudge_schema import DatajudgeSchema
 
 from datajudge.run.plugin.plugin_factory import get_builder
 from datajudge.utils import config as cfg
+from datajudge.utils.utils import flatten_list
 
 if typing.TYPE_CHECKING:
-    from datajudge import DataResource
+    from datajudge.data.data_resource import DataResource
+    from datajudge.run.plugin.base_plugin import Plugin, Result
     from datajudge.utils.config import RunConfig, Constraint
 
+
+# Objects
 
 OBJ_RES = "results"
 OBJ_REP = "dj_reports"
 OBJ_ART = "rendered_artifacts"
 OBJ_LIB = "libraries"
+
+# Operations
+
+_INF = cfg.OP_INF
+_VAL = cfg.OP_VAL
+_PRO = cfg.OP_PRO
 
 
 class RunHandlerRegistry:
@@ -33,34 +46,28 @@ class RunHandlerRegistry:
         """
         Setup the run handler registry.
         """
-        for ops in [cfg.OP_VAL, cfg.OP_PRO, cfg.OP_INF]:
-            self.registry[ops] = {
-                OBJ_RES: [],
-                OBJ_REP: [],
-                OBJ_ART: [],
-                OBJ_LIB: []
-            }
+        for operation in [_INF, _VAL, _PRO]:
+            self.registry[operation] = []
 
     def register(self,
-                 ops: str,
-                 obj_typ: str,
-                 _object: Any) -> None:
+                 operation: str,
+                 _object: Union[Result, List[Result]]
+                 ) -> None:
         """
         Register an object on the registry.
         """
         if isinstance(_object, list):
-            self.registry[ops][obj_typ].extend(_object)
+            self.registry[operation].extend(_object)
         else:
-            self.registry[ops][obj_typ].append(_object)
+            self.registry[operation].append(_object)
 
     def get_object(self,
-                   ops: str,
-                   obj_typ: str) -> List[Any]:
+                   operation: str) -> List[Result]:
         """
         Return object from registry.
         """
         try:
-            return self.registry[ops][obj_typ]
+            return self.registry[operation]
         except KeyError:
             return []
 
@@ -80,39 +87,36 @@ class RunHandler:
         self._config = config
         self._registry = RunHandlerRegistry()
 
-    def infer(self,
-              resources: List[DataResource],
-              exec_args: Optional[dict] = None
-              ) -> list:
+    def infer(self, resources: List[DataResource]) -> None:
         """
         Wrapper for plugins infer methods.
         """
-        self.execute(cfg.OP_INF, resources, exec_args)
+        builders = get_builder(self._config.inference, _INF)
+        plugins = [builder.build(resources) for builder in builders]
+        self.execute(plugins, _INF)
 
     def validate(self,
                  resources: List[DataResource],
-                 constraints: List[Constraint],
-                 exec_args: Optional[dict] = None
-                 ) -> list:
+                 constraints: List[Constraint]
+                 ) -> None:
         """
         Wrapper for plugins validate methods.
         """
-        self.execute(cfg.OP_VAL, resources, exec_args, constraints)
+        builders = get_builder(self._config.validation, _VAL)
+        plugins = [builder.build(resources, constraints) for builder in builders]
+        self.execute(plugins, _VAL)
 
-    def profile(self,
-                resources: List[DataResource],
-                exec_args: Optional[dict] = None
-                ) -> None:
+    def profile(self, resources: List[DataResource]) -> None:
         """
         Wrapper for plugins profile methods.
         """
-        self.execute(cfg.OP_PRO, resources, exec_args)
+        builders = get_builder(self._config.profiling, _PRO)
+        plugins = [builder.build(resources) for builder in builders]
+        self.execute(plugins, _PRO)
 
     def execute(self,
+                plugins: List[List[Plugin]],
                 operation: str,
-                resources: List[DataResource],
-                exec_args: Optional[dict] = None,
-                constraints: Optional[List[Constraint]] = None
                 ) -> None:
         """
         Wrap plugins main execution method. The handler create
@@ -122,89 +126,76 @@ class RunHandler:
         report, render the execution artifact ready to be stored
         and save some library infos.
         """
-        if exec_args is None:
-            exec_args = {}
-
-        builder_cfg = self._config.dict().get(operation)
-        builders = get_builder(builder_cfg, operation)
-
-        plugins = []
-        for _, builder in builders.items():
-            if operation == cfg.OP_VAL:
-                plugins.extend(builder.build(resources, exec_args,
-                                             constraints))
-            else:
-                plugins.extend(builder.build(resources, exec_args))
-
-        for plugin in plugins:
+        for plugin in flatten_list(plugins):
             result = plugin.execute()
-            self._registry.register(operation, OBJ_RES, result)
+            self.register_results(operation, result)
 
-            dj_report = plugin.render_datajudge(result)
-            self._registry.register(operation, OBJ_REP, dj_report)
+    def register_results(self,
+                         operation: str,
+                         result: Result,
+                         ) -> None:
+        """
+        Register results.
+        """
+        self._registry.register(operation, result)
 
-            rendered_artifact = plugin.render_artifact(result.artifact)
-            self._registry.register(operation, OBJ_ART, rendered_artifact)
-
-            libraries = plugin.get_library()
-            self._registry.register(operation, OBJ_LIB, libraries)
-
-    def get_item(self, ops: str, obj_type: str) -> list:
+    def get_item(self, operation: str) -> List[Any]:
         """
         Get item from registry.
         """
-        return self._registry.get_object(ops, obj_type)
+        return self._registry.get_object(operation)
 
-    def get_result_schema(self) -> list:
+    def get_artifact_schema(self) -> List[Any]:
         """
-        Render a list of schemas to be persisted.
+        Get a list of schemas produced by inference libraries.
         """
-        return [obj.artifact for obj in self.get_item(cfg.OP_INF, OBJ_RES)]
+        return [obj.artifact for obj in self.get_item(_INF)]
 
-    def get_result_report(self) -> list:
+    def get_artifact_report(self) -> List[Any]:
         """
-        Render a list of reports to be persisted.
+        Get a list of reports produced by validation libraries.
         """
-        return [obj.artifact for obj in self.get_item(cfg.OP_VAL, OBJ_RES)]
+        return [obj.artifact for obj in self.get_item(_VAL)]
 
-    def get_result_profile(self) -> list:
+    def get_artifact_profile(self) -> List[Any]:
         """
-        Render a list of profiles to be persisted.
+        Get a list of profiles produced by profiling libraries.
         """
-        return [obj.artifact for obj in self.get_item(cfg.OP_PRO, OBJ_RES)]
+        return [obj.artifact for obj in self.get_item(_PRO)]
 
-    def get_datajudge_schema(self) -> list:
+    def get_datajudge_schema(self) -> List[DatajudgeSchema]:
         """
         Wrapper for plugins parsing methods.
         """
-        return self.get_item(cfg.OP_INF, OBJ_REP)
+        return [obj.datajudge_artifact for obj in self.get_item(_INF)]
 
-    def get_datajudge_report(self) -> list:
+    def get_datajudge_report(self) -> List[DatajudgeReport]:
         """
         Wrapper for plugins parsing methods.
         """
-        return self.get_item(cfg.OP_VAL, OBJ_REP)
+        return [obj.datajudge_artifact for obj in self.get_item(_VAL)]
 
-    def get_datajudge_profile(self) -> list:
+    def get_datajudge_profile(self) -> List[DatajudgeProfile]:
         """
         Wrapper for plugins parsing methods.
         """
-        return self.get_item(cfg.OP_PRO, OBJ_REP)
+        return [obj.datajudge_artifact for obj in self.get_item(_PRO)]
 
-    def get_artifact_schema(self) -> list:
+    def get_rendered_schema(self) -> List[Any]:
         """
-        Render a list of schemas to be persisted.
+        Get a list of schemas ready to be persisted.
         """
-        return self.get_item(cfg.OP_INF, OBJ_ART)
+        return flatten_list([obj.rendered_artifact for obj in self.get_item(_INF)])
 
-    def get_artifact_report(self) -> list:
+    def get_rendered_report(self) -> List[Any]:
         """
-        Render a list of reports to be persisted.
+        Get a list of reports ready to be persisted.
         """
-        return self.get_item(cfg.OP_VAL, OBJ_ART)
+        return flatten_list([obj.rendered_artifact for obj in self.get_item(_VAL)])
 
-    def get_artifact_profile(self) -> list:
+    def get_rendered_profile(self) -> List[Any]:
         """
-        Render a list of profiles to be persisted.
+        Get a list of profiles ready to be persisted.
         """
-        return self.get_item(cfg.OP_PRO, OBJ_ART)
+        return flatten_list([obj.rendered_artifact for obj in self.get_item(_PRO)])
+

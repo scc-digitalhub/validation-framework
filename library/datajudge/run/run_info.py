@@ -23,8 +23,6 @@ class RunInfo:
     ----------
     experiment_name : str
         Id of the experiment.
-    experiment_title : str
-        Name of the experiment.
     run_id : str
         Run id.
     run_type: str
@@ -44,17 +42,15 @@ class RunInfo:
     """
 
     def __init__(self,
-                 experiment_title: str,
                  experiment_name: str,
                  resources: List[DataResource],
                  run_id: str,
                  run_config: RunConfig,
                  run_metadata_uri: Optional[str] = None,
-                 run_artifacts_uri: Optional[str] = None) -> None:
+                 run_artifacts_uri: Optional[str] = None
+                 ) -> None:
 
-        self.experiment_title = experiment_title
         self.experiment_name = experiment_name
-
         self.run_id = run_id
         self.run_config = run_config
         self.run_libraries = None
@@ -74,7 +70,6 @@ class RunInfo:
         Return a dictionary of attributes.
         """
         run_dict = {
-            "experimentTitle": self.experiment_title,
             "experimentName": self.experiment_name,
             "runId": self.run_id,
             "runConfig": self.run_config.dict(exclude_none=True,

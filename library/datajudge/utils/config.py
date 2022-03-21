@@ -2,10 +2,11 @@
 Configuration for filenames, endpoints, etc.
 """
 # pylint: disable=too-few-public-methods,import-error,missing-class-docstring
-from typing import Any, List, Optional, Union
+from uuid import uuid4
+from typing import Any, List, Optional
 from typing_extensions import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class StoreConfig(BaseModel):
@@ -17,6 +18,7 @@ class StoreConfig(BaseModel):
 
 
 class Constraint(BaseModel):
+    _id: str = Field(default_factory=uuid4)
     name: str
     title: str
     resources: List[str]
@@ -37,17 +39,22 @@ class ConstraintsDatajudge(Constraint):
     expect: str
 
 
-class ExecutionConfig(BaseModel):
-    enabled: bool = False
-    library: Optional[Union[str, List[str]]] = None
-    exec_args: Optional[dict] = None
+class ExecConfig(BaseModel):
+    _id: str = Field(default_factory=uuid4)
+    library: Optional[str] = "_dummy"
+    exec_args: Optional[dict] = {}
+    store_artifact: bool = False
+
+
+class OpsConfig(BaseModel):
+    enabled: bool = True
+    config: Optional[List[ExecConfig]] = [ExecConfig()]
 
 
 class RunConfig(BaseModel):
-    validation: Optional[ExecutionConfig] = ExecutionConfig()
-    inference: Optional[ExecutionConfig] = ExecutionConfig()
-    profiling: Optional[ExecutionConfig] = ExecutionConfig()
-    snapshot: Optional[ExecutionConfig] = ExecutionConfig()
+    validation: Optional[OpsConfig] = OpsConfig()
+    inference: Optional[OpsConfig] = OpsConfig()
+    profiling: Optional[OpsConfig] = OpsConfig()
 
 
 # Datajudge version
@@ -82,3 +89,10 @@ MT_RUN_ENV = "run_env"
 OP_INF = "inference"
 OP_PRO = "profiling"
 OP_VAL = "validation"
+
+# Execution status
+STATUS_INIT = "created"
+STATUS_RUNNING = "executing"
+STATUS_INTERRUPTED = "interrupdted"
+STATUS_FINISHED = "finished"
+STATUS_ERROR = "error"

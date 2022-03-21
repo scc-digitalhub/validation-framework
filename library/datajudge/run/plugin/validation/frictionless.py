@@ -9,14 +9,18 @@ from copy import deepcopy
 from typing import List
 
 import frictionless
-from frictionless import Report, Resource, Schema
+from frictionless import Report, Resource, Schema, describe_schema
 
+from datajudge.data.datajudge_report import DatajudgeReport
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationResult)
+from datajudge.utils.config import STATUS_INIT
+from datajudge.utils.utils import exec_decorator
 
 if typing.TYPE_CHECKING:
-    from datajudge import DataResource
+    from datajudge.data.data_resource import DataResource
+    from datajudge.utils.config import Constraint
 
 
 class ValidationPluginFrictionless(Validation):
@@ -28,23 +32,22 @@ class ValidationPluginFrictionless(Validation):
         super().__init__()
         self.resource = None
         self.constraint = None
-        self.base_schema = None
         self.exec_args = None
 
     def setup(self,
               resource: DataResource,
-              constraint: tuple,
+              constraint: Constraint,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
         self.resource = resource
-        self.constraint = constraint[0]
-        self.base_schema = constraint[1]
+        self.constraint = constraint
         self.exec_args = exec_args
-        self.result = ValidationResult(status=self._STATUS_INIT,
+        self.result = ValidationResult(status=STATUS_INIT,
                                        constraint=self.constraint)
 
+    @exec_decorator
     def validate(self) -> Report:
         """
         Validate a Data Resource.
@@ -65,8 +68,10 @@ class ValidationPluginFrictionless(Validation):
         con_type = self.constraint.constraint
         severity = self.constraint.severity
 
-        for field in self.base_schema["fields"]:
-            if field.get("name") == field_name:
+        schema = deepcopy(self.resource.schema)
+
+        for field in schema["fields"]:
+            if field["name"] == field_name:
                 field["error"] = {"severity": severity}
                 if con_type == "type":
                     field["type"] = field_type
@@ -78,28 +83,35 @@ class ValidationPluginFrictionless(Validation):
                     field["constraints"] = {con_type: val}
                 break
 
-        return Schema(self.base_schema)
+        return Schema(schema)
 
-    def produce_report(self,
-                       obj: ValidationResult) -> tuple:
+    @exec_decorator
+    def render_datajudge(self) -> DatajudgeReport:
         """
-        Parse the report produced by frictionless.
+        Return a DatajudgeReport.
         """
-        report = obj.artifact
-        constraint = obj.constraint.dict()
+        report = self.result.artifact
+        constraint = self.result.constraint.dict()
         duration = report.get("time")
         valid = report.get("valid")
         spec = ["fieldName", "rowNumber", "code", "note", "description"]
         flat_report = report.flatten(spec=spec)
         errors = [dict(zip(spec, err)) for err in flat_report]
-        return self.get_report_tuple(duration, constraint, valid, errors)
 
-    def render_artifact(self, obj: Report) -> List[tuple]:
+        return DatajudgeReport(self.get_lib_name(),
+                               self.get_lib_version(),
+                               duration,
+                               constraint,
+                               valid,
+                               errors)
+
+    @exec_decorator
+    def render_artifact(self) -> List[tuple]:
         """
         Return a rendered report ready to be persisted as artifact.
         """
         artifacts = []
-        report = dict(obj)
+        report = dict(self.result.artifact)
         filename = self._fn_report.format("frictionless.json")
         artifacts.append(self.get_render_tuple(report, filename))
         return artifacts
@@ -124,33 +136,28 @@ class ValidationBuilderFrictionless(PluginBuilder):
     Validation plugin builder.
     """
     def build(self,
-              package: list,
-              exec_args: dict,
+              resources: List[DataResource],
               constraints: list) -> ValidationPluginFrictionless:
         """
         Build a plugin for every resource and every constraint.
         """
         plugins = []
-        for resource in package:
+        for resource in resources:
+            if resource.schema is None:
+                resource.schema = self._infer_schema(resource.tmp_pth)
 
-            res_const = []
             for const in constraints:
-                if (resource.name in const.resources
-                        and const.type == "frictionless"):
-                    res_const.append(const)
-
-            base_schema = {"fields": []}
-            field_list = []
-            for const in res_const:
-                if const.field not in field_list:
-                    field_list.append(const.field)
-                    base_schema["fields"].append({"name": const.field})
-
-            for const in res_const:
-                plugin = ValidationPluginFrictionless()
-                plugin.setup(resource,
-                             (const, deepcopy(base_schema)),
-                             exec_args)
-                plugins.append(plugin)
+                if resource.name in const.resources and \
+                   const.type == "frictionless":
+                    plugin = ValidationPluginFrictionless()
+                    plugin.setup(resource, const, self.exec_args)
+                    plugins.append(plugin)
 
         return plugins
+
+    def _infer_schema(self, path: str) -> dict:
+        """
+        Infer schema of a resource.
+        """
+        schema = describe_schema(path=path)
+        return {"fields": [{"name": field["name"]} for field in schema["fields"]]}

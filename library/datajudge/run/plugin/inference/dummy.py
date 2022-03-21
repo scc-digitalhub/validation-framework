@@ -7,13 +7,13 @@ from __future__ import annotations
 import typing
 from typing import List
 
+from datajudge.data import DatajudgeSchema
 from datajudge.run.plugin.inference.inference_plugin import Inference
 from datajudge.run.plugin.base_plugin import PluginBuilder
+from datajudge.utils.utils import exec_decorator
 
 if typing.TYPE_CHECKING:
-    from datajudge import DataResource
-    from datajudge.run.plugin.base_plugin import Result
-    from datajudge.run.plugin.inference.inference_plugin import SchemaTuple
+    from datajudge.data.data_resource import DataResource
 
 
 class InferencePluginDummy(Inference):
@@ -35,24 +35,30 @@ class InferencePluginDummy(Inference):
         self.resource = resource
         self.exec_args = exec_args
 
+    @exec_decorator
     def infer(self) -> dict:
         """
         Do nothing.
         """
         return {}
 
-    def produce_schema(self, obj: Result) -> List[SchemaTuple]:
+    @exec_decorator
+    def render_datajudge(self) -> DatajudgeSchema:
         """
-        Do nothing.
+        Return a DatajudgeSchema.
         """
-        return [self.get_schema_tuple(None, None)]
+        return DatajudgeSchema(self.get_lib_name(),
+                               self.get_lib_version(),
+                               None,
+                               None)
 
-    def render_artifact(self, obj: dict) -> List[tuple]:
+    @exec_decorator
+    def render_artifact(self) -> List[tuple]:
         """
         Return a dummy schema to be persisted as artifact.
         """
         artifacts = []
-        schema = obj
+        schema = self.result.artifact
         filename = self._fn_schema.format("dummy.json")
         artifacts.append(self.get_render_tuple(schema, filename))
         return artifacts
@@ -77,15 +83,14 @@ class InferenceBuilderDummy(PluginBuilder):
     Inference plugin builder.
     """
     def build(self,
-              package: list,
-              exec_args: dict,
-              *args) -> InferencePluginDummy:
+              resources: list
+              ) -> InferencePluginDummy:
         """
         Build a plugin.
         """
         plugins = []
-        for resource in package:
+        for resource in resources:
             plugin = InferencePluginDummy()
-            plugin.setup(resource, exec_args)
+            plugin.setup(resource, self.exec_args)
             plugins.append(plugin)
         return plugins

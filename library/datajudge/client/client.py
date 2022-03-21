@@ -24,7 +24,7 @@ class Client:
     The Client is a public interface that exposes methods to interact
     with storages and create runs.
 
-    The Client has an handler that registers the stores used in the
+    The Client has an handler that registers the stores used in runs and
     experiments.
 
     Methods
@@ -43,49 +43,48 @@ class Client:
     """
 
     def __init__(self,
-                 metadata_store_config: Optional[List[StoreConfig]] = None,
-                 store_configs: Optional[List[StoreConfig]] = None,
-                 project_name: Optional[str] = "project",
+                 metadata_store: Optional[List[StoreConfig]] = None,
+                 store: Optional[List[StoreConfig]] = None,
+                 project: Optional[str] = "project",
                  tmp_dir: Optional[str] = "./djruns/tmp"
                  ) -> None:
         """
-        Client constructor.
+        Client constructor. Parameters are passed to a ClientHandler
+        constructor that manages Client opration.
 
         Parameters
         ----------
-        metadata_store_config : StoreConfig or dict or list, default = None
+        metadata_store : StoreConfig or dict or list, default = None
             Dictionary containing configuration for the store.
-        stores_config : StoreConfig or dict or list, default = None
+        store : StoreConfig or dict or list, default = None
             Dictionary containing configuration for the store.
-        project_name : str
+        project : str
             The id of the project, needed for the rest metadata store.
         tmp_dir : str
             Default temporary folder where to download data.
 
         """
-        self._client_handler = ClientHandler(metadata_store_config,
-                                             store_configs,
-                                             project_name,
+        self._client_handler = ClientHandler(metadata_store,
+                                             store,
+                                             project,
                                              tmp_dir)
 
-    def add_store(self,
-                  config: Union[StoreConfig, dict]
-                  ) -> None:
+    def add_store(self, store: StoreConfig) -> None:
         """
         Add a new store to the client internal registry.
 
         Parameters
         ----------
-        config: StoreConfig or dict
+        store: StoreConfig
             Store configuration.
 
         """
-        self._client_handler.add_artifact_store(config)
+        self._client_handler.add_artifact_store(store)
 
     def create_run(self,
                    resources: Union[List[DataResource], DataResource],
                    run_config: RunConfig,
-                   experiment_title: Optional[str] = "experiment",
+                   experiment: Optional[str] = "experiment",
                    run_id: Optional[str] = None,
                    overwrite: Optional[bool] = False) -> Run:
         """
@@ -93,8 +92,8 @@ class Client:
 
         Parameters
         ----------
-        experiment_title : str
-            Experiment title. An experiment is a logical unit for ordinate
+        experiment : str
+            Experiment name. An experiment is a logical unit for ordinate
             runs made on a Data Package/Data Resource.
         data_resource : DataResource
             A DataResource object.
@@ -114,7 +113,7 @@ class Client:
         """
         return self._client_handler.create_run(resources,
                                                run_config,
-                                               experiment_title,
+                                               experiment,
                                                run_id,
                                                overwrite)
 
@@ -174,12 +173,13 @@ class Client:
         uri : str
             URI of artifact to fetch.
         store_name : str, default = None
-            Store name where to fetch an artifact.
+            Store name where to fetch an artifact. If no name
+            is passed, the client uses the default store.
 
         Returns
         -------
         str :
-            Path to temp file.
+            Local path to fetched artifact.
 
         """
         return self._client_handler.fetch_artifact(uri, store_name)

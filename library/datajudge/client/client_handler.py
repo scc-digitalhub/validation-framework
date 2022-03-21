@@ -13,7 +13,7 @@ from datajudge.run import Run, RunHandler, RunInfo
 from datajudge.utils.config import RunConfig, StoreConfig
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.file_utils import clean_all
-from datajudge.utils.utils import get_slug, get_uiid, listify
+from datajudge.utils.utils import get_uiid, listify
 
 if typing.TYPE_CHECKING:
     from datajudge.store_artifact.artifact_store import ArtifactStore
@@ -95,7 +95,7 @@ class ClientHandlerStoreRegistry:
 
     def get_store(self,
                   store_type: str,
-                  name: Optional[str] = None) -> Any:
+                  store_name: Optional[str] = None) -> Any:
         """
         Return a store from registry.
         """
@@ -103,9 +103,9 @@ class ClientHandlerStoreRegistry:
             return self._registry[store_type]["store"]
 
         if store_type == STORE_TYPE_ARTIFACT:
-            if name is not None:
+            if store_name is not None:
                 for store in self._registry[store_type]:
-                    if name == store.get("name"):
+                    if store_name == store.get("name"):
                         return store["store"]
                 return None
             return self._registry[DEFAULT_STORE]["store"]
@@ -121,20 +121,20 @@ class ClientHandler:
 
     """
     def __init__(self,
-                 md_store_config: Optional[StoreConfig] = None,
-                 art_store_configs: Optional[List[StoreConfig]] = None,
-                 project_name: Optional[str] = "project",
+                 metadata_store: Optional[StoreConfig] = None,
+                 store: Optional[List[StoreConfig]] = None,
+                 project: Optional[str] = "project",
                  tmp_dir: Optional[str] = "./djruns/tmp") -> None:
 
         self._store_registry = ClientHandlerStoreRegistry()
-        self._store_builder = StoreBuilder(project_name)
-        self.setup(md_store_config, art_store_configs)
+        self._store_builder = StoreBuilder(project)
+        self.setup(metadata_store, store)
 
         self._tmp_dir = tmp_dir
 
     def setup(self,
-              md_cfg: Optional[StoreConfig] = None,
-              art_cfg: Optional[List[StoreConfig]] = None
+              metadata_store: Optional[StoreConfig] = None,
+              store: Optional[List[StoreConfig]] = None
               ) -> None:
         """
         Build stores according to configurations provided
@@ -142,10 +142,10 @@ class ClientHandler:
         """
 
         # Build metadata store
-        self.add_metadata_store(md_cfg)
+        self.add_metadata_store(metadata_store)
 
         # Build artifact stores
-        for cfg in listify(art_cfg):
+        for cfg in listify(store):
             self.add_artifact_store(cfg)
 
         # Register default store
@@ -256,23 +256,21 @@ class ClientHandler:
     def create_run(self,
                    resources: Union[List[DataResource], DataResource],
                    run_config: RunConfig,
-                   experiment_title: Optional[str] = "experiment",
+                   experiment: Optional[str] = "experiment",
                    run_id: Optional[str] = None,
                    overwrite: Optional[bool] = False) -> Run:
         """
         Create a new run.
         """
         resources = listify(resources)
-        experiment_name = get_slug(experiment_title)
         run_id = get_uiid(run_id)
 
-        self._init_run(experiment_name, run_id, overwrite)
-        run_md_uri = self._get_md_uri(experiment_name, run_id)
-        run_art_uri = self._get_art_uri(experiment_name, run_id)
+        self._init_run(experiment, run_id, overwrite)
+        run_md_uri = self._get_md_uri(experiment, run_id)
+        run_art_uri = self._get_art_uri(experiment, run_id)
 
         run_handler = RunHandler(run_config)
-        run_info = RunInfo(experiment_title,
-                           experiment_name,
+        run_info = RunInfo(experiment,
                            resources,
                            run_id,
                            run_config,

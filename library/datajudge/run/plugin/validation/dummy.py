@@ -7,12 +7,14 @@ from __future__ import annotations
 import typing
 from typing import List
 
+from datajudge.data.datajudge_report import DatajudgeReport
 from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.run.plugin.validation.validation_plugin import (
-    Validation, ValidationResult)
+from datajudge.run.plugin.validation.validation_plugin import Validation
+from datajudge.utils.utils import exec_decorator
 
 if typing.TYPE_CHECKING:
-    from datajudge import DataResource
+    from datajudge.data.data_resource import DataResource
+    from datajudge.utils.config import Constraint
 
 
 class ValidationPluginDummy(Validation):
@@ -37,6 +39,7 @@ class ValidationPluginDummy(Validation):
         self.constraints = constraints
         self.exec_args = exec_args
 
+    @exec_decorator
     def validate(self) -> dict:
         """
         Do nothing.
@@ -49,19 +52,25 @@ class ValidationPluginDummy(Validation):
         """
         return {}
 
-    def produce_report(self,
-                       obj: ValidationResult) -> tuple:
+    @exec_decorator
+    def render_datajudge(self) -> DatajudgeReport:
         """
-        Do nothing.
+        Return a DatajudgeReport.
         """
-        return self.get_report_tuple(None, None, None, None)
+        return DatajudgeReport(self.get_lib_name(),
+                               self.get_lib_version(),
+                               None,
+                               None,
+                               None,
+                               None)
 
-    def render_artifact(self, obj: dict) -> List[tuple]:
+    @exec_decorator
+    def render_artifact(self) -> List[tuple]:
         """
         Return a dummy report to be persisted as artifact.
         """
         artifacts = []
-        report = obj
+        report = self.result.artifact
         filename = self._fn_report.format("dummy.json")
         artifacts.append(self.get_render_tuple(report, filename))
         return artifacts
@@ -86,15 +95,14 @@ class ValidationBuilderDummy(PluginBuilder):
     Validation plugin builder.
     """
     def build(self,
-              package: list,
-              exec_args: dict,
-              constraints: list) -> ValidationPluginDummy:
+              resources: List[DataResource],
+              constraints: List[Constraint]) -> ValidationPluginDummy:
         """
         Build a plugin.
         """
         plugins = []
-        for resource in package:
+        for resource in resources:
             plugin = ValidationPluginDummy()
-            plugin.setup(resource, constraints, exec_args)
+            plugin.setup(resource, {}, self.exec_args)
             plugins.append(plugin)
         return plugins

@@ -6,6 +6,8 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from typing import Any, List
 
+from datajudge.utils.config import STATUS_INIT
+
 
 RenderTuple = namedtuple("RenderTuple", ("object", "filename"))
 
@@ -16,14 +18,28 @@ class Result:
     plugin operation.
     """
     def __init__(self,
+                 libraries: str = None,
+                 execution_time: float = None,
+                 execution_status: str = None,
+                 execution_errors: tuple = None,
                  artifact: Any = None,
-                 datajudge_doc: Any = None,
-                 status: str = None,
-                 time: float = None) -> None:
+                 datajudge_status: str = None,
+                 datajudge_errors: tuple = None,
+                 datajudge_artifact: Any = None,
+                 rendered_status: str = None,
+                 rendered_errors: tuple = None,
+                 rendered_artifact: Any = None) -> None:
+        self.libraries = libraries
+        self.execution_time = execution_time
+        self.execution_status = execution_status
+        self.execution_errors = execution_errors
         self.artifact = artifact
-        self.datajudge_doc = datajudge_doc
-        self.status = status
-        self.time = time
+        self.datajudge_status = datajudge_status
+        self.datajudge_errors = datajudge_errors
+        self.datajudge_artifact = datajudge_artifact
+        self.rendered_status = rendered_status
+        self.rendered_errors = rendered_errors
+        self.rendered_artifact = rendered_artifact
 
 
 class Plugin(metaclass=ABCMeta):
@@ -31,15 +47,10 @@ class Plugin(metaclass=ABCMeta):
     Base plugin abstract class.
     """
 
-    _STATUS_INIT = "created"
-    _STATUS_RUNNING = "executing"
-    _STATUS_FINISHED = "finished"
-    _STATUS_ERROR = "error"
-
     def __init__(self) -> None:
         self.lib_name = self.get_lib_name()
         self.lib_version = self.get_lib_version()
-        self.result = Result(status=self._STATUS_INIT)
+        self.result = Result(execution_status=STATUS_INIT)
 
     @abstractmethod
     def setup(self, *args, **kwargs) -> None:
@@ -106,6 +117,10 @@ class PluginBuilder:
     """
     Abstract PluginBuilder class.
     """
+
+    def __init__(self,
+                 exec_args: dict) -> None:
+        self.exec_args = exec_args
 
     @abstractmethod
     def build(self, *args, **kwargs) -> List[Plugin]:

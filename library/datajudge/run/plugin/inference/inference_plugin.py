@@ -4,20 +4,15 @@ Inference plugin abstract class module.
 # pylint: disable=import-error,invalid-name
 from __future__ import annotations
 
-import time
 import typing
 from abc import ABCMeta, abstractmethod
-from collections import namedtuple
-from typing import Any, List
+from typing import Any
 
-from datajudge.data import DatajudgeSchema
 from datajudge.run.plugin.base_plugin import Plugin
+from datajudge.utils.config import STATUS_RUNNING
 
 if typing.TYPE_CHECKING:
     from datajudge.run.plugin.base_plugin import Result
-
-
-SchemaTuple = namedtuple("SchemaTuple", ("time", "fields"))
 
 
 class Inference(Plugin, metaclass=ABCMeta):
@@ -31,14 +26,23 @@ class Inference(Plugin, metaclass=ABCMeta):
         """
         Method that call specific execution.
         """
-        try:
-            self.result.status = self._STATUS_RUNNING
-            start = time.perf_counter()
-            self.result.artifact = self.infer()
-            self.result.time = round(time.perf_counter() - start, 2)
-            self.result.status = self._STATUS_FINISHED
-        except Exception:
-            self.result.status = self._STATUS_ERROR
+        self.result.libraries = self.get_library()
+
+        self.result.execution_status = STATUS_RUNNING
+        self.result.artifact, \
+            self.result.execution_status, \
+                self.result.execution_errors, \
+                    self.result.execution_time = self.infer()
+
+        self.result.datajudge_status = STATUS_RUNNING
+        self.result.datajudge_artifact, \
+            self.result.datajudge_status, \
+                self.result.datajudge_errors, _ = self.render_datajudge()
+
+        self.result.datajudge_status = STATUS_RUNNING                    
+        self.result.rendered_artifact, \
+            self.result.rendered_status, \
+                self.result.rendered_errors, _ = self.render_artifact()
 
         return self.result
 
@@ -47,30 +51,3 @@ class Inference(Plugin, metaclass=ABCMeta):
         """
         Inference method for schema.
         """
-
-    @abstractmethod
-    def produce_schema(self,
-                       obj: Result) -> List[SchemaTuple]:
-        """
-        Produce datajudge schema by parsing framework
-        results.
-        """
-
-    def render_datajudge(self,
-                         obj: Result) -> DatajudgeSchema:
-        """
-        Return a DatajudgeSchema.
-        """
-        parsed = self.produce_schema(obj)
-        return DatajudgeSchema(self.get_lib_name(),
-                               self.get_lib_version(),
-                               parsed.time,
-                               parsed.fields)
-
-    @staticmethod
-    def get_schema_tuple(name: str,
-                         type_: str) -> SchemaTuple:
-        """
-        Return SchemaTuple.
-        """
-        return SchemaTuple(name, type_)

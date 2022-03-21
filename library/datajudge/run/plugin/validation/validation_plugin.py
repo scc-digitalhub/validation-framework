@@ -2,17 +2,11 @@
 Validation plugin abstract class module.
 """
 # pylint: disable=too-few-public-methods
-import time
 from abc import ABCMeta, abstractmethod
-from collections import namedtuple
 from typing import Any
 
-from datajudge.data.datajudge_report import DatajudgeReport
 from datajudge.run.plugin.base_plugin import Plugin, Result
-
-
-ReportTuple = namedtuple("ReportTuple", ("time", "constraint",
-                                         "valid", "errors"))
+from datajudge.utils.config import STATUS_RUNNING
 
 
 class ValidationResult(Result):
@@ -22,9 +16,9 @@ class ValidationResult(Result):
     def __init__(self,
                  artifact: Any = None,
                  status: str = None,
-                 exec_time: float = None,
+                 execution_time: float = None,
                  constraint: dict = None) -> None:
-        super().__init__(artifact, status, exec_time)
+        super().__init__(artifact, status, execution_time)
         self.constraint = constraint
 
 
@@ -39,14 +33,23 @@ class Validation(Plugin, metaclass=ABCMeta):
         """
         Method that call specific execution.
         """
-        try:
-            self.result.status = self._STATUS_RUNNING
-            start = time.perf_counter()
-            self.result.artifact = self.validate()
-            self.result.time = round(time.perf_counter() - start, 2)
-            self.result.status = self._STATUS_FINISHED
-        except Exception:
-            self.result.status = self._STATUS_ERROR
+        self.result.libraries = self.get_library()
+
+        self.result.execution_status = STATUS_RUNNING
+        self.result.artifact, \
+            self.result.execution_status, \
+                self.result.execution_errors, \
+                    self.result.execution_time = self.validate()
+
+        self.result.datajudge_status = STATUS_RUNNING
+        self.result.datajudge_artifact, \
+            self.result.datajudge_status, \
+                self.result.datajudge_errors, _ = self.render_datajudge()
+
+        self.result.datajudge_status = STATUS_RUNNING                    
+        self.result.rendered_artifact, \
+            self.result.rendered_status, \
+                self.result.rendered_errors, _ = self.render_artifact()
 
         return self.result
 
@@ -61,34 +64,3 @@ class Validation(Plugin, metaclass=ABCMeta):
         """
         Rebuild input constraints.
         """
-
-    @abstractmethod
-    def produce_report(self,
-                       obj: ValidationResult) -> ReportTuple:
-        """
-        Produce datajudge report by parsing framework
-        results.
-        """
-
-    def render_datajudge(self,
-                         obj: ValidationResult) -> DatajudgeReport:
-        """
-        Return a DatajudgeReport.
-        """
-        parsed = self.produce_report(obj)
-        return DatajudgeReport(self.get_lib_name(),
-                               self.get_lib_version(),
-                               parsed.time,
-                               parsed.constraint,
-                               parsed.valid,
-                               parsed.errors)
-
-    @staticmethod
-    def get_report_tuple(exec_time: float,
-                         constraint: dict,
-                         valid: bool,
-                         errors: list) -> ReportTuple:
-        """
-        Return ReportTuple.
-        """
-        return ReportTuple(exec_time, constraint, valid, errors)

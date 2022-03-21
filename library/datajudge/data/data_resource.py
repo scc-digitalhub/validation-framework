@@ -35,12 +35,14 @@ class DataResource:
                  path: Union[str, list],
                  name: str,
                  store: Optional[str] = None,
+                 schema: Optional[dict] = None,
                  package: Optional[str] = None,
                  title: Optional[str] = None,
                  description: Optional[str] = None) -> None:
         self.path = path
         self.name = name
         self.store = store
+        self.schema = schema
         self.package = package
         self.title = title
         self.description = description
@@ -54,6 +56,7 @@ class DataResource:
             "path": self.path,
             "name": self.name,
             "store": self.store,
+            "schema": self.schema,
             "package": self.package,
             "title": self.title,
             "description": self.description

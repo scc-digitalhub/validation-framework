@@ -4,20 +4,15 @@ Profiling plugin abstract class module.
 # pylint: disable=import-error,invalid-name
 from __future__ import annotations
 
-import time
 import typing
 from abc import ABCMeta, abstractmethod
-from collections import namedtuple
 from typing import Any
 
-from datajudge.data import DatajudgeProfile
 from datajudge.run.plugin.base_plugin import Plugin
+from datajudge.utils.config import STATUS_RUNNING
 
 if typing.TYPE_CHECKING:
     from datajudge.run.plugin.base_plugin import Result
-
-
-ProfileTuple = namedtuple("ProfileTuple", ("duration", "stats", "fields"))
 
 
 class Profiling(Plugin, metaclass=ABCMeta):
@@ -27,51 +22,32 @@ class Profiling(Plugin, metaclass=ABCMeta):
 
     _fn_profile = "profile_{}"
 
+    def execute(self) -> Result:
+        """
+        Method that call specific execution.
+        """
+        self.result.libraries = self.get_library()
+
+        self.result.execution_status = STATUS_RUNNING
+        self.result.artifact, \
+            self.result.execution_status, \
+                self.result.execution_errors, \
+                    self.result.execution_time = self.profile()
+
+        self.result.datajudge_status = STATUS_RUNNING
+        self.result.datajudge_artifact, \
+            self.result.datajudge_status, \
+                self.result.datajudge_errors, _ = self.render_datajudge()
+
+        self.result.datajudge_status = STATUS_RUNNING                    
+        self.result.rendered_artifact, \
+            self.result.rendered_status, \
+                self.result.rendered_errors, _ = self.render_artifact()
+
+        return self.result
+
     @abstractmethod
     def profile(self) -> Any:
         """
         Generate a data profile.
         """
-
-    def execute(self) -> Result:
-        """
-        Method that call specific execution.
-        """
-        try:
-            self.result.status = self._STATUS_RUNNING
-            start = time.perf_counter()
-            self.result.artifact = self.profile()
-            self.result.time = round(time.perf_counter() - start, 2)
-            self.result.status = self._STATUS_FINISHED
-        except Exception:
-            self.result.status = self._STATUS_ERROR
-        return self.result
-
-    @abstractmethod
-    def produce_profile(self,
-                        obj: Result) -> ProfileTuple:
-        """
-        Parse and prepare a profile to be rendered
-        as datajudge artifact.
-        """
-
-    def render_datajudge(self,
-                         obj: Result) -> DatajudgeProfile:
-        """
-        Return a DatajudgeProfile.
-        """
-        parsed = self.produce_profile(obj)
-        return DatajudgeProfile(self.get_lib_name(),
-                                self.get_lib_version(),
-                                parsed.duration,
-                                parsed.stats,
-                                parsed.fields)
-
-    @staticmethod
-    def get_profile_tuple(duration: float,
-                          stats: Any,
-                          fields: Any) -> ProfileTuple:
-        """
-        Return ProfileTuple.
-        """
-        return ProfileTuple(duration, stats, fields)
