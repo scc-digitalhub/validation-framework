@@ -16,11 +16,13 @@ from pandas_profiling import ProfileReport
 from datajudge.data.datajudge_profile import DatajudgeProfile
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.run.plugin.base_plugin import PluginBuilder
+from datajudge.utils.commons import PANDAS_PROFILING
 from datajudge.utils.io_utils import write_bytesio
-from datajudge.utils.utils import exec_decorator
+from datajudge.run.plugin.plugin_utils import exec_decorator
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
+    from datajudge.run.plugin.base_plugin import Result
 
 
 # Columns/fields to parse from profile
@@ -109,7 +111,7 @@ class ProfilePluginPandasProfiling(Profiling):
                           Only CSV and XLS supported!")
 
     @exec_decorator
-    def render_datajudge(self) -> DatajudgeProfile:
+    def render_datajudge(self, result: Result) -> DatajudgeProfile:
         """
         Return a DatajudgeProfile.
         """
@@ -133,7 +135,7 @@ class ProfilePluginPandasProfiling(Profiling):
         # Get fields, stats and duration
         fields = args.get("variables", {})
         stats = args.get("table", {})
-        duration = self.result.execution_time
+        duration = self.result.duration
 
         return DatajudgeProfile(self.get_lib_name(),
                                 self.get_lib_version(),
@@ -142,22 +144,27 @@ class ProfilePluginPandasProfiling(Profiling):
                                 fields)
 
     @exec_decorator
-    def render_artifact(self) -> List[tuple]:
+    def render_artifact(self, result: Result) -> List[tuple]:
         """
         Return a rendered profile ready to be persisted as artifact.
         """
         artifacts = []
 
-        string_html = self.result.artifact.to_html()
-        strio_html = write_bytesio(string_html)
-        html_filename = self._fn_profile.format("pandas_profiling.html")
-        artifacts.append(self.get_render_tuple(strio_html, html_filename))
+        if result.artifact is None:
+            _object = {"error": result.errors}
+            filename = self._fn_profile.format(f"{PANDAS_PROFILING}.json")
+            artifacts.append(self.get_render_tuple(_object, filename))
+        else:
+            string_html = self.result.artifact.to_html()
+            strio_html = write_bytesio(string_html)
+            html_filename = self._fn_profile.format(f"{PANDAS_PROFILING}.html")
+            artifacts.append(self.get_render_tuple(strio_html, html_filename))
 
-        string_json = self.result.artifact.to_json()
-        string_json = string_json.replace("NaN", "null")
-        strio_json = write_bytesio(string_json)
-        json_filename = self._fn_profile.format("pandas_profiling.json")
-        artifacts.append(self.get_render_tuple(strio_json, json_filename))
+            string_json = self.result.artifact.to_json()
+            string_json = string_json.replace("NaN", "null")
+            strio_json = write_bytesio(string_json)
+            json_filename = self._fn_profile.format(f"{PANDAS_PROFILING}.json")
+            artifacts.append(self.get_render_tuple(strio_json, json_filename))
 
         return artifacts
 
@@ -181,7 +188,7 @@ class ProfileBuilderPandasProfiling(PluginBuilder):
     Profile plugin builder.
     """
     def build(self,
-              resources: list
+              resources: List[DataResource]
               ) -> ProfilePluginPandasProfiling:
         """
         Build a plugin.

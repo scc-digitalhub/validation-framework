@@ -10,10 +10,12 @@ from typing import List
 from datajudge.data.datajudge_profile import DatajudgeProfile
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.utils.utils import exec_decorator
+from datajudge.utils.commons import DUMMY
+from datajudge.run.plugin.plugin_utils import exec_decorator
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
+    from datajudge.run.plugin.base_plugin import Result
 
 
 class ProfilePluginDummy(Profiling):
@@ -43,7 +45,7 @@ class ProfilePluginDummy(Profiling):
         return {}
 
     @exec_decorator
-    def render_datajudge(self) -> DatajudgeProfile:
+    def render_datajudge(self, result: Result) -> DatajudgeProfile:
         """
         Return a DatajudgeProfile.
         """
@@ -54,14 +56,17 @@ class ProfilePluginDummy(Profiling):
                                 None)
 
     @exec_decorator
-    def render_artifact(self) -> List[tuple]:
+    def render_artifact(self, result: Result) -> List[tuple]:
         """
         Return a dummy schema to be persisted as artifact.
         """
         artifacts = []
-        profile = self.result.artifact
-        filename = self._fn_profile.format("dummy.json")
-        artifacts.append(self.get_render_tuple(profile, filename))
+        if result.artifact is None:
+            _object = {"error": result.errors}
+        else:
+            _object = dict(result.artifact)
+        filename = self._fn_profile.format(f"{DUMMY}.json")
+        artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
     @staticmethod
@@ -83,17 +88,15 @@ class ProfileBuilderDummy(PluginBuilder):
     """
     Profile plugin builder.
     """
-
     def build(self,
-              resources: list,
-              exec_args: dict,
-              *args) -> ProfilePluginDummy:
+              resources: List[DataResource]
+              ) -> ProfilePluginDummy:
         """
         Build a plugin.
         """
         plugins = []
         for resource in resources:
             plugin = ProfilePluginDummy()
-            plugin.setup(resource, exec_args)
+            plugin.setup(resource, self.exec_args)
             plugins.append(plugin)
         return plugins

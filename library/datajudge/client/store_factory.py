@@ -11,7 +11,8 @@ from datajudge.store_artifact import (AzureArtifactStore, DummyArtifactStore,
                                       LocalArtifactStore, S3ArtifactStore)
 from datajudge.store_metadata import (DigitalHubMetadataStore,
                                       DummyMetadataStore, LocalMetadataStore)
-from datajudge.utils.config import API_BASE, StoreConfig
+from datajudge.utils.commons import API_BASE
+from datajudge.utils.config import StoreConfig
 from datajudge.utils.file_utils import get_absolute_path
 from datajudge.utils.uri_utils import check_url, get_uri_scheme, rebuild_uri
 

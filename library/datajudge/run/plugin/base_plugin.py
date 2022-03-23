@@ -2,44 +2,16 @@
 Base abstract Run Plugin module.
 """
 # pylint: disable=too-many-arguments,too-few-public-methods
+from __future__ import annotations
+
+import typing
 from abc import ABCMeta, abstractmethod
-from collections import namedtuple
 from typing import Any, List
 
-from datajudge.utils.config import STATUS_INIT
+from datajudge.run.plugin.plugin_utils import RenderTuple
 
-
-RenderTuple = namedtuple("RenderTuple", ("object", "filename"))
-
-
-class Result:
-    """
-    Simple class to aggregate result of
-    plugin operation.
-    """
-    def __init__(self,
-                 libraries: str = None,
-                 execution_time: float = None,
-                 execution_status: str = None,
-                 execution_errors: tuple = None,
-                 artifact: Any = None,
-                 datajudge_status: str = None,
-                 datajudge_errors: tuple = None,
-                 datajudge_artifact: Any = None,
-                 rendered_status: str = None,
-                 rendered_errors: tuple = None,
-                 rendered_artifact: Any = None) -> None:
-        self.libraries = libraries
-        self.execution_time = execution_time
-        self.execution_status = execution_status
-        self.execution_errors = execution_errors
-        self.artifact = artifact
-        self.datajudge_status = datajudge_status
-        self.datajudge_errors = datajudge_errors
-        self.datajudge_artifact = datajudge_artifact
-        self.rendered_status = rendered_status
-        self.rendered_errors = rendered_errors
-        self.rendered_artifact = rendered_artifact
+if typing.TYPE_CHECKING:
+    from datajudge.run.plugin.plugin_utils import Result
 
 
 class Plugin(metaclass=ABCMeta):
@@ -50,7 +22,6 @@ class Plugin(metaclass=ABCMeta):
     def __init__(self) -> None:
         self.lib_name = self.get_lib_name()
         self.lib_version = self.get_lib_version()
-        self.result = Result(execution_status=STATUS_INIT)
 
     @abstractmethod
     def setup(self, *args, **kwargs) -> None:
@@ -59,25 +30,19 @@ class Plugin(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def execute(self) -> Result:
+    def execute(self) -> dict:
         """
         Execute main plugin operation.
         """
 
-    def get_result(self) -> Result:
-        """
-        Return status of the execution.
-        """
-        return self.result
-
     @abstractmethod
-    def render_datajudge(self, obj: Result) -> Any:
+    def render_datajudge(self, obj: Result) -> Result:
         """
         Produce datajudge output.
         """
 
     @abstractmethod
-    def render_artifact(self, obj: Result) -> Any:
+    def render_artifact(self, obj: Result) -> Result:
         """
         Render an artifact to be persisted.
         """

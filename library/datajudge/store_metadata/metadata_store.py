@@ -4,7 +4,7 @@ Abstract class for metadata store.
 from abc import ABCMeta, abstractmethod
 from typing import Optional
 
-from datajudge.utils import config as cfg
+from datajudge.utils import commons as cfg
 
 
 class MetadataStore(metaclass=ABCMeta):

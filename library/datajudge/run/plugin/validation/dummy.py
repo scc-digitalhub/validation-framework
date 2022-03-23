@@ -10,11 +10,13 @@ from typing import List
 from datajudge.data.datajudge_report import DatajudgeReport
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.validation.validation_plugin import Validation
-from datajudge.utils.utils import exec_decorator
+from datajudge.utils.commons import DUMMY
+from datajudge.run.plugin.plugin_utils import exec_decorator
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
     from datajudge.utils.config import Constraint
+    from datajudge.run.plugin.base_plugin import Result
 
 
 class ValidationPluginDummy(Validation):
@@ -46,14 +48,8 @@ class ValidationPluginDummy(Validation):
         """
         return {}
 
-    def rebuild_constraints(self) -> dict:
-        """
-        Do nothing.
-        """
-        return {}
-
     @exec_decorator
-    def render_datajudge(self) -> DatajudgeReport:
+    def render_datajudge(self, result: Result) -> DatajudgeReport:
         """
         Return a DatajudgeReport.
         """
@@ -65,14 +61,17 @@ class ValidationPluginDummy(Validation):
                                None)
 
     @exec_decorator
-    def render_artifact(self) -> List[tuple]:
+    def render_artifact(self, result: Result) -> List[tuple]:
         """
         Return a dummy report to be persisted as artifact.
         """
         artifacts = []
-        report = self.result.artifact
-        filename = self._fn_report.format("dummy.json")
-        artifacts.append(self.get_render_tuple(report, filename))
+        if result.artifact is None:
+            _object = {"error": result.errors}
+        else:
+            _object = dict(result.artifact)
+        filename = self._fn_report.format(f"{DUMMY}.json")
+        artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
     @staticmethod

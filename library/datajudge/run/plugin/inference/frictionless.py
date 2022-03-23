@@ -14,10 +14,12 @@ from frictionless.schema import Schema
 from datajudge.data import DatajudgeSchema
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.inference.inference_plugin import Inference
-from datajudge.utils.utils import exec_decorator
+from datajudge.utils.commons import FRICTIONLESS
+from datajudge.run.plugin.plugin_utils import exec_decorator
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
+    from datajudge.run.plugin.base_plugin import Result
 
 
 class InferencePluginFrictionless(Inference):
@@ -50,13 +52,13 @@ class InferencePluginFrictionless(Inference):
                                **self.exec_args)
 
     @exec_decorator
-    def render_datajudge(self) -> DatajudgeSchema:
+    def render_datajudge(self, result: Result) -> DatajudgeSchema:
         """
         Return a DatajudgeSchema.
         """
 
-        field_infer = self.result.artifact.get("fields", [])
-        duration = self.result.execution_time
+        field_infer = result.artifact.get("fields", [])
+        duration = result.duration
 
         dj_schema_fields = []
         if field_infer:
@@ -74,14 +76,17 @@ class InferencePluginFrictionless(Inference):
                                dj_schema_fields)
 
     @exec_decorator
-    def render_artifact(self) -> List[tuple]:
+    def render_artifact(self, result: Result) -> List[tuple]:
         """
         Return a frictionless schema to be persisted as artifact.
         """
         artifacts = []
-        schema = dict(self.result.artifact)
-        filename = self._fn_schema.format("frictionless.json")
-        artifacts.append(self.get_render_tuple(schema, filename))
+        if result.artifact is None:
+            _object = {"error": result.errors}
+        else:
+            _object = dict(result.artifact)
+        filename = self._fn_schema.format(f"{FRICTIONLESS}.json")
+        artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
     @staticmethod
@@ -105,7 +110,7 @@ class InferenceBuilderFrictionless(PluginBuilder):
     """
 
     def build(self,
-              resources: list
+              resources: List[DataResource]
               ) -> InferencePluginFrictionless:
         """
         Build a plugin.

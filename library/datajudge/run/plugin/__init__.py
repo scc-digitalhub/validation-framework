@@ -5,6 +5,7 @@ from datajudge.run.plugin.profiling import (ProfileBuilderDummy,
                                             ProfileBuilderFrictionless,
                                             ProfileBuilderPandasProfiling)
 from datajudge.run.plugin.validation import (ValidationBuilderDummy,
+                                             ValidationBuilderDuckDB,
                                              ValidationBuilderFrictionless)
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "ProfileBuilderFrictionless",
     "ProfileBuilderPandasProfiling",
     "ValidationBuilderDummy",
+    "ValidationBuilderDuckDB",
     "ValidationBuilderFrictionless",
 ]

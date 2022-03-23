@@ -6,10 +6,11 @@ from __future__ import annotations
 
 import typing
 from abc import ABCMeta, abstractmethod
-from typing import Any
+from typing import Any, List
 
 from datajudge.run.plugin.base_plugin import Plugin
-from datajudge.utils.config import STATUS_RUNNING
+from datajudge.utils.commons import (RES_WRAP, RES_DJ,
+                                     RES_RENDER, RES_LIB)
 
 if typing.TYPE_CHECKING:
     from datajudge.run.plugin.base_plugin import Result
@@ -22,29 +23,19 @@ class Inference(Plugin, metaclass=ABCMeta):
 
     _fn_schema = "schema_{}"
 
-    def execute(self) -> Result:
+    def execute(self) -> dict:
         """
         Method that call specific execution.
         """
-        self.result.libraries = self.get_library()
-
-        self.result.execution_status = STATUS_RUNNING
-        self.result.artifact, \
-            self.result.execution_status, \
-                self.result.execution_errors, \
-                    self.result.execution_time = self.infer()
-
-        self.result.datajudge_status = STATUS_RUNNING
-        self.result.datajudge_artifact, \
-            self.result.datajudge_status, \
-                self.result.datajudge_errors, _ = self.render_datajudge()
-
-        self.result.datajudge_status = STATUS_RUNNING                    
-        self.result.rendered_artifact, \
-            self.result.rendered_status, \
-                self.result.rendered_errors, _ = self.render_artifact()
-
-        return self.result
+        lib_result = self.infer()
+        dj_result = self.render_datajudge(lib_result)
+        render_result = self.render_artifact(lib_result)
+        return {
+            RES_WRAP: lib_result,
+            RES_DJ: dj_result,
+            RES_RENDER: render_result,           
+            RES_LIB: self.get_library()
+        }
 
     @abstractmethod
     def infer(self) -> Any:

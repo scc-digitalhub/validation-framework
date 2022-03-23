@@ -8,16 +8,20 @@ from pathlib import Path
 from typing import Any, List, Optional
 
 from datajudge.data import BlobLog, EnvLog
-from datajudge.utils import config as cfg
+from datajudge.utils.commons import (DATAJUDGE_VERSION, MT_ARTIFACT_METADATA,
+                                     MT_DJ_PROFILE, MT_DJ_REPORT, MT_DJ_SCHEMA,
+                                     MT_RUN_ENV, MT_RUN_METADATA, STATUS_ERROR,
+                                     STATUS_FINISHED, STATUS_INIT,
+                                     STATUS_INTERRUPTED)
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.uri_utils import get_name_from_uri
 from datajudge.utils.utils import get_time, listify
 
 if typing.TYPE_CHECKING:
-    from datajudge.data.datajudge_schema import DatajudgeSchema
+    from datajudge.client.client import Client
     from datajudge.data.datajudge_profile import DatajudgeProfile
     from datajudge.data.datajudge_report import DatajudgeReport
-    from datajudge.client.client import Client
+    from datajudge.data.datajudge_schema import DatajudgeSchema
     from datajudge.run.run_handler import RunHandler
     from datajudge.run.run_info import RunInfo
     from datajudge.utils.config import Constraint
@@ -58,15 +62,6 @@ class Run:
 
     """
 
-    # Constants to describe metadata types
-
-    _RUN_METADATA = cfg.MT_RUN_METADATA
-    _RUN_ENV = cfg.MT_RUN_ENV
-    _DJ_REPORT = cfg.MT_DJ_REPORT
-    _DJ_SCHEMA = cfg.MT_DJ_SCHEMA
-    _DJ_PROFILE = cfg.MT_DJ_PROFILE
-    _ART_METADATA = cfg.MT_ARTIFACT_METADATA
-
     # Constructor
 
     def __init__(self,
@@ -89,7 +84,7 @@ class Run:
         Log run's metadata.
         """
         metadata = self._get_blob(self.run_info.to_dict())
-        self._log_metadata(metadata, self._RUN_METADATA)
+        self._log_metadata(metadata, MT_RUN_METADATA)
 
     def _log_env(self) -> None:
         """
@@ -97,7 +92,7 @@ class Run:
         """
         env_data = EnvLog().to_dict()
         metadata = self._get_blob(env_data)
-        self._log_metadata(metadata, self._RUN_ENV)
+        self._log_metadata(metadata, MT_RUN_ENV)
 
     def _get_blob(self,
                   content: Optional[dict] = None) -> dict:
@@ -108,7 +103,7 @@ class Run:
             content = {}
         return BlobLog(self.run_info.run_id,
                        self.run_info.experiment_name,
-                       cfg.DATAJUDGE_VERSION,
+                       DATAJUDGE_VERSION,
                        content).to_dict()
 
     def _log_metadata(self,
@@ -145,7 +140,7 @@ class Run:
             return
         uri = self.run_info.run_artifacts_uri
         metadata = self._get_artifact_metadata(uri, src_name)
-        self._log_metadata(metadata, self._ART_METADATA)
+        self._log_metadata(metadata, MT_ARTIFACT_METADATA)
 
     def _render_artifact_name(self,
                               filename: str) -> str:
@@ -276,7 +271,7 @@ class Run:
         objects = self._run_handler.get_datajudge_schema()
         for obj in objects:
             metadata = self._get_blob(obj.to_dict())
-            self._log_metadata(metadata, self._DJ_SCHEMA)
+            self._log_metadata(metadata, MT_DJ_SCHEMA)
 
     def persist_schema(self) -> None:
         """
@@ -356,7 +351,7 @@ class Run:
         objects = self._run_handler.get_datajudge_report()
         for obj in objects:
             metadata = self._get_blob(obj.to_dict())
-            self._log_metadata(metadata, self._DJ_REPORT)
+            self._log_metadata(metadata, MT_DJ_REPORT)
 
     def persist_report(self) -> None:
         """
@@ -411,7 +406,7 @@ class Run:
         objects = self._run_handler.get_datajudge_profile()
         for obj in objects:
             metadata = self._get_blob(obj.to_dict())
-            self._log_metadata(metadata, self._DJ_PROFILE)
+            self._log_metadata(metadata, MT_DJ_PROFILE)
 
     def persist_profile(self) -> None:
         """
@@ -439,7 +434,7 @@ class Run:
 
     def __enter__(self) -> Run:
         # Set run status
-        self.run_info.begin_status = cfg.STATUS_INIT
+        self.run_info.begin_status = STATUS_INIT
         self.run_info.started = get_time()
         self._log_run()
         self._log_env()
@@ -450,13 +445,13 @@ class Run:
                  exc_value,
                  traceback) -> None:
         if exc_type is None:
-            self.run_info.end_status = cfg.STATUS_FINISHED
+            self.run_info.end_status = STATUS_FINISHED
         elif exc_type in (InterruptedError, KeyboardInterrupt):
-            self.run_info.end_status = cfg.STATUS_INTERRUPTED
+            self.run_info.end_status = STATUS_INTERRUPTED
         elif exc_type in (AttributeError, ):
-            self.run_info.end_status = cfg.STATUS_ERROR
+            self.run_info.end_status = STATUS_ERROR
         else:
-            self.run_info.end_status = cfg.STATUS_ERROR
+            self.run_info.end_status = STATUS_ERROR
 
         self.run_info.finished = get_time()
         self._log_run()

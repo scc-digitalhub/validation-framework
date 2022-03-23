@@ -10,9 +10,11 @@ from datajudge.run.plugin import (InferenceBuilderDummy,
                                   ProfileBuilderDummy,
                                   ProfileBuilderFrictionless,
                                   ProfileBuilderPandasProfiling,
+                                  ValidationBuilderDuckDB,
                                   ValidationBuilderDummy,
                                   ValidationBuilderFrictionless)
-from datajudge.utils.config import OP_INF, OP_PRO, OP_VAL
+from datajudge.utils.commons import (DUCKDB, DUMMY, FRICTIONLESS, OP_INF,
+                                    OP_PRO, OP_VAL, PANDAS_PROFILING)
 
 if typing.TYPE_CHECKING:
     from datajudge.utils.config import OpsConfig
@@ -20,17 +22,18 @@ if typing.TYPE_CHECKING:
 
 REGISTRY = {
     OP_INF: {
-        "_dummy": InferenceBuilderDummy,
-        "frictionless": InferenceBuilderFrictionless,
+        DUMMY: InferenceBuilderDummy,
+        FRICTIONLESS: InferenceBuilderFrictionless,
         },
     OP_VAL: {
-        "_dummy": ValidationBuilderDummy,
-        "frictionless": ValidationBuilderFrictionless,
+        DUMMY: ValidationBuilderDummy,
+        DUCKDB: ValidationBuilderDuckDB,
+        FRICTIONLESS: ValidationBuilderFrictionless,
         },
     OP_PRO: {
-        "_dummy": ProfileBuilderDummy,
-        "frictionless": ProfileBuilderFrictionless,
-        "pandas_profiling": ProfileBuilderPandasProfiling,
+        DUMMY: ProfileBuilderDummy,
+        FRICTIONLESS: ProfileBuilderFrictionless,
+        PANDAS_PROFILING: ProfileBuilderPandasProfiling,
         }
 }
 

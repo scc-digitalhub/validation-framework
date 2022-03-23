@@ -4,34 +4,9 @@ Common generic utils.
 # pylint: disable=import-error
 import functools
 import operator
-import time
 from datetime import datetime
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 from uuid import uuid4
-
-from datajudge.utils.config import STATUS_ERROR, STATUS_FINISHED
-
-
-def exec_decorator(fnc: Callable) -> Tuple[Any, float]:
-    """
-    Decorator that keeps track of execution time and status.
-    """
-    def wrapper(*args, **kwargs) -> Tuple[Any, str, tuple, float]:
-        """
-        Wrapper.
-        """
-        start = time.perf_counter()
-        try:
-            result = fnc(*args, **kwargs)
-            status = STATUS_FINISHED
-            errors = None
-        except Exception as exc:
-            result = None
-            status = STATUS_ERROR
-            errors = exc.args
-        end = round(time.perf_counter() - start, 2)
-        return result, status, errors, end
-    return wrapper
 
 
 def get_uiid(_id: Optional[str] = None) -> str:

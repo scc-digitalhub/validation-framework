@@ -2,24 +2,18 @@
 Validation plugin abstract class module.
 """
 # pylint: disable=too-few-public-methods
+from __future__ import annotations
+
+import typing
 from abc import ABCMeta, abstractmethod
-from typing import Any
+from typing import Any, List
 
-from datajudge.run.plugin.base_plugin import Plugin, Result
-from datajudge.utils.config import STATUS_RUNNING
+from datajudge.run.plugin.base_plugin import Plugin
+from datajudge.utils.commons import (RES_WRAP, RES_DJ,
+                                     RES_RENDER, RES_LIB)
 
-
-class ValidationResult(Result):
-    """
-    Extend Result class.
-    """
-    def __init__(self,
-                 artifact: Any = None,
-                 status: str = None,
-                 execution_time: float = None,
-                 constraint: dict = None) -> None:
-        super().__init__(artifact, status, execution_time)
-        self.constraint = constraint
+if typing.TYPE_CHECKING:
+    from datajudge.run.plugin.base_plugin import Result
 
 
 class Validation(Plugin, metaclass=ABCMeta):
@@ -29,38 +23,22 @@ class Validation(Plugin, metaclass=ABCMeta):
 
     _fn_report = "report_{}"
 
-    def execute(self) -> Result:
+    def execute(self) -> dict:
         """
         Method that call specific execution.
         """
-        self.result.libraries = self.get_library()
-
-        self.result.execution_status = STATUS_RUNNING
-        self.result.artifact, \
-            self.result.execution_status, \
-                self.result.execution_errors, \
-                    self.result.execution_time = self.validate()
-
-        self.result.datajudge_status = STATUS_RUNNING
-        self.result.datajudge_artifact, \
-            self.result.datajudge_status, \
-                self.result.datajudge_errors, _ = self.render_datajudge()
-
-        self.result.datajudge_status = STATUS_RUNNING                    
-        self.result.rendered_artifact, \
-            self.result.rendered_status, \
-                self.result.rendered_errors, _ = self.render_artifact()
-
-        return self.result
+        lib_result = self.validate()
+        dj_result = self.render_datajudge(lib_result)
+        render_result = self.render_artifact(lib_result)
+        return {
+            RES_WRAP: lib_result,
+            RES_DJ: dj_result,
+            RES_RENDER: render_result,           
+            RES_LIB: self.get_library()
+        }
 
     @abstractmethod
     def validate(self) -> Any:
         """
         Validate a resource.
-        """
-
-    @abstractmethod
-    def rebuild_constraints(self) -> Any:
-        """
-        Rebuild input constraints.
         """

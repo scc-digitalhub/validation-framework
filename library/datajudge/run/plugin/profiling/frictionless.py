@@ -13,11 +13,13 @@ from frictionless import Resource
 from datajudge.data.datajudge_profile import DatajudgeProfile
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.run.plugin.base_plugin import PluginBuilder
+from datajudge.utils.commons import FRICTIONLESS
 from datajudge.utils.io_utils import write_bytesio
-from datajudge.utils.utils import exec_decorator
+from datajudge.run.plugin.plugin_utils import exec_decorator
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
+    from datajudge.run.plugin.base_plugin import Result
 
 
 class ProfilePluginFrictionless(Profiling):
@@ -51,12 +53,12 @@ class ProfilePluginFrictionless(Profiling):
         return profile
 
     @exec_decorator
-    def render_datajudge(self) -> DatajudgeProfile:
+    def render_datajudge(self, result: Result) -> DatajudgeProfile:
         """
         Return a DatajudgeProfile.
         """
-        rep = self.result.artifact.to_dict()
-        duration = self.result.execution_time
+        rep = result.artifact.to_dict()
+        duration = result.duration
         fields = rep.get("schema", {}).get("fields")
         try:
             rep.pop("schema")
@@ -70,14 +72,17 @@ class ProfilePluginFrictionless(Profiling):
                                 fields)
 
     @exec_decorator
-    def render_artifact(self) -> List[tuple]:
+    def render_artifact(self, result: Result) -> List[tuple]:
         """
         Return a rendered profile ready to be persisted as artifact.
         """
         artifacts = []
-        profile = write_bytesio(self.result.artifact.to_json())
-        filename = self._fn_profile.format("frictionless.json")
-        artifacts.append(self.get_render_tuple(profile, filename))
+        if result.artifact is None:
+            _object = {"error": result.errors}
+        else:
+            _object = write_bytesio(result.artifact.to_json())
+        filename = self._fn_profile.format(f"{FRICTIONLESS}.json")
+        artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
     @staticmethod
@@ -101,7 +106,7 @@ class ProfileBuilderFrictionless(PluginBuilder):
     """
 
     def build(self,
-              resources: list
+              resources: List[DataResource]
               ) -> ProfilePluginFrictionless:
         """
         Build a plugin.

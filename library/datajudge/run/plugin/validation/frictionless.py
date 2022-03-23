@@ -14,13 +14,14 @@ from frictionless import Report, Resource, Schema, describe_schema
 from datajudge.data.datajudge_report import DatajudgeReport
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.validation.validation_plugin import (
-    Validation, ValidationResult)
-from datajudge.utils.config import STATUS_INIT
-from datajudge.utils.utils import exec_decorator
+    Validation)
+from datajudge.utils.commons import FRICTIONLESS
+from datajudge.run.plugin.plugin_utils import exec_decorator
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
-    from datajudge.utils.config import Constraint
+    from datajudge.utils.config import Constraint, ConstraintsFrictionless
+    from datajudge.run.plugin.base_plugin import Result
 
 
 class ValidationPluginFrictionless(Validation):
@@ -36,7 +37,7 @@ class ValidationPluginFrictionless(Validation):
 
     def setup(self,
               resource: DataResource,
-              constraint: Constraint,
+              constraint: ConstraintsFrictionless,
               exec_args: dict) -> None:
         """
         Set plugin resource.
@@ -44,8 +45,6 @@ class ValidationPluginFrictionless(Validation):
         self.resource = resource
         self.constraint = constraint
         self.exec_args = exec_args
-        self.result = ValidationResult(status=STATUS_INIT,
-                                       constraint=self.constraint)
 
     @exec_decorator
     def validate(self) -> Report:
@@ -86,12 +85,12 @@ class ValidationPluginFrictionless(Validation):
         return Schema(schema)
 
     @exec_decorator
-    def render_datajudge(self) -> DatajudgeReport:
+    def render_datajudge(self, result: Result) -> DatajudgeReport:
         """
         Return a DatajudgeReport.
         """
-        report = self.result.artifact
-        constraint = self.result.constraint.dict()
+        report = result.artifact
+        constraint = self.constraint.dict()
         duration = report.get("time")
         valid = report.get("valid")
         spec = ["fieldName", "rowNumber", "code", "note", "description"]
@@ -106,14 +105,17 @@ class ValidationPluginFrictionless(Validation):
                                errors)
 
     @exec_decorator
-    def render_artifact(self) -> List[tuple]:
+    def render_artifact(self, result: Result) -> List[tuple]:
         """
         Return a rendered report ready to be persisted as artifact.
         """
         artifacts = []
-        report = dict(self.result.artifact)
-        filename = self._fn_report.format("frictionless.json")
-        artifacts.append(self.get_render_tuple(report, filename))
+        if result.artifact is None:
+            _object = {"error": result.errors}
+        else:
+            _object = dict(result.artifact)
+        filename = self._fn_report.format(f"{FRICTIONLESS}.json")
+        artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
     @staticmethod
@@ -137,7 +139,7 @@ class ValidationBuilderFrictionless(PluginBuilder):
     """
     def build(self,
               resources: List[DataResource],
-              constraints: list) -> ValidationPluginFrictionless:
+              constraints: List[Constraint]) -> ValidationPluginFrictionless:
         """
         Build a plugin for every resource and every constraint.
         """

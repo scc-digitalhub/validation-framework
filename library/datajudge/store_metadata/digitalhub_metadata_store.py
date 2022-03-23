@@ -9,7 +9,7 @@ from typing import Optional
 from requests.models import Response
 
 from datajudge.store_metadata.metadata_store import MetadataStore
-from datajudge.utils import config as cfg
+from datajudge.utils import commons as cfg
 from datajudge.utils.exceptions import RunError
 from datajudge.utils.rest_utils import api_post_call, api_put_call
 from datajudge.utils.uri_utils import check_url
