@@ -93,11 +93,11 @@ class ValidationPluginDuckDB(Validation):
             if empty:
                 if result.empty:
                     return True, None
-                return False, ("Table is not empty")
+                return False, "Table is not empty."
             else:
                 if not result.empty:
                     return True, None
-                return False, ("Table is empty")
+                return False, "Table is empty."
         except Exception as ex:
             return False, ex.args
 
@@ -111,7 +111,7 @@ class ValidationPluginDuckDB(Validation):
             res_val = result.iloc[0, 0]
             if bool(res_val == value):
                 return True, None
-            return False, (f"Expected value {value}, instead got {res_val}")
+            return False, f"Expected value {value}, instead got {res_val}."
         except Exception as ex:
             return False, ex.args
 
@@ -147,7 +147,8 @@ class ValidationPluginDuckDB(Validation):
                 if valid:
                     return True, None
                 return False, f"Expected value between {ll}{mtc.group(2)}, \
-                                {mtc.group(3)}{ul}"
+                                {mtc.group(3)}{ul}."
+            return False, "Invalid range format."
 
         except Exception as ex:
             return False, ex.args
