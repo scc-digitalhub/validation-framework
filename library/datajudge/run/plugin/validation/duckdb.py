@@ -3,7 +3,9 @@ Frictionless implementation of validation plugin.
 """
 # pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
+from collections import namedtuple
 
+import re
 import typing
 from typing import Any, List, Tuple
 
@@ -16,6 +18,7 @@ from datajudge.run.plugin.validation.validation_plugin import (
     Validation)
 from datajudge.utils.commons import DUCKDB, EMPTY, EXACT, NON_EMPTY, RANGE
 from datajudge.run.plugin.plugin_utils import exec_decorator
+from datajudge.utils.exceptions import ValidationError
 from datajudge.utils.utils import flatten_list
 
 if typing.TYPE_CHECKING:
@@ -53,44 +56,101 @@ class ValidationPluginDuckDB(Validation):
         """
         self.connection.execute(self.constraint.query)
         result = self.connection.fetchdf()
-        valid, error = self.check_valid(result,
-                                        self.constraint.expect,
-                                        self.constraint.value)
+        valid, errors = self.evaluate_validity(result,
+                                               self.constraint.expect,
+                                               self.constraint.value)
         return {
             "result": result.to_dict(),
             "valid": valid,
-            "error": error
+            "errors": errors
         }
 
-    @staticmethod
-    def check_valid(result: pd.DataFrame,
-                    expect: str,
-                    value: Any) -> Tuple[bool, list]:
+    def evaluate_validity(self,
+                            result: pd.DataFrame,
+                            expect: str,
+                            value: Any) -> Tuple[bool, list]:
         """
-        Parse query result accordigly to expected result.
+        Evaluate validity of query results.
         """
         if expect == EMPTY:
-            valid = result.empty
-            error = ("Table is not empty")
+            return self.evaluate_empty(result, empty=True)
         elif expect == NON_EMPTY:
-            valid = not result.empty
-            error = ("Table is empty")
+            return self.evaluate_empty(result, empty=False)
         elif expect == EXACT:
-            try:
-                res_val = result.iloc[0, 0]
-                valid = bool(res_val == value)
-                error = (f"Expected value {value}, instead got {res_val}")
-            except:
-                valid = False
-                error = (f"Expected value {value}, but something went wrong")
+            return self.evaluate_exact(result, value)
         elif expect == RANGE:
-            raise NotImplementedError
+            return self.evaluate_range(result, value)
         else:
             raise NotImplementedError
 
-        if valid:
-            return valid, None
-        return valid, error
+    @staticmethod
+    def evaluate_empty(result: pd.DataFrame,
+                       empty: bool) -> tuple:
+        """
+        Evaluate table emptiness.
+        """
+        try:
+            if empty:
+                if result.empty:
+                    return True, None
+                return False, ("Table is not empty")
+            else:
+                if not result.empty:
+                    return True, None
+                return False, ("Table is empty")
+        except Exception as ex:
+            return False, ex.args
+
+    @staticmethod
+    def evaluate_exact(result: pd.DataFrame,
+                       value: Any) -> tuple:
+        """
+        Evaluate if a value is exactly as expected.
+        """
+        try:
+            res_val = result.iloc[0, 0]
+            if bool(res_val == value):
+                return True, None
+            return False, (f"Expected value {value}, instead got {res_val}")
+        except Exception as ex:
+            return False, ex.args
+
+    @staticmethod
+    def evaluate_range(result: pd.DataFrame,
+                       _range: Any) -> tuple:
+        try:
+            res_val = result.iloc[0, 0]
+            
+            regex = r"^(\[|\()([+-]?[0-9]+[.]?[0-9]*),\s?([+-]?[0-9]+[.]?[0-9]*)(\]|\))$"
+            mtc = re.match(regex, _range)
+            if mtc:
+                # Upper and lower limit type
+                ll = mtc.group(1)
+                ul = mtc.group(4)
+                
+                # Values
+                _min = float(mtc.group(2))
+                _max = float(mtc.group(3))
+                
+                # Value to check
+                cv = float(res_val)
+
+                if ll == "[" and ul == "]":
+                    valid = (_min <= cv <= _max)
+                elif ll == "[" and ul == ")":
+                    valid = (_min <= cv < _max)
+                elif ll == "(" and ul == "]":
+                    valid = (_min < cv <= _max)
+                elif ll == "(" and ul == ")":
+                    valid = (_min < cv < _max)
+
+                if valid:
+                    return True, None
+                return False, f"Expected value between {ll}{mtc.group(2)}, \
+                                {mtc.group(3)}{ul}"
+
+        except Exception as ex:
+            return False, ex.args
 
     @exec_decorator
     def render_datajudge(self, result: Result) -> DatajudgeReport:
@@ -100,7 +160,7 @@ class ValidationPluginDuckDB(Validation):
         constraint = self.constraint.dict()
         duration = result.duration
         valid = result.artifact.get("valid")
-        errors = result.artifact.get("error")
+        errors = result.artifact.get("errors")
         return DatajudgeReport(self.get_lib_name(),
                                self.get_lib_version(),
                                duration,
@@ -115,7 +175,7 @@ class ValidationPluginDuckDB(Validation):
         """
         artifacts = []
         if result.artifact is None:
-            _object = {"error": result.errors}
+            _object = {"errors": result.errors}
         else:
             _object = dict(result.artifact)
         filename = self._fn_report.format(f"{DUCKDB}.json")
@@ -141,15 +201,24 @@ class ValidationBuilderDuckDB(PluginBuilder):
     """
     Validation plugin builder.
     """
+    
+    def __init__(self, exec_args: dict) -> None:
+        super().__init__(exec_args),
+        self.setup()
+    
+    def setup(self) -> None:
+        """
+        Setup db connection and register resources.
+        """
+        # Setup connection
+        self.con = duckdb.connect(database = ":memory:")
+    
     def build(self,
               resources: List[DataResource],
               constraints: List[Constraint]) -> ValidationPluginDuckDB:
         """
         Build a plugin for every resource and every constraint.
         """
-        
-        self.setup()
-        
         # Filter resource used
         res_names = set(flatten_list(
                             [const.resources for const in constraints if 
@@ -165,13 +234,6 @@ class ValidationBuilderDuckDB(PluginBuilder):
                 plugins.append(plugin)
 
         return plugins
-    
-    def setup(self) -> None:
-        """
-        Setup db connection and register resources.
-        """
-        # Setup connection
-        self.con = duckdb.connect(database = ":memory:")
       
     def register_resources(self, resources: List[DataResource]) -> None:
         """

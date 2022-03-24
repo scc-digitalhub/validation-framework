@@ -78,7 +78,7 @@ class ProfilePluginFrictionless(Profiling):
         """
         artifacts = []
         if result.artifact is None:
-            _object = {"error": result.errors}
+            _object = {"errors": result.errors}
         else:
             _object = write_bytesio(result.artifact.to_json())
         filename = self._fn_profile.format(f"{FRICTIONLESS}.json")

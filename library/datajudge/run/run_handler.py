@@ -143,7 +143,7 @@ class RunHandler:
         """
         for builder in builders:
             try:
-                builder.cleanup()
+                builder.destroy()
             except:
                 pass
 

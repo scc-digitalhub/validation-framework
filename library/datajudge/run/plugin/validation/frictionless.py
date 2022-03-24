@@ -111,7 +111,7 @@ class ValidationPluginFrictionless(Validation):
         """
         artifacts = []
         if result.artifact is None:
-            _object = {"error": result.errors}
+            _object = {"errors": result.errors}
         else:
             _object = dict(result.artifact)
         filename = self._fn_report.format(f"{FRICTIONLESS}.json")

@@ -25,3 +25,12 @@ class RunError(DatajudgeError):
     def __init__(self, msg: str):
         self.message = msg
         super().__init__(self.message)
+
+
+class ValidationError(DatajudgeError):
+    """
+    Raised when incontered errors on validation.
+    """
+    def __init__(self, msg: str):
+        self.message = msg
+        super().__init__(self.message)

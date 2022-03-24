@@ -151,7 +151,7 @@ class ProfilePluginPandasProfiling(Profiling):
         artifacts = []
 
         if result.artifact is None:
-            _object = {"error": result.errors}
+            _object = {"errors": result.errors}
             filename = self._fn_profile.format(f"{PANDAS_PROFILING}.json")
             artifacts.append(self.get_render_tuple(_object, filename))
         else:
