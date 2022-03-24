@@ -4,6 +4,7 @@ Plugin factory module.
 from __future__ import annotations
 
 import typing
+from typing import List
 
 from datajudge.run.plugin import (InferenceBuilderDummy,
                                   InferenceBuilderFrictionless,
@@ -13,24 +14,24 @@ from datajudge.run.plugin import (InferenceBuilderDummy,
                                   ValidationBuilderDuckDB,
                                   ValidationBuilderDummy,
                                   ValidationBuilderFrictionless)
-from datajudge.utils.commons import (DUCKDB, DUMMY, FRICTIONLESS, OP_INF,
-                                    OP_PRO, OP_VAL, PANDAS_PROFILING)
+from datajudge.utils.commons import (DUCKDB, DUMMY, FRICTIONLESS, INFERENCE,
+                                    PROFILING, VALIDATION, PANDAS_PROFILING)
 
 if typing.TYPE_CHECKING:
-    from datajudge.utils.config import OpsConfig
+    from datajudge.utils.config import ExecConfig
 
 
 REGISTRY = {
-    OP_INF: {
+    INFERENCE: {
         DUMMY: InferenceBuilderDummy,
         FRICTIONLESS: InferenceBuilderFrictionless,
         },
-    OP_VAL: {
+    VALIDATION: {
         DUMMY: ValidationBuilderDummy,
         DUCKDB: ValidationBuilderDuckDB,
         FRICTIONLESS: ValidationBuilderFrictionless,
         },
-    OP_PRO: {
+    PROFILING: {
         DUMMY: ProfileBuilderDummy,
         FRICTIONLESS: ProfileBuilderFrictionless,
         PANDAS_PROFILING: ProfileBuilderPandasProfiling,
@@ -38,17 +39,15 @@ REGISTRY = {
 }
 
 
-def get_builder(config: OpsConfig,
+def get_builder(config: List[ExecConfig],
                 typology: str) -> list:
     """
     Factory method that creates plugin builders.
     """
     builders = []
-    if config.enabled:
-        for cfg in config.config:
-            try:
-                builders.append(REGISTRY[typology][cfg.library](cfg.exec_args))
-            except KeyError:
-                raise NotImplementedError
-        return builders
-    return [REGISTRY[typology]["_dummy"]({})]
+    for cfg in config:
+        try:
+            builders.append(REGISTRY[typology][cfg.library](cfg.execArgs))
+        except KeyError:
+            raise NotImplementedError
+    return builders

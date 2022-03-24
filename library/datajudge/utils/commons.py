@@ -16,7 +16,8 @@ EMPTY = "empty"
 NON_EMPTY = "non-empty"
 EXACT = "exact"
 RANGE = "range"
-
+MINIMUM = "minimum"
+MAXIMUM = "maximum"
 
 # API endpoints
 API_BASE = "/api/project/"
@@ -44,9 +45,9 @@ MT_ARTIFACT_METADATA = "artifact"
 MT_RUN_ENV = "run_env"
 
 # Execution operations
-OP_INF = "inference"
-OP_PRO = "profiling"
-OP_VAL = "validation"
+INFERENCE = "inference"
+PROFILING = "profiling"
+VALIDATION = "validation"
 
 # Result typology
 RES_WRAP = "wrapped"

@@ -3,10 +3,10 @@ Frictionless implementation of validation plugin.
 """
 # pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
-from collections import namedtuple
 
 import re
 import typing
+from copy import deepcopy
 from typing import Any, List, Tuple
 
 import duckdb
@@ -18,7 +18,6 @@ from datajudge.run.plugin.validation.validation_plugin import (
     Validation)
 from datajudge.utils.commons import DUCKDB, EMPTY, EXACT, NON_EMPTY, RANGE
 from datajudge.run.plugin.plugin_utils import exec_decorator
-from datajudge.utils.exceptions import ValidationError
 from datajudge.utils.utils import flatten_list
 
 if typing.TYPE_CHECKING:
@@ -222,10 +221,12 @@ class ValidationBuilderDuckDB(PluginBuilder):
         """
         # Filter resource used
         res_names = set(flatten_list(
-                            [const.resources for const in constraints if 
+                            [deepcopy(const.resources) for const in constraints if 
                                 const.type == "duckdb"]))
         res_to_register = [res for res in resources if res.name in res_names]
         self.register_resources(res_to_register)
+
+        import pdb; pdb.set_trace()
 
         plugins = []
         for const in constraints:

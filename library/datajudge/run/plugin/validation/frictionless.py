@@ -62,16 +62,16 @@ class ValidationPluginFrictionless(Validation):
         Rebuild constraints.
         """
         field_name = self.constraint.field
-        field_type = self.constraint.field_type
+        field_type = self.constraint.fieldType
         val = self.constraint.value
         con_type = self.constraint.constraint
-        severity = self.constraint.severity
+        weight = self.constraint.weight
 
         schema = deepcopy(self.resource.schema)
 
         for field in schema["fields"]:
             if field["name"] == field_name:
-                field["error"] = {"severity": severity}
+                field["error"] = {"weight": weight}
                 if con_type == "type":
                     field["type"] = field_type
                 elif con_type == "format":

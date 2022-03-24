@@ -8,8 +8,9 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-from datajudge.utils.commons import (DUCKDB, DUMMY, EMPTY, EXACT, FRICTIONLESS,
-                                    NON_EMPTY, RANGE)
+from datajudge.utils.commons import (DUCKDB, DUMMY, FRICTIONLESS,
+                                    EMPTY, NON_EMPTY, EXACT,
+                                    RANGE, MINIMUM, MAXIMUM)
 
 
 class StoreConfig(BaseModel):
@@ -25,13 +26,13 @@ class Constraint(BaseModel):
     name: str
     title: str
     resources: List[str]
-    severity: int
+    weight: int
 
 
 class ConstraintsFrictionless(Constraint):
     type: Literal[FRICTIONLESS]
     field: str
-    field_type: str
+    fieldType: str
     constraint: str
     value: Any
 
@@ -39,23 +40,19 @@ class ConstraintsFrictionless(Constraint):
 class ConstraintsDuckDB(Constraint):
     type: Literal[DUCKDB]
     query: str
-    expect: Literal[EMPTY, NON_EMPTY, EXACT, RANGE]
+    expect: Literal[EMPTY, NON_EMPTY, EXACT, RANGE, MINIMUM, MAXIMUM]
     value: Optional[Any] = None
+    check: Literal["value", "rows"] = "rows"
 
 
 class ExecConfig(BaseModel):
     _id: str = Field(default_factory=uuid4)
     library: Optional[str] = DUMMY
-    exec_args: Optional[dict] = {}
-    store_artifact: bool = False
-
-
-class OpsConfig(BaseModel):
-    enabled: bool = True
-    config: Optional[List[ExecConfig]] = [ExecConfig()]
+    execArgs: Optional[dict] = {}
+    storeArtifact: bool = False
 
 
 class RunConfig(BaseModel):
-    validation: Optional[OpsConfig] = OpsConfig()
-    inference: Optional[OpsConfig] = OpsConfig()
-    profiling: Optional[OpsConfig] = OpsConfig()
+    validation: Optional[List[ExecConfig]] = [ExecConfig()]
+    inference: Optional[List[ExecConfig]] = [ExecConfig()]
+    profiling: Optional[List[ExecConfig]] = [ExecConfig()]

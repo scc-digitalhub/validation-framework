@@ -7,9 +7,8 @@ import typing
 from typing import Any, List
 
 from datajudge.run.plugin.plugin_factory import get_builder
-from datajudge.utils.commons import (OP_INF, OP_PRO, OP_VAL,
-                                     RES_WRAP, RES_DJ,
-                                     RES_RENDER, RES_LIB)
+from datajudge.utils.commons import (INFERENCE, PROFILING, VALIDATION,
+                                     RES_WRAP, RES_DJ, RES_RENDER, RES_LIB)
 from datajudge.utils.utils import flatten_list
 
 if typing.TYPE_CHECKING:
@@ -35,7 +34,7 @@ class RunHandlerRegistry:
         """
         Setup the run handler registry.
         """
-        for ops in [OP_INF, OP_VAL, OP_PRO]:
+        for ops in [INFERENCE, VALIDATION, PROFILING]:
             self.registry[ops] = {}
             for res in [RES_WRAP, RES_DJ, RES_RENDER, RES_LIB]:
                 self.registry[ops][res] = []
@@ -85,9 +84,9 @@ class RunHandler:
         """
         Wrapper for plugins infer methods.
         """
-        builders = get_builder(self._config.inference, OP_INF)
+        builders = get_builder(self._config.inference, INFERENCE)
         plugins = [builder.build(resources) for builder in builders]
-        self.execute(plugins, OP_INF)
+        self.execute(plugins, INFERENCE)
         self.destroy(builders)
 
     def validate(self,
@@ -97,18 +96,18 @@ class RunHandler:
         """
         Wrapper for plugins validate methods.
         """
-        builders = get_builder(self._config.validation, OP_VAL)
+        builders = get_builder(self._config.validation, VALIDATION)
         plugins = [builder.build(resources, constraints) for builder in builders]
-        self.execute(plugins, OP_VAL)
+        self.execute(plugins, VALIDATION)
         self.destroy(builders)
 
     def profile(self, resources: List[DataResource]) -> None:
         """
         Wrapper for plugins profile methods.
         """
-        builders = get_builder(self._config.profiling, OP_PRO)
+        builders = get_builder(self._config.profiling, PROFILING)
         plugins = [builder.build(resources) for builder in builders]
-        self.execute(plugins, OP_PRO)
+        self.execute(plugins, PROFILING)
         self.destroy(builders)
 
     def execute(self,
@@ -157,52 +156,52 @@ class RunHandler:
         """
         Get a list of schemas produced by inference libraries.
         """
-        return [obj.artifact for obj in self.get_item(OP_INF, RES_WRAP)]
+        return [obj.artifact for obj in self.get_item(INFERENCE, RES_WRAP)]
 
     def get_artifact_report(self) -> List[Any]:
         """
         Get a list of reports produced by validation libraries.
         """
-        return [obj.artifact for obj in self.get_item(OP_VAL, RES_WRAP)]
+        return [obj.artifact for obj in self.get_item(VALIDATION, RES_WRAP)]
 
     def get_artifact_profile(self) -> List[Any]:
         """
         Get a list of profiles produced by profiling libraries.
         """
-        return [obj.artifact for obj in self.get_item(OP_PRO, RES_WRAP)]
+        return [obj.artifact for obj in self.get_item(PROFILING, RES_WRAP)]
 
     def get_datajudge_schema(self) -> List[DatajudgeSchema]:
         """
         Wrapper for plugins parsing methods.
         """
-        return [obj.artifact for obj in self.get_item(OP_INF, RES_DJ)]
+        return [obj.artifact for obj in self.get_item(INFERENCE, RES_DJ)]
 
     def get_datajudge_report(self) -> List[DatajudgeReport]:
         """
         Wrapper for plugins parsing methods.
         """
-        return [obj.artifact for obj in self.get_item(OP_VAL, RES_DJ)]
+        return [obj.artifact for obj in self.get_item(VALIDATION, RES_DJ)]
 
     def get_datajudge_profile(self) -> List[DatajudgeProfile]:
         """
         Wrapper for plugins parsing methods.
         """
-        return [obj.artifact for obj in self.get_item(OP_PRO, RES_DJ)]
+        return [obj.artifact for obj in self.get_item(PROFILING, RES_DJ)]
 
     def get_rendered_schema(self) -> List[Any]:
         """
         Get a list of schemas ready to be persisted.
         """
-        return flatten_list([obj.artifact for obj in self.get_item(OP_INF, RES_RENDER)])
+        return flatten_list([obj.artifact for obj in self.get_item(INFERENCE, RES_RENDER)])
 
     def get_rendered_report(self) -> List[Any]:
         """
         Get a list of reports ready to be persisted.
         """
-        return flatten_list([obj.artifact for obj in self.get_item(OP_VAL, RES_RENDER)])
+        return flatten_list([obj.artifact for obj in self.get_item(VALIDATION, RES_RENDER)])
 
     def get_rendered_profile(self) -> List[Any]:
         """
         Get a list of profiles ready to be persisted.
         """
-        return flatten_list([obj.artifact for obj in self.get_item(OP_PRO, RES_RENDER)])
+        return flatten_list([obj.artifact for obj in self.get_item(PROFILING, RES_RENDER)])
