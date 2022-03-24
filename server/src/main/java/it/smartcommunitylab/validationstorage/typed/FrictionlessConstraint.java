@@ -3,6 +3,8 @@ package it.smartcommunitylab.validationstorage.typed;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 @Valid
 public class FrictionlessConstraint extends TypedConstraint {
     /**
@@ -34,6 +36,22 @@ public class FrictionlessConstraint extends TypedConstraint {
         private ConstraintType(String label) {
             this.label = label;
         }
+        
+        @JsonValue
+        public String getLabel() {
+            return label;
+        }
+        
+        public static ConstraintType fromString(String s) {
+            for (ConstraintType e : ConstraintType.values()) {
+                if (e.label.equalsIgnoreCase(s)) {
+                    return e;
+                }
+            }
+            
+            throw new IllegalArgumentException("ConstraintType: '" + s + "' is not supported.");
+        }
+        
     }
 
     public String getField() {

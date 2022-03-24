@@ -10,4 +10,6 @@ public interface StoreRepository extends CrudRepository<Store, String> {
     
     List<Store> findByProjectId(String projectId);
     
+    List<Store> findByProjectIdAndName(String projectId, String name);
+    
 }

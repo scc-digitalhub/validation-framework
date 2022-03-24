@@ -8,6 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.Store;
 
 @Valid
 public class StoreDTO {
@@ -29,6 +30,23 @@ public class StoreDTO {
     private Map<String, Serializable> config;
 
     private Boolean isDefault;
+    
+    public static StoreDTO from(Store source) {
+        if (source == null)
+            return null;
+        
+        StoreDTO dto = new StoreDTO();
+        
+        dto.setId(source.getId());
+        dto.setProjectId(source.getProjectId());
+        dto.setName(source.getName());
+        dto.setTitle(source.getTitle());
+        dto.setPath(source.getPath());
+        dto.setConfig(source.getConfig());
+        dto.setIsDefault(source.getIsDefault());
+        
+        return dto;
+    }
 
     public String getId() {
         return id;

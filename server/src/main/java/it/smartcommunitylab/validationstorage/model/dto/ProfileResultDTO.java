@@ -2,16 +2,18 @@ package it.smartcommunitylab.validationstorage.model.dto;
 
 import java.util.List;
 
+import it.smartcommunitylab.validationstorage.model.RunStatus;
+
 public class ProfileResultDTO {
-    private String result;
+    private RunStatus result;
     
     private List<RunDataProfileDTO> reports;
 
-    public String getResult() {
+    public RunStatus getResult() {
         return result;
     }
 
-    public void setResult(String result) {
+    public void setResult(RunStatus result) {
         this.result = result;
     }
 

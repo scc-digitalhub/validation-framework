@@ -1,5 +1,7 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -11,6 +13,11 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.Constraint;
+import it.smartcommunitylab.validationstorage.model.DataResource;
+import it.smartcommunitylab.validationstorage.model.Experiment;
+import it.smartcommunitylab.validationstorage.model.Run;
+import it.smartcommunitylab.validationstorage.model.RunConfig;
 
 /**
  * Request object: details an experiment.
@@ -37,6 +44,23 @@ public class ExperimentDTO {
     private RunConfigDTO runConfig;
 
     private Set<String> tags;
+    
+    public static ExperimentDTO from(Experiment source) {
+        if (source == null)
+            return null;
+        
+        ExperimentDTO dto = new ExperimentDTO();
+        
+        dto.setId(source.getId());
+        dto.setProjectId(source.getProjectId());
+        dto.setName(source.getName());
+        dto.setTitle(source.getTitle());
+        dto.setDescription(source.getDescription());
+        dto.setRunConfig(RunConfigDTO.from(source.getRunConfig()));
+        dto.setTags(new HashSet<String>(source.getTags()));
+        
+        return dto;
+    }
 
     public String getId() {
         return id;

@@ -9,7 +9,9 @@ import javax.validation.constraints.Pattern;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.Run;
 import it.smartcommunitylab.validationstorage.model.RunStatus;
+import it.smartcommunitylab.validationstorage.service.ExperimentService;
 
 @Valid
 public class RunDTO {
@@ -37,6 +39,25 @@ public class RunDTO {
     private RunMetadataDTO runMetadata;
 
     private RunEnvironmentDTO runEnvironment;
+    
+    public static RunDTO from(Run source, DataPackageDTO dataPackage, List<ConstraintDTO> constraints) {
+        if (source == null)
+            return null;
+        
+        RunDTO dto = new RunDTO();
+        
+        dto.setId(source.getId());
+        dto.setProjectId(source.getProjectId());
+        dto.setExperimentId(source.getExperimentId());
+        dto.setRunConfig(RunConfigDTO.from(source.getRunConfig()));
+        dto.setDataPackage(dataPackage);
+        dto.setConstraints(constraints);
+        dto.setRunStatus(source.getRunStatus());
+        dto.setRunMetadata(RunMetadataDTO.from(source.getRunMetadata()));
+        dto.setRunEnvironment(RunEnvironmentDTO.from(source.getRunEnvironment()));
+        
+        return dto;
+    }
 
     public String getId() {
         return id;

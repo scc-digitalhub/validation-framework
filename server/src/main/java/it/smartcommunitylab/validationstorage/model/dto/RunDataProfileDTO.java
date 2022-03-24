@@ -11,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.ReportMetadata;
+import it.smartcommunitylab.validationstorage.model.RunDataProfile;
 
 /**
  * Request object: profile for the data.
@@ -30,25 +32,44 @@ public class RunDataProfileDTO {
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String runId;
 
-    private DataResourceDTO resource;
-
-    /**
-     * May contain extra information.
-     */
-    private Map<String, Serializable> contents;
+    private String resourceName;
+    
+    private String type;
+    
+    private ReportMetadata metadata;
+    
+    private Map<String, Serializable> profile;
 
     public RunDataProfileDTO() {
-        contents = new HashMap<String, Serializable>();
+        profile = new HashMap<String, Serializable>();
+    }
+    
+    public static RunDataProfileDTO from(RunDataProfile source) {
+        if (source == null)
+            return null;
+        
+        RunDataProfileDTO dto = new RunDataProfileDTO();
+        
+        dto.setId(source.getId());
+        dto.setProjectId(source.getProjectId());
+        dto.setExperimentId(source.getExperimentId());
+        dto.setRunId(source.getRunId());
+        dto.setResourceName(source.getResourceName());
+        dto.setType(source.getType());
+        dto.setMetadata(source.getMetadata());
+        dto.setProfile(source.getProfile());
+        
+        return dto;
     }
 
     @JsonAnyGetter
-    public Map<String, Serializable> getContentMap() {
-        return contents;
+    public Map<String, Serializable> getProfileMap() {
+        return profile;
     }
 
     @JsonAnySetter
-    public void addContent(String key, Serializable value) {
-        contents.put(key, value);
+    public void addProfile(String key, Serializable value) {
+        profile.put(key, value);
     }
 
     public String getId() {
@@ -83,20 +104,36 @@ public class RunDataProfileDTO {
         this.runId = runId;
     }
 
-    public DataResourceDTO getResource() {
-        return resource;
+    public String getResourceName() {
+        return resourceName;
     }
 
-    public void setResource(DataResourceDTO resource) {
-        this.resource = resource;
+    public void setResourceName(String resourceName) {
+        this.resourceName = resourceName;
     }
 
-    public Map<String, Serializable> getContents() {
-        return contents;
+    public String getType() {
+        return type;
     }
 
-    public void setContents(Map<String, Serializable> contents) {
-        this.contents = contents;
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public ReportMetadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(ReportMetadata metadata) {
+        this.metadata = metadata;
+    }
+
+    public Map<String, Serializable> getProfile() {
+        return profile;
+    }
+
+    public void setProfile(Map<String, Serializable> profile) {
+        this.profile = profile;
     }
 
 }

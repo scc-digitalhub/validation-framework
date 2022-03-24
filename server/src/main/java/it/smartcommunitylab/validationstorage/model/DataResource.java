@@ -18,7 +18,7 @@ import javax.validation.constraints.Pattern;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Entity
-@Table(name = "resources", uniqueConstraints = @UniqueConstraint(columnNames = { "package_name", "name" }))
+@Table(name = "resources", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "package_name", "name" }))
 public class DataResource {
     @Id
     private String id;
@@ -51,7 +51,7 @@ public class DataResource {
     
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(name="schema", column=@Column(name="schema"))
+        @AttributeOverride(name="schema", column=@Column(name="typed_schema"))
     })
     private Schema schema;
 

@@ -1,14 +1,26 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import java.io.Serializable;
+
 import javax.persistence.Embeddable;
 
 @Embeddable
-public class RunConfigImpl {
+public class RunConfigImpl implements Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -1493624082013576419L;
+
     private Boolean enable;
     
     private String type;
     
     private String library;
+    
+    @Override
+    public String toString() {
+        return "RunConfigImpl: enable=" + enable + ", type=" + type + ", library=" + library;
+    }
 
     public Boolean getEnable() {
         return enable;

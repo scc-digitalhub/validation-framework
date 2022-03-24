@@ -1,5 +1,7 @@
 package it.smartcommunitylab.validationstorage.typed;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public class DuckDBConstraint extends TypedConstraint {
     private String query;
     
@@ -8,10 +10,32 @@ public class DuckDBConstraint extends TypedConstraint {
     private String value;
     
     enum Expect {
-        empty,
-        nonEmpty,
-        exact,
-        range
+        EMPTY("empty"),
+        NON_EMPTY("nonEmpty"),
+        EXACT("exact"),
+        RANGE("range");
+        
+        public final String label;
+        
+        private Expect(String label) {
+            this.label = label;
+        }
+        
+        @JsonValue
+        public String getLabel() {
+            return label;
+        }
+        
+        public static Expect fromString(String s) {
+            for (Expect e : Expect.values()) {
+                if (e.label.equalsIgnoreCase(s)) {
+                    return e;
+                }
+            }
+            
+            throw new IllegalArgumentException("Expect: '" + s + "' is not supported.");
+        }
+        
     }
     
     public String getQuery() {

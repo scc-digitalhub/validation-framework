@@ -8,7 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface RunValidationReportRepository extends CrudRepository<RunValidationReport, String> {
     
-    List<RunValidationReport> findByProjectId(String projectId);
+    List<RunValidationReport> findByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
     
     List<RunValidationReport> findByRunId(String runId);
     

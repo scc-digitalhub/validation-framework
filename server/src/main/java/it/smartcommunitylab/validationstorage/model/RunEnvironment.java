@@ -4,22 +4,23 @@ import java.io.Serializable;
 import java.util.Map;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
-import org.springframework.data.annotation.Id;
-
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
 
 /**
  * Short report on the validation's result.
  */
 @Entity
-@Table(name = "run_environments", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "experiment_name",
-        "run_name" }))
+@Table(name = "run_environments", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "experiment_id", "run_id" }))
 public class RunEnvironment {
     @Id
     private String id;
@@ -42,9 +43,8 @@ public class RunEnvironment {
     @Column(name = "datajudge_version")
     private String datajudgeVersion;
 
-    /**
-     * May contain extra information.
-     */
+    @Lob
+    @Convert(converter = HashMapConverter.class)
     private Map<String, Serializable> contents;
 
     public String getId() {

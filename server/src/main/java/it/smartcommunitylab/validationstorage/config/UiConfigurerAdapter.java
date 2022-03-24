@@ -43,7 +43,7 @@ public class UiConfigurerAdapter extends WebSecurityConfigurerAdapter {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
+    //@Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         InMemoryUserDetailsManagerConfigurer<AuthenticationManagerBuilder> configurer = auth.inMemoryAuthentication();
 

@@ -10,4 +10,6 @@ public interface ConstraintRepository extends CrudRepository<Constraint, String>
     List<Constraint> findByProjectIdAndExperimentId(String projectId, String experimentId);
     
     List<Constraint> findByExperimentId(String experimentId);
+    
+    List<Constraint> findByProjectIdAndExperimentIdAndName(String projectId, String experimentId, String name);
 }

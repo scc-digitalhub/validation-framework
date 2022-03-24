@@ -34,4 +34,6 @@ public class ValidationStorageConstants {
     public static final String NAME_PATTERN = "^[a-zA-Z0-9_-]+$";
     public static final String TITLE_PATTERN = "^[a-zA-Z0-9 _-]+$";
     
+    public static final Integer DEFAULT_ERROR_SEVERITY = 5;
+    
 }

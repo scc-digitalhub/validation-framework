@@ -3,6 +3,11 @@ package it.smartcommunitylab.validationstorage.typed;
 import java.util.List;
 
 public class TableSchema extends TypedSchema {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -8812097352804710997L;
+    
     private List<ColumnField> fields;
     
     static class ColumnField {

@@ -1,7 +1,4 @@
 spring:
-  data:
-    mongodb:
-      uri: mongodb://admin:password@localhost:27017/validation?authSource=admin
   security:
     oauth2:
       client:

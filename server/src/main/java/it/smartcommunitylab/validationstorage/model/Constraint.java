@@ -19,7 +19,7 @@ import it.smartcommunitylab.validationstorage.converter.TypedConstraintConverter
 import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 
 @Entity
-@Table(name = "constraints", uniqueConstraints = @UniqueConstraint(columnNames = { "experiment_id", "name" }))
+@Table(name = "constraints", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "experiment_id", "name" }))
 public class Constraint implements Serializable {
     /**
      * 
@@ -60,6 +60,7 @@ public class Constraint implements Serializable {
 
     @Lob
     @Convert(converter = TypedConstraintConverter.class)
+    @Column(name = "typed_constraint")
     private TypedConstraint constraint;
 
     public String getId() {

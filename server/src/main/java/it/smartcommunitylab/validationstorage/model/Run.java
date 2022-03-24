@@ -7,6 +7,8 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -14,8 +16,6 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-
-import org.springframework.data.annotation.Id;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
@@ -39,7 +39,7 @@ public class Run {
 
     // Copied from the experiment's current RunConfig, cannot be modified
     @OneToOne
-    @Column(name = "run_config")
+    @JoinColumn(name = "config")
     private RunConfig runConfig;
 
     // Key is resource's name
@@ -58,26 +58,26 @@ public class Run {
 
     // These documents are populated as results are obtained
     @OneToOne()
-    @Column(name = "run_metadata")
+    @JoinColumn(name = "run_metadata")
     private RunMetadata runMetadata;
 
     @OneToOne()
-    @Column(name = "run_environment")
+    @JoinColumn(name = "run_environment")
     private RunEnvironment runEnvironment;
 
-    @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
-    @Column(name = "artifact_metadata")
+    @OneToMany(mappedBy = "runId", fetch = FetchType.LAZY)
+    @Column(name = "run_artifact_metadata")
     private List<ArtifactMetadata> artifactMetadata;
 
-    @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "runId", fetch = FetchType.LAZY)
     @Column(name = "run_data_profiles")
     private List<RunDataProfile> runDataProfiles;
 
-    @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "runId", fetch = FetchType.LAZY)
     @Column(name = "run_validation_reports")
     private List<RunValidationReport> runValiationReports;
 
-    @OneToMany(mappedBy = "run_id", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "runId", fetch = FetchType.LAZY)
     @Column(name = "run_data_schemas")
     private List<RunDataSchema> runDataSchemas;
 

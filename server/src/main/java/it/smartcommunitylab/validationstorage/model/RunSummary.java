@@ -17,7 +17,7 @@ public class RunSummary {
     private String id;
     
     @NotBlank
-    @Pattern(regexp = ValidationStorageConstants.ID_PATTERN)
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
     
     @NotNull
@@ -32,8 +32,6 @@ public class RunSummary {
     private List<ArtifactMetadata> artifactMetadata;
 
     private RunDataProfile dataProfile;
-
-    private RunDataResource dataResource;
 
     private RunEnvironment runEnvironment;
 
@@ -85,14 +83,6 @@ public class RunSummary {
     
     public void setDataProfile(RunDataProfile dataProfile) {
         this.dataProfile = dataProfile;
-    }
-
-    public RunDataResource getDataResource() {
-        return dataResource;
-    }
-    
-    public void setDataResource(RunDataResource dataResource) {
-        this.dataResource = dataResource;
     }
 
     public RunEnvironment getRunEnvironment() {

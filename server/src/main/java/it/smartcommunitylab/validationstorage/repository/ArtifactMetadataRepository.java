@@ -8,13 +8,13 @@ import org.springframework.data.repository.CrudRepository;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 
 public interface ArtifactMetadataRepository extends CrudRepository<ArtifactMetadata, String> {
-    List<ArtifactMetadata> findByProjectId(String projectId);
+    List<ArtifactMetadata> findByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
     
     List<ArtifactMetadata> findByRunId(String runId);
     
     void deleteByProjectId(String projectId);
     
-    void deleteByExperimentId(String experimentId);
+    void deleteByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
     
     void deleteByRunId(String runId);
 

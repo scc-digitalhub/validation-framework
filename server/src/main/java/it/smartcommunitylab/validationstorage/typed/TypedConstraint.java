@@ -6,6 +6,9 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import it.smartcommunitylab.validationstorage.typed.DuckDBConstraint.Expect;
+import it.smartcommunitylab.validationstorage.typed.FrictionlessConstraint.ConstraintType;
+
 public abstract class TypedConstraint implements Serializable {
     /**
      * 
@@ -21,9 +24,21 @@ public abstract class TypedConstraint implements Serializable {
         String type = map.get("type").toString();
         
         if ("frictionless".equals(type)) {
-            return objectMapper.convertValue(map, FrictionlessConstraint.class);
+            FrictionlessConstraint constraint = new FrictionlessConstraint();
+            constraint.type = type;
+            constraint.setField(map.get("field").toString());
+            constraint.setFieldType(FieldType.fromString(map.get("fieldType").toString()));
+            constraint.setConstraintType(ConstraintType.fromString(map.get("constraintType").toString()));
+            constraint.setValue(map.get("value").toString());
+            return constraint;
+            //return objectMapper.convertValue(map, FrictionlessConstraint.class);
         } else if ("duckdb".equals(type)) {
-            return objectMapper.convertValue(map, DuckDBConstraint.class);
+            DuckDBConstraint constraint = new DuckDBConstraint();
+            constraint.setQuery(map.get("query").toString());
+            constraint.setExpect(Expect.fromString(map.get("expect").toString()));
+            constraint.setValue(map.get("value").toString());
+            return constraint;
+            //return objectMapper.convertValue(map, DuckDBConstraint.class);
         }
         
         throw new IllegalArgumentException("Invalid constraint type.");

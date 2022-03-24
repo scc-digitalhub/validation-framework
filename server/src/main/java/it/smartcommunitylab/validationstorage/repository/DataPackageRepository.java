@@ -9,5 +9,7 @@ import it.smartcommunitylab.validationstorage.model.DataPackage;
 public interface DataPackageRepository extends CrudRepository<DataPackage, String> {
     
     List<DataPackage> findByProjectId(String projectId);
+    
+    List<DataPackage> findByProjectIdAndName(String projectId, String name);
 
 }

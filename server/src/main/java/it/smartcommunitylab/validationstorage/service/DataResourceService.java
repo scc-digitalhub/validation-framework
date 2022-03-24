@@ -1,32 +1,42 @@
 package it.smartcommunitylab.validationstorage.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.Constraint;
 import it.smartcommunitylab.validationstorage.model.DataPackage;
 import it.smartcommunitylab.validationstorage.model.DataResource;
+import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Run;
 import it.smartcommunitylab.validationstorage.model.RunEnvironment;
 import it.smartcommunitylab.validationstorage.model.Schema;
 import it.smartcommunitylab.validationstorage.model.Store;
+import it.smartcommunitylab.validationstorage.model.dto.ConstraintDTO;
 import it.smartcommunitylab.validationstorage.model.dto.DataPackageDTO;
 import it.smartcommunitylab.validationstorage.model.dto.DataResourceDTO;
+import it.smartcommunitylab.validationstorage.model.dto.ExperimentDTO;
+import it.smartcommunitylab.validationstorage.model.dto.RunDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunEnvironmentDTO;
-import it.smartcommunitylab.validationstorage.model.dto.SchemaDTO;
 import it.smartcommunitylab.validationstorage.model.dto.StoreDTO;
 import it.smartcommunitylab.validationstorage.repository.DataPackageRepository;
 import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
-import it.smartcommunitylab.validationstorage.repository.SchemaRepository;
 import it.smartcommunitylab.validationstorage.repository.StoreRepository;
+import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 
+@Service
 public class DataResourceService {
     @Autowired
     private DataPackageRepository dataPackageRepository;
@@ -37,16 +47,22 @@ public class DataResourceService {
     @Autowired
     private DataResourceRepository dataResourceRepository;
     
-    @Autowired
-    private SchemaRepository schemaRepository;
-    
-    private DataPackage getPackage(String id) {
+    private DataPackage getDataPackage(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
         Optional<DataPackage> o = dataPackageRepository.findById(id);
         if (o.isPresent()) {
             return o.get();
+        }
+        
+        return null;
+    }
+    
+    private DataPackage getDataPackageByName(String projectId, String name) {
+        List<DataPackage> l = dataPackageRepository.findByProjectIdAndName(projectId, name);
+        if (l.size() > 0) {
+            return l.get(0);
         }
         
         return null;
@@ -64,7 +80,16 @@ public class DataResourceService {
         return null;
     }
     
-    private DataResource getResource(String id) {
+    private Store getStoreByName(String projectId, String name) {
+        List<Store> l = storeRepository.findByProjectIdAndName(projectId, name);
+        if (l.size() > 0) {
+            return l.get(0);
+        }
+        
+        return null;
+    }
+    
+    private DataResource getDataResource(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
@@ -76,122 +101,155 @@ public class DataResourceService {
         return null;
     }
     
-    private Schema getSchema(String id) {
-        if (ObjectUtils.isEmpty(id))
-            return null;
-
-        Optional<Schema> o = schemaRepository.findById(id);
-        if (o.isPresent()) {
-            return o.get();
+    private DataResource getDataResourceByName(String projectId, String packageName, String name) {
+        List<DataResource> l = dataResourceRepository.findByProjectIdAndPackageNameAndName(projectId, packageName, name);
+        if (l.size() > 0) {
+            return l.get(0);
         }
         
         return null;
-    }
-    
-    private DataPackageDTO makeDTO(DataPackage source) {
-        DataPackageDTO dto = new DataPackageDTO();
-        
-        dto.setId(source.getId());
-        dto.setProjectId(source.getProjectId());
-        dto.setName(source.getName());
-        dto.setTitle(source.getTitle());
-        
-        Set<String> resourceIds = new HashSet<String>();
-        for (DataResource i : source.getResources()) {
-            resourceIds.add(i.getId());
-        }
-        dto.setResourceIds(resourceIds);
-        
-        return dto;
-    }
-    
-    private StoreDTO makeDTO(Store source) {
-        StoreDTO dto = new StoreDTO();
-        
-        dto.setId(source.getId());
-        dto.setProjectId(source.getProjectId());
-        dto.setName(source.getName());
-        dto.setTitle(source.getTitle());
-        dto.setPath(source.getPath());
-        dto.setConfig(source.getConfig());
-        dto.setIsDefault(source.getIsDefault());
-        dto.setResources(null);
-        
-        return dto;
-    }
-    
-    private DataResourceDTO makeDTO(DataResource source) {
-        DataResourceDTO dto = new DataResourceDTO();
-        
-        dto.setId(source.getId());
-        dto.setProjectId(source.getProjectId());
-        dto.setPackageId(source.getPackageId());
-        dto.setStoreId(source.getStoreId());
-        dto.setName(source.getName());
-        dto.setTitle(source.getTitle());
-        dto.setSchema(makeDTO(source.getSchema()));
-        dto.setDataset(source.getDataset());
-        
-        return dto;
-    }
-    
-    private SchemaDTO makeDTO(Schema source) {
-        SchemaDTO dto = new SchemaDTO();
-        
-        dto.setId(source.getId());
-        Optional<DataResource> o = dataResourceRepository.findById(source.getResourceId());
-        if (o.isPresent()) {
-            dto.setResource(makeDTO(o.get()));
-        }
-        
-        return dto;
     }
     
     // Package
     public DataPackageDTO createDataPackage(String projectId, DataPackageDTO request) {
-        // TODO Auto-generated method stub
-        return null;
+        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
+        
+        String id = request.getId();
+        if (id != null) {
+            if (getDataPackage(id) != null)
+                throw new DocumentAlreadyExistsException("Document with id '" + id + "' already exists.");
+        } else {
+            id = UUID.randomUUID().toString();
+        }
+        
+        String name = request.getName();
+        if (getDataPackageByName(projectId, name) != null)
+            throw new DocumentAlreadyExistsException("Document '" + name + "' under project '" + projectId + "' already exists.");
+        
+        DataPackage document = new DataPackage();
+        
+        document.setId(id);
+        document.setProjectId(projectId);
+        document.setName(request.getName());
+        document.setTitle(request.getTitle());
+        document.setType(request.getType());
+        
+        /* TODO
+        List<DataResource> resources = new ArrayList<DataResource>();
+        for (DataResourceDTO r : request.getResources())
+            resources.add(DataResourceDTO.to(r));
+        document.setResources(resources);
+        */
+        
+        dataPackageRepository.save(document);
+        
+        return DataPackageDTO.from(document);
     }
    
     public List<DataPackageDTO> findDataPackages(String projectId) {
-        // TODO Auto-generated method stub
-        return null;
+        List<DataPackageDTO> dtos = new ArrayList<DataPackageDTO>();
+
+        Iterable<DataPackage> results = dataPackageRepository.findByProjectId(projectId);
+        
+        for (DataPackage r : results) {
+            dtos.add(DataPackageDTO.from(r));
+        }
+
+        return dtos;
     }
     
     public DataPackageDTO findDataPackageById(String projectId, String id) {
-        DataPackage document = getPackage(id);
+        DataPackage document = getDataPackage(id);
         
         if (document == null)
             throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
         
-        ValidationStorageUtils.checkIdMatch(projectId, document.getProjectId());
-        
-        return makeDTO(document);
+        return DataPackageDTO.from(document);
     }
     
     public DataPackageDTO findFrictionlessDataPackageById(String projectId, String id) {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO
+        DataPackage document = getDataPackage(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
+        
+        return DataPackageDTO.from(document);
     }
    
     public DataPackageDTO updateDataPackage(String projectId, String id, DataPackageDTO request) {
-        // TODO Auto-generated method stub
-        return null;
+        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
+        
+        DataPackage document = getDataPackage(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        
+        document.setTitle(request.getTitle());
+        document.setType(request.getType());
+        
+        /* TODO
+        List<DataResource> resources = new ArrayList<DataResource>();
+        for (DataResourceDTO r : request.getResources())
+            resources.add(DataResourceDTO.to(r));
+        document.setResources(resources);
+        */
+        
+        dataPackageRepository.save(document);
+        
+        return DataPackageDTO.from(document);
     }
    
     public void deleteDataPackage(String projectId, String id) {
+        DataPackage document = getDataPackage(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        // TODO delete runs/etc?
         dataPackageRepository.deleteById(id);
     }
     
     // Store
     public StoreDTO createStore(String projectId, StoreDTO request) {
-        // TODO Auto-generated method stub
-        return null;
+        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
+        
+        String id = request.getId();
+        if (id != null) {
+            if (getStore(id) != null)
+                throw new DocumentAlreadyExistsException("Document with id '" + id + "' already exists.");
+        } else {
+            id = UUID.randomUUID().toString();
+        }
+        
+        String name = request.getName();
+        if (getStoreByName(projectId, name) != null)
+            throw new DocumentAlreadyExistsException("Document '" + name + "' under project '" + projectId + "' already exists.");
+        
+        Store document = new Store();
+        
+        document.setId(id);
+        document.setProjectId(projectId);
+        document.setName(request.getName());
+        document.setTitle(request.getTitle());
+        document.setPath(request.getPath());
+        document.setConfig(request.getConfig());
+        document.setIsDefault(request.getIsDefault());
+        
+        storeRepository.save(document);
+        
+        return StoreDTO.from(document);
     }
     
     public List<StoreDTO> findStores(String projectId) {
-        // TODO Auto-generated method stub
-        return null;
+        List<StoreDTO> dtos = new ArrayList<StoreDTO>();
+
+        Iterable<Store> results = storeRepository.findByProjectId(projectId);
+        
+        for (Store r : results) {
+            dtos.add(StoreDTO.from(r));
+        }
+
+        return dtos;
     }
    
     public StoreDTO findStoreById(String projectId, String id) {
@@ -200,77 +258,115 @@ public class DataResourceService {
         if (document == null)
             throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
         
-        ValidationStorageUtils.checkIdMatch(projectId, document.getProjectId());
-        
-        return makeDTO(document);
+        return StoreDTO.from(document);
     }
    
     public StoreDTO updateStore(String projectId, String id, StoreDTO request) {
-        // TODO Auto-generated method stub
-        return null;
+        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
+        
+        Store document = getStore(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        
+        document.setTitle(request.getTitle());
+        document.setPath(request.getPath());
+        document.setConfig(request.getConfig());
+        document.setIsDefault(request.getIsDefault());
+        
+        storeRepository.save(document);
+        
+        return StoreDTO.from(document);
     }
    
     public void deleteStore(String projectId, String id) {
+        Store document = getStore(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        // TODO delete runs/etc?
         storeRepository.deleteById(id);
     }
     
     // Resource
     public DataResourceDTO createDataResource(String projectId, DataResourceDTO request) {
-        // TODO Auto-generated method stub
-        return null;
+        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
+        
+        String id = request.getId();
+        if (request.getId() != null) {
+            if (getDataResource(id) != null)
+                throw new DocumentAlreadyExistsException("Document with id '" + id + "' already exists.");
+        }
+        
+        String packageName = request.getPackageName();
+        String name = request.getName();
+        if (getDataResourceByName(projectId, packageName, name) != null)
+            throw new DocumentAlreadyExistsException("Document '" + name + "' under project '" + projectId + "', package '" + packageName + "' already exists.");
+        
+        DataResource document = DataResourceDTO.to(request);
+        document.setProjectId(projectId);
+        
+        dataResourceRepository.save(document);
+        
+        return DataResourceDTO.from(document);
     }
    
     public List<DataResourceDTO> findDataResources(String projectId) {
-        // TODO Auto-generated method stub
-        return null;
+        List<DataResourceDTO> dtos = new ArrayList<DataResourceDTO>();
+
+        Iterable<DataResource> results = dataResourceRepository.findByProjectId(projectId);
+        
+        for (DataResource r : results) {
+            dtos.add(DataResourceDTO.from(r));
+        }
+
+        return dtos;
     }
     
     public DataResourceDTO findDataResourceById(String projectId, String id) {
-        DataResource document = getResource(id);
+        DataResource document = getDataResource(id);
         
         if (document == null)
             throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
         
-        ValidationStorageUtils.checkIdMatch(projectId, document.getProjectId());
-        
-        return makeDTO(document);
+        return DataResourceDTO.from(document);
     }
     
     public DataResourceDTO findFrictionlessDataResourceById(String projectId, String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-   
-    public DataResourceDTO updateDataResource(String projectId, String id, DataResourceDTO request) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-   
-    public void deleteDataResource(String projectId, String id) {
-        dataResourceRepository.deleteById(id);
-    }
-    
-    // Schema
-    public SchemaDTO createSchema(SchemaDTO request) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-   
-    public SchemaDTO findSchemaById(String id) {
-        Schema document = getSchema(id);
+        // TODO
+        DataResource document = getDataResource(id);
         
         if (document == null)
             throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
         
-        return makeDTO(document);
+        return DataResourceDTO.from(document);
     }
    
-    public SchemaDTO updateSchema(String id, SchemaDTO request) {
-        // TODO Auto-generated method stub
-        return null;
+    public DataResourceDTO updateDataResource(String projectId, String id, DataResourceDTO request) {
+        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
+        
+        DataResource document = getDataResource(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        
+        document.setStoreId(request.getStoreId());
+        document.setTitle(request.getTitle());
+        document.setType(request.getType());
+        document.setSchema(request.getSchema());
+        document.setDataset(request.getDataset());
+        
+        dataResourceRepository.save(document);
+        
+        return DataResourceDTO.from(document);
     }
    
-    public void deleteSchema(String id) {
-        schemaRepository.deleteById(id);
+    public void deleteDataResource(String projectId, String id) {
+        DataResource document = getDataResource(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        // TODO delete runs/etc?
+        dataResourceRepository.deleteById(id);
     }
 }

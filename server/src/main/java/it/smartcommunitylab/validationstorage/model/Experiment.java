@@ -1,18 +1,22 @@
 package it.smartcommunitylab.validationstorage.model;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
-import org.springframework.data.annotation.Id;
-
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.converter.StringSetConverter;
 
 @Entity
 @Table(name = "experiments", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "name" }))
@@ -35,14 +39,16 @@ public class Experiment {
     private String description;
     
     @OneToOne
-    @Column(name = "run_config")
+    @JoinColumn(name = "config")
     private RunConfig runConfig;
     
     @OneToOne
-    @Column(name = "data_package")
+    @JoinColumn(name = "package")
     private DataPackage dataPackage;
 
-    private List<String> tags;
+    @Lob
+    @Convert(converter = StringSetConverter.class)
+    private Set<String> tags;
 
     public String getId() {
         return id;
@@ -100,11 +106,11 @@ public class Experiment {
         this.dataPackage = dataPackage;
     }
 
-    public List<String> getTags() {
+    public Set<String> getTags() {
         return tags;
     }
 
-    public void setTags(List<String> tags) {
+    public void setTags(Set<String> tags) {
         this.tags = tags;
     }
     

@@ -6,7 +6,12 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public abstract class TypedError {
+public abstract class TypedError implements Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 3776299066519215432L;
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
     
     protected String constraintId;

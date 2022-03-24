@@ -1,10 +1,13 @@
 package it.smartcommunitylab.validationstorage.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,7 @@ import it.smartcommunitylab.validationstorage.model.RunConfig;
 import it.smartcommunitylab.validationstorage.model.Store;
 import it.smartcommunitylab.validationstorage.model.dto.ConstraintDTO;
 import it.smartcommunitylab.validationstorage.model.dto.DataPackageDTO;
+import it.smartcommunitylab.validationstorage.model.dto.DataResourceDTO;
 import it.smartcommunitylab.validationstorage.model.dto.ExperimentDTO;
 import it.smartcommunitylab.validationstorage.model.dto.ProjectDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunConfigDTO;
@@ -37,6 +41,7 @@ import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepositor
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.RunRepository;
 import it.smartcommunitylab.validationstorage.repository.RunValidationReportRepository;
+import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 import it.smartcommunitylab.validationstorage.repository.RunDataSchemaRepository;
 
 @Service
@@ -49,9 +54,9 @@ public class ExperimentService {
     
     @Autowired
     private RunConfigRepository runConfigRepository;
-    
+    /*
     @Autowired
-    private RunRepository runRepository;
+    private RunRepository runRepository;*/
     
     private Experiment getExperiment(String id) {
         if (ObjectUtils.isEmpty(id))
@@ -60,6 +65,15 @@ public class ExperimentService {
         Optional<Experiment> o = experimentRepository.findById(id);
         if (o.isPresent()) {
             return o.get();
+        }
+        
+        return null;
+    }
+    
+    private Experiment getExperimentByName(String projectId, String name) {
+        List<Experiment> l = experimentRepository.findByProjectIdAndName(projectId, name);
+        if (l.size() > 0) {
+            return l.get(0);
         }
         
         return null;
@@ -77,6 +91,15 @@ public class ExperimentService {
         return null;
     }
     
+    private Constraint getConstraintByName(String projectId, String experimentId, String name) {
+        List<Constraint> l = constraintRepository.findByProjectIdAndExperimentIdAndName(projectId, experimentId, name);
+        if (l.size() > 0) {
+            return l.get(0);
+        }
+        
+        return null;
+    }
+    
     private RunConfig getRunConfig(String projectId, String experimentId) {
         if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(experimentId))
             return null;
@@ -88,85 +111,62 @@ public class ExperimentService {
         
         return null;
     }
-    
-    private ExperimentDTO makeDTO(Experiment source) {
-        ExperimentDTO dto = new ExperimentDTO();
-        
-        String projectId = source.getProjectId();
-        String experimentId = source.getId();
-        
-        dto.setId(experimentId);
-        dto.setProjectId(projectId);
-        dto.setName(source.getName());
-        dto.setTitle(source.getTitle());
-        dto.setDescription(source.getDescription());
-        dto.setTags(new HashSet<String>(source.getTags()));
-        
-        Set<String> resourceIds = new HashSet<String>();
-        for (DataResource i : source.getResources()) {
-            resourceIds.add(i.getId());
+    /*
+    private Run getRun(String id) {
+        if (ObjectUtils.isEmpty(id))
+            return null;
+
+        Optional<Run> o = runRepository.findById(id);
+        if (o.isPresent()) {
+            return o.get();
         }
-        dto.setResourceIds(resourceIds);
         
-        Set<String> runIds = new HashSet<String>();
-        List<Run> runs = runRepository.findByExperimentId(experimentId);
-        for (Run i : runs) {
-            runIds.add(i.getId());
-        }
-        dto.setRunIds(runIds);
-        
-        Set<String> runConfigIds = new HashSet<String>();
-        List<RunConfig> runConfigs = runConfigRepository.findByProjectIdAndExperimentId(projectId, experimentId);
-        for (RunConfig i : runConfigs) {
-            runConfigIds.add(i.getId());
-        }
-        dto.setRunConfigIds(runConfigIds);
-        
-        Set<String> constraintIds = new HashSet<String>();
-        List<Constraint> constraints = constraintRepository.findByExperimentId(experimentId);
-        for (Constraint i : constraints) {
-            constraintIds.add(i.getId());
-        }
-        dto.setConstraintIds(constraintIds);
-        
-        return dto;
-    }
-    
-    private ConstraintDTO makeDTO(Constraint source) {
-        ConstraintDTO dto = new ConstraintDTO();
-        
-        dto.setId(source.getId());
-        dto.setProjectId(source.getProjectId());
-        dto.setExperimentId(source.getExperimentId());
-        dto.setName(source.getName());
-        dto.setTitle(source.getTitle());
-        dto.setResourceIds(source.getResourceIds());
-        dto.setType(source.getType());
-        dto.setDescription(source.getDescription());
-        dto.setErrorSeverity(source.getErrorSeverity());
-        dto.setConstraint(source.getConstraint());
-        
-        return dto;
-    }
-    
-    public static RunConfigDTO makeDTO(RunConfig source) {
-        RunConfigDTO dto = new RunConfigDTO();
-        
-        dto.setId(source.getId());
-        dto.setProjectId(source.getProjectId());
-        dto.setExperimentId(source.getExperimentId());
-        dto.setSnapshot(source.getSnapshot());
-        dto.setProfiling(source.getProfiling());
-        dto.setSchemaInference(source.getSchemaInference());
-        dto.setValidation(source.getValidation());
-        
-        return dto;
-    }
+        return null;
+    }*/
     
     // Experiment
     public ExperimentDTO createExperiment(String projectId, ExperimentDTO request) {
-        // TODO Auto-generated method stub
-        return null;
+        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
+        
+        String id = request.getId();
+        if (id != null) {
+            if (getExperiment(id) != null)
+                throw new DocumentAlreadyExistsException("Document with id '" + id + "' already exists.");
+        } else {
+            id = UUID.randomUUID().toString();
+        }
+        
+        String name = request.getName();
+        if (getExperimentByName(projectId, name) != null)
+            throw new DocumentAlreadyExistsException("Document '" + name + "' under project '" + projectId + "' already exists.");
+
+        Experiment document = new Experiment();
+        
+        document.setId(id);
+        document.setProjectId(projectId);
+        document.setName(name);
+        document.setTitle(request.getTitle());
+        document.setDescription(request.getDescription());
+        document.setTags(request.getTags());
+        
+        RunConfigDTO runConfigDTO = request.getRunConfig();
+        if (runConfigDTO != null) {
+            ValidationStorageUtils.checkIdMatch(projectId, runConfigDTO.getProjectId());
+            ValidationStorageUtils.checkIdMatch(id, runConfigDTO.getExperimentId());
+            
+            RunConfig runConfig = RunConfigDTO.to(request.getRunConfig());
+            runConfig.setProjectId(projectId);
+            runConfig.setExperimentId(id);
+            
+            System.out.println(runConfig);
+            runConfigRepository.save(runConfig);
+            
+            document.setRunConfig(runConfig);
+        }
+        
+        experimentRepository.save(document);
+        
+        return ExperimentDTO.from(document);
     }
     
     public List<ExperimentDTO> findExperiments(String projectId, Optional<String> experimentName) {
@@ -179,7 +179,7 @@ public class ExperimentService {
             results = experimentRepository.findByProjectId(projectId);
 
         for (Experiment r : results)
-            dtos.add(makeDTO(r));
+            dtos.add(ExperimentDTO.from(r));
             
         return dtos;
     }
@@ -188,31 +188,70 @@ public class ExperimentService {
         Experiment document = getExperiment(id);
         
         if (document == null)
-            throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
+            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
         
-        ValidationStorageUtils.checkIdMatch(projectId, document.getProjectId());
-        
-        return makeDTO(document);
+        return ExperimentDTO.from(document);
     }
    
     public ExperimentDTO updateExperiment(String projectId, String id, ExperimentDTO request) {
-        // TODO Auto-generated method stub
-        return null;
+        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
+        
+        Experiment document = getExperiment(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        
+        document.setTitle(request.getTitle());
+        document.setDescription(request.getDescription());
+        document.setTags(request.getTags());
+        
+        experimentRepository.save(document);
+        
+        return ExperimentDTO.from(document);
     }
    
     public void deleteExperiment(String projectId, String id) {
+        Experiment document = getExperiment(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        // TODO delete runs/etc?
         experimentRepository.deleteById(id);
-    }
-    
-    public RunDTO createRun(String projectId, String id, RunDTO request) {
-        // TODO Auto-generated method stub
-        return null;
     }
     
     // Constraint
     public ConstraintDTO createConstraint(String projectId, String experimentId, ConstraintDTO request) {
-        // TODO Auto-generated method stub
-        return null;
+        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
+        ValidationStorageUtils.checkIdMatch(experimentId, request.getExperimentId());
+        
+        String id = request.getId();
+        if (id != null) {
+            if (getConstraint(id) != null)
+                throw new DocumentAlreadyExistsException("Document with id '" + id + "' already exists.");
+        } else {
+            id = UUID.randomUUID().toString();
+        }
+        
+        String name = request.getName();
+        if (getConstraintByName(projectId, experimentId, name) != null)
+            throw new DocumentAlreadyExistsException("Document '" + name + "' under project '" + projectId + "', experiment '" + experimentId + "' already exists.");
+
+        Constraint document = new Constraint();
+        
+        document.setId(id);
+        document.setProjectId(projectId);
+        document.setExperimentId(experimentId);
+        document.setName(name);
+        document.setTitle(request.getTitle());
+        document.setResourceIds(request.getResourceIds());
+        document.setType(request.getConstraint().getType());
+        document.setDescription(request.getDescription());
+        document.setErrorSeverity(request.getErrorSeverity());
+        document.setConstraint(request.getConstraint());
+        
+        constraintRepository.save(document);
+        
+        return ConstraintDTO.from(document);
     }
     
     public List<ConstraintDTO> findConstraints(String projectId, String experimentId) {
@@ -221,7 +260,7 @@ public class ExperimentService {
         Iterable<Constraint> results = constraintRepository.findByProjectIdAndExperimentId(projectId, experimentId);
 
         for (Constraint r : results)
-            dtos.add(makeDTO(r));
+            dtos.add(ConstraintDTO.from(r));
             
         return dtos;
     }
@@ -232,42 +271,90 @@ public class ExperimentService {
         if (document == null)
             throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
         
-        ValidationStorageUtils.checkIdMatch(projectId, document.getProjectId());
-        ValidationStorageUtils.checkIdMatch(experimentId, document.getExperimentId());
-        
-        return makeDTO(document);
+        return ConstraintDTO.from(document);
     }
    
     public ConstraintDTO updateConstraint(String projectId, String experimentId, String id, ConstraintDTO request) {
-        // TODO Auto-generated method stub
-        return null;
+        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
+        ValidationStorageUtils.checkIdMatch(experimentId, request.getExperimentId());
+        
+        Constraint document = getConstraint(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+
+        document.setTitle(request.getTitle());
+        document.setResourceIds(request.getResourceIds());
+        document.setType(request.getConstraint().getType());
+        document.setDescription(request.getDescription());
+        document.setErrorSeverity(request.getErrorSeverity());
+        document.setConstraint(request.getConstraint());
+        
+        constraintRepository.save(document);
+        
+        return ConstraintDTO.from(document);
     }
    
     public void deleteConstraint(String projectId, String experimentId, String id) {
+        Constraint document = getConstraint(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        // TODO delete other documents?
         constraintRepository.deleteById(id);
     }
     
     // RunConfig
     public RunConfigDTO createRunConfig(String projectId, String experimentId, RunConfigDTO request) {
-        // TODO Auto-generated method stub
-        return null;
+        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
+        ValidationStorageUtils.checkIdMatch(experimentId, request.getExperimentId());
+        
+        if (getRunConfig(projectId, experimentId) != null)
+            throw new DocumentAlreadyExistsException("Document for project '" + projectId + "', experiment '" + experimentId + "' already exists.");
+        
+        RunConfig document = RunConfigDTO.to(request);
+        document.setProjectId(projectId);
+        document.setExperimentId(experimentId);
+        
+        runConfigRepository.save(document);
+        
+        return RunConfigDTO.from(document);
     }
    
     public RunConfigDTO findRunConfig(String projectId, String experimentId) {
         RunConfig document = getRunConfig(projectId, experimentId);
         
         if (document == null)
-            throw new DocumentNotFoundException("Document with projectId=" + projectId + ", experimentId=" + experimentId + " was not found.");
+            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentId + "' was not found.");
         
-        return makeDTO(document);
+        return RunConfigDTO.from(document);
     }
    
     public RunConfigDTO updateRunConfig(String projectId, String experimentId, RunConfigDTO request) {
-        // TODO Auto-generated method stub
-        return null;
+        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
+        ValidationStorageUtils.checkIdMatch(experimentId, request.getExperimentId());
+        
+        RunConfig document = getRunConfig(projectId, experimentId);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentId + "' was not found.");
+
+        document.setSnapshot(request.getSnapshot());
+        document.setProfiling(request.getProfiling());
+        document.setSchemaInference(request.getSchemaInference());
+        document.setValidation(request.getValidation());
+        
+        runConfigRepository.save(document);
+        
+        return RunConfigDTO.from(document);
     }
    
     public void deleteRunConfig(String projectId, String experimentId) {
+        RunConfig document = getRunConfig(projectId, experimentId);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentId + "' was not found.");
+        // TODO delete other documents?
         runConfigRepository.deleteByProjectIdAndExperimentId(projectId, experimentId);
     }
 

@@ -1,6 +1,9 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -10,6 +13,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.DataPackage;
+import it.smartcommunitylab.validationstorage.model.DataResource;
 
 @Valid
 @JsonInclude(Include.NON_NULL)
@@ -30,6 +35,29 @@ public class DataPackageDTO {
     private String type;
 
     private List<DataResourceDTO> resources;
+    
+    public static DataPackageDTO from(DataPackage source) {
+        if (source == null)
+            return null;
+        
+        DataPackageDTO dto = new DataPackageDTO();
+        
+        dto.setId(source.getId());
+        dto.setProjectId(source.getProjectId());
+        dto.setName(source.getName());
+        dto.setTitle(source.getTitle());
+        dto.setType(source.getType());
+        
+        List<DataResourceDTO> resources = new ArrayList<DataResourceDTO>();
+        if (source.getResources() != null) {
+            for (DataResource i : source.getResources()) {
+                resources.add(DataResourceDTO.from(i));
+            }
+        }
+        dto.setResources(resources);
+        
+        return dto;
+    }
 
     public String getId() {
         return id;

@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 import it.smartcommunitylab.validationstorage.model.RunDataProfile;
-import it.smartcommunitylab.validationstorage.model.RunDataResource;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.RunEnvironment;
@@ -31,15 +30,8 @@ import it.smartcommunitylab.validationstorage.model.RunMetadata;
 import it.smartcommunitylab.validationstorage.model.RunValidationReport;
 import it.smartcommunitylab.validationstorage.model.RunDataSchema;
 import it.smartcommunitylab.validationstorage.model.dto.ProjectDTO;
-import it.smartcommunitylab.validationstorage.service.ArtifactMetadataService;
-import it.smartcommunitylab.validationstorage.service.RunDataProfileService;
-import it.smartcommunitylab.validationstorage.service.RunDataResourceService;
 import it.smartcommunitylab.validationstorage.service.ExperimentService;
 import it.smartcommunitylab.validationstorage.service.ProjectService;
-import it.smartcommunitylab.validationstorage.service.RunEnvironmentService;
-import it.smartcommunitylab.validationstorage.service.RunMetadataService;
-import it.smartcommunitylab.validationstorage.service.RunValidationReportService;
-import it.smartcommunitylab.validationstorage.service.RunDataSchemaService;
 import it.smartcommunitylab.validationstorage.service.UiService;
 
 /**
@@ -52,7 +44,7 @@ import it.smartcommunitylab.validationstorage.service.UiService;
 public class UiController {
     @Autowired
     private UiService uiService;
-
+    /*
     @Autowired
     private ArtifactMetadataService artifactMetadataService;
     @Autowired
@@ -224,4 +216,5 @@ public class UiController {
         shortSchemaService.deleteDocumentById(projectId, id);
         return ResponseEntity.ok().build();
     }
+    */
 }

@@ -7,13 +7,12 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-
-import org.springframework.data.annotation.Id;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
@@ -22,8 +21,7 @@ import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
  * Profile for the data.
  */
 @Entity
-@Table(name = "run_data_profiles", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "experiment_name",
-        "run_name" }))
+@Table(name = "run_data_profiles")
 public class RunDataProfile {
     @Id
     private String id;

@@ -5,6 +5,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 
 /**
  * Request object: metadata about artifact files related to a run.
@@ -36,6 +37,22 @@ public class ArtifactMetadataDTO {
      */
     @NotBlank
     private String uri;
+    
+    public static ArtifactMetadataDTO from(ArtifactMetadata source) {
+        if (source == null)
+            return null;
+        
+        ArtifactMetadataDTO dto = new ArtifactMetadataDTO();
+        
+        dto.setId(source.getId());
+        dto.setProjectId(source.getProjectId());
+        dto.setExperimentId(source.getExperimentId());
+        dto.setRunId(source.getRunId());
+        dto.setName(source.getName());
+        dto.setUri(source.getUri());
+        
+        return dto;
+    }
     
     public String getId() {
         return id;

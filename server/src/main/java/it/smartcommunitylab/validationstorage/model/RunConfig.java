@@ -3,14 +3,18 @@ package it.smartcommunitylab.validationstorage.model;
 import java.util.List;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.converter.SerializableListConverter;
+import it.smartcommunitylab.validationstorage.converter.StringSetConverter;
 
 @Entity
 @Table(name = "configs")
@@ -28,17 +32,29 @@ public class RunConfig {
     @Column(name = "experiment_id")
     private String experimentId;
     
-    @Embedded
+    @Lob
+    @Convert(converter = SerializableListConverter.class)
     private List<RunConfigImpl> snapshot;
     
-    @Embedded
+    @Lob
+    @Convert(converter = SerializableListConverter.class)
     private List<RunConfigImpl> profiling;
     
-    @Embedded
+    @Lob
+    @Convert(converter = SerializableListConverter.class)
     private List<RunConfigImpl> schemaInference;
     
-    @Embedded
+    @Lob
+    @Convert(converter = SerializableListConverter.class)
     private List<RunConfigImpl> validation;
+    
+    @Override
+    public String toString() {
+        String result = "RunConfig: id=" + id + ", projectId=" + projectId + ", experimentId=" + experimentId;
+        result += "; snapshot=" + snapshot + ", profiling=" + profiling + ", inference=" + schemaInference + ", validation=" + validation;
+        
+        return result;
+    }
 
     public String getId() {
         return id;

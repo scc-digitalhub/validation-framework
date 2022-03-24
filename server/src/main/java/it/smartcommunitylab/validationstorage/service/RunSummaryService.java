@@ -18,7 +18,6 @@ import it.smartcommunitylab.validationstorage.model.RunSummary;
 import it.smartcommunitylab.validationstorage.model.RunValidationReport;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepository;
-import it.smartcommunitylab.validationstorage.repository.RunDataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.RunValidationReportRepository;
@@ -29,6 +28,7 @@ import it.smartcommunitylab.validationstorage.repository.RunDataSchemaRepository
  */
 @Service
 public class RunSummaryService {
+    /*
     @Autowired
     private RunMetadataRepository runMetadataRepository;
     @Autowired
@@ -51,7 +51,7 @@ public class RunSummaryService {
      * @param experimentId Experiment ID.
      * @param pageable Pageable.
      * @return List of run summaries.
-     */
+     *
     public List<RunSummary> listBasicRunSummaries(String projectId, String experimentId, Pageable pageable) {
         List<RunMetadata> runMetadataDocuments = runMetadataRepository.findByProjectIdAndExperimentId(projectId, experimentId, pageable);
         return buildRunSummaryListFromRunMetadataDocuments(projectId, experimentId, runMetadataDocuments);
@@ -62,7 +62,7 @@ public class RunSummaryService {
      * @param projectId Project ID.
      * @param experimentId Experiment ID.
      * @return List of recent run summaries.
-     */
+     *
     public List<RunSummary> getRichRecentRunSummaries(String projectId, String experimentId) {
         Pageable pageable = PageRequest.of(0, 5, Sort.by("created").descending());
         List<RunSummary> runSummaries = listBasicRunSummaries(projectId, experimentId, pageable);
@@ -76,7 +76,7 @@ public class RunSummaryService {
      * @param projectId Project ID
      * @param experimentId Experiment ID.
      * @param runSummaries List of run summaries.
-     */
+     *
     private void enrichRunSummaries(List<RunSummary> runSummaries) {
         for (RunSummary run : runSummaries)
             run.setDataProfile(getDataProfile(run.getProjectId(), run.getExperimentId(), run.getRunId()));
@@ -88,7 +88,7 @@ public class RunSummaryService {
      * @param experimentId Experiment ID.
      * @param runMetadataIds RunMetadata IDs.
      * @return List of run summaries.
-     */
+     *
     public List<RunSummary> getRichRunSummariesByRunMetadataIds(String projectId, String experimentId, List<String> runMetadataIds) {
         List<RunMetadata> runMetadataDocuments = getAndCheckRunMetadataDocuments(projectId, experimentId, runMetadataIds);
         List<RunSummary> runSummaries = buildRunSummaryListFromRunMetadataDocuments(projectId, experimentId, runMetadataDocuments);
@@ -104,7 +104,7 @@ public class RunSummaryService {
      * @param experimentId Experiment ID.
      * @param runMetadataIds List of RunMetadata document IDs.
      * @return List of RunMetadata documents.
-     */
+     *
     private List<RunMetadata> getAndCheckRunMetadataDocuments(String projectId, String experimentId, List<String> runMetadataIds) {
         if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(experimentId))
             throw new IllegalArgumentException("Project ID or experiment ID are required and cannot be blank.");
@@ -132,7 +132,7 @@ public class RunSummaryService {
      * @param experimentId Experiment ID.
      * @param runMetadataDocuments RunMetadata documents.
      * @return List of run summaries.
-     */
+     *
     private List<RunSummary> buildRunSummaryListFromRunMetadataDocuments(String projectId, String experimentId, List<RunMetadata> runMetadataDocuments) {
         runMetadataDocuments.sort((a,b)->b.getCreated().compareTo(a.getCreated()));;
         
@@ -150,7 +150,7 @@ public class RunSummaryService {
      * @param experimentId Experiment ID.
      * @param runMetadata RunMetadata document.
      * @return A run summary.
-     */
+     *
     private RunSummary buildRunSummaryFromRunMetadataDocument(String projectId, String experimentId, RunMetadata runMetadata) {
         String runId = runMetadata.getRunId();
         
@@ -170,7 +170,7 @@ public class RunSummaryService {
      * @param experimentId Experiment ID.
      * @param runId Run ID.
      * @return A run summary.
-     */
+     *
     public RunSummary getBasicRunSummary(String projectId, String experimentId, String runId) {
         RunMetadata runMetadata = getRunMetadata(projectId, experimentId, runId);
         return buildRunSummaryFromRunMetadataDocument(projectId, experimentId, runMetadata);
@@ -180,7 +180,7 @@ public class RunSummaryService {
      * Obtains RunMetadata document by ID.
      * @param id Document ID.
      * @return RunMetadata.
-     */
+     *
     private RunMetadata getRunMetadataById(String id) {
         if (ObjectUtils.isEmpty(id))
             throw new IllegalArgumentException("Document ID must have a value.");
@@ -198,7 +198,7 @@ public class RunSummaryService {
      * @param experimentId ExperimentID.
      * @param runId RunID.
      * @return RunMetadata document.
-     */
+     *
     private RunMetadata getRunMetadata(String projectId, String experimentId, String runId) {
         List<RunMetadata> documents = runMetadataRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
@@ -212,7 +212,7 @@ public class RunSummaryService {
      * @param experimentId ExperimentID.
      * @param runId RunID.
      * @return ShortReport document.
-     */
+     *
     private RunValidationReport getShortReport(String projectId, String experimentId, String runId) {
         List<RunValidationReport> documents = shortReportRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
@@ -226,7 +226,7 @@ public class RunSummaryService {
      * @param experimentId ExperimentID.
      * @param runId RunID.
      * @return ShortReport document.
-     */
+     *
     private RunDataProfile getDataProfile(String projectId, String experimentId, String runId) {
         List<RunDataProfile> documents = dataProfileRepository.findByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         if (!documents.isEmpty())
@@ -237,7 +237,7 @@ public class RunSummaryService {
     /**
      * Deletes a run and all related documents.
      * @param runMetadataId ID of the run's RunMetadata document.
-     */
+     *
     public void deleteRunByRunMetadataId(String runMetadataId) {
         if (ObjectUtils.isEmpty(runMetadataId))
             return;
@@ -259,4 +259,5 @@ public class RunSummaryService {
         shortReportRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
         shortSchemaRepository.deleteByProjectIdAndExperimentIdAndRunId(projectId, experimentId, runId);
     }
+    */
 }

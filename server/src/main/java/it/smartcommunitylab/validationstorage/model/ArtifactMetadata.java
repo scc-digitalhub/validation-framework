@@ -2,11 +2,10 @@ package it.smartcommunitylab.validationstorage.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-
-import org.springframework.data.annotation.Id;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 

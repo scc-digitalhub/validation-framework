@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.ReportMetadata;
+import it.smartcommunitylab.validationstorage.model.RunValidationReport;
 import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 import it.smartcommunitylab.validationstorage.typed.TypedError;
 
@@ -32,20 +34,41 @@ public class RunValidationReportDTO {
 
     private String type;
 
-    private TypedConstraint constraint;
+    private String constraintName;
 
     @NotNull
     private Boolean valid;
+    
+    private ReportMetadata metadata;
 
     List<TypedError> errors;
-
-    /**
-     * May contain extra information.
-     */
+    
     private Map<String, Serializable> contents;
 
     public RunValidationReportDTO() {
         contents = new HashMap<String, Serializable>();
+    }
+    
+    public static RunValidationReportDTO from(RunValidationReport source) {
+        if (source == null)
+            return null;
+        
+        RunValidationReportDTO dto = new RunValidationReportDTO();
+        
+        dto.setId(source.getId());
+        dto.setProjectId(source.getProjectId());
+        dto.setExperimentId(source.getExperimentId());
+        dto.setRunId(source.getRunId());
+        dto.setType(source.getType());
+        dto.setConstraintName(source.getConstraintName());
+        dto.setValid(source.getValid());
+        dto.setMetadata(source.getMetadata());
+        dto.setErrors(source.getErrors());
+        
+        if (source.getContents() != null)
+            dto.setContents(source.getContents());
+        
+        return dto;
     }
 
     @JsonAnyGetter
@@ -98,14 +121,14 @@ public class RunValidationReportDTO {
         this.type = type;
     }
 
-    public TypedConstraint getConstraint() {
-        return constraint;
+    public String getConstraintName() {
+        return constraintName;
     }
 
-    public void setConstraint(TypedConstraint constraint) {
-        this.constraint = constraint;
+    public void setConstraintName(String constraintName) {
+        this.constraintName = constraintName;
     }
-
+    
     public boolean isValid() {
         return valid != null ? valid.booleanValue() : false;
     }
@@ -116,6 +139,14 @@ public class RunValidationReportDTO {
 
     public void setValid(Boolean valid) {
         this.valid = valid;
+    }
+
+    public ReportMetadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(ReportMetadata metadata) {
+        this.metadata = metadata;
     }
 
     public List<TypedError> getErrors() {

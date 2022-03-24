@@ -11,6 +11,8 @@ public interface RunRepository extends CrudRepository<Run, String> {
     
     List<Run> findByProjectIdAndExperimentId(String projectId, String experimentId);
     
+    List<Run> findByProjectIdAndExperimentIdAndId(String projectId, String experimentId, String id);
+    
     List<Run> findByExperimentId(String experimentId);
     
     List<Run> findByExperimentId(String experimentId, Pageable pageable);
@@ -19,6 +21,6 @@ public interface RunRepository extends CrudRepository<Run, String> {
     
     void deleteByExperimentId(String experimentId);
     
-    void deleteByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
+    void deleteByProjectIdAndExperimentIdAndId(String projectId, String experimentId, String id);
     
 }

@@ -25,6 +25,7 @@ import it.smartcommunitylab.validationstorage.service.RunSummaryService;
 public class RunSummaryController {
     @Autowired
     private RunSummaryService runSummaryService;
+    /*
     
     @GetMapping("/{projectId}/" + ValidationStorageConstants.EXPERIMENT + "/{experimentId}/" + ValidationStorageConstants.RUN)
     public ResponseEntity<List<RunSummary>> listBasicRunSummaries(
@@ -62,4 +63,5 @@ public class RunSummaryController {
         runSummaryService.deleteRunByRunMetadataId(RunMetadataId);
         return ResponseEntity.ok().build();
     }
+    */
 }

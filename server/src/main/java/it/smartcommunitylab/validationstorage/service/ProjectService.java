@@ -14,6 +14,7 @@ import org.springframework.util.ObjectUtils;
 import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.DataPackage;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Project;
@@ -56,42 +57,21 @@ public class ProjectService {
         return null;
     }
     
-    private ProjectDTO makeDTO(Project source) {
-        ProjectDTO dto = new ProjectDTO();
-        
-        String id = source.getName();
-        
-        dto.setName(id);
-        dto.setTitle(source.getTitle());
-        dto.setDescription(source.getDescription());
-        
-        Set<String> experimentIds = new HashSet<String>();
-        List<Experiment> experiments = experimentRepository.findByProjectId(id);
-        for (Experiment i : experiments) {
-            experimentIds.add(i.getId());
-        }
-        dto.setExperimentIds(experimentIds);
-        
-        Set<String> packageIds = new HashSet<String>();
-        List<DataPackage> packages = dataPackageRepository.findByProjectId(id);
-        for (DataPackage i : packages) {
-            packageIds.add(i.getId());
-        }
-        dto.setPackageIds(packageIds);
-        
-        Set<String> storeIds = new HashSet<String>();
-        List<Store> stores = storeRepository.findByProjectId(id);
-        for (Store i : stores) {
-            storeIds.add(i.getId());
-        }
-        dto.setStoreIds(storeIds);
-        
-        return dto;
-    }
-    
     public ProjectDTO createProject(ProjectDTO request) {
-     // TODO Auto-generated method stub
-        return null;
+        String id = request.getName();
+        
+        if (getProject(id) != null)
+            throw new DocumentAlreadyExistsException("Document with name '" + id + "' already exists.");
+            
+        Project document = new Project();
+        
+        document.setName(id);
+        document.setTitle(request.getTitle());
+        document.setDescription(request.getDescription());
+        
+        repository.save(document);
+        
+        return request;
     }
     
     @PostFilter(ValidationStorageConstants.POSTFILTER_ID)
@@ -100,7 +80,7 @@ public class ProjectService {
         
         Iterable<Project> results = repository.findAll();
         for (Project r : results) {
-            dtos.add(makeDTO(r));
+            dtos.add(ProjectDTO.from(r));
         }
         
         return dtos;
@@ -110,18 +90,33 @@ public class ProjectService {
         Project document = getProject(id);
         
         if (document == null)
-            throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
+            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
         
-        return makeDTO(document);
+        return ProjectDTO.from(document);
     }
     
     public ProjectDTO updateProject(String id, ProjectDTO request) {
-     // TODO Auto-generated method stub
-        return null;
+        Project document = getProject(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with name '" + id + "' was not found.");
+        
+        ValidationStorageUtils.checkIdMatch(id, request.getName());
+        
+        document.setTitle(request.getTitle());
+        document.setDescription(request.getDescription());
+        
+        repository.save(document);
+        
+        return request;
     }
     
     public void deleteProject(String id) {
-        // TODO
+        Project document = getProject(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document with name '" + id + "' was not found.");
+        // TODO delete experiments/runs/etc?
         repository.deleteById(id);
     }
 

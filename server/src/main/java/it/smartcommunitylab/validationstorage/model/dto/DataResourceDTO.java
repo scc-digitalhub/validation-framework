@@ -1,5 +1,7 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
+import java.util.UUID;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -9,16 +11,19 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.DataResource;
 import it.smartcommunitylab.validationstorage.model.Dataset;
-import it.smartcommunitylab.validationstorage.typed.TypedSchema;
+import it.smartcommunitylab.validationstorage.model.Schema;
 
 @Valid
 @JsonInclude(Include.NON_NULL)
 public class DataResourceDTO {
     private String id;
 
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String projectId;
 
+    @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String packageName;
 
     // If null, will be the default store
@@ -33,10 +38,52 @@ public class DataResourceDTO {
 
     private String type;
 
-    private TypedSchema schema;
+    private Schema schema;
 
     @JsonUnwrapped
     private Dataset dataset;
+    
+    public static DataResourceDTO from(DataResource source) {
+        if (source == null)
+            return null;
+        
+        DataResourceDTO dto = new DataResourceDTO();
+        
+        dto.setId(source.getId());
+        dto.setProjectId(source.getProjectId());
+        dto.setPackageName(source.getPackageName());
+        dto.setStoreId(source.getStoreId());
+        dto.setName(source.getName());
+        dto.setTitle(source.getTitle());
+        dto.setType(source.getType());
+        dto.setSchema(source.getSchema());
+        dto.setDataset(source.getDataset());
+        
+        return dto;
+    }
+    
+    public static DataResource to(DataResourceDTO source) {
+        if (source == null)
+            return null;
+        
+        DataResource document = new DataResource();
+        
+        String id = source.getId();
+        if (id == null)
+            id = UUID.randomUUID().toString();
+        
+        document.setId(id);
+        document.setProjectId(source.getProjectId());
+        document.setPackageName(source.getPackageName());
+        document.setStoreId(source.getStoreId());
+        document.setName(source.getName());
+        document.setTitle(source.getTitle());
+        document.setType(source.getType());
+        document.setSchema(source.getSchema());
+        document.setDataset(source.getDataset());
+        
+        return document;
+    }
 
     public String getId() {
         return id;
@@ -94,11 +141,11 @@ public class DataResourceDTO {
         this.type = type;
     }
 
-    public TypedSchema getSchema() {
+    public Schema getSchema() {
         return schema;
     }
 
-    public void setSchema(TypedSchema schema) {
+    public void setSchema(Schema schema) {
         this.schema = schema;
     }
 

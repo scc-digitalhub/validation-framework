@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.RunEnvironment;
 
 /**
  * Request object: short report on the validation's result.
@@ -29,6 +30,8 @@ public class RunEnvironmentDTO {
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     private String runId;
+    
+    private String datajudgeVersion;
 
     /**
      * May contain extra information.
@@ -37,6 +40,24 @@ public class RunEnvironmentDTO {
 
     public RunEnvironmentDTO() {
         contents = new HashMap<String, Serializable>();
+    }
+    
+    public static RunEnvironmentDTO from(RunEnvironment source) {
+        if (source == null)
+            return null;
+        
+        RunEnvironmentDTO dto = new RunEnvironmentDTO();
+        
+        dto.setId(source.getId());
+        dto.setProjectId(source.getProjectId());
+        dto.setExperimentId(source.getExperimentId());
+        dto.setRunId(source.getRunId());
+        dto.setDatajudgeVersion(source.getDatajudgeVersion());
+        
+        if (source.getContents() != null)
+            dto.setContents(source.getContents());
+        
+        return dto;
     }
 
     @JsonAnyGetter
@@ -79,6 +100,14 @@ public class RunEnvironmentDTO {
 
     public void setRunId(String runId) {
         this.runId = runId;
+    }
+    
+    public String getDatajudgeVersion() {
+        return datajudgeVersion;
+    }
+
+    public void setDatajudgeVersion(String datajudgeVersion) {
+        this.datajudgeVersion = datajudgeVersion;
     }
 
     public Map<String, Serializable> getContents() {

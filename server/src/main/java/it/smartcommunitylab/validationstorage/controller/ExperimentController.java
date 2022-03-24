@@ -58,12 +58,4 @@ public class ExperimentController {
         service.deleteExperiment(projectId, id);
     }
 
-    @PostMapping("/{id}/run")
-    public RunDTO createRun(
-            @PathVariable String projectId,
-            @PathVariable String id,
-            @RequestBody @Valid RunDTO request) {
-        return service.createRun(projectId, id, request);
-    }
-
 }

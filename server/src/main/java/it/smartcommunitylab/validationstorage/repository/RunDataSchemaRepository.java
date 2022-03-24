@@ -8,7 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface RunDataSchemaRepository extends CrudRepository<RunDataSchema, String> {
     
-    List<RunDataSchema> findByProjectId(String projectId);
+    List<RunDataSchema> findByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
     
     List<RunDataSchema> findByRunId(String runId);
     

@@ -8,12 +8,11 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-
-import org.springframework.data.annotation.Id;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
@@ -58,10 +57,7 @@ public class RunValidationReport {
     @Lob
     @Convert(converter = TypedErrorConverter.class)
     List<TypedError> errors;
-
-    /**
-     * May contain extra information.
-     */
+    
     @Lob
     @Convert(converter = HashMapConverter.class)
     private Map<String, Serializable> contents;

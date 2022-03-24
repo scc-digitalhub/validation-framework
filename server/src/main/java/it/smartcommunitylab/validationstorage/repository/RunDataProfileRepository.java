@@ -8,7 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface RunDataProfileRepository extends CrudRepository<RunDataProfile, String> {
     
-    List<RunDataProfile> findByProjectId(String projectId);
+    List<RunDataProfile> findByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
     
     List<RunDataProfile> findByRunId(String runId);
     

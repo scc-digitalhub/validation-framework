@@ -5,6 +5,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.Project;
 
 /**
  * Request object: details a project.
@@ -19,6 +20,19 @@ public class ProjectDTO {
     private String title;
 
     private String description;
+    
+    public static ProjectDTO from(Project source) {
+        if (source == null)
+            return null;
+        
+        ProjectDTO dto = new ProjectDTO();
+        
+        dto.setName(source.getName());
+        dto.setTitle(source.getTitle());
+        dto.setDescription(source.getDescription());
+        
+        return dto;
+    }
 
     public String getName() {
         return name;

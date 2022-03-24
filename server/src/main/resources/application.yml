@@ -4,9 +4,6 @@ server:
     include-message: ${ERROR_INCLUDE_MESSAGE:always}
 
 spring:
-  data:
-    mongodb:
-      uri: ${MONGODB_URI}
   security:
     oauth2:
       client:

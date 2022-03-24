@@ -1,5 +1,7 @@
 package it.smartcommunitylab.validationstorage.typed;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum FieldType {
     STRING("string"),
     NUMBER("number"),
@@ -21,5 +23,20 @@ public enum FieldType {
     
     private FieldType(String label) {
         this.label = label;
+    }
+    
+    @JsonValue
+    public String getLabel() {
+        return label;
+    }
+    
+    public static FieldType fromString(String s) {
+        for (FieldType e : FieldType.values()) {
+            if (e.label.equalsIgnoreCase(s)) {
+                return e;
+            }
+        }
+        
+        throw new IllegalArgumentException("FieldType: '" + s + "' is not supported.");
     }
 }

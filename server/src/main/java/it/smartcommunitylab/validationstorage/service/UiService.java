@@ -13,7 +13,6 @@ import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 import it.smartcommunitylab.validationstorage.model.RunDataProfile;
-import it.smartcommunitylab.validationstorage.model.RunDataResource;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Project;
 import it.smartcommunitylab.validationstorage.model.RunEnvironment;
@@ -22,7 +21,6 @@ import it.smartcommunitylab.validationstorage.model.RunValidationReport;
 import it.smartcommunitylab.validationstorage.model.RunDataSchema;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepository;
-import it.smartcommunitylab.validationstorage.repository.RunDataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.ProjectRepository;
 import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepository;
@@ -35,6 +33,7 @@ import it.smartcommunitylab.validationstorage.repository.RunDataSchemaRepository
  */
 @Service
 public class UiService {
+    /*
     @Autowired
     private ProjectRepository projectRepository;
     @Autowired
@@ -126,4 +125,5 @@ public class UiService {
             return documents.get(0);
         throw new DocumentNotFoundException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ", runId=" + runId + ") was not found.");
     }
+    */
 }

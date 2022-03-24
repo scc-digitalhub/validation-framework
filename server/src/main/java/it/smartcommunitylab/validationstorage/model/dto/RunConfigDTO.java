@@ -2,6 +2,7 @@ package it.smartcommunitylab.validationstorage.model.dto;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.RunConfig;
 import it.smartcommunitylab.validationstorage.model.RunConfigImpl;
 
 @Valid
@@ -38,6 +40,52 @@ public class RunConfigDTO {
         profiling = Collections.<RunConfigImpl>emptyList();
         schemaInference = Collections.<RunConfigImpl>emptyList();
         validation = Collections.<RunConfigImpl>emptyList();
+    }
+    
+    public static RunConfigDTO from(RunConfig source) {
+        if (source == null)
+            return null;
+        
+        RunConfigDTO dto = new RunConfigDTO();
+        
+        dto.setId(source.getId());
+        dto.setProjectId(source.getProjectId());
+        dto.setExperimentId(source.getExperimentId());
+        
+        if (source.getSnapshot() != null)
+            dto.setSnapshot(source.getSnapshot());
+        
+        if (source.getProfiling() != null)
+            dto.setProfiling(source.getProfiling());
+        
+        if (source.getSchemaInference() != null)
+            dto.setSchemaInference(source.getSchemaInference());
+        
+        if (source.getValidation() != null)
+            dto.setValidation(source.getValidation());
+        
+        return dto;
+    }
+    
+    public static RunConfig to(RunConfigDTO source) {
+        if (source == null)
+            return null;
+        
+        RunConfig document = new RunConfig();
+        
+        String id = source.getId();
+        if (id == null)
+            id = UUID.randomUUID().toString();
+        
+        document.setId(id);
+        document.setProjectId(source.getProjectId());
+        document.setExperimentId(source.getExperimentId());
+        document.setSnapshot(source.getSnapshot());
+        document.setProfiling(source.getProfiling());
+        document.setSchemaInference(source.getSchemaInference());
+        document.setValidation(source.getValidation());
+        
+        return document;
     }
 
     public String getId() {
