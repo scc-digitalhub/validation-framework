@@ -10,6 +10,8 @@ from typing import Any, Callable
 from datajudge.utils.commons import STATUS_INIT, STATUS_ERROR, STATUS_FINISHED
 
 
+RenderTuple = namedtuple("RenderTuple", ("object", "filename"))
+
 
 class Result:
     """
@@ -24,9 +26,6 @@ class Result:
         self.duration = duration
         self.errors = errors
         self.artifact = artifact
-
-
-RenderTuple = namedtuple("RenderTuple", ("object", "filename"))
 
 
 def exec_decorator(fnc: Callable) -> Result:

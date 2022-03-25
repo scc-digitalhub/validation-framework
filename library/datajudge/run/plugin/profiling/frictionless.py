@@ -104,7 +104,6 @@ class ProfileBuilderFrictionless(PluginBuilder):
     """
     Profile plugin builder.
     """
-
     def build(self,
               resources: List[DataResource]
               ) -> ProfilePluginFrictionless:

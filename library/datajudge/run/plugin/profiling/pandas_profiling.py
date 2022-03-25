@@ -116,7 +116,7 @@ class ProfilePluginPandasProfiling(Profiling):
         Return a DatajudgeProfile.
         """
         # Profile preparation
-        json_str = self.result.artifact.to_json()
+        json_str = result.artifact.to_json()
         json_str = json_str.replace("NaN", "null")
         full_profile = json.loads(json_str)
 
@@ -135,7 +135,7 @@ class ProfilePluginPandasProfiling(Profiling):
         # Get fields, stats and duration
         fields = args.get("variables", {})
         stats = args.get("table", {})
-        duration = self.result.duration
+        duration = result.duration
 
         return DatajudgeProfile(self.get_lib_name(),
                                 self.get_lib_version(),
@@ -155,12 +155,12 @@ class ProfilePluginPandasProfiling(Profiling):
             filename = self._fn_profile.format(f"{PANDAS_PROFILING}.json")
             artifacts.append(self.get_render_tuple(_object, filename))
         else:
-            string_html = self.result.artifact.to_html()
+            string_html = result.artifact.to_html()
             strio_html = write_bytesio(string_html)
             html_filename = self._fn_profile.format(f"{PANDAS_PROFILING}.html")
             artifacts.append(self.get_render_tuple(strio_html, html_filename))
 
-            string_json = self.result.artifact.to_json()
+            string_json = result.artifact.to_json()
             string_json = string_json.replace("NaN", "null")
             strio_json = write_bytesio(string_json)
             json_filename = self._fn_profile.format(f"{PANDAS_PROFILING}.json")

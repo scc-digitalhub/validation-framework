@@ -25,7 +25,7 @@ if typing.TYPE_CHECKING:
     from datajudge.run.run_handler import RunHandler
     from datajudge.run.run_info import RunInfo
     from datajudge.utils.config import Constraint
-    
+
 
 class Run:
     """
@@ -418,7 +418,7 @@ class Run:
                                   self._render_artifact_name(obj.filename))
 
     # Input data persistence
-    
+
     def persist_data(self) -> None:
         """
         Persist input data as artifact.

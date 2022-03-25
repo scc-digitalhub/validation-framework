@@ -12,9 +12,8 @@ import frictionless
 from frictionless import Report, Resource, Schema, describe_schema
 
 from datajudge.data.datajudge_report import DatajudgeReport
-from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.validation.validation_plugin import (
-    Validation)
+    Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import FRICTIONLESS
 from datajudge.run.plugin.plugin_utils import exec_decorator
 
@@ -133,33 +132,53 @@ class ValidationPluginFrictionless(Validation):
         return frictionless.__version__
 
 
-class ValidationBuilderFrictionless(PluginBuilder):
+class ValidationBuilderFrictionless(ValidationPluginBuilder):
     """
     Validation plugin builder.
     """
+    def setup(self,
+              resources: List[DataResource]) -> None:
+        """
+        Setup method.
+        """
+        for resource in resources:
+            if resource.schema is None:
+                resource.schema = self._infer_schema(resource.tmp_pth)
+    
     def build(self,
               resources: List[DataResource],
               constraints: List[Constraint]) -> ValidationPluginFrictionless:
         """
         Build a plugin for every resource and every constraint.
         """
+        self.setup(resources)
+        f_constraint = self.filter_constraints(constraints)
+        
         plugins = []
         for resource in resources:
-            if resource.schema is None:
-                resource.schema = self._infer_schema(resource.tmp_pth)
-
-            for const in constraints:
-                if resource.name in const.resources and \
-                   const.type == "frictionless":
+            for const in f_constraint:
+                if resource.name in const.resources:
                     plugin = ValidationPluginFrictionless()
                     plugin.setup(resource, const, self.exec_args)
                     plugins.append(plugin)
 
         return plugins
 
-    def _infer_schema(self, path: str) -> dict:
+    @staticmethod
+    def _infer_schema(path: str) -> dict:
         """
         Infer schema of a resource.
         """
         schema = describe_schema(path=path)
         return {"fields": [{"name": field["name"]} for field in schema["fields"]]}
+    
+    @staticmethod
+    def filter_constraints(constraints: List[Constraint]
+                           ) -> List[ConstraintsFrictionless]:
+        return [const for const in constraints
+                if const.type == FRICTIONLESS]
+    
+    def destroy(self) -> None:
+        """
+        Destroy builder.
+        """

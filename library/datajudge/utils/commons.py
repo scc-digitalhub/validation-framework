@@ -19,6 +19,9 @@ RANGE = "range"
 MINIMUM = "minimum"
 MAXIMUM = "maximum"
 
+CHECK_VALUE = "value"
+CHECK_ROWS = "rows"
+
 # API endpoints
 API_BASE = "/api/project/"
 API_RUN_METADATA = "/run-metadata"

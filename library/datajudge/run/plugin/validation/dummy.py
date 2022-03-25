@@ -8,8 +8,7 @@ import typing
 from typing import List
 
 from datajudge.data.datajudge_report import DatajudgeReport
-from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.run.plugin.validation.validation_plugin import Validation
+from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
 from datajudge.utils.commons import DUMMY
 from datajudge.run.plugin.plugin_utils import exec_decorator
 
@@ -89,10 +88,15 @@ class ValidationPluginDummy(Validation):
         return None
 
 
-class ValidationBuilderDummy(PluginBuilder):
+class ValidationBuilderDummy(ValidationPluginBuilder):
     """
-    Validation plugin builder.
+    Dummy validation plugin builder.
     """
+    def setup(self, *args) -> None:
+        """
+        Setup builder.
+        """
+
     def build(self,
               resources: List[DataResource],
               constraints: List[Constraint]) -> ValidationPluginDummy:
@@ -105,3 +109,14 @@ class ValidationBuilderDummy(PluginBuilder):
             plugin.setup(resource, {}, self.exec_args)
             plugins.append(plugin)
         return plugins
+
+    def filter_constraints(constraints: List[Constraint]
+                           ) -> List[Constraint]:
+        """
+        Filter constraints by library.
+        """
+
+    def destroy(self, *args) -> None:
+        """
+        Destroy builder.
+        """

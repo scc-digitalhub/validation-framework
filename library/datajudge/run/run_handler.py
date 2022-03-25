@@ -3,10 +3,11 @@ Run handler module.
 """
 from __future__ import annotations
 
+import concurrent.futures
 import typing
 from typing import Any, List
 
-from datajudge.run.plugin.plugin_factory import get_builder
+from datajudge.run.plugin.plugin_factory import builder_factory
 from datajudge.utils.commons import (INFERENCE, PROFILING, VALIDATION,
                                      RES_WRAP, RES_DJ, RES_RENDER, RES_LIB)
 from datajudge.utils.utils import flatten_list
@@ -17,7 +18,6 @@ if typing.TYPE_CHECKING:
     from datajudge.data.datajudge_report import DatajudgeReport
     from datajudge.data.datajudge_schema import DatajudgeSchema
     from datajudge.run.plugin.base_plugin import Plugin, PluginBuilder
-    from datajudge.run.plugin.plugin_utils import Result
     from datajudge.utils.config import Constraint, RunConfig
 
 
@@ -84,10 +84,9 @@ class RunHandler:
         """
         Wrapper for plugins infer methods.
         """
-        builders = get_builder(self._config.inference, INFERENCE)
-        plugins = [builder.build(resources) for builder in builders]
-        self.execute(plugins, INFERENCE)
-        self.destroy(builders)
+        builders = builder_factory(self._config.inference, INFERENCE)
+        plugins = self.create_plugins(builders, resources)
+        self.pool_execute(plugins, INFERENCE)
 
     def validate(self,
                  resources: List[DataResource],
@@ -96,24 +95,40 @@ class RunHandler:
         """
         Wrapper for plugins validate methods.
         """
-        builders = get_builder(self._config.validation, VALIDATION)
-        plugins = [builder.build(resources, constraints) for builder in builders]
-        self.execute(plugins, VALIDATION)
-        self.destroy(builders)
+        builders = builder_factory(self._config.validation, VALIDATION)
+        plugins = self.create_plugins(builders, resources, constraints)
+        self.pool_execute(plugins, VALIDATION)
+        self.destroy_builders(builders)
 
     def profile(self, resources: List[DataResource]) -> None:
         """
         Wrapper for plugins profile methods.
         """
-        builders = get_builder(self._config.profiling, PROFILING)
-        plugins = [builder.build(resources) for builder in builders]
-        self.execute(plugins, PROFILING)
-        self.destroy(builders)
+        builders = builder_factory(self._config.profiling, PROFILING)
+        plugins = self.create_plugins(builders, resources)
+        self.pool_execute(plugins, PROFILING)
+        
+    @staticmethod
+    def create_plugins(builders: PluginBuilder, *args) -> List[Plugin]:
+        """
+        Return a list of plugins.
+        """
+        return flatten_list([builder.build(*args) for builder in builders])
 
-    def execute(self,
-                plugins: List[List[Plugin]],
-                operation: str,
-                ) -> None:
+    def pool_execute(self,
+                     plugins: List[Plugin],
+                     ops: str) -> None:
+        """
+        Instantiate a multiprocessing pool to execute
+        operations in parallel.
+        """
+        with concurrent.futures.ThreadPoolExecutor() as pool:
+            results = pool.map(self.execute, plugins)
+        
+        for result in results:
+            self.register_results(ops, result)
+
+    def execute(self, plugin: Plugin) -> dict:
         """
         Wrap plugins main execution method. The handler create
         builders to build plugins. Once the plugin are built,
@@ -121,10 +136,8 @@ class RunHandler:
         (inference, validation or profiling), produce a datajudge
         report, render the execution artifact ready to be stored
         and save some library infos.
-        """
-        for plugin in flatten_list(plugins):
-            results = plugin.execute()
-            self.register_results(operation, results)
+        """        
+        return plugin.execute()
 
     def register_results(self,
                          operation: str,
@@ -134,17 +147,15 @@ class RunHandler:
         Register results.
         """
         for key, value in result.items():
-            self._registry.register(operation, key, value)
+            self._registry.register(operation, key, value)       
 
-    def destroy(self, builders: PluginBuilder) -> None:
+    def destroy_builders(self,
+                         builders: List[PluginBuilder]) -> None:
         """
         Destroy builders.
         """
         for builder in builders:
-            try:
-                builder.destroy()
-            except:
-                pass
+            builder.destroy()
 
     def get_item(self, operation: str, _type: str) -> List[Any]:
         """

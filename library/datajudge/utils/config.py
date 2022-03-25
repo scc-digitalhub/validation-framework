@@ -9,8 +9,9 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 
 from datajudge.utils.commons import (DUCKDB, DUMMY, FRICTIONLESS,
-                                    EMPTY, NON_EMPTY, EXACT,
-                                    RANGE, MINIMUM, MAXIMUM)
+                                     EMPTY, NON_EMPTY, EXACT,
+                                     RANGE, MINIMUM, MAXIMUM,
+                                     CHECK_VALUE, CHECK_ROWS)
 
 
 class StoreConfig(BaseModel):
@@ -42,7 +43,7 @@ class ConstraintsDuckDB(Constraint):
     query: str
     expect: Literal[EMPTY, NON_EMPTY, EXACT, RANGE, MINIMUM, MAXIMUM]
     value: Optional[Any] = None
-    check: Literal["value", "rows"] = "rows"
+    check: Literal[CHECK_VALUE, CHECK_ROWS] = CHECK_ROWS
 
 
 class ExecConfig(BaseModel):

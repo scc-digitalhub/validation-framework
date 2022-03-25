@@ -82,7 +82,6 @@ class PluginBuilder:
     """
     Abstract PluginBuilder class.
     """
-
     def __init__(self,
                  exec_args: dict) -> None:
         self.exec_args = exec_args

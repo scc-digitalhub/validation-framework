@@ -2,18 +2,12 @@
 Inference plugin abstract class module.
 """
 # pylint: disable=import-error,invalid-name
-from __future__ import annotations
-
-import typing
 from abc import ABCMeta, abstractmethod
-from typing import Any, List
+from typing import Any
 
 from datajudge.run.plugin.base_plugin import Plugin
 from datajudge.utils.commons import (RES_WRAP, RES_DJ,
                                      RES_RENDER, RES_LIB)
-
-if typing.TYPE_CHECKING:
-    from datajudge.run.plugin.base_plugin import Result
 
 
 class Inference(Plugin, metaclass=ABCMeta):
@@ -33,7 +27,7 @@ class Inference(Plugin, metaclass=ABCMeta):
         return {
             RES_WRAP: lib_result,
             RES_DJ: dj_result,
-            RES_RENDER: render_result,           
+            RES_RENDER: render_result,
             RES_LIB: self.get_library()
         }
 

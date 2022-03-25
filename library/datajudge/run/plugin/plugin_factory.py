@@ -1,5 +1,5 @@
 """
-Plugin factory module.
+Plugin builder factory module.
 """
 from __future__ import annotations
 
@@ -39,8 +39,8 @@ REGISTRY = {
 }
 
 
-def get_builder(config: List[ExecConfig],
-                typology: str) -> list:
+def builder_factory(config: List[ExecConfig],
+                    typology: str) -> list:
     """
     Factory method that creates plugin builders.
     """
