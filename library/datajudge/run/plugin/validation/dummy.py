@@ -99,15 +99,15 @@ class ValidationBuilderDummy(ValidationPluginBuilder):
 
     def build(self,
               resources: List[DataResource],
-              constraints: List[Constraint]) -> ValidationPluginDummy:
+              constraints: List[Constraint]
+              ) -> ValidationPluginDummy:
         """
         Build a plugin.
         """
         plugins = []
-        for resource in resources:
-            plugin = ValidationPluginDummy()
-            plugin.setup(resource, {}, self.exec_args)
-            plugins.append(plugin)
+        plugin = ValidationPluginDummy()
+        plugin.setup(resources, constraints, self.exec_args)
+        plugins.append(plugin)
         return plugins
 
     def filter_constraints(constraints: List[Constraint]

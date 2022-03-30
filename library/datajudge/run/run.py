@@ -230,7 +230,9 @@ class Run:
 
     # Inference
 
-    def infer_wrapper(self) -> List[Any]:
+    def infer_wrapper(self,
+                      multithread: bool = False,
+                      num_worker: int = 10) -> List[Any]:
         """
         Execute schema inference on resources.
         """
@@ -238,10 +240,14 @@ class Run:
         if schemas:
             return schemas
         self._fetch_data()
-        self._run_handler.infer(self.run_info.resources)
+        self._run_handler.infer(self.run_info.resources,
+                                multithread,
+                                num_worker)
         return self._run_handler.get_artifact_schema()
 
-    def infer_datajudge(self) -> List[DatajudgeSchema]:
+    def infer_datajudge(self,
+                        multithread: bool = False,
+                        num_worker: int = 10) -> List[DatajudgeSchema]:
         """
         Produce datajudge inference schema.
         """
@@ -249,16 +255,20 @@ class Run:
         if schemas:
             return schemas
         self._fetch_data()
-        self._run_handler.infer(self.run_info.resources)
+        self._run_handler.infer(self.run_info.resources,
+                                multithread,
+                                num_worker)
         return self._run_handler.get_datajudge_schema()
 
     def infer(self,
+              multithread: bool = False,
+              num_worker: int = 10,
               only_dj: bool = False) -> Any:
         """
         Execute schema inference on resources.
         """
-        schema = self.infer_wrapper()
-        schema_dj = self.infer_datajudge()
+        schema = self.infer_wrapper(multithread, num_worker)
+        schema_dj = self.infer_datajudge(multithread, num_worker)
         if only_dj:
             return None, schema_dj
         return schema, schema_dj
@@ -285,8 +295,10 @@ class Run:
     # Validation
 
     def validate_wrapper(self,
-                         constraints: List[Constraint]
-                         ) -> Any:
+                         constraints: List[Constraint],
+                         multithread: bool = False,
+                         num_worker: int = 10
+                         ) -> List[Any]:
         """
         Execute validation on resources.
 
@@ -295,17 +307,22 @@ class Run:
         constraints : dict
             List of constraint to validate resources.
 
+
         """
         reports = self._run_handler.get_artifact_report()
         if reports:
             return reports
         self._fetch_data()
         self._run_handler.validate(self.run_info.resources,
-                                   constraints)
+                                   constraints,
+                                   multithread,
+                                   num_worker)
         return self._run_handler.get_artifact_report()
 
     def validate_datajudge(self,
-                           constraints: List[Constraint]
+                           constraints: List[Constraint],
+                           multithread: bool = False,
+                           num_worker: int = 10
                            ) -> List[DatajudgeReport]:
         """
         Produce datajudge validation report.
@@ -321,11 +338,15 @@ class Run:
             return reports
         self._fetch_data()
         self._run_handler.validate(self.run_info.resources,
-                                   constraints)
+                                   constraints,
+                                   multithread,
+                                   num_worker)
         return self._run_handler.get_datajudge_report()
 
     def validate(self,
                  constraints: List[Constraint],
+                 multithread: bool = False,
+                 num_worker: int = 10,
                  only_dj: bool = False
                  ) -> Any:
         """
@@ -337,8 +358,8 @@ class Run:
             List of constraint to validate resources.
 
         """
-        report = self.validate_wrapper(constraints)
-        report_dj = self.validate_datajudge(constraints)
+        report = self.validate_wrapper(constraints, multithread, num_worker)
+        report_dj = self.validate_datajudge(constraints, multithread, num_worker)
         if only_dj:
             return None, report_dj
         return report, report_dj
@@ -364,7 +385,9 @@ class Run:
 
     # Profiling
 
-    def profile_wrapper(self) -> List[Any]:
+    def profile_wrapper(self,
+                        multithread: bool = False,
+                        num_worker: int = 10) -> List[Any]:
         """
         Execute profiling on resources.
         """
@@ -372,10 +395,14 @@ class Run:
         if profiles:
             return profiles
         self._fetch_data()
-        self._run_handler.profile(self.run_info.resources)
+        self._run_handler.profile(self.run_info.resources,
+                                  multithread,
+                                  num_worker)
         return self._run_handler.get_artifact_profile()
 
-    def profile_datajudge(self) -> List[DatajudgeProfile]:
+    def profile_datajudge(self,
+                          multithread: bool = False,
+                          num_worker: int = 10) -> List[DatajudgeProfile]:
         """
         Produce datajudge profiling report.
         """
@@ -383,17 +410,21 @@ class Run:
         if profiles:
             return profiles
         self._fetch_data()
-        self._run_handler.profile(self.run_info.resources)
+        self._run_handler.profile(self.run_info.resources,
+                                  multithread,
+                                  num_worker)
         return self._run_handler.get_datajudge_profile()
 
     def profile(self,
+                multithread: bool = False,
+                num_worker: int = 10,
                 only_dj: bool = False
                 ) -> Any:
         """
         Execute profiling on resources.
         """
-        profile = self.profile_wrapper()
-        profile_dj = self.profile_datajudge()
+        profile = self.profile_wrapper(multithread, num_worker)
+        profile_dj = self.profile_datajudge(multithread, num_worker)
         if only_dj:
             return None, profile_dj
         return profile, profile_dj

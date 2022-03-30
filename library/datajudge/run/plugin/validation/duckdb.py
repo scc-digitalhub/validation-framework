@@ -239,7 +239,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         # Setup connection
         #self.con = duckdb.connect(database=":memory:")
-        self.con = duckdb.connect(":memory:", read_only=False)
+        self.con = duckdb.connect(":memory:")
 
         # Filter and register resource
         res_names = set(flatten_list([deepcopy(const.resources) for const in constraints]))

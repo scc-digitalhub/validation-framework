@@ -11,7 +11,7 @@ from azure.storage.blob import BlobServiceClient
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.azure_utils import (check_container, get_object,
                                          upload_file, upload_fileobj)
-from datajudge.utils.file_utils import check_path, get_path
+from datajudge.utils.file_utils import check_make_dir, check_path, get_path, write_bytes
 from datajudge.utils.io_utils import wrap_string, write_bytesio
 from datajudge.utils.uri_utils import (build_key, get_name_from_uri,
                                        get_uri_netloc, get_uri_path)
@@ -78,10 +78,10 @@ class AzureArtifactStore(ArtifactStore):
         obj = get_object(self.cont_client, key)
 
         # Store locally
-        self._check_temp_dir(dst)
+        check_make_dir(dst)
         name = get_name_from_uri(key)
         filepath = get_path(dst, name)
-        self._store_fetched_artifact(obj, filepath)
+        write_bytes(obj, filepath)
         return filepath
 
     def _check_access_to_storage(self) -> None:

@@ -144,7 +144,7 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
         for resource in resources:
             if resource.schema is None:
                 resource.schema = self._infer_schema(resource.tmp_pth)
-    
+
     def build(self,
               resources: List[DataResource],
               constraints: List[Constraint]) -> ValidationPluginFrictionless:
@@ -153,7 +153,7 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
         """
         self.setup(resources)
         f_constraint = self.filter_constraints(constraints)
-        
+
         plugins = []
         for resource in resources:
             for const in f_constraint:
@@ -171,13 +171,13 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
         """
         schema = describe_schema(path=path)
         return {"fields": [{"name": field["name"]} for field in schema["fields"]]}
-    
+
     @staticmethod
     def filter_constraints(constraints: List[Constraint]
                            ) -> List[ConstraintsFrictionless]:
         return [const for const in constraints
                 if const.type == FRICTIONLESS]
-    
+
     def destroy(self) -> None:
         """
         Destroy builder.

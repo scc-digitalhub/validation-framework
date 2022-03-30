@@ -1,13 +1,14 @@
 """
 Common filesystem utils.
 """
+import csv
 import glob
 import json
 import os
 import shutil
 from io import BytesIO
 from pathlib import Path
-from typing import IO, Union
+from typing import Any, IO, Union
 
 
 # Directories
@@ -55,6 +56,14 @@ def get_path(*args) -> str:
     """
     return str(Path(*args))
 
+
+def check_make_dir(uri: str) -> None:
+    """
+    Check if a directory already exist, otherwise create it.
+    """
+    if not check_dir(uri):
+        make_dir(uri)
+    
 
 # Files
 
@@ -168,3 +177,18 @@ def write_object(buff: IO,
     write_mode = "wb" if isinstance(buff, BytesIO) else "w"
     with open(dst, write_mode) as file:
         shutil.copyfileobj(buff, file)
+
+
+def write_table(obj: Any,
+                filepath: str) -> None:
+        """
+        Write a SQLAlchemy query result as csv.
+        """
+        with open(filepath, "w") as csvfile:
+            outcsv = csv.writer(csvfile,
+                                delimiter=',',
+                                quotechar='"',
+                                quoting=csv.QUOTE_MINIMAL)
+            header = list(obj.keys())
+            outcsv.writerow(header)
+            outcsv.writerows(obj.fetchall())

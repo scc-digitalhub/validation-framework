@@ -94,8 +94,7 @@ class InferenceBuilderDummy(PluginBuilder):
         Build a plugin.
         """
         plugins = []
-        for resource in resources:
-            plugin = InferencePluginDummy()
-            plugin.setup(resource, self.exec_args)
-            plugins.append(plugin)
+        plugin = InferencePluginDummy()
+        plugin.setup(resources, self.exec_args)
+        plugins.append(plugin)
         return plugins

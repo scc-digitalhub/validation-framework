@@ -80,34 +80,53 @@ class RunHandler:
         self._config = config
         self._registry = RunHandlerRegistry()
 
-    def infer(self, resources: List[DataResource]) -> None:
+    def infer(self,
+              resources: List[DataResource],
+              multithread: bool = False,
+              num_worker: int = 10
+              ) -> None:
         """
         Wrapper for plugins infer methods.
         """
         builders = builder_factory(self._config.inference, INFERENCE)
         plugins = self.create_plugins(builders, resources)
-        self.pool_execute(plugins, INFERENCE)
+        if multithread:
+            self.pool_execute(plugins, INFERENCE, num_worker)
+        else:
+            self.sequential_execute(plugins, INFERENCE)
 
     def validate(self,
                  resources: List[DataResource],
-                 constraints: List[Constraint]
+                 constraints: List[Constraint],
+                 multithread: bool = False,
+                 num_worker: int = 10
                  ) -> None:
         """
         Wrapper for plugins validate methods.
         """
         builders = builder_factory(self._config.validation, VALIDATION)
         plugins = self.create_plugins(builders, resources, constraints)
-        self.pool_execute(plugins, VALIDATION)
+        if multithread:
+            self.pool_execute(plugins, VALIDATION, num_worker)
+        else:
+            self.sequential_execute(plugins, VALIDATION)
         self.destroy_builders(builders)
 
-    def profile(self, resources: List[DataResource]) -> None:
+    def profile(self,
+                resources: List[DataResource],
+                multithread: bool = False,
+                num_worker: int = 10
+                ) -> None:
         """
         Wrapper for plugins profile methods.
         """
         builders = builder_factory(self._config.profiling, PROFILING)
         plugins = self.create_plugins(builders, resources)
-        self.pool_execute(plugins, PROFILING)
-        
+        if multithread:
+            self.pool_execute(plugins, PROFILING, num_worker)
+        else:
+            self.sequential_execute(plugins, PROFILING)
+
     @staticmethod
     def create_plugins(builders: PluginBuilder, *args) -> List[Plugin]:
         """
@@ -115,18 +134,27 @@ class RunHandler:
         """
         return flatten_list([builder.build(*args) for builder in builders])
 
+    def sequential_execute(self,
+                           plugins: List[Plugin],
+                           ops: str) -> None:
+        """
+        Execute operations in sequence.
+        """
+        for plugin in plugins:
+            data = self.execute(plugin)
+            self.register_results(ops, data)
+
     def pool_execute(self,
                      plugins: List[Plugin],
-                     ops: str) -> None:
+                     ops: str,
+                     num_worker: int) -> None:
         """
-        Instantiate a multiprocessing pool to execute
+        Instantiate a multithreading pool to execute
         operations in parallel.
         """
-        with concurrent.futures.ThreadPoolExecutor() as pool:
-            results = pool.map(self.execute, plugins)
-        
-        for result in results:
-            self.register_results(ops, result)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=num_worker) as pool:
+            for data in pool.map(self.execute, plugins):
+                self.register_results(ops, data)
 
     def execute(self, plugin: Plugin) -> dict:
         """
@@ -136,7 +164,7 @@ class RunHandler:
         (inference, validation or profiling), produce a datajudge
         report, render the execution artifact ready to be stored
         and save some library infos.
-        """        
+        """
         return plugin.execute()
 
     def register_results(self,
@@ -147,7 +175,7 @@ class RunHandler:
         Register results.
         """
         for key, value in result.items():
-            self._registry.register(operation, key, value)       
+            self._registry.register(operation, key, value)
 
     def destroy_builders(self,
                          builders: List[PluginBuilder]) -> None:

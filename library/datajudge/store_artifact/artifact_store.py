@@ -4,7 +4,6 @@ Abstract class for artifact store.
 from abc import ABCMeta, abstractmethod
 from typing import Any, Optional
 
-from datajudge.utils.file_utils import check_dir, make_dir, write_bytes
 from datajudge.utils.uri_utils import rebuild_uri
 
 
@@ -75,19 +74,3 @@ class ArtifactStore:
         Return the path of the artifact store for the Run.
         """
         return rebuild_uri(self.artifact_uri, exp_name, run_id)
-
-    @staticmethod
-    def _check_temp_dir(uri: str) -> None:
-        """
-        Check if temp dir already exist, otherwise create it.
-        """
-        if not check_dir(uri):
-            make_dir(uri)
-
-    @staticmethod
-    def _store_fetched_artifact(obj: bytes,
-                                dst: str) -> None:
-        """
-        Save artifact locally.
-        """
-        write_bytes(obj, dst)

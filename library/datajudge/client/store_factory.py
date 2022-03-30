@@ -9,6 +9,7 @@ from typing import Union
 from datajudge.store_artifact import (AzureArtifactStore, DummyArtifactStore,
                                       FTPArtifactStore, HTTPArtifactStore,
                                       LocalArtifactStore, S3ArtifactStore)
+from datajudge.store_artifact.sql_artifact_store import SQLArtifactStore
 from datajudge.store_metadata import (DigitalHubMetadataStore,
                                       DummyMetadataStore, LocalMetadataStore)
 from datajudge.utils.commons import API_BASE
@@ -23,6 +24,7 @@ HTTP_SCHEME = ["http", "https"]
 S3_SCHEME = ["s3"]
 AZURE_SCHEME = ["wasb", "wasbs"]
 FTP_SCHEME = ["ftp"]
+SQL_SCHEME = ["sql"]
 DUMMY_SCHEME = ["dummy"]
 
 # Registries
@@ -44,6 +46,7 @@ ARTIFACT_STORE_REGISTRY = {
     "http": HTTPArtifactStore,
     "https": HTTPArtifactStore,
     "ftp": FTPArtifactStore,
+    "sql": SQLArtifactStore,
     "dummy": DummyArtifactStore,
 }
 
@@ -127,6 +130,8 @@ class StoreBuilder:
         if scheme in [*LOCAL_SCHEME]:
             return get_absolute_path(uri, "artifact")
         if scheme in [*AZURE_SCHEME, *S3_SCHEME, *HTTP_SCHEME, *FTP_SCHEME]:
+            return rebuild_uri(uri, "artifact")
+        if scheme in [*SQL_SCHEME]:
             return rebuild_uri(uri, "artifact")
         if scheme in [*DUMMY_SCHEME]:
             return uri

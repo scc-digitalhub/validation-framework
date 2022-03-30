@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Optional, Tuple
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
-from datajudge.utils.file_utils import check_path, get_path
+from datajudge.utils.file_utils import check_make_dir, check_path, get_path, write_bytes
 from datajudge.utils.rest_utils import (api_get_call, api_put_call,
                                         check_url_availability)
 from datajudge.utils.uri_utils import check_url, get_name_from_uri, rebuild_uri
@@ -72,10 +72,10 @@ class HTTPArtifactStore(ArtifactStore):
         obj = res.content
 
         # Store locally
-        self._check_temp_dir(dst)
+        check_make_dir(dst)
         name = get_name_from_uri(key)
         filepath = get_path(dst, name)
-        self._store_fetched_artifact(obj, filepath)
+        write_bytes(obj, filepath)
         return filepath
 
     # pylint: disable=arguments-differ
