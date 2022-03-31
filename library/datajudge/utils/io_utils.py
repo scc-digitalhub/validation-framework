@@ -1,8 +1,12 @@
 """
 Common IO utils.
 """
+import csv
+import json
+import shutil
 from io import BufferedReader, BytesIO, StringIO, TextIOWrapper
-from typing import IO
+from pathlib import Path
+from typing import Any, IO, Union
 
 
 #  https://stackoverflow.com/questions/55889474/convert-io-stringio-to-io-bytesio
@@ -68,3 +72,71 @@ def write_bytesio(src: str) -> BytesIO:
     bytesio.write(src.encode())
     bytesio.seek(0)
     return bytesio
+
+
+def write_json(data: dict,
+               path: Union[str, Path]) -> None:
+    """
+    Store JSON file.
+    """
+    with open(path, "w") as file:
+        json.dump(data, file)
+
+
+def write_text(string: str,
+               path: Union[str, Path]) -> None:
+    """
+    Write text on a file.
+    """
+    with open(path, "w") as file:
+        file.write(string)
+
+
+def write_bytes(byt: bytes,
+                path: Union[str, Path]) -> None:
+    """
+    Write text on a file.
+    """
+    with open(path, "wb") as file:
+        file.write(byt)
+
+
+def write_object(buff: IO,
+                 dst: str) -> None:
+    """
+    Save a buffer as file.
+    """
+    buff.seek(0)
+    write_mode = "wb" if isinstance(buff, BytesIO) else "w"
+    with open(dst, write_mode) as file:
+        shutil.copyfileobj(buff, file)
+
+
+def write_sqlalchemy_table(obj: Any,
+                           filepath: str) -> None:
+    """
+    Write a SQLAlchemy query result as csv.
+    """
+    with open(filepath, "w") as csvfile:
+        outcsv = csv.writer(csvfile,
+                            delimiter=',',
+                            quotechar='"',
+                            quoting=csv.QUOTE_MINIMAL)
+        header = list(obj.keys())
+        outcsv.writerow(header)
+        outcsv.writerows(obj.fetchall())
+
+
+def write_dremio_table(obj: Any,
+                       filepath: str) -> None:
+    """
+    Write a SQLAlchemy query result as csv.
+    """
+    with open(filepath, "w") as csvfile:
+        outcsv = csv.writer(csvfile,
+                            delimiter=',',
+                            quotechar='"',
+                            quoting=csv.QUOTE_MINIMAL)
+        header = [col[0] for col in obj.description]
+        outcsv.writerow(header)
+        outcsv.writerows(obj.fetchall())

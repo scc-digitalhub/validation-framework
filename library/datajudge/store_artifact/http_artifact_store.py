@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import Any, Optional, Tuple
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
-from datajudge.utils.file_utils import check_make_dir, check_path, get_path, write_bytes
+from datajudge.utils.file_utils import check_make_dir, check_path, get_path
+from datajudge.utils.io_utils import write_bytes
 from datajudge.utils.rest_utils import (api_get_call, api_put_call,
                                         check_url_availability)
 from datajudge.utils.uri_utils import check_url, get_name_from_uri, rebuild_uri

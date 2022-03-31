@@ -7,9 +7,11 @@ from typing import Any, Optional
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import (check_dir, check_make_dir, check_path, copy_file,
-                                        get_path, make_dir, write_json,
-                                        write_object)
+                                        get_path, make_dir)
+from datajudge.utils.io_utils import write_json, write_object
 
+
+write_object
 
 class LocalArtifactStore(ArtifactStore):
     """

@@ -44,14 +44,7 @@ def get_table_path_from_uri(uri: str) -> str:
     """
     Return table name from path.
     """
-    path = get_uri_netloc(uri)
-    tab_path = path.split(".")
-    l = len(tab_path)
-    if l == 2:
-        return ".".join(tab_path)
-    if l == 3:
-        return ".".join(tab_path[l-2:l-1] + tab_path[l-1:])
-    raise RuntimeError("Bad table uri for resource.")
+    return get_uri_netloc(uri)
 
 
 def rebuild_uri(uri: str, *args) -> str:

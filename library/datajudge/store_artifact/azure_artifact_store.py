@@ -11,8 +11,8 @@ from azure.storage.blob import BlobServiceClient
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.azure_utils import (check_container, get_object,
                                          upload_file, upload_fileobj)
-from datajudge.utils.file_utils import check_make_dir, check_path, get_path, write_bytes
-from datajudge.utils.io_utils import wrap_string, write_bytesio
+from datajudge.utils.file_utils import check_make_dir, check_path, get_path
+from datajudge.utils.io_utils import wrap_string, write_bytes, write_bytesio
 from datajudge.utils.uri_utils import (build_key, get_name_from_uri,
                                        get_uri_netloc, get_uri_path)
 

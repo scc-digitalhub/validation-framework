@@ -1,24 +1,23 @@
 """
-Implementation of SQL artifact store.
+Implementation of Dremio artifact store.
 """
 from typing import Any, Optional
 
-import sqlalchemy
-from sqlalchemy import create_engine
+import pyodbc
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.file_utils import check_make_dir, get_path
-from datajudge.utils.io_utils import write_sqlalchemy_table
-from datajudge.utils.sql_utils import get_table
+from datajudge.utils.io_utils import write_dremio_table
+from datajudge.utils.sql_utils import get_table_dremio
 from datajudge.utils.uri_utils import get_table_path_from_uri
 
 
-class SQLArtifactStore(ArtifactStore):
+class DremioArtifactStore(ArtifactStore):
     """
-    SQL artifact store object.
+    Dremio artifact store object.
 
-    Allows the client to interact with SQL based storages.
+    Allows the client to interact with Dremio storages.
 
     """
 
@@ -27,7 +26,7 @@ class SQLArtifactStore(ArtifactStore):
                  config: Optional[dict] = None
                  ) -> None:
         super().__init__(artifact_uri, config)
-        self.engine = self._get_engine()
+        self.conn = self._get_connection()
 
     def persist_artifact(self,
                          src: Any,
@@ -46,12 +45,12 @@ class SQLArtifactStore(ArtifactStore):
         """
         # Query table
         table_name = get_table_path_from_uri(src)
-        obj = get_table(self.engine, table_name)
+        obj = get_table_dremio(self.conn, table_name)
 
         # Store locally
         check_make_dir(dst)
-        filepath = get_path(dst, f"{table_name}.csv")
-        write_sqlalchemy_table(obj, filepath)
+        filepath = get_path(dst, f"{table_name.lower()}.csv")
+        write_dremio_table(obj, filepath)
         return filepath
 
     def _check_access_to_storage(self) -> None:
@@ -59,15 +58,20 @@ class SQLArtifactStore(ArtifactStore):
         Check if there is access to the storage.
         """
         try:
-            self.engine.connect()
+            self.conn.cursor()
         except Exception:
-            raise StoreError("No access to db!")
+            raise StoreError("No access to dremio!")
 
-    def _get_engine(self) -> sqlalchemy.engine.Engine:
+    def _get_connection(self) -> pyodbc.Connection:
         """
         Create engine from connection string.
         """
-        connection_string = self.config.get("connection_string")
-        if connection_string is not None:
-            return create_engine(connection_string)
-        raise StoreError("Something wrong with connection string.")
+        try:
+            return pyodbc.connect(driver=self.config.get("driver"),
+                                  host=self.config.get("host"),
+                                  port=self.config.get("port"),
+                                  user=self.config.get("user"),
+                                  password=self.config.get("password"),
+                                  autocommit=True)
+        except Exception:
+            raise StoreError("Something wrong with connection.")

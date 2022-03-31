@@ -7,7 +7,8 @@ from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils import commons as cfg
 from datajudge.utils.exceptions import RunError
 from datajudge.utils.file_utils import (check_dir, get_path, make_dir,
-                                        remove_files, write_json)
+                                        remove_files)
+from datajudge.utils.io_utils import write_json
 
 
 class LocalMetadataStore(MetadataStore):
