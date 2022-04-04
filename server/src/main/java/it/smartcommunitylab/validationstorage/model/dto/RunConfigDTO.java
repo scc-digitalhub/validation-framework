@@ -21,10 +21,12 @@ public class RunConfigDTO {
     private String id;
 
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("project")
     private String projectId;
 
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private String experimentId;
+    @JsonProperty("experiment")
+    private String experimentName;
 
     private List<RunConfigImpl> snapshot;
 
@@ -42,7 +44,7 @@ public class RunConfigDTO {
         validation = Collections.<RunConfigImpl>emptyList();
     }
     
-    public static RunConfigDTO from(RunConfig source) {
+    public static RunConfigDTO from(RunConfig source, String experimentName) {
         if (source == null)
             return null;
         
@@ -50,7 +52,7 @@ public class RunConfigDTO {
         
         dto.setId(source.getId());
         dto.setProjectId(source.getProjectId());
-        dto.setExperimentId(source.getExperimentId());
+        dto.setExperimentName(experimentName);
         
         if (source.getSnapshot() != null)
             dto.setSnapshot(source.getSnapshot());
@@ -67,7 +69,7 @@ public class RunConfigDTO {
         return dto;
     }
     
-    public static RunConfig to(RunConfigDTO source) {
+    public static RunConfig to(RunConfigDTO source, String experimentId) {
         if (source == null)
             return null;
         
@@ -79,7 +81,7 @@ public class RunConfigDTO {
         
         document.setId(id);
         document.setProjectId(source.getProjectId());
-        document.setExperimentId(source.getExperimentId());
+        document.setExperimentId(experimentId);
         document.setSnapshot(source.getSnapshot());
         document.setProfiling(source.getProfiling());
         document.setSchemaInference(source.getSchemaInference());
@@ -104,12 +106,12 @@ public class RunConfigDTO {
         this.projectId = projectId;
     }
 
-    public String getExperimentId() {
-        return experimentId;
+    public String getExperimentName() {
+        return experimentName;
     }
 
-    public void setExperimentId(String experimentId) {
-        this.experimentId = experimentId;
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public List<RunConfigImpl> getSnapshot() {

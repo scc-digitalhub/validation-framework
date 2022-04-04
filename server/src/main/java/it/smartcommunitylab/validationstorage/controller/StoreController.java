@@ -27,27 +27,37 @@ public class StoreController {
     private DataResourceService service;
     
     @PostMapping
-    public StoreDTO create(@PathVariable String projectId, @RequestBody @Valid StoreDTO request) {
+    public StoreDTO create(
+            @PathVariable String projectId,
+            @RequestBody @Valid StoreDTO request) {
         return service.createStore(projectId, request);
     }
     
     @GetMapping
-    public List<StoreDTO> find(@PathVariable String projectId) {
+    public List<StoreDTO> find(
+            @PathVariable String projectId) {
         return service.findStores(projectId);
     }
     
     @GetMapping("/{id}")
-    public StoreDTO findById(@PathVariable String projectId, @PathVariable String id) {
+    public StoreDTO findById(
+            @PathVariable String projectId,
+            @PathVariable String id) {
         return service.findStoreById(projectId, id);
     }
 
     @PutMapping("/{id}")
-    public StoreDTO update(@PathVariable String projectId, @PathVariable String id, @RequestBody @Valid StoreDTO request) {
+    public StoreDTO update(
+            @PathVariable String projectId,
+            @PathVariable String id,
+            @RequestBody @Valid StoreDTO request) {
         return service.updateStore(projectId, id, request);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable String projectId, @PathVariable String id) {
+    public void delete(
+            @PathVariable String projectId,
+            @PathVariable String id) {
         service.deleteStore(projectId, id);
     }
     

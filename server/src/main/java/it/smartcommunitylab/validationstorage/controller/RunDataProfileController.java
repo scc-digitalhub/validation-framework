@@ -19,7 +19,7 @@ import it.smartcommunitylab.validationstorage.model.dto.RunDataProfileDTO;
 import it.smartcommunitylab.validationstorage.service.RunService;
 
 @RestController
-@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentId}/run/{runId}/data-profile")
+@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentName}/run/{runId}/data-profile")
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunDataProfileController {
     @Autowired
@@ -28,12 +28,12 @@ public class RunDataProfileController {
     @PostMapping
     public ProfileResultDTO create(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @RequestBody @Valid ProfileResultDTO request) {
         
         ProfileResultDTO response = new ProfileResultDTO();
-        response.setReports(service.createRunDataProfiles(projectId, experimentId, runId, request.getResult(), request.getReports()));
+        response.setReports(service.createRunDataProfiles(projectId, experimentName, runId, request.getResult(), request.getReports()));
         response.setResult(request.getResult());
         
         return response;
@@ -42,12 +42,12 @@ public class RunDataProfileController {
     @GetMapping
     public ProfileResultDTO find(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId) {
         
         ProfileResultDTO response = new ProfileResultDTO();
-        response.setReports(service.findRunDataProfiles(projectId, experimentId, runId));
-        response.setResult(service.findProfileResult(projectId, experimentId, runId));
+        response.setReports(service.findRunDataProfiles(projectId, experimentName, runId));
+        response.setResult(service.findProfileResult(projectId, experimentName, runId));
         
         return response;
     }
@@ -55,22 +55,22 @@ public class RunDataProfileController {
     @GetMapping("/{id}")
     public RunDataProfileDTO findById(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @PathVariable String id) {
         
-        return service.findRunDataProfileById(projectId, experimentId, runId, id);
+        return service.findRunDataProfileById(projectId, experimentName, runId, id);
     }
 
     @PutMapping
     public ProfileResultDTO update(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @RequestBody @Valid ProfileResultDTO request) {
         
         ProfileResultDTO response = new ProfileResultDTO();
-        response.setReports(service.updateRunDataProfiles(projectId, experimentId, runId, request.getResult(), request.getReports()));
+        response.setReports(service.updateRunDataProfiles(projectId, experimentName, runId, request.getResult(), request.getReports()));
         response.setResult(request.getResult());
         
         return response;
@@ -79,8 +79,8 @@ public class RunDataProfileController {
     @DeleteMapping
     public void delete(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId) {
-        service.deleteRunDataProfiles(projectId, experimentId, runId);
+        service.deleteRunDataProfiles(projectId, experimentName, runId);
     }
 }

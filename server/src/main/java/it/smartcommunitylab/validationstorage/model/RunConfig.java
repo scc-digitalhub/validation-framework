@@ -13,7 +13,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.converter.SerializableListConverter;
+import it.smartcommunitylab.validationstorage.converter.RunConfigImplListConverter;
 import it.smartcommunitylab.validationstorage.converter.StringSetConverter;
 
 @Entity
@@ -33,28 +33,20 @@ public class RunConfig {
     private String experimentId;
     
     @Lob
-    @Convert(converter = SerializableListConverter.class)
+    @Convert(converter = RunConfigImplListConverter.class)
     private List<RunConfigImpl> snapshot;
     
     @Lob
-    @Convert(converter = SerializableListConverter.class)
+    @Convert(converter = RunConfigImplListConverter.class)
     private List<RunConfigImpl> profiling;
     
     @Lob
-    @Convert(converter = SerializableListConverter.class)
+    @Convert(converter = RunConfigImplListConverter.class)
     private List<RunConfigImpl> schemaInference;
     
     @Lob
-    @Convert(converter = SerializableListConverter.class)
+    @Convert(converter = RunConfigImplListConverter.class)
     private List<RunConfigImpl> validation;
-    
-    @Override
-    public String toString() {
-        String result = "RunConfig: id=" + id + ", projectId=" + projectId + ", experimentId=" + experimentId;
-        result += "; snapshot=" + snapshot + ", profiling=" + profiling + ", inference=" + schemaInference + ", validation=" + validation;
-        
-        return result;
-    }
 
     public String getId() {
         return id;

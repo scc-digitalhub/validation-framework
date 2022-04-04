@@ -1,8 +1,13 @@
 package it.smartcommunitylab.validationstorage.model;
 
 import java.io.Serializable;
+import java.util.Map;
 
+import javax.persistence.Convert;
 import javax.persistence.Embeddable;
+import javax.persistence.Lob;
+
+import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
 
 @Embeddable
 public class RunConfigImpl implements Serializable {
@@ -17,17 +22,21 @@ public class RunConfigImpl implements Serializable {
     
     private String library;
     
+    @Lob
+    @Convert(converter = HashMapConverter.class)
+    private Map<String, Serializable> execArgs;
+    
     @Override
     public String toString() {
-        return "RunConfigImpl: enable=" + enable + ", type=" + type + ", library=" + library;
+        return "RunConfigImpl - enable:" + enable + ", type:" + type + ", library:" + library;
+    }
+    
+    public boolean isEnable() {
+        return enable != null ? enable.booleanValue() : false;
     }
 
     public Boolean getEnable() {
         return enable;
-    }
-    
-    public boolean isEnabled() {
-        return enable != null ? enable.booleanValue() : false;
     }
 
     public void setEnable(Boolean enable) {
@@ -48,6 +57,14 @@ public class RunConfigImpl implements Serializable {
 
     public void setLibrary(String library) {
         this.library = library;
+    }
+    
+    public Map<String, Serializable> getExecArgs() {
+        return execArgs;
+    }
+
+    public void setExecArgs(Map<String, Serializable> execArgs) {
+        this.execArgs = execArgs;
     }
     
 }

@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -54,11 +56,23 @@ public class ExperimentService {
     
     @Autowired
     private RunConfigRepository runConfigRepository;
-    /*
+
     @Autowired
-    private RunRepository runRepository;*/
+    private RunService runService;
     
-    private Experiment getExperiment(String id) {
+    private Experiment getExperimentByName(String projectId, String name) {
+        if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(name))
+            return null;
+
+        Optional<Experiment> o = experimentRepository.findByProjectIdAndName(projectId, name);
+        if (o.isPresent()) {
+            return o.get();
+        }
+        
+        return null;
+    }
+    
+    private Experiment getExperimentById(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
@@ -70,13 +84,9 @@ public class ExperimentService {
         return null;
     }
     
-    private Experiment getExperimentByName(String projectId, String name) {
-        List<Experiment> l = experimentRepository.findByProjectIdAndName(projectId, name);
-        if (l.size() > 0) {
-            return l.get(0);
-        }
-        
-        return null;
+    private String getExperimentId(String projectId, String experimentName) {
+        Experiment experiment = getExperimentByName(projectId, experimentName);
+        return experiment.getId();
     }
     
     private Constraint getConstraint(String id) {
@@ -92,6 +102,9 @@ public class ExperimentService {
     }
     
     private Constraint getConstraintByName(String projectId, String experimentId, String name) {
+        if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(experimentId) || ObjectUtils.isEmpty(name))
+            return null;
+        
         List<Constraint> l = constraintRepository.findByProjectIdAndExperimentIdAndName(projectId, experimentId, name);
         if (l.size() > 0) {
             return l.get(0);
@@ -100,17 +113,18 @@ public class ExperimentService {
         return null;
     }
     
-    private RunConfig getRunConfig(String projectId, String experimentId) {
-        if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(experimentId))
+    private RunConfig getExperimentRunConfig(String projectId, String experimentName) {
+        if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(experimentName))
             return null;
-
-        List<RunConfig> l = runConfigRepository.findByProjectIdAndExperimentId(projectId, experimentId);
-        if (!ObjectUtils.isEmpty(l)) {
-            return l.get(0);
-        }
         
-        return null;
+        Experiment e = getExperimentByName(projectId, experimentName);
+        
+        if (e == null)
+            return null;
+        
+        return e.getRunConfig();
     }
+    
     /*
     private Run getRun(String id) {
         if (ObjectUtils.isEmpty(id))
@@ -128,17 +142,17 @@ public class ExperimentService {
     public ExperimentDTO createExperiment(String projectId, ExperimentDTO request) {
         ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
         
+        String name = request.getName();
+        if (getExperimentByName(projectId, name) != null)
+            throw new DocumentAlreadyExistsException("Document '" + name + "' under project '" + projectId + "' already exists.");
+        
         String id = request.getId();
         if (id != null) {
-            if (getExperiment(id) != null)
+            if (getExperimentById(id) != null)
                 throw new DocumentAlreadyExistsException("Document with id '" + id + "' already exists.");
         } else {
             id = UUID.randomUUID().toString();
         }
-        
-        String name = request.getName();
-        if (getExperimentByName(projectId, name) != null)
-            throw new DocumentAlreadyExistsException("Document '" + name + "' under project '" + projectId + "' already exists.");
 
         Experiment document = new Experiment();
         
@@ -152,13 +166,10 @@ public class ExperimentService {
         RunConfigDTO runConfigDTO = request.getRunConfig();
         if (runConfigDTO != null) {
             ValidationStorageUtils.checkIdMatch(projectId, runConfigDTO.getProjectId());
-            ValidationStorageUtils.checkIdMatch(id, runConfigDTO.getExperimentId());
             
-            RunConfig runConfig = RunConfigDTO.to(request.getRunConfig());
+            RunConfig runConfig = RunConfigDTO.to(request.getRunConfig(), id);
             runConfig.setProjectId(projectId);
-            runConfig.setExperimentId(id);
             
-            System.out.println(runConfig);
             runConfigRepository.save(runConfig);
             
             document.setRunConfig(runConfig);
@@ -169,14 +180,10 @@ public class ExperimentService {
         return ExperimentDTO.from(document);
     }
     
-    public List<ExperimentDTO> findExperiments(String projectId, Optional<String> experimentName) {
+    public List<ExperimentDTO> findExperiments(String projectId) {
         List<ExperimentDTO> dtos = new ArrayList<ExperimentDTO>();
 
-        Iterable<Experiment> results;
-        if (experimentName.isPresent())
-            results = experimentRepository.findByProjectIdAndName(projectId, experimentName.get());
-        else
-            results = experimentRepository.findByProjectId(projectId);
+        Iterable<Experiment> results = experimentRepository.findByProjectId(projectId);
 
         for (Experiment r : results)
             dtos.add(ExperimentDTO.from(r));
@@ -184,22 +191,22 @@ public class ExperimentService {
         return dtos;
     }
    
-    public ExperimentDTO findExperimentById(String projectId, String id) {
-        Experiment document = getExperiment(id);
+    public ExperimentDTO findExperimentByName(String projectId, String name) {
+        Experiment document = getExperimentByName(projectId, name);
         
         if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+            throw new DocumentNotFoundException("Document '" + name + "' under project '" + projectId + "' was not found.");
         
         return ExperimentDTO.from(document);
     }
    
-    public ExperimentDTO updateExperiment(String projectId, String id, ExperimentDTO request) {
+    public ExperimentDTO updateExperiment(String projectId, String name, ExperimentDTO request) {
         ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
         
-        Experiment document = getExperiment(id);
+        Experiment document = getExperimentByName(projectId, name);
         
         if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+            throw new DocumentNotFoundException("Document '" + name + "' under project '" + projectId + "' was not found.");
         
         document.setTitle(request.getTitle());
         document.setDescription(request.getDescription());
@@ -210,19 +217,34 @@ public class ExperimentService {
         return ExperimentDTO.from(document);
     }
    
-    public void deleteExperiment(String projectId, String id) {
-        Experiment document = getExperiment(id);
+    @Transactional
+    public void deleteExperiment(String projectId, String name) {
+        Experiment document = getExperimentByName(projectId, name);
         
         if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
-        // TODO delete runs/etc?
-        experimentRepository.deleteById(id);
+            throw new DocumentNotFoundException("Document '" + name + "' under project '" + projectId + "' was not found.");
+        
+        List<ConstraintDTO> constraints = findConstraints(projectId, name);
+        for (ConstraintDTO dto : constraints) {
+            deleteConstraint(projectId, name, dto.getId());
+        }
+        
+        deleteExperimentRunConfig(projectId, name);
+        
+        List<RunDTO> runs = runService.findRuns(projectId, name);
+        for (RunDTO dto : runs) {
+            runService.deleteRun(projectId, name, dto.getId());
+        }
+        
+        experimentRepository.deleteById(document.getId());
     }
     
     // Constraint
-    public ConstraintDTO createConstraint(String projectId, String experimentId, ConstraintDTO request) {
+    public ConstraintDTO createConstraint(String projectId, String experimentName, ConstraintDTO request) {
         ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        ValidationStorageUtils.checkIdMatch(experimentId, request.getExperimentId());
+        ValidationStorageUtils.checkIdMatch(experimentName, request.getExperimentName());
+        
+        String experimentId = getExperimentId(projectId, experimentName);
         
         String id = request.getId();
         if (id != null) {
@@ -234,7 +256,7 @@ public class ExperimentService {
         
         String name = request.getName();
         if (getConstraintByName(projectId, experimentId, name) != null)
-            throw new DocumentAlreadyExistsException("Document '" + name + "' under project '" + projectId + "', experiment '" + experimentId + "' already exists.");
+            throw new DocumentAlreadyExistsException("Document '" + name + "' under project '" + projectId + "', experiment '" + experimentName + "' already exists.");
 
         Constraint document = new Constraint();
         
@@ -243,40 +265,42 @@ public class ExperimentService {
         document.setExperimentId(experimentId);
         document.setName(name);
         document.setTitle(request.getTitle());
-        document.setResourceIds(request.getResourceIds());
-        document.setType(request.getConstraint().getType());
+        document.setResources(request.getResources());
+        document.setType(request.getTypedConstraint().getType());
         document.setDescription(request.getDescription());
-        document.setErrorSeverity(request.getErrorSeverity());
-        document.setConstraint(request.getConstraint());
+        document.setWeight(request.getWeight());
+        document.setTypedConstraint(request.getTypedConstraint());
         
         constraintRepository.save(document);
         
-        return ConstraintDTO.from(document);
+        return ConstraintDTO.from(document, experimentName);
     }
     
-    public List<ConstraintDTO> findConstraints(String projectId, String experimentId) {
+    public List<ConstraintDTO> findConstraints(String projectId, String experimentName) {
         List<ConstraintDTO> dtos = new ArrayList<ConstraintDTO>();
+        
+        String experimentId = getExperimentId(projectId, experimentName);
 
         Iterable<Constraint> results = constraintRepository.findByProjectIdAndExperimentId(projectId, experimentId);
 
         for (Constraint r : results)
-            dtos.add(ConstraintDTO.from(r));
+            dtos.add(ConstraintDTO.from(r, experimentName));
             
         return dtos;
     }
    
-    public ConstraintDTO findConstraintById(String projectId, String experimentId, String id) {
+    public ConstraintDTO findConstraintById(String projectId, String experimentName, String id) {
         Constraint document = getConstraint(id);
         
         if (document == null)
             throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
         
-        return ConstraintDTO.from(document);
+        return ConstraintDTO.from(document, experimentName);
     }
    
-    public ConstraintDTO updateConstraint(String projectId, String experimentId, String id, ConstraintDTO request) {
+    public ConstraintDTO updateConstraint(String projectId, String experimentName, String id, ConstraintDTO request) {
         ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        ValidationStorageUtils.checkIdMatch(experimentId, request.getExperimentId());
+        ValidationStorageUtils.checkIdMatch(experimentName, request.getExperimentName());
         
         Constraint document = getConstraint(id);
         
@@ -284,60 +308,65 @@ public class ExperimentService {
             throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
 
         document.setTitle(request.getTitle());
-        document.setResourceIds(request.getResourceIds());
-        document.setType(request.getConstraint().getType());
+        document.setResources(request.getResources());
+        document.setType(request.getTypedConstraint().getType());
         document.setDescription(request.getDescription());
-        document.setErrorSeverity(request.getErrorSeverity());
-        document.setConstraint(request.getConstraint());
+        document.setWeight(request.getWeight());
+        document.setTypedConstraint(request.getTypedConstraint());
         
         constraintRepository.save(document);
         
-        return ConstraintDTO.from(document);
+        return ConstraintDTO.from(document, experimentName);
     }
    
-    public void deleteConstraint(String projectId, String experimentId, String id) {
+    public void deleteConstraint(String projectId, String experimentName, String id) {
         Constraint document = getConstraint(id);
         
         if (document == null)
             throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
-        // TODO delete other documents?
+        
         constraintRepository.deleteById(id);
     }
     
     // RunConfig
-    public RunConfigDTO createRunConfig(String projectId, String experimentId, RunConfigDTO request) {
+    public RunConfigDTO createExperimentRunConfig(String projectId, String experimentName, RunConfigDTO request) {
         ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        ValidationStorageUtils.checkIdMatch(experimentId, request.getExperimentId());
+        ValidationStorageUtils.checkIdMatch(experimentName, request.getExperimentName());
         
-        if (getRunConfig(projectId, experimentId) != null)
-            throw new DocumentAlreadyExistsException("Document for project '" + projectId + "', experiment '" + experimentId + "' already exists.");
+        String experimentId = getExperimentId(projectId, experimentName);
         
-        RunConfig document = RunConfigDTO.to(request);
+        if (getExperimentRunConfig(projectId, experimentName) != null)
+            throw new DocumentAlreadyExistsException("Document for project '" + projectId + "', experiment '" + experimentName + "' already exists.");
+        
+        RunConfig document = RunConfigDTO.to(request, experimentId);
         document.setProjectId(projectId);
-        document.setExperimentId(experimentId);
         
         runConfigRepository.save(document);
         
-        return RunConfigDTO.from(document);
+        Experiment experiment = getExperimentByName(projectId, experimentName);
+        experiment.setRunConfig(document);
+        experimentRepository.save(experiment);
+        
+        return RunConfigDTO.from(document, experimentName);
     }
    
-    public RunConfigDTO findRunConfig(String projectId, String experimentId) {
-        RunConfig document = getRunConfig(projectId, experimentId);
+    public RunConfigDTO findExperimentRunConfig(String projectId, String experimentName) {
+        RunConfig document = getExperimentRunConfig(projectId, experimentName);
         
         if (document == null)
-            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentId + "' was not found.");
+            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentName + "' was not found.");
         
-        return RunConfigDTO.from(document);
+        return RunConfigDTO.from(document, experimentName);
     }
    
-    public RunConfigDTO updateRunConfig(String projectId, String experimentId, RunConfigDTO request) {
+    public RunConfigDTO updateExperimentRunConfig(String projectId, String experimentName, RunConfigDTO request) {
         ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        ValidationStorageUtils.checkIdMatch(experimentId, request.getExperimentId());
+        ValidationStorageUtils.checkIdMatch(experimentName, request.getExperimentName());
         
-        RunConfig document = getRunConfig(projectId, experimentId);
+        RunConfig document = getExperimentRunConfig(projectId, experimentName);
         
         if (document == null)
-            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentId + "' was not found.");
+            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentName + "' was not found.");
 
         document.setSnapshot(request.getSnapshot());
         document.setProfiling(request.getProfiling());
@@ -346,215 +375,20 @@ public class ExperimentService {
         
         runConfigRepository.save(document);
         
-        return RunConfigDTO.from(document);
+        return RunConfigDTO.from(document, experimentName);
     }
    
-    public void deleteRunConfig(String projectId, String experimentId) {
-        RunConfig document = getRunConfig(projectId, experimentId);
+    public void deleteExperimentRunConfig(String projectId, String experimentName) {
+        RunConfig document = getExperimentRunConfig(projectId, experimentName);
         
         if (document == null)
-            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentId + "' was not found.");
-        // TODO delete other documents?
-        runConfigRepository.deleteByProjectIdAndExperimentId(projectId, experimentId);
+            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentName + "' was not found.");
+        
+        Experiment experiment = getExperimentByName(projectId, experimentName);
+        experiment.setRunConfig(null);
+        experimentRepository.save(experiment);
+        
+        runConfigRepository.deleteById(document.getId());
     }
 
-//    @Autowired
-//    private ArtifactMetadataRepository artifactMetadataRepository;
-//    @Autowired
-//    private RunDataProfileRepository dataProfileRepository;
-//    @Autowired
-//    private RunDataResourceRepository dataResourceRepository;
-//    @Autowired
-//    private RunEnvironmentRepository runEnvironmentRepository;
-//    @Autowired
-//    private RunMetadataRepository runMetadataRepository;
-//    @Autowired
-//    private RunShortReportRepository shortReportRepository;
-//    @Autowired
-//    private RunShortSchemaRepository shortSchemaRepository;
-//    
-//    @Autowired
-//    private ProjectService projectService;
-//
-//    /**
-//     * Given an ID, returns the corresponding document, or null if it can't be found.
-//     * 
-//     * @param id ID of the document to retrieve.
-//     * @return The document if found, null otherwise.
-//     */
-//    private Experiment getDocument(String id) {
-//        if (ObjectUtils.isEmpty(id))
-//            return null;
-//
-//        Optional<Experiment> o = documentRepository.findById(id);
-//        if (o.isPresent()) {
-//            Experiment document = o.get();
-//            return document;
-//        }
-//        return null;
-//    }
-//
-//    /**
-//     * Filters a list by a term.
-//     * 
-//     * @param items  List to filter.
-//     * @param search A term to filter results by.
-//     * @return A new list, with only the results that found a match.
-//     */
-//    private List<Experiment> filterBySearch(List<Experiment> items, String search) {
-//        if (ObjectUtils.isEmpty(search))
-//            return items;
-//
-//        String normalized = ValidationStorageUtils.normalizeString(search);
-//
-//        List<Experiment> results = new ArrayList<Experiment>();
-//        for (Experiment item : items) {
-//            if (item.getExperimentName().toLowerCase().contains(normalized))
-//                results.add(item);
-//        }
-//
-//        return results;
-//    }
-//
-//    // Create
-//    public Experiment createDocument(String projectId, ExperimentDTO request, String author) {
-//        if (ObjectUtils.isEmpty(projectId))
-//            throw new IllegalArgumentException("Project ID is missing or blank.");
-//        projectService.findDocumentById(projectId);
-//
-//        String experimentId = request.getExperimentId();
-//
-//        if (ObjectUtils.isEmpty(experimentId))
-//            throw new IllegalArgumentException("Field 'experiment_id' is required and cannot be blank.");
-//
-//        if (!(documentRepository.findByProjectIdAndExperimentId(projectId, experimentId).isEmpty()))
-//            throw new DocumentAlreadyExistsException("Document (projectId=" + projectId + ", experimentId=" + experimentId + ") already exists.");
-//
-//        Experiment documentToSave = new Experiment(projectId, experimentId);
-//
-//        documentToSave.setExperimentName(request.getExperimentName());
-//        documentToSave.setTags(request.getTags());
-//        documentToSave.setAuthor(author);
-//
-//        return documentRepository.save(documentToSave);
-//    }
-//    
-//    /**
-//     * Creates an experiment, if it does not already exist. Meant to be used by other services, when
-//     * creating other documents, to automatically create the corresponding experiment if missing.
-//     * 
-//     * @param projectId ID of the project the experiment belongs to.
-//     * @param experimentId ID of the experiment.
-//     * @param experimentName Name of the experiment.
-//     * @param author Author
-//     */
-//    void createExperimentIfMissing(String projectId, String experimentId, String experimentName, String author) {
-//        if (documentRepository.findByProjectIdAndExperimentId(projectId, experimentId).size() == 0) {
-//            Experiment experimentToSave = new Experiment(projectId, experimentId);
-//            if (!ObjectUtils.isEmpty(experimentName))
-//                experimentToSave.setExperimentName(experimentName);
-//            if (!ObjectUtils.isEmpty(author))
-//                experimentToSave.setAuthor(author);
-//            documentRepository.save(experimentToSave);
-//        }
-//    }
-//
-//    // Read
-//    public List<Experiment> findDocumentsByProjectId(String projectId, Optional<String> experimentId, Optional<String> search) {
-//        List<Experiment> repositoryResults;
-//
-//        if (experimentId.isPresent())
-//            repositoryResults = documentRepository.findByProjectIdAndExperimentId(projectId, experimentId.get());
-//        else
-//            repositoryResults = documentRepository.findByProjectId(projectId);
-//
-//        if (search.isPresent())
-//            repositoryResults = filterBySearch(repositoryResults, search.get());
-//
-//        return repositoryResults;
-//    }
-//
-//    // Read
-//    public Experiment findDocumentById(String projectId, String id) {
-//        Experiment document = getDocument(id);
-//        if (document != null) {
-//            if (!document.getProjectId().equals(projectId))
-//                throw new IdMismatchException();
-//
-//            return document;
-//        }
-//        throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
-//    }
-//
-//    // Update
-//    public Experiment updateDocument(String projectId, String id, ExperimentDTO request) {
-//        if (ObjectUtils.isEmpty(id))
-//            throw new IllegalArgumentException("Document ID is missing or blank.");
-//
-//        Experiment document = getDocument(id);
-//        if (document == null)
-//            throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
-//
-//        if (!document.getProjectId().equals(projectId))
-//            throw new IdMismatchException();
-//
-//        String experimentId = request.getExperimentId();
-//        if (experimentId != null && !(experimentId.equals(document.getExperimentId())))
-//            throw new IllegalArgumentException("A value was specified for experimentId, but does not match the value in the document with ID " + id + ". Are you sure you are trying to update the correct document?");
-//
-//        document.setExperimentName(request.getExperimentName());
-//        document.setTags(request.getTags());
-//
-//        return documentRepository.save(document);
-//    }
-//
-//    // Delete
-//    public void deleteDocumentById(String projectId, String id) {
-//        Experiment document = getDocument(id);
-//        if (document != null) {
-//            if (!document.getProjectId().equals(projectId))
-//                throw new IdMismatchException();
-//
-//            // When an experiment is deleted, all other documents under it are deleted.
-//            artifactMetadataRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
-//            dataProfileRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
-//            dataResourceRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
-//            runEnvironmentRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
-//            runMetadataRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
-//            shortReportRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
-//            shortSchemaRepository.deleteByProjectIdAndExperimentId(projectId, document.getExperimentId());
-//
-//            documentRepository.deleteById(id);
-//            return;
-//        }
-//        throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
-//    }
-//
-//    // Delete
-//    public void deleteDocumentsByProjectId(String projectId, Optional<String> experimentId) {
-//        // When an experiment is deleted, all other documents under it are deleted.
-//        if (experimentId.isPresent()) {
-//            // If experimentId is present, delete all documents under that specific experiment.
-//            artifactMetadataRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
-//            dataProfileRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
-//            dataResourceRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
-//            runEnvironmentRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
-//            runMetadataRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
-//            shortReportRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
-//            shortSchemaRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
-//
-//            documentRepository.deleteByProjectIdAndExperimentId(projectId, experimentId.get());
-//        } else {
-//            // If experimentId is not present, delete all experiments under the specified project and all documents under those experiments.
-//            artifactMetadataRepository.deleteByProjectId(projectId);
-//            dataProfileRepository.deleteByProjectId(projectId);
-//            dataResourceRepository.deleteByProjectId(projectId);
-//            runEnvironmentRepository.deleteByProjectId(projectId);
-//            runMetadataRepository.deleteByProjectId(projectId);
-//            shortReportRepository.deleteByProjectId(projectId);
-//            shortSchemaRepository.deleteByProjectId(projectId);
-//
-//            documentRepository.deleteByProjectId(projectId);
-//        }
-//    }
 }

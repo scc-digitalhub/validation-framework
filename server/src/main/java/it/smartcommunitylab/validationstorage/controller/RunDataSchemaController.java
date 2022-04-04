@@ -19,7 +19,7 @@ import it.smartcommunitylab.validationstorage.model.dto.SchemaResultDTO;
 import it.smartcommunitylab.validationstorage.service.RunService;
 
 @RestController
-@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentId}/run/{runId}/data-schema")
+@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentName}/run/{runId}/data-schema")
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunDataSchemaController {
     @Autowired
@@ -28,12 +28,12 @@ public class RunDataSchemaController {
     @PostMapping
     public SchemaResultDTO create(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @RequestBody @Valid SchemaResultDTO request) {
         
         SchemaResultDTO response = new SchemaResultDTO();
-        response.setReports(service.createRunDataSchemas(projectId, experimentId, runId, request.getResult(), request.getReports()));
+        response.setReports(service.createRunDataSchemas(projectId, experimentName, runId, request.getResult(), request.getReports()));
         response.setResult(request.getResult());
         
         return response;
@@ -42,12 +42,12 @@ public class RunDataSchemaController {
     @GetMapping
     public SchemaResultDTO find(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId) {
         
         SchemaResultDTO response = new SchemaResultDTO();
-        response.setReports(service.findRunDataSchemas(projectId, experimentId, runId));
-        response.setResult(service.findSchemaResult(projectId, experimentId, runId));
+        response.setReports(service.findRunDataSchemas(projectId, experimentName, runId));
+        response.setResult(service.findSchemaResult(projectId, experimentName, runId));
         
         return response;
     }
@@ -55,22 +55,22 @@ public class RunDataSchemaController {
     @GetMapping("/{id}")
     public RunDataSchemaDTO findById(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @PathVariable String id) {
         
-        return service.findRunDataSchemaById(projectId, experimentId, runId, id);
+        return service.findRunDataSchemaById(projectId, experimentName, runId, id);
     }
 
     @PutMapping
     public SchemaResultDTO update(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @RequestBody @Valid SchemaResultDTO request) {
         
         SchemaResultDTO response = new SchemaResultDTO();
-        response.setReports(service.updateRunDataSchemas(projectId, experimentId, runId, request.getResult(), request.getReports()));
+        response.setReports(service.updateRunDataSchemas(projectId, experimentName, runId, request.getResult(), request.getReports()));
         response.setResult(request.getResult());
         
         return response;
@@ -79,9 +79,9 @@ public class RunDataSchemaController {
     @DeleteMapping
     public void delete(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId) {
-        service.deleteRunDataSchemas(projectId, experimentId, runId);
+        service.deleteRunDataSchemas(projectId, experimentName, runId);
     }
     
 }

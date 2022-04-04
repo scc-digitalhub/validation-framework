@@ -51,8 +51,6 @@ public class RunMetadata {
     @Column(name = "finished_date")
     private LocalDate finishedDate;
     
-    private RunStatus status;
-    
     @Embedded
     private ReportMetadata metadata;
 
@@ -114,14 +112,6 @@ public class RunMetadata {
 
     public void setFinishedDate(LocalDate finishedDate) {
         this.finishedDate = finishedDate;
-    }
-
-    public RunStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(RunStatus status) {
-        this.status = status;
     }
 
     public ReportMetadata getMetadata() {

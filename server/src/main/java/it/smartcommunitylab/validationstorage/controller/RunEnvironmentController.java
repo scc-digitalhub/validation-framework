@@ -18,7 +18,7 @@ import it.smartcommunitylab.validationstorage.model.dto.RunEnvironmentDTO;
 import it.smartcommunitylab.validationstorage.service.RunService;
 
 @RestController
-@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentId}/run/{runId}/environment")
+@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentName}/run/{runId}/environment")
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunEnvironmentController {
     @Autowired
@@ -27,35 +27,35 @@ public class RunEnvironmentController {
     @PostMapping
     public RunEnvironmentDTO create(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @RequestBody @Valid RunEnvironmentDTO request) {
-        return service.createRunEnvironment(projectId, experimentId, runId, request);
+        return service.createRunEnvironment(projectId, experimentName, runId, request);
     }
     
     @GetMapping
     public RunEnvironmentDTO find(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId) {
-        return service.findRunEnvironment(projectId, experimentId, runId);
+        return service.findRunEnvironment(projectId, experimentName, runId);
     }
 
     @PutMapping
     public RunEnvironmentDTO update(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @RequestBody @Valid RunEnvironmentDTO request) {
-        return service.updateRunEnvironment(projectId, experimentId, runId, request);
+        return service.updateRunEnvironment(projectId, experimentName, runId, request);
     }
 
     @DeleteMapping
     public void delete(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId) {
-        service.deleteRunEnvironment(projectId, experimentId, runId);
+        service.deleteRunEnvironment(projectId, experimentName, runId);
     }
     
 }

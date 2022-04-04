@@ -1,6 +1,9 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
@@ -20,6 +23,7 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 @Entity
 @Table(name = "resources", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "package_name", "name" }))
 public class DataResource {
+
     @Id
     private String id;
 
@@ -46,6 +50,8 @@ public class DataResource {
     
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
+    
+    private String description;
 
     private String type;
     
@@ -60,6 +66,29 @@ public class DataResource {
         @AttributeOverride(name="path", column=@Column(name="path"))
     })
     private Dataset dataset;
+    
+    public void addPackage(DataPackage dataPackage) {
+        if (dataPackage == null)
+            return;
+        
+        if (packages == null)
+            packages = new ArrayList<DataPackage>();
+        
+        packages.add(dataPackage);
+    }
+    
+    public void removePackage(DataPackage dataPackage) {
+        if (dataPackage == null || packages == null)
+            return;
+        
+        Predicate<DataPackage> sameId = p -> p.getId().equals(dataPackage.getId());
+        packages.removeIf(sameId);
+    }
+    
+    @Override
+    public String toString() {
+        return projectId + ";" + name + ";" + title + ";" + type;
+    }
 
     public String getId() {
         return id;
@@ -115,6 +144,14 @@ public class DataResource {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+    
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getType() {

@@ -26,9 +26,9 @@ public abstract class TypedError implements Serializable {
     public static TypedError create(Map<String, Serializable> map) {
         String type = map.get("type").toString();
         
-        if ("frictionless".equals(type)) {
+        if ("frictionless".equalsIgnoreCase(type)) {
             return objectMapper.convertValue(map, FrictionlessError.class);
-        } else if ("duckdb".equals(type)) {
+        } else if ("duckdb".equalsIgnoreCase(type)) {
             return objectMapper.convertValue(map, DuckDBError.class);
         }
         

@@ -9,6 +9,7 @@ import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.ReportMetadata;
@@ -23,14 +24,17 @@ public class RunDataSchemaDTO {
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("project")
     private String projectId;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private String experimentId;
+    @JsonProperty("experiment")
+    private String experimentName;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("run")
     private String runId;
 
     private String resourceName;
@@ -41,7 +45,7 @@ public class RunDataSchemaDTO {
 
     private TypedSchema schema;
     
-    public static RunDataSchemaDTO from(RunDataSchema source) {
+    public static RunDataSchemaDTO from(RunDataSchema source, String experimentName) {
         if (source == null)
             return null;
         
@@ -49,7 +53,7 @@ public class RunDataSchemaDTO {
         
         dto.setId(source.getId());
         dto.setProjectId(source.getProjectId());
-        dto.setExperimentId(source.getExperimentId());
+        dto.setExperimentName(experimentName);
         dto.setRunId(source.getRunId());
         dto.setResourceName(source.getResourceName());
         dto.setType(source.getType());
@@ -75,12 +79,12 @@ public class RunDataSchemaDTO {
         this.projectId = projectId;
     }
 
-    public String getExperimentId() {
-        return experimentId;
+    public String getExperimentName() {
+        return experimentName;
     }
 
-    public void setExperimentId(String experimentId) {
-        this.experimentId = experimentId;
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public String getRunId() {

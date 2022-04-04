@@ -27,37 +27,51 @@ public class DataPackageController {
     private DataResourceService service;
     
     @PostMapping("/p/{projectId}/package")
-    public DataPackageDTO create(@PathVariable String projectId, @RequestBody @Valid DataPackageDTO request) {
+    public DataPackageDTO create(
+            @PathVariable String projectId,
+            @RequestBody @Valid DataPackageDTO request) {
         return service.createDataPackage(projectId, request);
     }
     
     @PostMapping("/frictionless/p/{projectId}/package")
-    public DataPackageDTO createFrictionless(@PathVariable String projectId, @RequestBody @Valid DataPackageDTO request) {
+    public DataPackageDTO createFrictionless(
+            @PathVariable String projectId,
+            @RequestBody @Valid DataPackageDTO request) {
         return service.createDataPackage(projectId, request);
     }
     
     @GetMapping("/p/{projectId}/package")
-    public List<DataPackageDTO> find(@PathVariable String projectId) {
+    public List<DataPackageDTO> find(
+            @PathVariable String projectId) {
         return service.findDataPackages(projectId);
     }
     
     @GetMapping("/p/{projectId}/package/{id}")
-    public DataPackageDTO findById(@PathVariable String projectId, String id) {
+    public DataPackageDTO findById(
+            @PathVariable String projectId,
+            @PathVariable String id) {
         return service.findDataPackageById(projectId, id);
     }
     
     @GetMapping("/frictionless/p/{projectId}/package/{id}")
-    public DataPackageDTO findFrictionlessById(@PathVariable String projectId, String id) {
+    public DataPackageDTO findFrictionlessById(
+            @PathVariable String projectId,
+            @PathVariable String id) {
         return service.findFrictionlessDataPackageById(projectId, id);
     }
     
     @PutMapping("/p/{projectId}/package/{id}")
-    public DataPackageDTO update(@PathVariable String projectId, String id, @RequestBody @Valid DataPackageDTO request) {
+    public DataPackageDTO update(
+            @PathVariable String projectId,
+            @PathVariable String id,
+            @RequestBody @Valid DataPackageDTO request) {
         return service.updateDataPackage(projectId, id, request);
     }
     
     @DeleteMapping("/p/{projectId}/package/{id}")
-    public void delete(@PathVariable String projectId, @PathVariable String id) {
+    public void delete(
+            @PathVariable String projectId,
+            @PathVariable String id) {
         service.deleteDataPackage(projectId, id);
     }
     

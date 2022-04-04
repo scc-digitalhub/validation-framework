@@ -29,6 +29,7 @@ public class ExperimentDTO {
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("project")
     private String projectId;
 
     @NotBlank
@@ -56,7 +57,7 @@ public class ExperimentDTO {
         dto.setName(source.getName());
         dto.setTitle(source.getTitle());
         dto.setDescription(source.getDescription());
-        dto.setRunConfig(RunConfigDTO.from(source.getRunConfig()));
+        dto.setRunConfig(RunConfigDTO.from(source.getRunConfig(), source.getName()));
         dto.setTags(new HashSet<String>(source.getTags()));
         
         return dto;

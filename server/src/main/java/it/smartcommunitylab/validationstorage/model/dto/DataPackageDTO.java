@@ -10,6 +10,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
@@ -23,6 +24,7 @@ public class DataPackageDTO {
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("project")
     private String projectId;
 
     @NotBlank

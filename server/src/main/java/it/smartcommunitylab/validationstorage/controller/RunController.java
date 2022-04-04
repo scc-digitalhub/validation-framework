@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,7 +20,7 @@ import it.smartcommunitylab.validationstorage.model.dto.RunDTO;
 import it.smartcommunitylab.validationstorage.service.RunService;
 
 @RestController
-@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentId}/run")
+@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentName}/run")
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunController {
     @Autowired
@@ -28,32 +29,41 @@ public class RunController {
     @PostMapping
     public RunDTO create(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @RequestBody @Valid RunDTO request) {
-        return service.createRun(projectId, experimentId, request);
+        return service.createRun(projectId, experimentName, request);
     }
     
     @GetMapping
     public List<RunDTO> find(
             @PathVariable String projectId,
-            @PathVariable String experimentId) {
-        return service.findRuns(projectId, experimentId);
+            @PathVariable String experimentName) {
+        return service.findRuns(projectId, experimentName);
     }
     
     @GetMapping("/{id}")
     public RunDTO findById(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String id) {
-        return service.findRunById(projectId, experimentId, id);
+        return service.findRunById(projectId, experimentName, id);
+    }
+    
+    @PutMapping("/{id}")
+    public RunDTO update(
+            @PathVariable String projectId,
+            @PathVariable String experimentName,
+            @PathVariable String id,
+            @RequestBody @Valid RunDTO request) {
+        return service.updateRun(projectId, experimentName, id, request);
     }
 
     @DeleteMapping("/{id}")
     public void delete(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String id) {
-        service.deleteRun(projectId, experimentId, id);
+        service.deleteRun(projectId, experimentName, id);
     }
     
 }

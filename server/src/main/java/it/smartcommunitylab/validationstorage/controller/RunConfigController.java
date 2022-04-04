@@ -18,7 +18,7 @@ import it.smartcommunitylab.validationstorage.model.dto.RunConfigDTO;
 import it.smartcommunitylab.validationstorage.service.ExperimentService;
 
 @RestController
-@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentId}/run-config")
+@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentName}/run-config")
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunConfigController {
     @Autowired
@@ -27,30 +27,30 @@ public class RunConfigController {
     @PostMapping
     public RunConfigDTO create(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @RequestBody @Valid RunConfigDTO request) {
-        return service.createRunConfig(projectId, experimentId, request);
+        return service.createExperimentRunConfig(projectId, experimentName, request);
     }
     
     @GetMapping
     public RunConfigDTO find(
             @PathVariable String projectId,
-            @PathVariable String experimentId) {
-        return service.findRunConfig(projectId, experimentId);
+            @PathVariable String experimentName) {
+        return service.findExperimentRunConfig(projectId, experimentName);
     }
 
     @PutMapping
     public RunConfigDTO update(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @RequestBody @Valid RunConfigDTO request) {
-        return service.updateRunConfig(projectId, experimentId, request);
+        return service.updateExperimentRunConfig(projectId, experimentName, request);
     }
 
     @DeleteMapping
     public void delete(
             @PathVariable String projectId,
-            @PathVariable String experimentId) {
-        service.deleteRunConfig(projectId, experimentId);
+            @PathVariable String experimentName) {
+        service.deleteExperimentRunConfig(projectId, experimentName);
     }
 }

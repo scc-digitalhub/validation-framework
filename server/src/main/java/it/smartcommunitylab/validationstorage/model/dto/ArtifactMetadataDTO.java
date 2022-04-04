@@ -4,6 +4,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 
@@ -16,14 +18,17 @@ public class ArtifactMetadataDTO {
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("project")
     private String projectId;
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private String experimentId;
+    @JsonProperty("experiment")
+    private String experimentName;
     
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("run")
     private String runId;
 
     /**
@@ -38,7 +43,7 @@ public class ArtifactMetadataDTO {
     @NotBlank
     private String uri;
     
-    public static ArtifactMetadataDTO from(ArtifactMetadata source) {
+    public static ArtifactMetadataDTO from(ArtifactMetadata source, String experimentName) {
         if (source == null)
             return null;
         
@@ -46,7 +51,7 @@ public class ArtifactMetadataDTO {
         
         dto.setId(source.getId());
         dto.setProjectId(source.getProjectId());
-        dto.setExperimentId(source.getExperimentId());
+        dto.setExperimentName(experimentName);
         dto.setRunId(source.getRunId());
         dto.setName(source.getName());
         dto.setUri(source.getUri());
@@ -70,12 +75,12 @@ public class ArtifactMetadataDTO {
         this.projectId = projectId;
     }
 
-    public String getExperimentId() {
-        return experimentId;
+    public String getExperimentName() {
+        return experimentName;
     }
 
-    public void setExperimentId(String experimentId) {
-        this.experimentId = experimentId;
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public String getRunId() {

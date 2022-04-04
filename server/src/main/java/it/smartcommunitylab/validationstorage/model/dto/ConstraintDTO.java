@@ -7,6 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -20,10 +21,12 @@ public class ConstraintDTO {
     private String id;
 
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("project")
     private String projectId;
 
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private String experimentId;
+    @JsonProperty("experiment")
+    private String experimentName;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
@@ -32,16 +35,16 @@ public class ConstraintDTO {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
 
-    private Set<String> resourceIds;
+    private Set<String> resources;
 
     private String description;
 
-    private Integer errorSeverity;
+    private Integer weight;
 
     @JsonUnwrapped
-    private TypedConstraint constraint;
+    private TypedConstraint typedConstraint;
     
-    public static ConstraintDTO from(Constraint source) {
+    public static ConstraintDTO from(Constraint source, String experimentName) {
         if (source == null)
             return null;
         
@@ -49,17 +52,17 @@ public class ConstraintDTO {
         
         dto.setId(source.getId());
         dto.setProjectId(source.getProjectId());
-        dto.setExperimentId(source.getExperimentId());
+        dto.setExperimentName(experimentName);
         dto.setName(source.getName());
         dto.setTitle(source.getTitle());
-        dto.setResourceIds(source.getResourceIds());
+        dto.setResources(source.getResources());
         dto.setDescription(source.getDescription());
-        dto.setConstraint(source.getConstraint());
+        dto.setTypedConstraint(source.getTypedConstraint());
         
-        if (source.getErrorSeverity() != null)
-            dto.setErrorSeverity(source.getErrorSeverity());
+        if (source.getWeight() != null)
+            dto.setWeight(source.getWeight());
         else
-            dto.setErrorSeverity(ValidationStorageConstants.DEFAULT_ERROR_SEVERITY);
+            dto.setWeight(ValidationStorageConstants.DEFAULT_ERROR_SEVERITY);
         
         
         return dto;
@@ -81,12 +84,12 @@ public class ConstraintDTO {
         this.projectId = projectId;
     }
 
-    public String getExperimentId() {
-        return experimentId;
+    public String getExperimentName() {
+        return experimentName;
     }
 
-    public void setExperimentId(String experimentId) {
-        this.experimentId = experimentId;
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public String getName() {
@@ -105,12 +108,12 @@ public class ConstraintDTO {
         this.title = title;
     }
 
-    public Set<String> getResourceIds() {
-        return resourceIds;
+    public Set<String> getResources() {
+        return resources;
     }
 
-    public void setResourceIds(Set<String> resourceIds) {
-        this.resourceIds = resourceIds;
+    public void setResources(Set<String> resources) {
+        this.resources = resources;
     }
 
     public String getDescription() {
@@ -121,20 +124,20 @@ public class ConstraintDTO {
         this.description = description;
     }
 
-    public Integer getErrorSeverity() {
-        return errorSeverity;
+    public Integer getWeight() {
+        return weight;
     }
 
-    public void setErrorSeverity(Integer errorSeverity) {
-        this.errorSeverity = errorSeverity;
+    public void setWeight(Integer weight) {
+        this.weight = weight;
     }
 
-    public TypedConstraint getConstraint() {
-        return constraint;
+    public TypedConstraint getTypedConstraint() {
+        return typedConstraint;
     }
 
-    public void setConstraint(TypedConstraint constraint) {
-        this.constraint = constraint;
+    public void setTypedConstraint(TypedConstraint typedConstraint) {
+        this.typedConstraint = typedConstraint;
     }
 
 }

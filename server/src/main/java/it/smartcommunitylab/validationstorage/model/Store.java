@@ -33,7 +33,7 @@ public class Store {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
 
-    private String path;
+    private String uri;
 
     @Lob
     @Column(name = "config_map")
@@ -75,12 +75,12 @@ public class Store {
         this.title = title;
     }
 
-    public String getPath() {
-        return path;
+    public String getUri() {
+        return uri;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 
     public Map<String, Serializable> getConfig() {

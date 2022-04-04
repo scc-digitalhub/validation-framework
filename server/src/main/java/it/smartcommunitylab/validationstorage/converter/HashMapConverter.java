@@ -15,12 +15,12 @@ public class HashMapConverter implements AttributeConverter<Map<String, Serializ
 
     @Override
     public String convertToDatabaseColumn(Map<String, Serializable> map) {
-
         String json = null;
         if (map != null) {
             try {
                 json = objectMapper.writeValueAsString(map);
             } catch (final JsonProcessingException e) {
+                System.out.println(e);
             }
         }
         return json;

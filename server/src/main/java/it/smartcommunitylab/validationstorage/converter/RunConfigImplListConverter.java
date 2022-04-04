@@ -2,6 +2,8 @@ package it.smartcommunitylab.validationstorage.converter;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,16 +13,18 @@ import javax.persistence.AttributeConverter;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
 
 import it.smartcommunitylab.validationstorage.model.RunConfigImpl;
 
-public class SerializableListConverter implements AttributeConverter<List<Serializable>, String> {
+public class RunConfigImplListConverter implements AttributeConverter<List<RunConfigImpl>, String> {
     
     private final ObjectMapper objectMapper = new ObjectMapper();
     
     @Override
-    public String convertToDatabaseColumn(List<Serializable> list) {
+    public String convertToDatabaseColumn(List<RunConfigImpl> list) {
         
         String json = null;
         if (list != null) {
@@ -32,18 +36,18 @@ public class SerializableListConverter implements AttributeConverter<List<Serial
         return json;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public List<Serializable> convertToEntityAttribute(String json) {
+    public List<RunConfigImpl> convertToEntityAttribute(String json) {
+        List<RunConfigImpl> list = null;
         
-        List<Serializable> list = null;
         if (json != null) {
             try {
-                list = objectMapper.readValue(json, List.class);
+                CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, RunConfigImpl.class);
+                list = objectMapper.readValue(json, listType);
             } catch (final IOException e) {
             }
-
         }
+        
         return list;
     }
 

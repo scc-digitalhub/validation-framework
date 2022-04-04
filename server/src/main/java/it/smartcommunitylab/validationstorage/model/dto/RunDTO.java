@@ -19,11 +19,13 @@ public class RunDTO {
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("project")
     private String projectId;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private String experimentId;
+    @JsonProperty("experiment")
+    private String experimentName;
 
     @JsonProperty("config")
     private RunConfigDTO runConfig;
@@ -40,7 +42,7 @@ public class RunDTO {
 
     private RunEnvironmentDTO runEnvironment;
     
-    public static RunDTO from(Run source, DataPackageDTO dataPackage, List<ConstraintDTO> constraints) {
+    public static RunDTO from(Run source, String experimentName, DataPackageDTO dataPackage, List<ConstraintDTO> constraints) {
         if (source == null)
             return null;
         
@@ -48,13 +50,13 @@ public class RunDTO {
         
         dto.setId(source.getId());
         dto.setProjectId(source.getProjectId());
-        dto.setExperimentId(source.getExperimentId());
-        dto.setRunConfig(RunConfigDTO.from(source.getRunConfig()));
+        dto.setExperimentName(experimentName);
+        dto.setRunConfig(RunConfigDTO.from(source.getRunConfig(), experimentName));
         dto.setDataPackage(dataPackage);
         dto.setConstraints(constraints);
         dto.setRunStatus(source.getRunStatus());
-        dto.setRunMetadata(RunMetadataDTO.from(source.getRunMetadata()));
-        dto.setRunEnvironment(RunEnvironmentDTO.from(source.getRunEnvironment()));
+        dto.setRunMetadata(RunMetadataDTO.from(source.getRunMetadata(), experimentName));
+        dto.setRunEnvironment(RunEnvironmentDTO.from(source.getRunEnvironment(), experimentName));
         
         return dto;
     }
@@ -75,12 +77,12 @@ public class RunDTO {
         this.projectId = projectId;
     }
 
-    public String getExperimentId() {
-        return experimentId;
+    public String getExperimentName() {
+        return experimentName;
     }
 
-    public void setExperimentId(String experimentId) {
-        this.experimentId = experimentId;
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public RunConfigDTO getRunConfig() {

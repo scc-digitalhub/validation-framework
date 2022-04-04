@@ -30,13 +30,4 @@ public enum FieldType {
         return label;
     }
     
-    public static FieldType fromString(String s) {
-        for (FieldType e : FieldType.values()) {
-            if (e.label.equalsIgnoreCase(s)) {
-                return e;
-            }
-        }
-        
-        throw new IllegalArgumentException("FieldType: '" + s + "' is not supported.");
-    }
 }

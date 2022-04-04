@@ -19,7 +19,7 @@ import it.smartcommunitylab.validationstorage.model.dto.ValidationResultDTO;
 import it.smartcommunitylab.validationstorage.service.RunService;
 
 @RestController
-@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentId}/run/{runId}/validation-report")
+@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentName}/run/{runId}/validation-report")
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunValidationReportController {
     @Autowired
@@ -28,12 +28,12 @@ public class RunValidationReportController {
     @PostMapping
     public ValidationResultDTO create(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @RequestBody @Valid ValidationResultDTO request) {
         
         ValidationResultDTO response = new ValidationResultDTO();
-        response.setReports(service.createRunValidationReports(projectId, experimentId, runId, request.getResult(), request.getReports()));
+        response.setReports(service.createRunValidationReports(projectId, experimentName, runId, request.getResult(), request.getReports()));
         response.setResult(request.getResult());
         
         return response;
@@ -42,12 +42,12 @@ public class RunValidationReportController {
     @GetMapping
     public ValidationResultDTO find(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId) {
         
         ValidationResultDTO response = new ValidationResultDTO();
-        response.setReports(service.findRunValidationReports(projectId, experimentId, runId));
-        response.setResult(service.findValidationResult(projectId, experimentId, runId));
+        response.setReports(service.findRunValidationReports(projectId, experimentName, runId));
+        response.setResult(service.findValidationResult(projectId, experimentName, runId));
         
         return response;
     }
@@ -55,22 +55,22 @@ public class RunValidationReportController {
     @GetMapping("/{id}")
     public RunValidationReportDTO findById(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @PathVariable String id) {
         
-        return service.findRunValidationReportById(projectId, experimentId, runId, id);
+        return service.findRunValidationReportById(projectId, experimentName, runId, id);
     }
 
     @PutMapping
     public ValidationResultDTO update(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @RequestBody @Valid ValidationResultDTO request) {
         
         ValidationResultDTO response = new ValidationResultDTO();
-        response.setReports(service.updateRunValidationReports(projectId, experimentId, runId, request.getResult(), request.getReports()));
+        response.setReports(service.updateRunValidationReports(projectId, experimentName, runId, request.getResult(), request.getReports()));
         response.setResult(request.getResult());
         
         return response;
@@ -79,9 +79,9 @@ public class RunValidationReportController {
     @DeleteMapping
     public void delete(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId) {
-        service.deleteRunValidationReports(projectId, experimentId, runId);
+        service.deleteRunValidationReports(projectId, experimentName, runId);
     }
     
 }

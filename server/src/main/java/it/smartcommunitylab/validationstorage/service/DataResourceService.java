@@ -19,7 +19,6 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.Constraint;
 import it.smartcommunitylab.validationstorage.model.DataPackage;
 import it.smartcommunitylab.validationstorage.model.DataResource;
-import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Run;
 import it.smartcommunitylab.validationstorage.model.RunEnvironment;
 import it.smartcommunitylab.validationstorage.model.Schema;
@@ -27,7 +26,6 @@ import it.smartcommunitylab.validationstorage.model.Store;
 import it.smartcommunitylab.validationstorage.model.dto.ConstraintDTO;
 import it.smartcommunitylab.validationstorage.model.dto.DataPackageDTO;
 import it.smartcommunitylab.validationstorage.model.dto.DataResourceDTO;
-import it.smartcommunitylab.validationstorage.model.dto.ExperimentDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunEnvironmentDTO;
 import it.smartcommunitylab.validationstorage.model.dto.StoreDTO;
@@ -60,9 +58,9 @@ public class DataResourceService {
     }
     
     private DataPackage getDataPackageByName(String projectId, String name) {
-        List<DataPackage> l = dataPackageRepository.findByProjectIdAndName(projectId, name);
-        if (l.size() > 0) {
-            return l.get(0);
+        Optional<DataPackage> o = dataPackageRepository.findByProjectIdAndName(projectId, name);
+        if (o.isPresent()) {
+            return o.get();
         }
         
         return null;
@@ -81,7 +79,22 @@ public class DataResourceService {
     }
     
     private Store getStoreByName(String projectId, String name) {
-        List<Store> l = storeRepository.findByProjectIdAndName(projectId, name);
+        if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(name))
+            return null;
+        
+        Optional<Store> o = storeRepository.findByProjectIdAndName(projectId, name);
+        if (o.isPresent()) {
+            return o.get();
+        }
+        
+        return null;
+    }
+    
+    private Store getDefaultStore(String projectId) {
+        if (ObjectUtils.isEmpty(projectId))
+            return null;
+        
+        List<Store> l = storeRepository.findByProjectIdAndIsDefault(projectId, true);
         if (l.size() > 0) {
             return l.get(0);
         }
@@ -102,9 +115,12 @@ public class DataResourceService {
     }
     
     private DataResource getDataResourceByName(String projectId, String packageName, String name) {
-        List<DataResource> l = dataResourceRepository.findByProjectIdAndPackageNameAndName(projectId, packageName, name);
-        if (l.size() > 0) {
-            return l.get(0);
+        if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(packageName) || ObjectUtils.isEmpty(name))
+            return null;
+        
+        Optional<DataResource> o = dataResourceRepository.findByProjectIdAndPackageNameAndName(projectId, packageName, name);
+        if (o.isPresent()) {
+            return o.get();
         }
         
         return null;
@@ -130,18 +146,21 @@ public class DataResourceService {
         
         document.setId(id);
         document.setProjectId(projectId);
-        document.setName(request.getName());
+        document.setName(name);
         document.setTitle(request.getTitle());
         document.setType(request.getType());
         
-        /* TODO
-        List<DataResource> resources = new ArrayList<DataResource>();
-        for (DataResourceDTO r : request.getResources())
-            resources.add(DataResourceDTO.to(r));
-        document.setResources(resources);
-        */
+        List<DataResource> resourcesCreatedBeforePackage = dataResourceRepository.findByProjectIdAndPackageName(projectId, name);
+        
+        for (DataResource r : resourcesCreatedBeforePackage) {
+            r.addPackage(document);
+        }
+        
+        document.setResources(resourcesCreatedBeforePackage);
         
         dataPackageRepository.save(document);
+        
+        dataResourceRepository.saveAll(resourcesCreatedBeforePackage);
         
         return DataPackageDTO.from(document);
     }
@@ -188,13 +207,6 @@ public class DataResourceService {
         document.setTitle(request.getTitle());
         document.setType(request.getType());
         
-        /* TODO
-        List<DataResource> resources = new ArrayList<DataResource>();
-        for (DataResourceDTO r : request.getResources())
-            resources.add(DataResourceDTO.to(r));
-        document.setResources(resources);
-        */
-        
         dataPackageRepository.save(document);
         
         return DataPackageDTO.from(document);
@@ -205,8 +217,33 @@ public class DataResourceService {
         
         if (document == null)
             throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
-        // TODO delete runs/etc?
+        
+        List<DataResource> resources = document.getResources();
+        
+        for (DataResource r : resources) {
+            r.removePackage(document);
+        }
+        
+        dataResourceRepository.saveAll(resources);
+        
         dataPackageRepository.deleteById(id);
+    }
+    
+    void deleteRunDataPackage(String projectId, String name) {
+        DataPackage document = getDataPackageByName(projectId, name);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Document '" + name + "' under project '" + projectId + "' was not found.");
+        
+        List<DataResource> resources = document.getResources();
+        
+        for (DataResource r : resources) {
+            r.removePackage(document);
+        }
+        
+        dataResourceRepository.saveAll(resources);
+        
+        dataPackageRepository.deleteByProjectIdAndNameAndType(projectId, name, "run");
     }
     
     // Store
@@ -231,9 +268,25 @@ public class DataResourceService {
         document.setProjectId(projectId);
         document.setName(request.getName());
         document.setTitle(request.getTitle());
-        document.setPath(request.getPath());
+        document.setUri(request.getUri());
         document.setConfig(request.getConfig());
-        document.setIsDefault(request.getIsDefault());
+        
+        Boolean isDefault = request.getIsDefault();
+        Store currentDefault = getDefaultStore(projectId);
+        
+        if (currentDefault == null) {
+            if (isDefault == null || isDefault) {
+                document.setIsDefault(true);
+            } else {
+                document.setIsDefault(false);
+            }
+        } else {
+            document.setIsDefault(isDefault);
+            if (isDefault != null && isDefault) {
+                currentDefault.setIsDefault(false);
+                storeRepository.save(currentDefault);
+            }
+        }
         
         storeRepository.save(document);
         
@@ -270,9 +323,18 @@ public class DataResourceService {
             throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
         
         document.setTitle(request.getTitle());
-        document.setPath(request.getPath());
+        document.setUri(request.getUri());
         document.setConfig(request.getConfig());
-        document.setIsDefault(request.getIsDefault());
+        
+        Boolean isDefault = request.getIsDefault();
+        document.setIsDefault(isDefault);
+        
+        Store currentDefault = getDefaultStore(projectId);
+        
+        if (isDefault != null && isDefault && currentDefault != null && !currentDefault.getId().equals(id)) {
+            currentDefault.setIsDefault(false);
+            storeRepository.save(currentDefault);
+        }
         
         storeRepository.save(document);
         
@@ -284,7 +346,12 @@ public class DataResourceService {
         
         if (document == null)
             throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
-        // TODO delete runs/etc?
+        
+        List<DataResource> resources = dataResourceRepository.findByStoreId(id);
+        for (DataResource r : resources) {
+            deleteDataResource(projectId, r.getId());
+        }
+        
         storeRepository.deleteById(id);
     }
     
@@ -303,10 +370,22 @@ public class DataResourceService {
         if (getDataResourceByName(projectId, packageName, name) != null)
             throw new DocumentAlreadyExistsException("Document '" + name + "' under project '" + projectId + "', package '" + packageName + "' already exists.");
         
-        DataResource document = DataResourceDTO.to(request);
+        DataPackage dataPackage = getDataPackageByName(projectId, packageName);
+        
+        Store defaultStore = getDefaultStore(projectId);
+        String defaultStoreId = null;
+        if (defaultStore != null)
+            defaultStoreId = defaultStore.getId();
+        
+        DataResource document = DataResourceDTO.to(request, dataPackage, defaultStoreId);
         document.setProjectId(projectId);
         
         dataResourceRepository.save(document);
+        
+        if (dataPackage != null) {
+            dataPackage.addResource(document);
+            dataPackageRepository.save(dataPackage);
+        }
         
         return DataResourceDTO.from(document);
     }
@@ -352,6 +431,7 @@ public class DataResourceService {
         
         document.setStoreId(request.getStoreId());
         document.setTitle(request.getTitle());
+        document.setDescription(request.getDescription());
         document.setType(request.getType());
         document.setSchema(request.getSchema());
         document.setDataset(request.getDataset());
@@ -366,7 +446,7 @@ public class DataResourceService {
         
         if (document == null)
             throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
-        // TODO delete runs/etc?
+        
         dataResourceRepository.deleteById(id);
     }
 }

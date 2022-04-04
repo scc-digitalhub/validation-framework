@@ -3,6 +3,7 @@ package it.smartcommunitylab.validationstorage.typed;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 @Valid
@@ -16,6 +17,7 @@ public class FrictionlessConstraint extends TypedConstraint {
     
     private FieldType fieldType;
     
+    @JsonProperty("constraint")
     private ConstraintType constraintType;
     
     @NotNull
@@ -29,7 +31,9 @@ public class FrictionlessConstraint extends TypedConstraint {
         MINIMUM("minimum"),
         MAXIMUM("maximum"),
         PATTERN("pattern"),
-        ENUM_TYPE("enumType");
+        ENUM_TYPE("enumType"),
+        TYPE("type"),
+        FORMAT("format");
         
         public final String label;
         
@@ -40,16 +44,6 @@ public class FrictionlessConstraint extends TypedConstraint {
         @JsonValue
         public String getLabel() {
             return label;
-        }
-        
-        public static ConstraintType fromString(String s) {
-            for (ConstraintType e : ConstraintType.values()) {
-                if (e.label.equalsIgnoreCase(s)) {
-                    return e;
-                }
-            }
-            
-            throw new IllegalArgumentException("ConstraintType: '" + s + "' is not supported.");
         }
         
     }

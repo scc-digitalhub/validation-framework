@@ -26,7 +26,7 @@ import it.smartcommunitylab.validationstorage.model.dto.RunDTO;
 import it.smartcommunitylab.validationstorage.service.RunService;
 
 @RestController
-@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentId}/run/{runId}/artifact-metadata")
+@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentName}/run/{runId}/artifact-metadata")
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class ArtifactMetadataController {
     @Autowired
@@ -35,45 +35,45 @@ public class ArtifactMetadataController {
     @PostMapping
     public ArtifactMetadataDTO create(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @RequestBody @Valid ArtifactMetadataDTO request) {
-        return service.createArtifactMetadata(projectId, experimentId, runId, request);
+        return service.createArtifactMetadata(projectId, experimentName, runId, request);
     }
 
     @GetMapping
     public List<ArtifactMetadataDTO> find(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId) {
-        return service.findArtifactMetadata(projectId, experimentId, runId);
+        return service.findArtifactMetadata(projectId, experimentName, runId);
     }
     
     @GetMapping("/{id}")
     public ArtifactMetadataDTO findById(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @PathVariable String id) {
-        return service.findArtifactMetadataById(projectId, experimentId, runId, id);
+        return service.findArtifactMetadataById(projectId, experimentName, runId, id);
     }
 
     @PutMapping("/{id}")
     public ArtifactMetadataDTO update(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @PathVariable String id,
             @RequestBody @Valid ArtifactMetadataDTO request) {
-        return service.updateArtifactMetadata(projectId, experimentId, runId, id, request);
+        return service.updateArtifactMetadata(projectId, experimentName, runId, id, request);
     }
     
     @DeleteMapping("/{id}")
     public void delete(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @PathVariable String id) {
-        service.deleteArtifactMetadata(projectId, experimentId, runId, id);
+        service.deleteArtifactMetadata(projectId, experimentName, runId, id);
     }
 }

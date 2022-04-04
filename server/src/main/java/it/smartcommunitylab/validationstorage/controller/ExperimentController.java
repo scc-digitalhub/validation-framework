@@ -30,32 +30,38 @@ public class ExperimentController {
     private ExperimentService service;
 
     @PostMapping
-    public ExperimentDTO create(@PathVariable String projectId,
+    public ExperimentDTO create(
+            @PathVariable String projectId,
             @RequestBody @Valid ExperimentDTO request) {
         return service.createExperiment(projectId, request);
     }
 
     @GetMapping
     public List<ExperimentDTO> find(
+            @PathVariable String projectId) {
+        return service.findExperiments(projectId);
+    }
+
+    @GetMapping("/{name}")
+    public ExperimentDTO findByName(
             @PathVariable String projectId,
-            @RequestParam("experimentName") Optional<String> experimentName) {
-        return service.findExperiments(projectId, experimentName);
+            @PathVariable String name) {
+        return service.findExperimentByName(projectId, name);
     }
 
-    @GetMapping("/{id}")
-    public ExperimentDTO findById(@PathVariable String projectId, @PathVariable String id) {
-        return service.findExperimentById(projectId, id);
-    }
-
-    @PutMapping("/{id}")
-    public ExperimentDTO update(@PathVariable String projectId, @PathVariable String id,
+    @PutMapping("/{name}")
+    public ExperimentDTO update(
+            @PathVariable String projectId,
+            @PathVariable String name,
             @RequestBody @Valid ExperimentDTO request) {
-        return service.updateExperiment(projectId, id, request);
+        return service.updateExperiment(projectId, name, request);
     }
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable String projectId, @PathVariable String id) {
-        service.deleteExperiment(projectId, id);
+    @DeleteMapping("/{name}")
+    public void delete(
+            @PathVariable String projectId,
+            @PathVariable String name) {
+        service.deleteExperiment(projectId, name);
     }
 
 }

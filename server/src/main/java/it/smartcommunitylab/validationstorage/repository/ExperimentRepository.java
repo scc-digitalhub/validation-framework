@@ -1,6 +1,7 @@
 package it.smartcommunitylab.validationstorage.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
@@ -15,10 +16,8 @@ public interface ExperimentRepository extends CrudRepository<Experiment, String>
     
     List<Experiment> findByProjectIdAndTagsIn(String projectId, List<String> tags, Pageable pageable);
 
-    List<Experiment> findByProjectIdAndName(String projectId, String Name);
+    Optional<Experiment> findByProjectIdAndName(String projectId, String Name);
 
     void deleteByProjectId(String projectId);
-
-//    void deleteByProjectIdAndExperimentId(String projectId, String experimentId);
 
 }

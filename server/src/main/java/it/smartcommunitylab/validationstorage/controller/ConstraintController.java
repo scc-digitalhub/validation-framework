@@ -20,44 +20,49 @@ import it.smartcommunitylab.validationstorage.model.dto.ConstraintDTO;
 import it.smartcommunitylab.validationstorage.service.ExperimentService;
 
 @RestController
-@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentId}/constraint")
+@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentName}/constraint")
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class ConstraintController {
     @Autowired
     private ExperimentService service;
-    
+
     @PostMapping
-    public ConstraintDTO create(@PathVariable String projectId, @PathVariable String experimentId, @RequestBody @Valid ConstraintDTO request) {
-        return service.createConstraint(projectId, experimentId, request);
+    public ConstraintDTO create(
+            @PathVariable String projectId,
+            @PathVariable String experimentName,
+            @RequestBody @Valid ConstraintDTO request) {
+        return service.createConstraint(projectId, experimentName, request);
     }
-    
+
     @GetMapping
-    public List<ConstraintDTO> find(@PathVariable String projectId, @PathVariable String experimentId) {
-        return service.findConstraints(projectId, experimentId);
+    public List<ConstraintDTO> find(
+            @PathVariable String projectId,
+            @PathVariable String experimentName) {
+        return service.findConstraints(projectId, experimentName);
     }
-    
+
     @GetMapping("/{id}")
     public ConstraintDTO findById(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String id) {
-        return service.findConstraintById(projectId, experimentId, id);
+        return service.findConstraintById(projectId, experimentName, id);
     }
 
     @PutMapping("/{id}")
     public ConstraintDTO update(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String id,
             @RequestBody @Valid ConstraintDTO request) {
-        return service.updateConstraint(projectId, experimentId, id, request);
+        return service.updateConstraint(projectId, experimentName, id, request);
     }
 
     @DeleteMapping("/{id}")
     public void delete(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String id) {
-        service.deleteConstraint(projectId, experimentId, id);
+        service.deleteConstraint(projectId, experimentName, id);
     }
 }

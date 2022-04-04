@@ -3,17 +3,26 @@ package it.smartcommunitylab.validationstorage.typed;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public class DuckDBConstraint extends TypedConstraint {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -2736975852137187090L;
+
     private String query;
     
     private Expect expect;
     
     private String value;
     
+    private Check check;
+    
     enum Expect {
         EMPTY("empty"),
-        NON_EMPTY("nonEmpty"),
+        NON_EMPTY("non-empty"),
         EXACT("exact"),
-        RANGE("range");
+        RANGE("range"),
+        MINIMUM("minimum"),
+        MAXIMUM("maximum");
         
         public final String label;
         
@@ -26,14 +35,21 @@ public class DuckDBConstraint extends TypedConstraint {
             return label;
         }
         
-        public static Expect fromString(String s) {
-            for (Expect e : Expect.values()) {
-                if (e.label.equalsIgnoreCase(s)) {
-                    return e;
-                }
-            }
-            
-            throw new IllegalArgumentException("Expect: '" + s + "' is not supported.");
+    }
+    
+    enum Check {
+        VALUE("value"),
+        ROWS("rows");
+        
+        public final String label;
+        
+        private Check(String label) {
+            this.label = label;
+        }
+        
+        @JsonValue
+        public String getLabel() {
+            return label;
         }
         
     }
@@ -60,6 +76,14 @@ public class DuckDBConstraint extends TypedConstraint {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public Check getCheck() {
+        return check;
+    }
+
+    public void setCheck(Check check) {
+        this.check = check;
     }
     
 }

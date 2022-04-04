@@ -18,7 +18,7 @@ import it.smartcommunitylab.validationstorage.model.dto.RunMetadataDTO;
 import it.smartcommunitylab.validationstorage.service.RunService;
 
 @RestController
-@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentId}/run/{runId}/metadata")
+@RequestMapping(value = "/api/p/{projectId}/experiment/{experimentName}/run/{runId}/metadata")
 @PreAuthorize(ValidationStorageConstants.PREAUTH_PROJECTID)
 public class RunMetadataController {
     @Autowired
@@ -27,35 +27,35 @@ public class RunMetadataController {
     @PostMapping
     public RunMetadataDTO create(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @RequestBody @Valid RunMetadataDTO request) {
-        return service.createRunMetadata(projectId, experimentId, runId, request);
+        return service.createRunMetadata(projectId, experimentName, runId, request);
     }
     
     @GetMapping
     public RunMetadataDTO find(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId) {
-        return service.findRunMetadata(projectId, experimentId, runId);
+        return service.findRunMetadata(projectId, experimentName, runId);
     }
 
     @PutMapping
     public RunMetadataDTO update(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId,
             @RequestBody @Valid RunMetadataDTO request) {
-        return service.updateRunMetadata(projectId, experimentId, runId, request);
+        return service.updateRunMetadata(projectId, experimentName, runId, request);
     }
 
     @DeleteMapping
     public void delete(
             @PathVariable String projectId,
-            @PathVariable String experimentId,
+            @PathVariable String experimentName,
             @PathVariable String runId) {
-        service.deleteRunMetadata(projectId, experimentId, runId);
+        service.deleteRunMetadata(projectId, experimentName, runId);
     }
     
 }

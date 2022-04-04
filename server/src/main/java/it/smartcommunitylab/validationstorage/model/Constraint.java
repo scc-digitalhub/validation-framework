@@ -47,21 +47,19 @@ public class Constraint implements Serializable {
     private String title;
 
     @Lob
-    @Column(name = "resource_ids")
     @Convert(converter = StringSetConverter.class)
-    private Set<String> resourceIds;
+    private Set<String> resources;
 
     private String type;
 
     private String description;
 
-    @Column(name = "error_severity")
-    private Integer errorSeverity;
+    private Integer weight;
 
     @Lob
     @Convert(converter = TypedConstraintConverter.class)
     @Column(name = "typed_constraint")
-    private TypedConstraint constraint;
+    private TypedConstraint typedConstraint;
 
     public String getId() {
         return id;
@@ -103,12 +101,12 @@ public class Constraint implements Serializable {
         this.title = title;
     }
 
-    public Set<String> getResourceIds() {
-        return resourceIds;
+    public Set<String> getResources() {
+        return resources;
     }
 
-    public void setResourceIds(Set<String> resourceIds) {
-        this.resourceIds = resourceIds;
+    public void setResources(Set<String> resources) {
+        this.resources = resources;
     }
 
     public String getType() {
@@ -127,20 +125,20 @@ public class Constraint implements Serializable {
         this.description = description;
     }
 
-    public Integer getErrorSeverity() {
-        return errorSeverity;
+    public Integer getWeight() {
+        return weight;
     }
 
-    public void setErrorSeverity(Integer errorSeverity) {
-        this.errorSeverity = errorSeverity;
+    public void setWeight(Integer weight) {
+        this.weight = weight;
     }
 
-    public TypedConstraint getConstraint() {
-        return constraint;
+    public TypedConstraint getTypedConstraint() {
+        return typedConstraint;
     }
 
-    public void setConstraint(TypedConstraint constraint) {
-        this.constraint = constraint;
+    public void setTypedConstraint(TypedConstraint typedConstraint) {
+        this.typedConstraint = typedConstraint;
     }
 
     public static long getSerialversionuid() {

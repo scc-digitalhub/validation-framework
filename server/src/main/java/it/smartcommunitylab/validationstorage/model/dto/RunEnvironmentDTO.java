@@ -9,6 +9,8 @@ import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.RunEnvironment;
@@ -21,28 +23,29 @@ public class RunEnvironmentDTO {
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("project")
     private String projectId;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private String experimentId;
+    @JsonProperty("experiment")
+    private String experimentName;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("run")
     private String runId;
     
     private String datajudgeVersion;
 
-    /**
-     * May contain extra information.
-     */
+    @JsonIgnore
     private Map<String, Serializable> contents;
 
     public RunEnvironmentDTO() {
         contents = new HashMap<String, Serializable>();
     }
     
-    public static RunEnvironmentDTO from(RunEnvironment source) {
+    public static RunEnvironmentDTO from(RunEnvironment source, String experimentName) {
         if (source == null)
             return null;
         
@@ -50,7 +53,7 @@ public class RunEnvironmentDTO {
         
         dto.setId(source.getId());
         dto.setProjectId(source.getProjectId());
-        dto.setExperimentId(source.getExperimentId());
+        dto.setExperimentName(experimentName);
         dto.setRunId(source.getRunId());
         dto.setDatajudgeVersion(source.getDatajudgeVersion());
         
@@ -86,12 +89,12 @@ public class RunEnvironmentDTO {
         this.projectId = projectId;
     }
 
-    public String getExperimentId() {
-        return experimentId;
+    public String getExperimentName() {
+        return experimentName;
     }
 
-    public void setExperimentId(String experimentId) {
-        this.experimentId = experimentId;
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public String getRunId() {

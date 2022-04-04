@@ -7,6 +7,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.Store;
 
@@ -16,6 +18,7 @@ public class StoreDTO {
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("project")
     private String projectId;
 
     @NotBlank
@@ -25,7 +28,7 @@ public class StoreDTO {
     @Pattern(regexp = ValidationStorageConstants.TITLE_PATTERN)
     private String title;
 
-    private String path;
+    private String uri;
 
     private Map<String, Serializable> config;
 
@@ -41,7 +44,7 @@ public class StoreDTO {
         dto.setProjectId(source.getProjectId());
         dto.setName(source.getName());
         dto.setTitle(source.getTitle());
-        dto.setPath(source.getPath());
+        dto.setUri(source.getUri());
         dto.setConfig(source.getConfig());
         dto.setIsDefault(source.getIsDefault());
         
@@ -80,12 +83,12 @@ public class StoreDTO {
         this.title = title;
     }
 
-    public String getPath() {
-        return path;
+    public String getUri() {
+        return uri;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 
     public Map<String, Serializable> getConfig() {

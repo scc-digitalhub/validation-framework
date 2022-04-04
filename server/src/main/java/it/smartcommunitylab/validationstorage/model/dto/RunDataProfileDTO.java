@@ -9,6 +9,8 @@ import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.ReportMetadata;
@@ -22,14 +24,17 @@ public class RunDataProfileDTO {
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("project")
     private String projectId;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private String experimentId;
+    @JsonProperty("experiment")
+    private String experimentName;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("run")
     private String runId;
 
     private String resourceName;
@@ -38,13 +43,14 @@ public class RunDataProfileDTO {
     
     private ReportMetadata metadata;
     
+    @JsonIgnore
     private Map<String, Serializable> profile;
 
     public RunDataProfileDTO() {
         profile = new HashMap<String, Serializable>();
     }
     
-    public static RunDataProfileDTO from(RunDataProfile source) {
+    public static RunDataProfileDTO from(RunDataProfile source, String experimentName) {
         if (source == null)
             return null;
         
@@ -52,7 +58,7 @@ public class RunDataProfileDTO {
         
         dto.setId(source.getId());
         dto.setProjectId(source.getProjectId());
-        dto.setExperimentId(source.getExperimentId());
+        dto.setExperimentName(experimentName);
         dto.setRunId(source.getRunId());
         dto.setResourceName(source.getResourceName());
         dto.setType(source.getType());
@@ -84,16 +90,16 @@ public class RunDataProfileDTO {
         return projectId;
     }
 
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
+    public void setProjectId(String project) {
+        this.projectId = project;
     }
 
-    public String getExperimentId() {
-        return experimentId;
+    public String getExperimentName() {
+        return experimentName;
     }
 
-    public void setExperimentId(String experimentId) {
-        this.experimentId = experimentId;
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public String getRunId() {

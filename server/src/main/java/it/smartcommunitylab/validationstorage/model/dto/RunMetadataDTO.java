@@ -11,6 +11,7 @@ import javax.validation.constraints.Pattern;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.ReportMetadata;
@@ -25,14 +26,17 @@ public class RunMetadataDTO {
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("project")
     private String projectId;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
-    private String experimentId;
+    @JsonProperty("experiment")
+    private String experimentName;
 
     @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
+    @JsonProperty("run")
     private String runId;
 
     private LocalDate createdDate;
@@ -41,13 +45,8 @@ public class RunMetadataDTO {
 
     private LocalDate finishedDate;
     
-    private RunStatus status;
-    
     private ReportMetadata metadata;
 
-    /**
-     * May contain extra information.
-     */
     @JsonIgnore
     private Map<String, Serializable> contents;
 
@@ -55,7 +54,7 @@ public class RunMetadataDTO {
         contents = new HashMap<String, Serializable>();
     }
 
-    public static RunMetadataDTO from(RunMetadata source) {
+    public static RunMetadataDTO from(RunMetadata source, String experimentName) {
         if (source == null)
             return null;
         
@@ -63,12 +62,11 @@ public class RunMetadataDTO {
         
         dto.setId(source.getId());
         dto.setProjectId(source.getProjectId());
-        dto.setExperimentId(source.getExperimentId());
+        dto.setExperimentName(experimentName);
         dto.setRunId(source.getRunId());
         dto.setCreatedDate(source.getCreatedDate());
         dto.setStartedDate(source.getStartedDate());
         dto.setFinishedDate(source.getFinishedDate());
-        dto.setStatus(source.getStatus());
         dto.setMetadata(source.getMetadata());
         
         if (source.getContents() != null)
@@ -103,12 +101,12 @@ public class RunMetadataDTO {
         this.projectId = projectId;
     }
 
-    public String getExperimentId() {
-        return experimentId;
+    public String getExperimentName() {
+        return experimentName;
     }
 
-    public void setExperimentId(String experimentId) {
-        this.experimentId = experimentId;
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public String getRunId() {
@@ -141,14 +139,6 @@ public class RunMetadataDTO {
 
     public void setFinishedDate(LocalDate finishedDate) {
         this.finishedDate = finishedDate;
-    }
-    
-    public RunStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(RunStatus status) {
-        this.status = status;
     }
 
     public ReportMetadata getMetadata() {

@@ -27,37 +27,51 @@ public class DataResourceController {
     private DataResourceService service;
     
     @PostMapping("/p/{projectId}/resource")
-    public DataResourceDTO create(@PathVariable String projectId, @RequestBody @Valid DataResourceDTO request) {
+    public DataResourceDTO create(
+            @PathVariable String projectId,
+            @RequestBody @Valid DataResourceDTO request) {
         return service.createDataResource(projectId, request);
     }
     
     @PostMapping("/frictionless/p/{projectId}/resource")
-    public DataResourceDTO createFrictionless(@PathVariable String projectId, @RequestBody @Valid DataResourceDTO request) {
+    public DataResourceDTO createFrictionless(
+            @PathVariable String projectId,
+            @RequestBody @Valid DataResourceDTO request) {
         return service.createDataResource(projectId, request);
     }
     
     @GetMapping("/p/{projectId}/resource")
-    public List<DataResourceDTO> find(@PathVariable String projectId) {
+    public List<DataResourceDTO> find(
+            @PathVariable String projectId) {
         return service.findDataResources(projectId);
     }
     
     @GetMapping("/p/{projectId}/resource/{id}")
-    public DataResourceDTO findById(@PathVariable String projectId, String id) {
+    public DataResourceDTO findById(
+            @PathVariable String projectId,
+            @PathVariable String id) {
         return service.findDataResourceById(projectId, id);
     }
     
     @GetMapping("/frictionless/p/{projectId}/resource/{id}")
-    public DataResourceDTO findFrictionlessById(@PathVariable String projectId, String id) {
+    public DataResourceDTO findFrictionlessById(
+            @PathVariable String projectId,
+            @PathVariable String id) {
         return service.findFrictionlessDataResourceById(projectId, id);
     }
     
     @PutMapping("/p/{projectId}/resource/{id}")
-    public DataResourceDTO update(@PathVariable String projectId, String id, @RequestBody @Valid DataResourceDTO request) {
+    public DataResourceDTO update(
+            @PathVariable String projectId,
+            @PathVariable String id,
+            @RequestBody @Valid DataResourceDTO request) {
         return service.updateDataResource(projectId, id, request);
     }
     
     @DeleteMapping("/p/{projectId}/resource/{id}")
-    public void delete(@PathVariable String projectId, @PathVariable String id) {
+    public void delete(
+            @PathVariable String projectId,
+            @PathVariable String id) {
         service.deleteDataResource(projectId, id);
     }
     

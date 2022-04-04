@@ -1,6 +1,7 @@
 package it.smartcommunitylab.validationstorage.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.repository.CrudRepository;
 
@@ -10,6 +11,8 @@ public interface StoreRepository extends CrudRepository<Store, String> {
     
     List<Store> findByProjectId(String projectId);
     
-    List<Store> findByProjectIdAndName(String projectId, String name);
+    Optional<Store> findByProjectIdAndName(String projectId, String name);
+
+    List<Store> findByProjectIdAndIsDefault(String projectId, Boolean b);
     
 }

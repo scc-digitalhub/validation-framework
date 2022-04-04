@@ -1,6 +1,7 @@
 package it.smartcommunitylab.validationstorage.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.repository.CrudRepository;
 
@@ -10,7 +11,7 @@ public interface RunMetadataRepository extends CrudRepository<RunMetadata, Strin
     
     List<RunMetadata> findByProjectId(String projectId);
     
-    List<RunMetadata> findByProjectIdAndRunId(String projectId, String runId);
+    Optional<RunMetadata> findByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
     
     void deleteByProjectId(String projectId);
     

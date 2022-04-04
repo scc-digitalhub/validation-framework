@@ -1,5 +1,7 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum RunStatus {
     PENDING("pending"),
     RUNNING("running"),
@@ -10,5 +12,10 @@ public enum RunStatus {
     
     private RunStatus(String label) {
         this.label = label;
+    }
+    
+    @JsonValue
+    public String getLabel() {
+        return label;
     }
 }
