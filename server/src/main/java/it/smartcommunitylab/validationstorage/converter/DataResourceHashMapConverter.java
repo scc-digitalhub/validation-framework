@@ -1,20 +1,23 @@
 package it.smartcommunitylab.validationstorage.converter;
 
 import java.io.IOException;
-import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.AttributeConverter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.MapType;
 
-public class HashMapConverter implements AttributeConverter<Map<String, Serializable>, String> {
+import it.smartcommunitylab.validationstorage.model.DataResource;
+
+public class DataResourceHashMapConverter implements AttributeConverter<Map<String, DataResource>, String> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public String convertToDatabaseColumn(Map<String, Serializable> map) {
+    public String convertToDatabaseColumn(Map<String, DataResource> map) {
         String json = null;
         
         if (map != null) {
@@ -27,14 +30,14 @@ public class HashMapConverter implements AttributeConverter<Map<String, Serializ
         return json;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public Map<String, Serializable> convertToEntityAttribute(String json) {
+    public Map<String, DataResource> convertToEntityAttribute(String json) {
 
-        Map<String, Serializable> map = null;
+        Map<String, DataResource> map = null;
         if (json != null) {
             try {
-                map = objectMapper.readValue(json, Map.class);
+                MapType mapType = objectMapper.getTypeFactory().constructMapType(HashMap.class, String.class, DataResource.class);
+                map = objectMapper.readValue(json, mapType);
             } catch (final IOException e) {
             }
 

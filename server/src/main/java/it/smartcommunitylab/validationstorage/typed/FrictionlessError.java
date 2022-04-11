@@ -2,6 +2,11 @@ package it.smartcommunitylab.validationstorage.typed;
 
 public class FrictionlessError extends TypedError {
     
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 642218210469996635L;
+
     private String fieldName;
     
     private int rowNumber;

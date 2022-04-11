@@ -16,7 +16,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.ReportMetadata;
 import it.smartcommunitylab.validationstorage.model.RunValidationReport;
-import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 import it.smartcommunitylab.validationstorage.typed.TypedError;
 
 /**

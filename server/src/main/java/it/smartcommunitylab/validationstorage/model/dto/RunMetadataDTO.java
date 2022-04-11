@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -16,7 +15,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.ReportMetadata;
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
-import it.smartcommunitylab.validationstorage.model.RunStatus;
 
 /**
  * Request object: lists metadata about a run.
@@ -24,17 +22,14 @@ import it.smartcommunitylab.validationstorage.model.RunStatus;
 public class RunMetadataDTO {
     private String id;
 
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("project")
     private String projectId;
 
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("experiment")
     private String experimentName;
 
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("run")
     private String runId;

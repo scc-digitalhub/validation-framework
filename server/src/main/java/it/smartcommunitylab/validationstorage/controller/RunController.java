@@ -30,7 +30,7 @@ public class RunController {
     public RunDTO create(
             @PathVariable String projectId,
             @PathVariable String experimentName,
-            @RequestBody @Valid RunDTO request) {
+            @RequestBody(required=false) @Valid RunDTO request) {
         return service.createRun(projectId, experimentName, request);
     }
     

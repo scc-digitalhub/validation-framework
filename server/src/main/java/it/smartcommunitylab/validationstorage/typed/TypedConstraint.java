@@ -8,8 +8,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.smartcommunitylab.validationstorage.typed.DuckDBConstraint.Check;
-import it.smartcommunitylab.validationstorage.typed.DuckDBConstraint.Expect;
-import it.smartcommunitylab.validationstorage.typed.FrictionlessConstraint.ConstraintType;
 
 public abstract class TypedConstraint implements Serializable {
     /**

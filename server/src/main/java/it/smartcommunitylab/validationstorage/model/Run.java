@@ -18,6 +18,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.converter.DataResourceHashMapConverter;
 import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
 import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 
@@ -44,7 +45,7 @@ public class Run {
 
     // Key is resource's name
     @Lob
-    @Convert(converter = HashMapConverter.class)
+    @Convert(converter = DataResourceHashMapConverter.class)
     private Map<String, DataResource> resources;
 
     // Key is constraint's name

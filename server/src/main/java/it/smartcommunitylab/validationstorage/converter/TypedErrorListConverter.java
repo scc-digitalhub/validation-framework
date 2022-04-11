@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 
 import it.smartcommunitylab.validationstorage.typed.TypedError;
 
-public class TypedErrorConverter implements AttributeConverter<List<TypedError>, String> {
+public class TypedErrorListConverter implements AttributeConverter<List<TypedError>, String> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 

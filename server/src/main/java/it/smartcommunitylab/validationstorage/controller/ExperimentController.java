@@ -1,7 +1,6 @@
 package it.smartcommunitylab.validationstorage.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -14,12 +13,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.dto.ExperimentDTO;
-import it.smartcommunitylab.validationstorage.model.dto.RunDTO;
 import it.smartcommunitylab.validationstorage.service.ExperimentService;
 
 @RestController

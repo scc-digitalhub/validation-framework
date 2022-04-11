@@ -1,6 +1,5 @@
 package it.smartcommunitylab.validationstorage.model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -18,10 +17,13 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 
 @Entity
 @Table(name = "resources", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "package_name", "name" }))
+@JsonIgnoreProperties(value = { "packages" })
 public class DataResource {
 
     @Id
@@ -53,7 +55,7 @@ public class DataResource {
     
     private String description;
 
-    private String type;
+    private ResourceType type;
     
     @Embedded
     @AttributeOverrides({
@@ -154,11 +156,11 @@ public class DataResource {
         this.description = description;
     }
 
-    public String getType() {
+    public ResourceType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(ResourceType type) {
         this.type = type;
     }
 

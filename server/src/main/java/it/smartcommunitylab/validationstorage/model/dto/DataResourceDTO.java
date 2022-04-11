@@ -1,12 +1,12 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+
+import org.springframework.lang.NonNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,6 +17,7 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.DataPackage;
 import it.smartcommunitylab.validationstorage.model.DataResource;
 import it.smartcommunitylab.validationstorage.model.Dataset;
+import it.smartcommunitylab.validationstorage.model.ResourceType;
 import it.smartcommunitylab.validationstorage.model.Schema;
 
 @Valid
@@ -44,7 +45,8 @@ public class DataResourceDTO {
     
     private String description;
 
-    private String type;
+    @NonNull
+    private ResourceType type;
 
     private Schema schema;
 
@@ -67,7 +69,7 @@ public class DataResourceDTO {
         dto.setType(source.getType());
         
         Schema sourceSchema = source.getSchema();
-        if (sourceSchema.getType() == null)
+        if (sourceSchema != null && sourceSchema.getType() == null)
             sourceSchema.setType(source.getType());
         dto.setSchema(sourceSchema);
         
@@ -76,7 +78,7 @@ public class DataResourceDTO {
         return dto;
     }
     
-    public static DataResource to(DataResourceDTO source, DataPackage dataPackage, String defaultStore) {
+    public static DataResource to(DataResourceDTO source, String projectId, DataPackage dataPackage, String defaultStore) {
         if (source == null)
             return null;
         
@@ -87,7 +89,7 @@ public class DataResourceDTO {
             id = UUID.randomUUID().toString();
         
         document.setId(id);
-        document.setProjectId(source.getProjectId());
+        document.setProjectId(projectId);
         document.setPackageName(source.getPackageName());
         
         document.addPackage(dataPackage);
@@ -163,11 +165,11 @@ public class DataResourceDTO {
         this.description = description;
     }
 
-    public String getType() {
+    public ResourceType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(ResourceType type) {
         this.type = type;
     }
 

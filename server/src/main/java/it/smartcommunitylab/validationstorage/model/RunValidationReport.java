@@ -16,7 +16,7 @@ import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
-import it.smartcommunitylab.validationstorage.converter.TypedErrorConverter;
+import it.smartcommunitylab.validationstorage.converter.TypedErrorListConverter;
 import it.smartcommunitylab.validationstorage.typed.TypedError;
 
 /**
@@ -55,7 +55,7 @@ public class RunValidationReport {
     private ReportMetadata metadata;
 
     @Lob
-    @Convert(converter = TypedErrorConverter.class)
+    @Convert(converter = TypedErrorListConverter.class)
     List<TypedError> errors;
     
     @Lob

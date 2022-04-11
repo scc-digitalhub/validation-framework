@@ -1,28 +1,27 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
+import it.smartcommunitylab.validationstorage.model.DataResource;
 import it.smartcommunitylab.validationstorage.model.Run;
 import it.smartcommunitylab.validationstorage.model.RunStatus;
-import it.smartcommunitylab.validationstorage.service.ExperimentService;
 
 @Valid
 public class RunDTO {
     private String id;
 
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("project")
     private String projectId;
 
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("experiment")
     private String experimentName;
@@ -42,7 +41,7 @@ public class RunDTO {
 
     private RunEnvironmentDTO runEnvironment;
     
-    public static RunDTO from(Run source, String experimentName, DataPackageDTO dataPackage, List<ConstraintDTO> constraints) {
+    public static RunDTO from(Run source, String experimentName, List<ConstraintDTO> constraints) {
         if (source == null)
             return null;
         
@@ -52,7 +51,21 @@ public class RunDTO {
         dto.setProjectId(source.getProjectId());
         dto.setExperimentName(experimentName);
         dto.setRunConfig(RunConfigDTO.from(source.getRunConfig(), experimentName));
+        
+        // Package
+        DataPackageDTO dataPackage = new DataPackageDTO();
+        dataPackage.setName(source.getId());
+        dataPackage.setTitle("Package for run " + source.getId());
+        dataPackage.setType("run");
+        
+        // Package resources
+        Map<String, DataResource> resources = source.getResources();
+        if (resources != null) {
+            List<DataResourceDTO> resourceDTOs = resources.values().stream().map(r -> DataResourceDTO.from(r)).collect(Collectors.toList());
+            dataPackage.setResources(resourceDTOs);
+        }
         dto.setDataPackage(dataPackage);
+        
         dto.setConstraints(constraints);
         dto.setRunStatus(source.getRunStatus());
         dto.setRunMetadata(RunMetadataDTO.from(source.getRunMetadata(), experimentName));

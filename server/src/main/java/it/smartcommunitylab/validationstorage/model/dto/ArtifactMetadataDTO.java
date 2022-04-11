@@ -16,17 +16,14 @@ import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 public class ArtifactMetadataDTO {
     private String id;
     
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("project")
     private String projectId;
     
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("experiment")
     private String experimentName;
     
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("run")
     private String runId;

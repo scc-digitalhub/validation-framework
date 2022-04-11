@@ -69,7 +69,7 @@ public class RunConfigDTO {
         return dto;
     }
     
-    public static RunConfig to(RunConfigDTO source, String experimentId) {
+    public static RunConfig to(RunConfigDTO source, String projectId, String experimentId) {
         if (source == null)
             return null;
         
@@ -80,7 +80,7 @@ public class RunConfigDTO {
             id = UUID.randomUUID().toString();
         
         document.setId(id);
-        document.setProjectId(source.getProjectId());
+        document.setProjectId(projectId);
         document.setExperimentId(experimentId);
         document.setSnapshot(source.getSnapshot());
         document.setProfiling(source.getProfiling());

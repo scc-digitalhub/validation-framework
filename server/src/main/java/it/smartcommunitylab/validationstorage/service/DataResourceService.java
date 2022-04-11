@@ -1,12 +1,8 @@
 package it.smartcommunitylab.validationstorage.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,24 +11,15 @@ import org.springframework.util.ObjectUtils;
 
 import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
-import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
-import it.smartcommunitylab.validationstorage.model.Constraint;
 import it.smartcommunitylab.validationstorage.model.DataPackage;
 import it.smartcommunitylab.validationstorage.model.DataResource;
-import it.smartcommunitylab.validationstorage.model.Run;
-import it.smartcommunitylab.validationstorage.model.RunEnvironment;
-import it.smartcommunitylab.validationstorage.model.Schema;
 import it.smartcommunitylab.validationstorage.model.Store;
-import it.smartcommunitylab.validationstorage.model.dto.ConstraintDTO;
 import it.smartcommunitylab.validationstorage.model.dto.DataPackageDTO;
 import it.smartcommunitylab.validationstorage.model.dto.DataResourceDTO;
-import it.smartcommunitylab.validationstorage.model.dto.RunDTO;
-import it.smartcommunitylab.validationstorage.model.dto.RunEnvironmentDTO;
 import it.smartcommunitylab.validationstorage.model.dto.StoreDTO;
 import it.smartcommunitylab.validationstorage.repository.DataPackageRepository;
 import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.StoreRepository;
-import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 
 @Service
 public class DataResourceService {
@@ -45,7 +32,7 @@ public class DataResourceService {
     @Autowired
     private DataResourceRepository dataResourceRepository;
     
-    private DataPackage getDataPackage(String id) {
+    DataPackage searchDataPackage(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
@@ -57,7 +44,19 @@ public class DataResourceService {
         return null;
     }
     
-    private DataPackage getDataPackageByName(String projectId, String name) {
+    private DataPackage retrieveDataPackage(String id) {
+        DataPackage document = searchDataPackage(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Package '" + id + "' was not found.");
+        
+        return document;
+    }
+    
+    private DataPackage searchDataPackageByName(String projectId, String name) {
+        if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(name))
+            return null;
+        
         Optional<DataPackage> o = dataPackageRepository.findByProjectIdAndName(projectId, name);
         if (o.isPresent()) {
             return o.get();
@@ -66,7 +65,16 @@ public class DataResourceService {
         return null;
     }
     
-    private Store getStore(String id) {
+    private DataPackage retrieveDataPackageByName(String projectId, String name) {
+        DataPackage document = searchDataPackageByName(projectId, name);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Package '" + name + "' under project '" + projectId + "' was not found.");
+        
+        return document;
+    }
+    
+    private Store searchStore(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
@@ -78,7 +86,16 @@ public class DataResourceService {
         return null;
     }
     
-    private Store getStoreByName(String projectId, String name) {
+    private Store retrieveStore(String id) {
+        Store document = searchStore(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Store '" + id + "' was not found.");
+        
+        return document;
+    }
+    
+    private Store searchStoreByName(String projectId, String name) {
         if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(name))
             return null;
         
@@ -90,7 +107,7 @@ public class DataResourceService {
         return null;
     }
     
-    private Store getDefaultStore(String projectId) {
+    private Store searchDefaultStore(String projectId) {
         if (ObjectUtils.isEmpty(projectId))
             return null;
         
@@ -102,7 +119,7 @@ public class DataResourceService {
         return null;
     }
     
-    private DataResource getDataResource(String id) {
+    private DataResource searchDataResource(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
@@ -114,7 +131,16 @@ public class DataResourceService {
         return null;
     }
     
-    private DataResource getDataResourceByName(String projectId, String packageName, String name) {
+    private DataResource retrieveDataResource(String id) {
+        DataResource document = searchDataResource(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Resource '" + id + "' was not found.");
+        
+        return document;
+    }
+    
+    private DataResource searchDataResourceByName(String projectId, String packageName, String name) {
         if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(packageName) || ObjectUtils.isEmpty(name))
             return null;
         
@@ -128,41 +154,38 @@ public class DataResourceService {
     
     // Package
     public DataPackageDTO createDataPackage(String projectId, DataPackageDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        
         String id = request.getId();
         if (id != null) {
-            if (getDataPackage(id) != null)
-                throw new DocumentAlreadyExistsException("Document with id '" + id + "' already exists.");
+            if (searchDataPackage(id) != null)
+                throw new DocumentAlreadyExistsException("Package '" + id + "' already exists.");
         } else {
             id = UUID.randomUUID().toString();
         }
         
         String name = request.getName();
-        if (getDataPackageByName(projectId, name) != null)
-            throw new DocumentAlreadyExistsException("Document '" + name + "' under project '" + projectId + "' already exists.");
+        if (searchDataPackageByName(projectId, name) != null)
+            throw new DocumentAlreadyExistsException("Package '" + name + "' under project '" + projectId + "' already exists.");
         
-        DataPackage document = new DataPackage();
-        
-        document.setId(id);
-        document.setProjectId(projectId);
-        document.setName(name);
-        document.setTitle(request.getTitle());
-        document.setType(request.getType());
-        
-        List<DataResource> resourcesCreatedBeforePackage = dataResourceRepository.findByProjectIdAndPackageName(projectId, name);
-        
-        for (DataResource r : resourcesCreatedBeforePackage) {
-            r.addPackage(document);
-        }
-        
-        document.setResources(resourcesCreatedBeforePackage);
-        
-        dataPackageRepository.save(document);
-        
-        dataResourceRepository.saveAll(resourcesCreatedBeforePackage);
+        DataPackage document = DataPackageDTO.to(request, projectId);
+        document = savePackageWithItsResources(document);
         
         return DataPackageDTO.from(document);
+    }
+    
+    DataPackage savePackageWithItsResources(DataPackage dataPackage) {
+        List<DataResource> resources = dataResourceRepository.findByProjectIdAndPackageName(dataPackage.getProjectId(), dataPackage.getName());
+    
+        for (DataResource r : resources) {
+            r.addPackage(dataPackage);
+        }
+        
+        dataPackage.setResources(resources);
+        
+        dataPackage = dataPackageRepository.save(dataPackage);
+                
+        dataResourceRepository.saveAll(resources);
+        
+        return dataPackage;
     }
    
     public List<DataPackageDTO> findDataPackages(String projectId) {
@@ -178,45 +201,31 @@ public class DataResourceService {
     }
     
     public DataPackageDTO findDataPackageById(String projectId, String id) {
-        DataPackage document = getDataPackage(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
+        DataPackage document = retrieveDataPackage(id);
         
         return DataPackageDTO.from(document);
     }
     
     public DataPackageDTO findFrictionlessDataPackageById(String projectId, String id) {
         // TODO
-        DataPackage document = getDataPackage(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
+        DataPackage document = retrieveDataPackage(id);
         
         return DataPackageDTO.from(document);
     }
    
     public DataPackageDTO updateDataPackage(String projectId, String id, DataPackageDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        
-        DataPackage document = getDataPackage(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        DataPackage document = retrieveDataPackage(id);
         
         document.setTitle(request.getTitle());
         document.setType(request.getType());
         
-        dataPackageRepository.save(document);
+        document = dataPackageRepository.save(document);
         
         return DataPackageDTO.from(document);
     }
    
     public void deleteDataPackage(String projectId, String id) {
-        DataPackage document = getDataPackage(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        DataPackage document = retrieveDataPackage(id);
         
         List<DataResource> resources = document.getResources();
         
@@ -229,38 +238,19 @@ public class DataResourceService {
         dataPackageRepository.deleteById(id);
     }
     
-    void deleteRunDataPackage(String projectId, String name) {
-        DataPackage document = getDataPackageByName(projectId, name);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document '" + name + "' under project '" + projectId + "' was not found.");
-        
-        List<DataResource> resources = document.getResources();
-        
-        for (DataResource r : resources) {
-            r.removePackage(document);
-        }
-        
-        dataResourceRepository.saveAll(resources);
-        
-        dataPackageRepository.deleteByProjectIdAndNameAndType(projectId, name, "run");
-    }
-    
     // Store
     public StoreDTO createStore(String projectId, StoreDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        
         String id = request.getId();
         if (id != null) {
-            if (getStore(id) != null)
-                throw new DocumentAlreadyExistsException("Document with id '" + id + "' already exists.");
+            if (searchStore(id) != null)
+                throw new DocumentAlreadyExistsException("Store '" + id + "' already exists.");
         } else {
             id = UUID.randomUUID().toString();
         }
         
         String name = request.getName();
-        if (getStoreByName(projectId, name) != null)
-            throw new DocumentAlreadyExistsException("Document '" + name + "' under project '" + projectId + "' already exists.");
+        if (searchStoreByName(projectId, name) != null)
+            throw new DocumentAlreadyExistsException("Store '" + name + "' under project '" + projectId + "' already exists.");
         
         Store document = new Store();
         
@@ -272,7 +262,7 @@ public class DataResourceService {
         document.setConfig(request.getConfig());
         
         Boolean isDefault = request.getIsDefault();
-        Store currentDefault = getDefaultStore(projectId);
+        Store currentDefault = searchDefaultStore(projectId);
         
         if (currentDefault == null) {
             if (isDefault == null || isDefault) {
@@ -288,7 +278,7 @@ public class DataResourceService {
             }
         }
         
-        storeRepository.save(document);
+        document = storeRepository.save(document);
         
         return StoreDTO.from(document);
     }
@@ -306,21 +296,13 @@ public class DataResourceService {
     }
    
     public StoreDTO findStoreById(String projectId, String id) {
-        Store document = getStore(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
+        Store document = retrieveStore(id);
         
         return StoreDTO.from(document);
     }
    
     public StoreDTO updateStore(String projectId, String id, StoreDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        
-        Store document = getStore(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        Store document = retrieveStore(id);
         
         document.setTitle(request.getTitle());
         document.setUri(request.getUri());
@@ -329,58 +311,54 @@ public class DataResourceService {
         Boolean isDefault = request.getIsDefault();
         document.setIsDefault(isDefault);
         
-        Store currentDefault = getDefaultStore(projectId);
+        Store currentDefault = searchDefaultStore(projectId);
         
         if (isDefault != null && isDefault && currentDefault != null && !currentDefault.getId().equals(id)) {
             currentDefault.setIsDefault(false);
             storeRepository.save(currentDefault);
         }
         
-        storeRepository.save(document);
+        document = storeRepository.save(document);
         
         return StoreDTO.from(document);
     }
    
     public void deleteStore(String projectId, String id) {
-        Store document = getStore(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
-        
+        retrieveStore(id);
+        System.out.println("Retrieved store " + id);
         List<DataResource> resources = dataResourceRepository.findByStoreId(id);
+        System.out.println("Found resources: " + resources);
         for (DataResource r : resources) {
+            System.out.println("Deleting resource " + r);
             deleteDataResource(projectId, r.getId());
         }
-        
+        System.out.println("Deleted the store's resources");
         storeRepository.deleteById(id);
     }
     
     // Resource
     public DataResourceDTO createDataResource(String projectId, DataResourceDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        
         String id = request.getId();
         if (request.getId() != null) {
-            if (getDataResource(id) != null)
-                throw new DocumentAlreadyExistsException("Document with id '" + id + "' already exists.");
+            if (searchDataResource(id) != null)
+                throw new DocumentAlreadyExistsException("Resource '" + id + "' already exists.");
         }
         
         String packageName = request.getPackageName();
         String name = request.getName();
-        if (getDataResourceByName(projectId, packageName, name) != null)
-            throw new DocumentAlreadyExistsException("Document '" + name + "' under project '" + projectId + "', package '" + packageName + "' already exists.");
+        if (searchDataResourceByName(projectId, packageName, name) != null)
+            throw new DocumentAlreadyExistsException("Resource '" + name + "' under project '" + projectId + "', package '" + packageName + "' already exists.");
         
-        DataPackage dataPackage = getDataPackageByName(projectId, packageName);
+        DataPackage dataPackage = retrieveDataPackageByName(projectId, packageName);
         
-        Store defaultStore = getDefaultStore(projectId);
+        Store defaultStore = searchDefaultStore(projectId);
         String defaultStoreId = null;
         if (defaultStore != null)
             defaultStoreId = defaultStore.getId();
         
-        DataResource document = DataResourceDTO.to(request, dataPackage, defaultStoreId);
-        document.setProjectId(projectId);
+        DataResource document = DataResourceDTO.to(request, projectId, dataPackage, defaultStoreId);
         
-        dataResourceRepository.save(document);
+        document = dataResourceRepository.save(document);
         
         if (dataPackage != null) {
             dataPackage.addResource(document);
@@ -403,31 +381,20 @@ public class DataResourceService {
     }
     
     public DataResourceDTO findDataResourceById(String projectId, String id) {
-        DataResource document = getDataResource(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
+        DataResource document = retrieveDataResource(id);
         
         return DataResourceDTO.from(document);
     }
     
     public DataResourceDTO findFrictionlessDataResourceById(String projectId, String id) {
         // TODO
-        DataResource document = getDataResource(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID " + id + " was not found.");
+        DataResource document = retrieveDataResource(id);
         
         return DataResourceDTO.from(document);
     }
    
     public DataResourceDTO updateDataResource(String projectId, String id, DataResourceDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        
-        DataResource document = getDataResource(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        DataResource document = retrieveDataResource(id);
         
         document.setStoreId(request.getStoreId());
         document.setTitle(request.getTitle());
@@ -436,16 +403,13 @@ public class DataResourceService {
         document.setSchema(request.getSchema());
         document.setDataset(request.getDataset());
         
-        dataResourceRepository.save(document);
+        document = dataResourceRepository.save(document);
         
         return DataResourceDTO.from(document);
     }
    
     public void deleteDataResource(String projectId, String id) {
-        DataResource document = getDataResource(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        retrieveDataResource(id);
         
         dataResourceRepository.deleteById(id);
     }

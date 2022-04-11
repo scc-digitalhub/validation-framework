@@ -15,8 +15,7 @@ import it.smartcommunitylab.validationstorage.model.Store;
 @Valid
 public class StoreDTO {
     private String id;
-
-    @NotBlank
+    
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("project")
     private String projectId;

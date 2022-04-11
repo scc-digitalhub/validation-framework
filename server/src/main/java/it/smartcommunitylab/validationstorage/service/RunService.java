@@ -2,12 +2,12 @@ package it.smartcommunitylab.validationstorage.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -17,10 +17,8 @@ import org.springframework.util.ObjectUtils;
 
 import it.smartcommunitylab.validationstorage.common.DocumentAlreadyExistsException;
 import it.smartcommunitylab.validationstorage.common.DocumentNotFoundException;
-import it.smartcommunitylab.validationstorage.common.ValidationStorageUtils;
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 import it.smartcommunitylab.validationstorage.model.Constraint;
-import it.smartcommunitylab.validationstorage.model.DataPackage;
 import it.smartcommunitylab.validationstorage.model.DataResource;
 import it.smartcommunitylab.validationstorage.model.Experiment;
 import it.smartcommunitylab.validationstorage.model.Run;
@@ -34,9 +32,6 @@ import it.smartcommunitylab.validationstorage.model.RunStatus;
 import it.smartcommunitylab.validationstorage.model.RunValidationReport;
 import it.smartcommunitylab.validationstorage.model.dto.ArtifactMetadataDTO;
 import it.smartcommunitylab.validationstorage.model.dto.ConstraintDTO;
-import it.smartcommunitylab.validationstorage.model.dto.DataPackageDTO;
-import it.smartcommunitylab.validationstorage.model.dto.DataResourceDTO;
-import it.smartcommunitylab.validationstorage.model.dto.ProfileResultDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunConfigDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunDataProfileDTO;
@@ -46,8 +41,6 @@ import it.smartcommunitylab.validationstorage.model.dto.RunValidationReportDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunDataSchemaDTO;
 import it.smartcommunitylab.validationstorage.repository.ArtifactMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.ConstraintRepository;
-import it.smartcommunitylab.validationstorage.repository.DataPackageRepository;
-import it.smartcommunitylab.validationstorage.repository.DataResourceRepository;
 import it.smartcommunitylab.validationstorage.repository.ExperimentRepository;
 import it.smartcommunitylab.validationstorage.repository.RunConfigRepository;
 import it.smartcommunitylab.validationstorage.repository.RunDataProfileRepository;
@@ -88,18 +81,9 @@ public class RunService {
     private RunConfigRepository runConfigRepository;
     
     @Autowired
-    private DataResourceRepository dataResourceRepository;
-    
-    @Autowired
-    private DataPackageRepository dataPackageRepository;
-    
-    @Autowired
     private ConstraintRepository constraintRepository;
     
-    @Autowired
-    private DataResourceService dataResourceService;
-    
-    private Experiment getExperiment(String projectId, String experimentName) {
+    private Experiment searchExperimentByName(String projectId, String experimentName) {
         if (projectId == null || experimentName == null)
             return null;
         
@@ -111,16 +95,20 @@ public class RunService {
         return null;
     }
     
-    private String getExperimentId(String projectId, String experimentName) {
-        Experiment experiment = getExperiment(projectId, experimentName);
+    private Experiment retrieveExperimentByName(String projectId, String experimentName) {
+        Experiment document = searchExperimentByName(projectId, experimentName);
         
-        if (experiment != null)
-            return experiment.getId();
+        if (document == null)
+            throw new DocumentNotFoundException("Experiment '" + experimentName + "' under project '" + projectId + "' was not found.");
         
-        return null;
+        return document;
     }
     
-    private Run getRun(String id) {
+    private String getExperimentId(String projectId, String experimentName) {
+        return retrieveExperimentByName(projectId, experimentName).getId();
+    }
+    
+    private Run searchRun(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
@@ -132,7 +120,16 @@ public class RunService {
         return null;
     }
     
-    private RunMetadata getRunMetadata(String projectId, String experimentId, String runId) {
+    private Run retrieveRun(String id) {
+        Run document = searchRun(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Run '" + id + "' was not found.");
+        
+        return document;
+    }
+    
+    private RunMetadata searchRunMetadata(String projectId, String experimentId, String runId) {
         if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(experimentId) || ObjectUtils.isEmpty(runId))
             return null;
 
@@ -144,7 +141,17 @@ public class RunService {
         return null;
     }
     
-    private RunEnvironment getRunEnvironment(String projectId, String experimentId, String runId) {
+    private RunMetadata retrieveRunMetadata(String projectId, String experimentId, String runId) {
+        RunMetadata document = searchRunMetadata(projectId, experimentId, runId);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Metadata for project '" + projectId + "', experiment '" + experimentId + "', run '" + runId + "' was not found.");
+        
+        return document;
+    }
+    
+    
+    private RunEnvironment searchRunEnvironment(String projectId, String experimentId, String runId) {
         if (ObjectUtils.isEmpty(projectId) || ObjectUtils.isEmpty(experimentId) || ObjectUtils.isEmpty(runId))
             return null;
 
@@ -156,7 +163,16 @@ public class RunService {
         return null;
     }
     
-    private ArtifactMetadata getArtifactMetadata(String id) {
+    private RunEnvironment retrieveRunEnvironment(String projectId, String experimentId, String runId) {
+        RunEnvironment document = searchRunEnvironment(projectId, experimentId, runId);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Environment for project '" + projectId + "', experiment '" + experimentId + "', run '" + runId + "' was not found.");
+        
+        return document;
+    }
+    
+    private ArtifactMetadata searchArtifactMetadata(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
@@ -168,7 +184,16 @@ public class RunService {
         return null;
     }
     
-    private RunDataProfile getRunDataProfile(String id) {
+    private ArtifactMetadata retrieveArtifactMetadata(String id) {
+        ArtifactMetadata document = searchArtifactMetadata(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Artifact '" + id + "' was not found.");
+        
+        return document;
+    }
+    
+    private RunDataProfile searchRunDataProfile(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
@@ -180,7 +205,16 @@ public class RunService {
         return null;
     }
     
-    private RunValidationReport getRunValidationReport(String id) {
+    private RunDataProfile retrieveRunDataProfile(String id) {
+        RunDataProfile document = searchRunDataProfile(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Profile '" + id + "' was not found.");
+        
+        return document;
+    }
+    
+    private RunValidationReport searchRunValidationReport(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
@@ -192,7 +226,16 @@ public class RunService {
         return null;
     }
     
-    private RunDataSchema getRunDataSchema(String id) {
+    private RunValidationReport retrieveRunValidationReport(String id) {
+        RunValidationReport document = searchRunValidationReport(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Validation report '" + id + "' was not found.");
+        
+        return document;
+    }
+    
+    private RunDataSchema searchRunDataSchema(String id) {
         if (ObjectUtils.isEmpty(id))
             return null;
 
@@ -202,6 +245,15 @@ public class RunService {
         }
         
         return null;
+    }
+    
+    private RunDataSchema retrieveRunDataSchema(String id) {
+        RunDataSchema document = searchRunDataSchema(id);
+        
+        if (document == null)
+            throw new DocumentNotFoundException("Schema '" + id + "' was not found.");
+        
+        return document;
     }
     
     public RunConfig duplicateEnabledConfigs(RunConfig source) {
@@ -264,17 +316,15 @@ public class RunService {
     }
     
     // Run
+    /*
     public RunDTO createRun(String projectId, String experimentName, RunDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        ValidationStorageUtils.checkIdMatch(experimentName, request.getExperimentName());
-        
-        Experiment e = getExperiment(projectId, experimentName);
+        Experiment e = retrieveExperimentByName(projectId, experimentName);
         String experimentId = e.getId();
         
         String id = request.getId();
         if (id != null) {
-            if (getRun(id) != null)
-                throw new DocumentAlreadyExistsException("Document with id '" + id + "' already exists.");
+            if (searchRun(id) != null)
+                throw new DocumentAlreadyExistsException("Run '" + id + "' already exists.");
         } else {
             id = UUID.randomUUID().toString();
         }
@@ -348,9 +398,81 @@ public class RunService {
         
         runConfigRepository.save(rc);
         
-        runRepository.save(document);
+        document = runRepository.save(document);
         
         return RunDTO.from(document, experimentName, DataPackageDTO.from(dataPackage), dtoConstraints);
+    }*/
+    public RunDTO createRun(String projectId, String experimentName, RunDTO request) {
+
+        Experiment e = retrieveExperimentByName(projectId, experimentName);
+        String experimentId = e.getId();
+
+        String id;
+        if (request != null && request.getId() != null) {
+            id = request.getId();
+            if (searchRun(id) != null)
+                throw new DocumentAlreadyExistsException("Run '" + id + "' already exists.");
+        } else {
+            id = UUID.randomUUID().toString();
+        }
+
+        Run document = new Run();
+
+        document.setId(id);
+        document.setProjectId(projectId);
+        document.setExperimentId(experimentId);
+
+        RunStatus status = request != null && request.getRunStatus() != null ? request.getRunStatus()
+                : RunStatus.PENDING;
+        document.setRunStatus(status);
+
+        // Constraints
+        List<Constraint> expConstraints = constraintRepository.findByProjectIdAndExperimentId(projectId, experimentId);
+        List<Constraint> runConstraints = expConstraints;
+
+        if (request != null && request.getConstraints() != null) {
+            Set<String> cNames = request.getConstraints().stream().map(c -> c.getName()).collect(Collectors.toSet());
+            runConstraints = expConstraints.stream().filter(c -> cNames.contains(c.getName()))
+                    .collect(Collectors.toList());
+            
+        }
+        
+        Map<String, TypedConstraint> constraintsMap = runConstraints.stream()
+                .collect(Collectors.toMap(c -> c.getName(), c -> c.getTypedConstraint()));
+
+        document.setConstraints(constraintsMap);
+        
+        List<ConstraintDTO> dtoConstraints = runConstraints.stream().map(c -> ConstraintDTO.from(c, experimentName)).collect(Collectors.toList());
+
+        // Resources
+        List<DataResource> expResources = e.getDataPackage().getResources();
+        List<DataResource> runResources = expResources;
+        
+        if (request != null && request.getDataPackage() != null) {
+            Set<String> rNames = request.getDataPackage().getResources().stream().map(r -> r.getName())
+                    .collect(Collectors.toSet());
+            runResources = expResources.stream().filter(r -> rNames.contains(r.getName())).collect(Collectors.toList());
+        }
+        
+        Map<String, DataResource> resourcesMap = runResources.stream().collect(Collectors.toMap(r -> r.getName(), r -> r));
+
+        document.setResources(resourcesMap);
+
+        // Config
+        RunConfig rc;
+        if (request != null && request.getRunConfig() != null) {
+            rc = RunConfigDTO.to(request.getRunConfig(), projectId, experimentId);
+        } else {
+            rc = duplicateEnabledConfigs(e.getRunConfig());
+        }
+        
+        document.setRunConfig(rc);
+        
+        runConfigRepository.save(rc);
+
+        document = runRepository.save(document);
+
+        return RunDTO.from(document, experimentName, dtoConstraints);
     }
     
     public List<RunDTO> findRuns(String projectId, String experimentName) {
@@ -361,12 +483,6 @@ public class RunService {
         Iterable<Run> results = runRepository.findByProjectIdAndExperimentId(projectId, experimentId);
         if (!results.iterator().hasNext())
             return dtos;
-        
-        List<DataPackage> dataPackages = dataPackageRepository.findByProjectIdAndType(projectId, "run");
-        Map<String, DataPackage> dataPackageMap = new HashMap<String, DataPackage>();
-        for (DataPackage p : dataPackages) {
-            dataPackageMap.put(p.getName(), p);
-        }
         
         List<Constraint> constraints = constraintRepository.findByProjectIdAndExperimentId(projectId, experimentId);
         Map<String, Constraint> constraintMap = new HashMap<String, Constraint>();
@@ -379,19 +495,14 @@ public class RunService {
             for (String name : r.getConstraints().keySet()) {
                 dtoConstraints.add(ConstraintDTO.from(constraintMap.get(name), experimentName));
             }
-            dtos.add(RunDTO.from(r, experimentName, DataPackageDTO.from(dataPackageMap.get(r.getId())), dtoConstraints));
+            dtos.add(RunDTO.from(r, experimentName, dtoConstraints));
         }
 
         return dtos;
     }
    
     public RunDTO findRunById(String projectId, String experimentName, String id) {
-        Run document = getRun(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
-        
-        DataPackage dataPackage = dataPackageRepository.findByProjectIdAndNameAndType(projectId, id, "run");
+        Run document = retrieveRun(id);
         
         String experimentId = getExperimentId(projectId, experimentName);
         
@@ -406,23 +517,15 @@ public class RunService {
             dtoConstraints.add(ConstraintDTO.from(constraintMap.get(name), experimentName));
         }
         
-        return RunDTO.from(document, experimentName, DataPackageDTO.from(dataPackage), dtoConstraints);
+        return RunDTO.from(document, experimentName, dtoConstraints);
     }
     
     public RunDTO updateRun(String projectId, String experimentName, String id, RunDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        ValidationStorageUtils.checkIdMatch(experimentName, request.getExperimentName());
-        
-        Run document = getRun(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        Run document = retrieveRun(id);
 
         document.setRunStatus(request.getRunStatus());
         
-        runRepository.save(document);
-        
-        DataPackage dataPackage = dataPackageRepository.findByProjectIdAndNameAndType(projectId, id, "run");
+        document = runRepository.save(document);
         
         String experimentId = getExperimentId(projectId, experimentName);
         
@@ -437,15 +540,12 @@ public class RunService {
             dtoConstraints.add(ConstraintDTO.from(constraintMap.get(name), experimentName));
         }
         
-        return RunDTO.from(document, experimentName, DataPackageDTO.from(dataPackage), dtoConstraints);
+        return RunDTO.from(document, experimentName, dtoConstraints);
     }
    
     @Transactional
     public void deleteRun(String projectId, String experimentName, String id) {
-        Run document = getRun(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        Run document = retrieveRun(id);
         
         String experimentId = getExperimentId(projectId, experimentName);
         
@@ -470,20 +570,14 @@ public class RunService {
         
         runConfigRepository.deleteById(document.getRunConfig().getId());
         
-        dataResourceService.deleteRunDataPackage(projectId, id);
-        
     }
     
     // RunMetadata
     public RunMetadataDTO createRunMetadata(String projectId, String experimentName, String runId, RunMetadataDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        ValidationStorageUtils.checkIdMatch(experimentName, request.getExperimentName());
-        ValidationStorageUtils.checkIdMatch(runId, request.getRunId());
-        
         String experimentId = getExperimentId(projectId, experimentName);
         
-        if (getRunMetadata(projectId, experimentId, runId) != null)
-            throw new DocumentAlreadyExistsException("Document for project '" + projectId + "', experiment '" + experimentName + "', runId '" + runId + "' already exists.");
+        if (searchRunMetadata(projectId, experimentId, runId) != null)
+            throw new DocumentAlreadyExistsException("Document for project '" + projectId + "', experiment '" + experimentName + "', run '" + runId + "' already exists.");
         
         String id = request.getId();
         if (id == null)
@@ -501,9 +595,9 @@ public class RunService {
         document.setMetadata(request.getMetadata());
         document.setContents(request.getContents());
         
-        runMetadataRepository.save(document);
+        document = runMetadataRepository.save(document);
         
-        Run run = getRun(runId);
+        Run run = retrieveRun(runId);
         run.setRunMetadata(document);
         runRepository.save(run);
         
@@ -513,33 +607,23 @@ public class RunService {
     public RunMetadataDTO findRunMetadata(String projectId, String experimentName, String runId) {
         String experimentId = getExperimentId(projectId, experimentName);
         
-        RunMetadata document = getRunMetadata(projectId, experimentId, runId);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentName + "', runId '" + runId + "' was not found.");
+        RunMetadata document = retrieveRunMetadata(projectId, experimentId, runId);
         
         return RunMetadataDTO.from(document, experimentName);
     }
    
     public RunMetadataDTO updateRunMetadata(String projectId, String experimentName, String runId, RunMetadataDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        ValidationStorageUtils.checkIdMatch(experimentName, request.getExperimentName());
-        ValidationStorageUtils.checkIdMatch(runId, request.getRunId());
-        
         String experimentId = getExperimentId(projectId, experimentName);
         
-        RunMetadata document = getRunMetadata(projectId, experimentId, runId);
+        RunMetadata document = retrieveRunMetadata(projectId, experimentId, runId);
         
-        if (document == null)
-            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentName + "', run '" + runId + "' was not found.");
-
         document.setCreatedDate(request.getCreatedDate());
         document.setStartedDate(request.getStartedDate());
         document.setFinishedDate(request.getFinishedDate());
         document.setMetadata(request.getMetadata());
         document.setContents(request.getContents());
         
-        runMetadataRepository.save(document);
+        document = runMetadataRepository.save(document);
         
         return RunMetadataDTO.from(document, experimentName);
     }
@@ -548,12 +632,9 @@ public class RunService {
     public void deleteRunMetadata(String projectId, String experimentName, String runId) {
         String experimentId = getExperimentId(projectId, experimentName);
         
-        RunMetadata document = getRunMetadata(projectId, experimentId, runId);
+        retrieveRunMetadata(projectId, experimentId, runId);
         
-        if (document == null)
-            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentName + "', runId '" + runId + "' was not found.");
-        
-        Run run = getRun(runId);
+        Run run = retrieveRun(runId);
         run.setRunMetadata(null);
         runRepository.save(run);
         
@@ -562,14 +643,10 @@ public class RunService {
     
     // RunEnvironment
     public RunEnvironmentDTO createRunEnvironment(String projectId, String experimentName, String runId, RunEnvironmentDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        ValidationStorageUtils.checkIdMatch(experimentName, request.getExperimentName());
-        ValidationStorageUtils.checkIdMatch(runId, request.getRunId());
-        
         String experimentId = getExperimentId(projectId, experimentName);
         
-        if (getRunEnvironment(projectId, experimentId, runId) != null)
-            throw new DocumentAlreadyExistsException("Document for project '" + projectId + "', experiment '" + experimentName + "', runId '" + runId + "' already exists.");
+        if (searchRunEnvironment(projectId, experimentId, runId) != null)
+            throw new DocumentAlreadyExistsException("Environment for project '" + projectId + "', experiment '" + experimentName + "', run '" + runId + "' already exists.");
         
         String id = request.getId();
         if (id == null)
@@ -584,9 +661,9 @@ public class RunService {
         document.setDatajudgeVersion(request.getDatajudgeVersion());
         document.setContents(request.getContents());
         
-        runEnvironmentRepository.save(document);
+        document = runEnvironmentRepository.save(document);
         
-        Run run = getRun(runId);
+        Run run = retrieveRun(runId);
         run.setRunEnvironment(document);
         runRepository.save(run);
         
@@ -596,30 +673,20 @@ public class RunService {
     public RunEnvironmentDTO findRunEnvironment(String projectId, String experimentName, String runId) {
         String experimentId = getExperimentId(projectId, experimentName);
         
-        RunEnvironment document = getRunEnvironment(projectId, experimentId, runId);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentName + "', runId '" + runId + "' was not found.");
+        RunEnvironment document = retrieveRunEnvironment(projectId, experimentId, runId);
         
         return RunEnvironmentDTO.from(document, experimentName);
     }
    
     public RunEnvironmentDTO updateRunEnvironment(String projectId, String experimentName, String runId, RunEnvironmentDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        ValidationStorageUtils.checkIdMatch(experimentName, request.getExperimentName());
-        ValidationStorageUtils.checkIdMatch(runId, request.getRunId());
-        
         String experimentId = getExperimentId(projectId, experimentName);
         
-        RunEnvironment document = getRunEnvironment(projectId, experimentId, runId);
+        RunEnvironment document = retrieveRunEnvironment(projectId, experimentId, runId);
         
-        if (document == null)
-            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentName + "', run '" + runId + "' was not found.");
-
         document.setDatajudgeVersion(request.getDatajudgeVersion());
         document.setContents(request.getContents());
         
-        runEnvironmentRepository.save(document);
+        document = runEnvironmentRepository.save(document);
         
         return RunEnvironmentDTO.from(document, experimentName);
     }
@@ -628,12 +695,9 @@ public class RunService {
     public void deleteRunEnvironment(String projectId, String experimentName, String runId) {
         String experimentId = getExperimentId(projectId, experimentName);
         
-        RunEnvironment document = getRunEnvironment(projectId, experimentId, runId);
+        retrieveRunEnvironment(projectId, experimentId, runId);
         
-        if (document == null)
-            throw new DocumentNotFoundException("Document for project '" + projectId + "', experiment '" + experimentName + "', runId '" + runId + "' was not found.");
-        
-        Run run = getRun(runId);
+        Run run = retrieveRun(runId);
         run.setRunEnvironment(null);
         runRepository.save(run);
         
@@ -642,14 +706,10 @@ public class RunService {
     
     // ArtifactMetadata
     public ArtifactMetadataDTO createArtifactMetadata(String projectId, String experimentName, String runId, ArtifactMetadataDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        ValidationStorageUtils.checkIdMatch(experimentName, request.getExperimentName());
-        ValidationStorageUtils.checkIdMatch(runId, request.getRunId());
-        
         String id = request.getId();
         if (id != null) {
-            if (getArtifactMetadata(id) != null)
-                throw new DocumentAlreadyExistsException("Document with id '" + id + "' already exists.");
+            if (searchArtifactMetadata(id) != null)
+                throw new DocumentAlreadyExistsException("Artifact '" + id + "' already exists.");
         } else {
             id = UUID.randomUUID().toString();
         }
@@ -665,7 +725,7 @@ public class RunService {
         document.setName(request.getName());
         document.setUri(request.getUri());
         
-        artifactMetadataRepository.save(document);
+        document = artifactMetadataRepository.save(document);
         
         return ArtifactMetadataDTO.from(document, experimentName);
     }
@@ -684,37 +744,25 @@ public class RunService {
     }
    
     public ArtifactMetadataDTO findArtifactMetadataById(String projectId, String experimentName, String runId, String id) {
-        ArtifactMetadata document = getArtifactMetadata(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        ArtifactMetadata document = retrieveArtifactMetadata(id);
         
         return ArtifactMetadataDTO.from(document, experimentName);
     }
    
     public ArtifactMetadataDTO updateArtifactMetadata(String projectId, String experimentName, String runId, String id, ArtifactMetadataDTO request) {
-        ValidationStorageUtils.checkIdMatch(projectId, request.getProjectId());
-        ValidationStorageUtils.checkIdMatch(experimentName, request.getExperimentName());
-        ValidationStorageUtils.checkIdMatch(runId, request.getRunId());
+        ArtifactMetadata document = retrieveArtifactMetadata(id);
         
-        ArtifactMetadata document = getArtifactMetadata(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
-
         document.setName(request.getName());
         document.setUri(request.getUri());
         
-        artifactMetadataRepository.save(document);
+        document = artifactMetadataRepository.save(document);
         
         return ArtifactMetadataDTO.from(document, experimentName);
     }
    
     public void deleteArtifactMetadata(String projectId, String experimentName, String runId, String id) {
-        ArtifactMetadata document = getArtifactMetadata(id);
+        retrieveArtifactMetadata(id);
         
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
         artifactMetadataRepository.deleteById(id);
     }
     
@@ -728,14 +776,10 @@ public class RunService {
         for (RunDataProfileDTO dto : reports) {
             RunDataProfile document = new RunDataProfile();
             
-            ValidationStorageUtils.checkIdMatch(projectId, dto.getProjectId());
-            ValidationStorageUtils.checkIdMatch(experimentName, dto.getExperimentName());
-            ValidationStorageUtils.checkIdMatch(runId, dto.getRunId());
-            
             String id = dto.getId();
             if (id != null) {
-                if (getRunDataProfile(id) != null)
-                    throw new DocumentAlreadyExistsException("Document with id '" + id + "' already exists.");
+                if (searchRunDataProfile(id) != null)
+                    throw new DocumentAlreadyExistsException("Profile '" + id + "' already exists.");
             } else {
                 runId = UUID.randomUUID().toString();
             }
@@ -778,17 +822,18 @@ public class RunService {
     }
     
     public RunDataProfileDTO findRunDataProfileById(String projectId, String experimentName, String runId, String id) {
-        RunDataProfile document = getRunDataProfile(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        RunDataProfile document = retrieveRunDataProfile(id);
         
         return RunDataProfileDTO.from(document, experimentName);
     }
     
     public RunStatus findProfileResult(String projectId, String experimentName, String runId) {
-        Run run = runRepository.findById(runId).get();
-        return run.getProfileResult();
+        Optional<Run> o = runRepository.findById(runId);
+        if (o.isPresent()) {
+            return o.get().getProfileResult();
+        } else {
+            throw new DocumentNotFoundException("Run '" + runId + "' was not found.");
+        }
     }
    
     @Transactional
@@ -800,10 +845,6 @@ public class RunService {
         
         for (RunDataProfileDTO dto : reports) {
             RunDataProfile document = new RunDataProfile();
-            
-            ValidationStorageUtils.checkIdMatch(projectId, dto.getProjectId());
-            ValidationStorageUtils.checkIdMatch(experimentName, dto.getExperimentName());
-            ValidationStorageUtils.checkIdMatch(runId, dto.getRunId());
             
             String id = dto.getId();
             if (id == null)
@@ -849,14 +890,10 @@ public class RunService {
         for (RunValidationReportDTO dto : reports) {
             RunValidationReport document = new RunValidationReport();
             
-            ValidationStorageUtils.checkIdMatch(projectId, dto.getProjectId());
-            ValidationStorageUtils.checkIdMatch(experimentName, dto.getExperimentName());
-            ValidationStorageUtils.checkIdMatch(runId, dto.getRunId());
-            
             String id = dto.getId();
             if (id != null) {
-                if (getRunValidationReport(id) != null)
-                    throw new DocumentAlreadyExistsException("Document with id '" + runId + "' already exists.");
+                if (searchRunValidationReport(id) != null)
+                    throw new DocumentAlreadyExistsException("Validation report '" + runId + "' already exists.");
             } else {
                 runId = UUID.randomUUID().toString();
             }
@@ -901,17 +938,18 @@ public class RunService {
     }
     
     public RunValidationReportDTO findRunValidationReportById(String projectId, String experimentName, String runId, String id) {
-        RunValidationReport document = getRunValidationReport(id);
-        
-        if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+        RunValidationReport document = retrieveRunValidationReport(id);
         
         return RunValidationReportDTO.from(document, experimentName);
     }
     
     public RunStatus findValidationResult(String projectId, String experimentName, String runId) {
-        Run run = runRepository.findById(runId).get();
-        return run.getValidationResult();
+        Optional<Run> o = runRepository.findById(runId);
+        if (o.isPresent()) {
+            return o.get().getValidationResult();
+        } else {
+            throw new DocumentNotFoundException("Run '" + runId + "' was not found.");
+        }
     }
    
     @Transactional
@@ -923,10 +961,6 @@ public class RunService {
         
         for (RunValidationReportDTO dto : reports) {
             RunValidationReport document = new RunValidationReport();
-            
-            ValidationStorageUtils.checkIdMatch(projectId, dto.getProjectId());
-            ValidationStorageUtils.checkIdMatch(experimentName, dto.getExperimentName());
-            ValidationStorageUtils.checkIdMatch(runId, dto.getRunId());
             
             String id = dto.getId();
             if (id == null)
@@ -974,14 +1008,10 @@ public class RunService {
         for (RunDataSchemaDTO dto : reports) {
             RunDataSchema document = new RunDataSchema();
             
-            ValidationStorageUtils.checkIdMatch(projectId, dto.getProjectId());
-            ValidationStorageUtils.checkIdMatch(experimentName, dto.getExperimentName());
-            ValidationStorageUtils.checkIdMatch(runId, dto.getRunId());
-            
             String id = dto.getId();
             if (id != null) {
-                if (getRunDataSchema(id) != null)
-                    throw new DocumentAlreadyExistsException("Document with id '" + runId + "' already exists.");
+                if (searchRunDataSchema(id) != null)
+                    throw new DocumentAlreadyExistsException("Schema '" + runId + "' already exists.");
             } else {
                 runId = UUID.randomUUID().toString();
             }
@@ -1024,17 +1054,21 @@ public class RunService {
     }
     
     public RunDataSchemaDTO findRunDataSchemaById(String projectId, String experimentName, String runId, String id) {
-        RunDataSchema document = getRunDataSchema(id);
+        RunDataSchema document = retrieveRunDataSchema(id);
         
         if (document == null)
-            throw new DocumentNotFoundException("Document with ID '" + id + "' was not found.");
+            throw new DocumentNotFoundException("Schema '" + id + "' was not found.");
         
         return RunDataSchemaDTO.from(document, experimentName);
     }
     
     public RunStatus findSchemaResult(String projectId, String experimentName, String runId) {
-        Run run = runRepository.findById(runId).get();
-        return run.getSchemaResult();
+        Optional<Run> o = runRepository.findById(runId);
+        if (o.isPresent()) {
+            return o.get().getSchemaResult();
+        } else {
+            throw new DocumentNotFoundException("Run '" + runId + "' was not found.");
+        }
     }
    
     @Transactional
@@ -1046,10 +1080,6 @@ public class RunService {
         
         for (RunDataSchemaDTO dto : reports) {
             RunDataSchema document = new RunDataSchema();
-            
-            ValidationStorageUtils.checkIdMatch(projectId, dto.getProjectId());
-            ValidationStorageUtils.checkIdMatch(experimentName, dto.getExperimentName());
-            ValidationStorageUtils.checkIdMatch(runId, dto.getRunId());
             
             String id = dto.getId();
             if (id == null)

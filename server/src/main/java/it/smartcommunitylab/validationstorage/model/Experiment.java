@@ -1,6 +1,5 @@
 package it.smartcommunitylab.validationstorage.model;
 
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -43,7 +42,7 @@ public class Experiment {
     private RunConfig runConfig;
     
     @OneToOne
-    @JoinColumn(name = "package")
+    @JoinColumn(name = "package_id")
     private DataPackage dataPackage;
 
     @Lob

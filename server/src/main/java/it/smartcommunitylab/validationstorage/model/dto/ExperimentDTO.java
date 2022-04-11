@@ -1,7 +1,6 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -13,11 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.model.Constraint;
-import it.smartcommunitylab.validationstorage.model.DataResource;
 import it.smartcommunitylab.validationstorage.model.Experiment;
-import it.smartcommunitylab.validationstorage.model.Run;
-import it.smartcommunitylab.validationstorage.model.RunConfig;
 
 /**
  * Request object: details an experiment.
@@ -27,7 +22,6 @@ import it.smartcommunitylab.validationstorage.model.RunConfig;
 public class ExperimentDTO {
     private String id;
 
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("project")
     private String projectId;
@@ -46,6 +40,9 @@ public class ExperimentDTO {
 
     private Set<String> tags;
     
+    @JsonProperty("package")
+    private DataPackageDTO dataPackage;
+    
     public static ExperimentDTO from(Experiment source) {
         if (source == null)
             return null;
@@ -59,6 +56,7 @@ public class ExperimentDTO {
         dto.setDescription(source.getDescription());
         dto.setRunConfig(RunConfigDTO.from(source.getRunConfig(), source.getName()));
         dto.setTags(new HashSet<String>(source.getTags()));
+        dto.setDataPackage(DataPackageDTO.from(source.getDataPackage()));
         
         return dto;
     }
@@ -117,6 +115,14 @@ public class ExperimentDTO {
 
     public void setTags(Set<String> tags) {
         this.tags = tags;
+    }
+    
+    public DataPackageDTO getDataPackage() {
+        return dataPackage;
+    }
+
+    public void setDataPackage(DataPackageDTO dataPackage) {
+        this.dataPackage = dataPackage;
     }
 
 }

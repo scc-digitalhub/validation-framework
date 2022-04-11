@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Lob;
@@ -14,7 +13,6 @@ import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.converter.RunConfigImplListConverter;
-import it.smartcommunitylab.validationstorage.converter.StringSetConverter;
 
 @Entity
 @Table(name = "configs")

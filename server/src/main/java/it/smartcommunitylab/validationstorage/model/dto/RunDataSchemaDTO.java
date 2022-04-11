@@ -1,14 +1,7 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
@@ -22,17 +15,14 @@ import it.smartcommunitylab.validationstorage.typed.TypedSchema;
 public class RunDataSchemaDTO {
     private String id;
 
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("project")
     private String projectId;
 
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("experiment")
     private String experimentName;
 
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("run")
     private String runId;

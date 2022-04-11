@@ -1,9 +1,8 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.UUID;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -22,7 +21,6 @@ import it.smartcommunitylab.validationstorage.model.DataResource;
 public class DataPackageDTO {
     private String id;
 
-    @NotBlank
     @Pattern(regexp = ValidationStorageConstants.NAME_PATTERN)
     @JsonProperty("project")
     private String projectId;
@@ -59,6 +57,25 @@ public class DataPackageDTO {
         dto.setResources(resources);
         
         return dto;
+    }
+    
+    public static DataPackage to(DataPackageDTO source, String projectId) {
+        if (source == null)
+            return null;
+        
+        DataPackage document = new DataPackage();
+        
+        String id = source.getId();
+        if (id == null)
+            id = UUID.randomUUID().toString();
+        
+        document.setId(id);
+        document.setProjectId(projectId);
+        document.setName(source.getName());
+        document.setTitle(source.getTitle());
+        document.setType(source.getType());
+        
+        return document;
     }
 
     public String getId() {
