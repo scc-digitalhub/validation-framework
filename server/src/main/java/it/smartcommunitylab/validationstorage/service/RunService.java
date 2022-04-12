@@ -31,7 +31,6 @@ import it.smartcommunitylab.validationstorage.model.RunMetadata;
 import it.smartcommunitylab.validationstorage.model.RunStatus;
 import it.smartcommunitylab.validationstorage.model.RunValidationReport;
 import it.smartcommunitylab.validationstorage.model.dto.ArtifactMetadataDTO;
-import it.smartcommunitylab.validationstorage.model.dto.ConstraintDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunConfigDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunDTO;
 import it.smartcommunitylab.validationstorage.model.dto.RunDataProfileDTO;
@@ -48,7 +47,6 @@ import it.smartcommunitylab.validationstorage.repository.RunEnvironmentRepositor
 import it.smartcommunitylab.validationstorage.repository.RunMetadataRepository;
 import it.smartcommunitylab.validationstorage.repository.RunRepository;
 import it.smartcommunitylab.validationstorage.repository.RunValidationReportRepository;
-import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
 import it.smartcommunitylab.validationstorage.repository.RunDataSchemaRepository;
 
 @Service
@@ -425,39 +423,7 @@ public class RunService {
         RunStatus status = request != null && request.getRunStatus() != null ? request.getRunStatus()
                 : RunStatus.PENDING;
         document.setRunStatus(status);
-
-        // Constraints
-        List<Constraint> expConstraints = constraintRepository.findByProjectIdAndExperimentId(projectId, experimentId);
-        List<Constraint> runConstraints = expConstraints;
-
-        if (request != null && request.getConstraints() != null) {
-            Set<String> cNames = request.getConstraints().stream().map(c -> c.getName()).collect(Collectors.toSet());
-            runConstraints = expConstraints.stream().filter(c -> cNames.contains(c.getName()))
-                    .collect(Collectors.toList());
-            
-        }
         
-        Map<String, TypedConstraint> constraintsMap = runConstraints.stream()
-                .collect(Collectors.toMap(c -> c.getName(), c -> c.getTypedConstraint()));
-
-        document.setConstraints(constraintsMap);
-        
-        List<ConstraintDTO> dtoConstraints = runConstraints.stream().map(c -> ConstraintDTO.from(c, experimentName)).collect(Collectors.toList());
-
-        // Resources
-        List<DataResource> expResources = e.getDataPackage().getResources();
-        List<DataResource> runResources = expResources;
-        
-        if (request != null && request.getDataPackage() != null) {
-            Set<String> rNames = request.getDataPackage().getResources().stream().map(r -> r.getName())
-                    .collect(Collectors.toSet());
-            runResources = expResources.stream().filter(r -> rNames.contains(r.getName())).collect(Collectors.toList());
-        }
-        
-        Map<String, DataResource> resourcesMap = runResources.stream().collect(Collectors.toMap(r -> r.getName(), r -> r));
-
-        document.setResources(resourcesMap);
-
         // Config
         RunConfig rc;
         if (request != null && request.getRunConfig() != null) {
@@ -469,10 +435,54 @@ public class RunService {
         document.setRunConfig(rc);
         
         runConfigRepository.save(rc);
+        
+        // Resources
+        List<DataResource> expResources = e.getDataPackage().getResources();
+        List<DataResource> runResources = expResources;
+        
+        if (request != null && request.getDataPackage() != null) {
+            Set<String> runResourceNames = request.getDataPackage().getResources().stream().map(r -> r.getName()).collect(Collectors.toSet());
+            Set<String> experimentResourceNames = expResources.stream().map(r -> r.getName()).collect(Collectors.toSet());
+            
+            if (!experimentResourceNames.containsAll(runResourceNames)) {
+                throw new IllegalArgumentException("One or more resources listed do not belong to this experiment.");
+            }
+            
+            runResources = expResources.stream().filter(r -> runResourceNames.contains(r.getName())).collect(Collectors.toList());
+        }
+        
+        Map<String, DataResource> resourcesMap = runResources.stream().collect(Collectors.toMap(r -> r.getName(), r -> r));
+
+        document.setResources(resourcesMap);
+
+        // Constraints are exclusively for validation
+        if (rc.isValidationEnabled()) {
+            List<Constraint> expConstraints = constraintRepository.findByProjectIdAndExperimentId(projectId, experimentId);
+            List<Constraint> runConstraints = expConstraints;
+    
+            if (request != null && request.getConstraints() != null) {
+                Set<String> runConstraintNames = request.getConstraints().stream().map(c -> c.getName()).collect(Collectors.toSet());
+                Set<String> experimentConstraintNames = expConstraints.stream().map(c -> c.getName()).collect(Collectors.toSet());
+                
+                if (!experimentConstraintNames.containsAll(runConstraintNames)) {
+                    throw new IllegalArgumentException("One or more constraints listed do not belong to this experiment.");
+                }
+                
+                runConstraints = expConstraints.stream().filter(c -> runConstraintNames.contains(c.getName())).collect(Collectors.toList());
+            }
+            
+            if (runConstraints.isEmpty()) {
+                throw new IllegalArgumentException("Validation is enabled but no constraints are defined.");
+            }
+            
+            Map<String, Constraint> constraintsMap = runConstraints.stream().collect(Collectors.toMap(c -> c.getName(), c -> c));
+
+            document.setConstraints(constraintsMap);
+        }
 
         document = runRepository.save(document);
 
-        return RunDTO.from(document, experimentName, dtoConstraints);
+        return RunDTO.from(document, experimentName);
     }
     
     public List<RunDTO> findRuns(String projectId, String experimentName) {
@@ -491,11 +501,7 @@ public class RunService {
         }
 
         for (Run r : results) {
-            List<ConstraintDTO> dtoConstraints = new ArrayList<ConstraintDTO>();
-            for (String name : r.getConstraints().keySet()) {
-                dtoConstraints.add(ConstraintDTO.from(constraintMap.get(name), experimentName));
-            }
-            dtos.add(RunDTO.from(r, experimentName, dtoConstraints));
+            dtos.add(RunDTO.from(r, experimentName));
         }
 
         return dtos;
@@ -504,20 +510,7 @@ public class RunService {
     public RunDTO findRunById(String projectId, String experimentName, String id) {
         Run document = retrieveRun(id);
         
-        String experimentId = getExperimentId(projectId, experimentName);
-        
-        List<Constraint> constraints = constraintRepository.findByProjectIdAndExperimentId(projectId, experimentId);
-        Map<String, Constraint> constraintMap = new HashMap<String, Constraint>();
-        for (Constraint c : constraints) {
-            constraintMap.put(c.getName(), c);
-        }
-        
-        List<ConstraintDTO> dtoConstraints = new ArrayList<ConstraintDTO>();
-        for (String name : document.getConstraints().keySet()) {
-            dtoConstraints.add(ConstraintDTO.from(constraintMap.get(name), experimentName));
-        }
-        
-        return RunDTO.from(document, experimentName, dtoConstraints);
+        return RunDTO.from(document, experimentName);
     }
     
     public RunDTO updateRun(String projectId, String experimentName, String id, RunDTO request) {
@@ -527,20 +520,7 @@ public class RunService {
         
         document = runRepository.save(document);
         
-        String experimentId = getExperimentId(projectId, experimentName);
-        
-        List<Constraint> constraints = constraintRepository.findByProjectIdAndExperimentId(projectId, experimentId);
-        Map<String, Constraint> constraintMap = new HashMap<String, Constraint>();
-        for (Constraint c : constraints) {
-            constraintMap.put(c.getName(), c);
-        }
-        
-        List<ConstraintDTO> dtoConstraints = new ArrayList<ConstraintDTO>();
-        for (String name : document.getConstraints().keySet()) {
-            dtoConstraints.add(ConstraintDTO.from(constraintMap.get(name), experimentName));
-        }
-        
-        return RunDTO.from(document, experimentName, dtoConstraints);
+        return RunDTO.from(document, experimentName);
     }
    
     @Transactional

@@ -102,4 +102,8 @@ public class RunConfig {
         this.validation = validation;
     }
     
+    public boolean isValidationEnabled() {
+        return validation != null && !validation.isEmpty();
+    }
+    
 }

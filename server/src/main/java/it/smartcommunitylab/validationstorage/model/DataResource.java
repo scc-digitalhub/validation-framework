@@ -1,5 +1,6 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -24,7 +25,12 @@ import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 @Entity
 @Table(name = "resources", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "package_name", "name" }))
 @JsonIgnoreProperties(value = { "packages" })
-public class DataResource {
+public class DataResource implements Serializable {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -560441458689668391L;
 
     @Id
     private String id;

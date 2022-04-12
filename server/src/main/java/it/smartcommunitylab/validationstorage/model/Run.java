@@ -18,9 +18,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.converter.DataResourceHashMapConverter;
-import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
-import it.smartcommunitylab.validationstorage.typed.TypedConstraint;
+import it.smartcommunitylab.validationstorage.converter.DataResourceMapConverter;
+import it.smartcommunitylab.validationstorage.converter.ConstraintMapConverter;
 
 @Entity
 @Table(name = "runs")
@@ -45,13 +44,13 @@ public class Run {
 
     // Key is resource's name
     @Lob
-    @Convert(converter = DataResourceHashMapConverter.class)
+    @Convert(converter = DataResourceMapConverter.class)
     private Map<String, DataResource> resources;
 
     // Key is constraint's name
     @Lob
-    @Convert(converter = HashMapConverter.class)
-    private Map<String, TypedConstraint> constraints;
+    @Convert(converter = ConstraintMapConverter.class)
+    private Map<String, Constraint> constraints;
 
     @NotNull
     @Column(name = "run_status")
@@ -134,11 +133,11 @@ public class Run {
         this.resources = resources;
     }
 
-    public Map<String, TypedConstraint> getConstraints() {
+    public Map<String, Constraint> getConstraints() {
         return constraints;
     }
 
-    public void setConstraints(Map<String, TypedConstraint> constraints) {
+    public void setConstraints(Map<String, Constraint> constraints) {
         this.constraints = constraints;
     }
 
