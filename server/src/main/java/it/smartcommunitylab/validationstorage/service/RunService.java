@@ -434,8 +434,6 @@ public class RunService {
         
         document.setRunConfig(rc);
         
-        runConfigRepository.save(rc);
-        
         // Resources
         List<DataResource> expResources = e.getDataPackage().getResources();
         List<DataResource> runResources = expResources;
@@ -480,6 +478,8 @@ public class RunService {
             document.setConstraints(constraintsMap);
         }
 
+        runConfigRepository.save(rc);
+        
         document = runRepository.save(document);
 
         return RunDTO.from(document, experimentName);

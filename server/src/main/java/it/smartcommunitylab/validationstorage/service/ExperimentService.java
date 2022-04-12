@@ -169,19 +169,6 @@ public class ExperimentService {
         document.setDescription(request.getDescription());
         document.setTags(request.getTags());
         
-        RunConfigDTO runConfigDTO = request.getRunConfig();
-        
-        if (runConfigDTO != null) {
-            if(searchRunConfig(runConfigDTO.getId()) != null)
-                throw new DocumentAlreadyExistsException("Config '" + runConfigDTO.getId() + "' already exists.");
-            
-            RunConfig runConfig = RunConfigDTO.to(runConfigDTO, projectId, id);
-            
-            runConfigRepository.save(runConfig);
-            
-            document.setRunConfig(runConfig);
-        }
-        
         DataPackageDTO dataPackageDTO = request.getDataPackage();
         DataPackage dataPackage = null;
         if (dataPackageDTO != null) {
@@ -201,6 +188,19 @@ public class ExperimentService {
         
         dataPackage = dataResourceService.savePackageWithItsResources(dataPackage);
         document.setDataPackage(dataPackage);
+        
+        RunConfigDTO runConfigDTO = request.getRunConfig();
+        
+        if (runConfigDTO != null) {
+            if(searchRunConfig(runConfigDTO.getId()) != null)
+                throw new DocumentAlreadyExistsException("Config '" + runConfigDTO.getId() + "' already exists.");
+            
+            RunConfig runConfig = RunConfigDTO.to(runConfigDTO, projectId, id);
+            
+            runConfigRepository.save(runConfig);
+            
+            document.setRunConfig(runConfig);
+        }
         
         document = experimentRepository.save(document);
         

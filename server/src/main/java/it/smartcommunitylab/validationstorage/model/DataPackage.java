@@ -2,6 +2,7 @@ package it.smartcommunitylab.validationstorage.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -42,6 +43,14 @@ public class DataPackage {
     @Override
     public String toString() {
         return "DataPackage - project:" + projectId + ", name:" + name + ", title:" + title + ", type:" + type;
+    }
+    
+    public void removeResource(DataResource dataResource) {
+        if (dataResource == null || resources == null)
+            return;
+        
+        Predicate<DataResource> sameId = r -> r.getId().equals(dataResource.getId());
+        resources.removeIf(sameId);
     }
 
     public String getId() {

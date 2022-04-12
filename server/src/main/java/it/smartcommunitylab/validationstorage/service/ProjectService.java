@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
@@ -98,6 +100,7 @@ public class ProjectService {
         return request;
     }
     
+    @Transactional
     public void deleteProject(String id) {
         retrieveProject(id);
         

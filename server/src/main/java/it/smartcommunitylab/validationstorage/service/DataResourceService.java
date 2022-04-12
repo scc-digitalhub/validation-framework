@@ -228,7 +228,7 @@ public class DataResourceService {
         DataPackage document = retrieveDataPackage(id);
         
         List<DataResource> resources = document.getResources();
-        
+        System.out.println(resources);
         for (DataResource r : resources) {
             r.removePackage(document);
         }
@@ -409,7 +409,15 @@ public class DataResourceService {
     }
    
     public void deleteDataResource(String projectId, String id) {
-        retrieveDataResource(id);
+        DataResource document = retrieveDataResource(id);
+    
+        List<DataPackage> packages = document.getPackages();
+
+        for (DataPackage p : packages) {
+            p.removeResource(document);
+        }
+        
+        dataPackageRepository.saveAll(packages);
         
         dataResourceRepository.deleteById(id);
     }
