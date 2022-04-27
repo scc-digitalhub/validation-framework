@@ -5,9 +5,9 @@ Implementation of azure artifact store.
 import json
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, IO, Optional
+from typing import Any, IO
 
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, ContainerClient
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import check_make_dir, check_path, get_path
@@ -23,21 +23,6 @@ class AzureArtifactStore(ArtifactStore):
     Allows the client to interact with azure based storages.
 
     """
-    def __init__(self,
-                 artifact_uri: str,
-                 temp_dir: str,
-                 config: Optional[dict] = None
-                 ) -> None:
-        super().__init__(artifact_uri, temp_dir, config)
-        # Get BlobService Client
-        self.client = self._get_client()
-
-        # Get container client
-        self.container = get_uri_netloc(self.artifact_uri)
-        self.cont_client = self.client.get_container_client(self.container)
-
-        self._check_access_to_storage()
-
     def persist_artifact(self,
                          src: Any,
                          dst: str,
@@ -47,53 +32,64 @@ class AzureArtifactStore(ArtifactStore):
         """
         Persist an artifact.
         """
-        self._check_access_to_storage()
+        # Get container client
+        client = self._get_client()
+        self._check_access_to_storage(client)
+
         key = build_key(dst, src_name)
 
         # Local file
         if isinstance(src, (str, Path)) and check_path(src):
-            self._upload_file(key, src, metadata)
+            self._upload_file(client, key, src, metadata)
 
         # Dictionary
         elif isinstance(src, dict) and src_name is not None:
             src = json.dumps(src)
             src = write_bytesio(src)
-            self._upload_fileobj(key, src, metadata)
+            self._upload_fileobj(client, key, src, metadata)
 
         # StringIO/BytesIO buffer
         elif isinstance(src, (BytesIO, StringIO)) and src_name is not None:
             src = wrap_string(src)
-            self._upload_fileobj(key, src, metadata)
+            self._upload_fileobj(client, key, src, metadata)
 
         else:
             raise NotImplementedError
 
-    def fetch_artifact(self, src: str, dst: str) -> str:
+    def fetch_artifact(self,
+                       src: str, 
+                       file_format: str) -> str:
         """
         Method to fetch an artifact.
         """
-        # Get file from remote
+        # Get container client
+        client = self._get_client()
+        self._check_access_to_storage(client)
+
         key = get_uri_path(src)
-        obj = self._get_object(key)
+        tmp_path = self.resource_paths.get_resource(key)
+        if tmp_path is not None:
+            return tmp_path
+        
+        # Get file from remote
+        obj = self._get_object(client, key)
 
         # Store locally
-        check_make_dir(dst)
+        check_make_dir(self.temp_dir)
         name = get_name_from_uri(key)
-        filepath = get_path(dst, name)
+        filepath = get_path(self.temp_dir, name)
         write_bytes(obj, filepath)
+
+        # Register resource on store
+        self.resource_paths.register(key, filepath)
         return filepath
 
-    def _check_access_to_storage(self) -> None:
-        """
-        Check access to storage.
-        """
-        if not self._check_container():
-            raise RuntimeError("No access to Azure container!")
-
-    def _get_client(self) -> BlobServiceClient:
+    def _get_client(self) -> ContainerClient:
         """
         Return BlobServiceClient client.
         """
+        container = get_uri_netloc(self.artifact_uri)
+        
         if self.config is not None:
             conn_string = self.config.get("connection_string")
             acc_name = self.config.get("azure_account_name")
@@ -101,51 +97,57 @@ class AzureArtifactStore(ArtifactStore):
 
             # Check connection string
             if conn_string is not None:
-                return BlobServiceClient.from_connection_string(
+                client = BlobServiceClient.from_connection_string(
                                                   conn_str=conn_string)
+                return client.get_container_client(container)
 
             # Otherwise account name + key
             if acc_name is not None and acc_key is not None:
                 url = f"https://{acc_name}.blob.core.windows.net"
-                return BlobServiceClient(account_url=url,
-                                         credential=acc_key)
+                client = BlobServiceClient(account_url=url,
+                                           credential=acc_key)
+                return client.get_container_client(container)
 
         raise Exception("You must provide credentials!")
 
-    def _check_container(self) -> bool:
+    def _check_access_to_storage(self, client: ContainerClient) -> None:
         """
-        Check access to a container.
+        Check access to storage.
         """
-        return self.client.exists()
+        if not client.exists():
+            raise RuntimeError("No access to Azure container!")
 
     def _upload_fileobj(self,
+                        client: ContainerClient,
                         name: str,
                         data: IO,
                         metadata: dict) -> None:
         """
         Upload fileobj to Azure.
         """
-        self.client.upload_blob(name=name,
+        client.upload_blob(name=name,
                                 data=data,
                                 metadata=metadata,
                                 overwrite=True)
 
     def _upload_file(self,
-                    name: str,
-                    path: str,
-                    metadata: dict) -> None:
+                     client: ContainerClient,
+                     name: str,
+                     path: str,
+                     metadata: dict) -> None:
         """
         Upload file to Azure.
         """
         with open(path, "rb") as file:
-            self.client.upload_blob(name=name,
-                                    data=file,
-                                    metadata=metadata,
-                                    overwrite=True)
+            client.upload_blob(name=name,
+                               data=file,
+                               metadata=metadata,
+                               overwrite=True)
 
     def _get_object(self,
+                    client: ContainerClient,
                     path: str) -> bytes:
         """
         Download object from Azure.
         """
-        return self.client.download_blob(path).readall()
+        return client.download_blob(path).readall()

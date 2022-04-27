@@ -42,7 +42,6 @@ class FTPArtifactStore(ArtifactStore):
             }
 
         self.path = parsed.path
-        self._check_access_to_storage(self.path)
 
     def persist_artifact(self,
                          src: Any,
@@ -80,10 +79,13 @@ class FTPArtifactStore(ArtifactStore):
             else:
                 raise NotImplementedError
 
-    def fetch_artifact(self, src: str, file_format: str) -> str:
+    def fetch_artifact(self,
+                       src: str,
+                       file_format: str) -> str:
         """
         Method to fetch an artifact.
         """
+        self._check_access_to_storage(self.path)
         key = get_uri_path(src)
 
         # Get file from remote (write on BytesIO)

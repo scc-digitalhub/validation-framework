@@ -1,5 +1,5 @@
 """
-StoreHandler module.
+RunBuilder module.
 """
 # pylint: disable=raise-missing-from,too-many-arguments
 from __future__ import annotations
