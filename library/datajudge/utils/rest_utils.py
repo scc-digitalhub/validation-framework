@@ -3,7 +3,7 @@ Common REST utils.
 """
 # pylint: disable=import-error
 import requests
-from requests.models import HTTPError, Response
+from requests.models import Response
 
 
 def api_get_call(url: str,
@@ -35,19 +35,5 @@ def api_put_call(url: str,
     """
     try:
         return requests.put(url, **kwargs)
-    except Exception as ex:
-        raise ex
-
-
-def check_url_availability(url: str) -> None:
-    """
-    Check URL availability.
-    """
-    try:
-        response = requests.head(url)
-        if not response.ok:
-            raise HTTPError("Something wrong, response code ",
-                            f"{response.status_code} for url ",
-                            f"{url}.")
     except Exception as ex:
         raise ex

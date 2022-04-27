@@ -3,15 +3,18 @@ Base abstract Run Plugin module.
 """
 # pylint: disable=too-many-arguments,too-few-public-methods
 from __future__ import annotations
+from copy import deepcopy
 
 import typing
 from abc import ABCMeta, abstractmethod
 from typing import Any, List
+from datajudge.data.data_resource import DataResource
 
 from datajudge.run.plugin.plugin_utils import RenderTuple
 
 if typing.TYPE_CHECKING:
     from datajudge.run.plugin.plugin_utils import Result
+    from datajudge.store_artifact.artifact_store import ArtifactStore
 
 
 class Plugin(metaclass=ABCMeta):
@@ -83,11 +86,27 @@ class PluginBuilder:
     Abstract PluginBuilder class.
     """
     def __init__(self,
-                 exec_args: dict) -> None:
+                 exec_args: dict,
+                 file_format: str,
+                 stores: List[ArtifactStore]) -> None:
         self.exec_args = exec_args
+        self.file_format = file_format
+        self.stores = stores
 
     @abstractmethod
     def build(self, *args, **kwargs) -> List[Plugin]:
         """
         Build a list of plugin.
         """
+
+    def fetch_resource(self,
+                       res: DataResource) -> DataResource:
+        """
+        Fetch resources from storages.
+        """
+        resource = deepcopy(res)
+        for store in self.stores:
+            if store["name"] == resource.store:
+                resource.tmp_pth = store["store"].fetch_artifact(resource.path,
+                                                                 self.file_format)
+                return resource

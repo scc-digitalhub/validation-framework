@@ -3,6 +3,7 @@ Frictionless implementation of profiling plugin.
 """
 # pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
+from copy import deepcopy
 
 import typing
 from typing import List
@@ -106,12 +107,13 @@ class ProfileBuilderFrictionless(PluginBuilder):
     """
     def build(self,
               resources: List[DataResource]
-              ) -> ProfilePluginFrictionless:
+              ) -> List[ProfilePluginFrictionless]:
         """
         Build a plugin.
         """
         plugins = []
-        for resource in resources:
+        for res in resources:
+            resource = self.fetch_resource(res)
             plugin = ProfilePluginFrictionless()
             plugin.setup(resource, self.exec_args)
             plugins.append(plugin)

@@ -51,6 +51,7 @@ class ExecConfig(BaseModel):
     library: Optional[str] = DUMMY
     execArgs: Optional[dict] = {}
     storeArtifact: bool = False
+    tmpFormat: Optional[str] = "csv"
 
 
 class RunConfig(BaseModel):

@@ -1,12 +1,10 @@
 """
-Implementation of SQL artifact store.
+Implementation of ODBC artifact store.
 """
 import csv
 from typing import Any
 
-from sqlalchemy import create_engine
-from sqlalchemy.engine import Engine
-from sqlalchemy.exc import SQLAlchemyError
+import pyodbc
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.exceptions import StoreError
@@ -14,11 +12,11 @@ from datajudge.utils.file_utils import check_make_dir, get_path
 from datajudge.utils.uri_utils import get_table_path_from_uri
 
 
-class SQLArtifactStore(ArtifactStore):
+class ODBCArtifactStore(ArtifactStore):
     """
-    SQL artifact store object.
+    ODBC artifact store object.
 
-    Allows the client to interact with SQL based storages.
+    Allows the client to interact with ODBC storages.
 
     """
     def persist_artifact(self,
@@ -38,54 +36,57 @@ class SQLArtifactStore(ArtifactStore):
         """
         Method to fetch an artifact.
         """
-        engine = self._get_engine()
-        self._check_access_to_storage(engine)
-
+        connection = self._get_connection()
+        self._check_access_to_storage(connection)
+        
         table_name = get_table_path_from_uri(src)
         tmp_path = self.resource_paths.get_resource(table_name)
         if tmp_path is not None:
             return tmp_path
-
+        
         # Query table and store locally
-        obj = self._get_table(engine, table_name)
+        obj = self._get_table(connection, table_name)
         check_make_dir(self.temp_dir)
-        filepath = get_path(self.temp_dir, f"{table_name}.{file_format}")
+        filepath = get_path(self.temp_dir, f"{table_name.lower()}.{file_format}")
         self._write_table(obj, filepath)
-
-        engine.dispose()
-
+        connection.close()
+        
         # Register resource on store
         self.resource_paths.register(table_name, filepath)
         return filepath
 
     def _check_access_to_storage(self,
-                                 engine: Engine
+                                 connection: pyodbc.Connection
                                  ) -> None:
         """
         Check if there is access to the storage.
         """
         try:
-            engine.connect()
-        except SQLAlchemyError:
-            engine.dispose()
-            raise StoreError("No access to db!")
+            connection.cursor()
+        except Exception:
+            raise StoreError("No access to storage!")
 
-    def _get_engine(self) -> Engine:
+    def _get_connection(self) -> pyodbc.Connection:
         """
         Create engine from connection string.
         """
-        connection_string = self.config.get("connection_string")
-        if connection_string is not None:
-            return create_engine(connection_string)
-        raise StoreError("Something wrong with connection string.")
+        try:
+            return pyodbc.connect(driver=self.config.get("driver"),
+                                  host=self.config.get("host"),
+                                  port=self.config.get("port"),
+                                  user=self.config.get("user"),
+                                  password=self.config.get("password"),
+                                  autocommit=True)
+        except Exception:
+            raise StoreError("Something wrong with connection configuration.")
 
     def _get_table(self,
-                   engine: Engine,
+                   connection: pyodbc.Connection,
                    table_name: str):
         """
-        Return a table from a db.
+        Return a table.
         """
-        return engine.execute("SELECT * FROM {}".format(table_name))
+        return connection.execute("SELECT * FROM {}".format(table_name))
 
     @staticmethod
     def _write_table(obj: Any,
@@ -98,6 +99,6 @@ class SQLArtifactStore(ArtifactStore):
                                 delimiter=',',
                                 quotechar='"',
                                 quoting=csv.QUOTE_MINIMAL)
-            header = list(obj.keys())
+            header = [col[0] for col in obj.description]
             outcsv.writerow(header)
             outcsv.writerows(obj.fetchmany(256))

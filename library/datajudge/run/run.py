@@ -14,11 +14,9 @@ from datajudge.utils.commons import (DATAJUDGE_VERSION, MT_ARTIFACT_METADATA,
                                      STATUS_FINISHED, STATUS_INIT,
                                      STATUS_INTERRUPTED)
 from datajudge.utils.exceptions import StoreError
-from datajudge.utils.uri_utils import get_name_from_uri
-from datajudge.utils.utils import get_time, listify
+from datajudge.utils.utils import get_time
 
 if typing.TYPE_CHECKING:
-    from datajudge.client.client import Client
     from datajudge.data.datajudge_profile import DatajudgeProfile
     from datajudge.data.datajudge_report import DatajudgeReport
     from datajudge.data.datajudge_schema import DatajudgeSchema
@@ -67,11 +65,9 @@ class Run:
     def __init__(self,
                  run_info: RunInfo,
                  run_handler: RunHandler,
-                 client: Client,
                  overwrite: bool) -> None:
 
         self.run_info = run_info
-        self._client = client
         self._run_handler = run_handler
         self._overwrite = overwrite
 
@@ -112,7 +108,7 @@ class Run:
         """
         Log generic metadata.
         """
-        self._client.log_metadata(
+        self._run_handler.log_metadata(
                            metadata,
                            self.run_info.run_metadata_uri,
                            src_type,
@@ -179,40 +175,11 @@ class Run:
         self._check_artifacts_uri()
         if metadata is None:
             metadata = {}
-        self._client.persist_artifact(src,
-                                      self.run_info.run_artifacts_uri,
-                                      src_name=src_name,
-                                      metadata=metadata)
+        self._run_handler.persist_artifact(src,
+                                           self.run_info.run_artifacts_uri,
+                                           src_name=src_name,
+                                           metadata=metadata)
         self._log_artifact(src_name)
-
-    def _fetch_data(self) -> None:
-        """
-        Fetch data from backend and return temp file path.
-        """
-        for res in self.run_info.resources:
-            if res.tmp_pth is None:
-                if isinstance(res.path, list):
-                    res.tmp_pth = [self._fetch_artifact(i, res.store)
-                                   for i in res.path]
-                else:
-                    res.tmp_pth = self._fetch_artifact(res.path, res.store)
-
-    def _fetch_artifact(self,
-                       uri: str,
-                       store_name: Optional[str] = None) -> str:
-        """
-        Fetch artifact from backend.
-
-        Parameters
-        ----------
-        uri : str
-            URI of artifact to fetch.
-        store_name : str
-            Name of store where to fetch data.
-
-        """
-        self._check_artifacts_uri()
-        return self._client.fetch_artifact(uri, store_name)
 
     def _check_metadata_uri(self) -> None:
         """
@@ -239,7 +206,7 @@ class Run:
         schemas = self._run_handler.get_artifact_schema()
         if schemas:
             return schemas
-        self._fetch_data()
+
         self._run_handler.infer(self.run_info.resources,
                                 multithread,
                                 num_worker)
@@ -254,7 +221,7 @@ class Run:
         schemas = self._run_handler.get_datajudge_schema()
         if schemas:
             return schemas
-        self._fetch_data()
+
         self._run_handler.infer(self.run_info.resources,
                                 multithread,
                                 num_worker)
@@ -267,8 +234,10 @@ class Run:
         """
         Execute schema inference on resources.
         """
-        schema = self.infer_wrapper(multithread, num_worker)
-        schema_dj = self.infer_datajudge(multithread, num_worker)
+        schema = self.infer_wrapper(multithread,
+                                    num_worker)
+        schema_dj = self.infer_datajudge(multithread,
+                                         num_worker)
         if only_dj:
             return None, schema_dj
         return schema, schema_dj
@@ -312,7 +281,7 @@ class Run:
         reports = self._run_handler.get_artifact_report()
         if reports:
             return reports
-        self._fetch_data()
+
         self._run_handler.validate(self.run_info.resources,
                                    constraints,
                                    multithread,
@@ -336,7 +305,7 @@ class Run:
         reports = self._run_handler.get_datajudge_report()
         if reports:
             return reports
-        self._fetch_data()
+
         self._run_handler.validate(self.run_info.resources,
                                    constraints,
                                    multithread,
@@ -358,8 +327,12 @@ class Run:
             List of constraint to validate resources.
 
         """
-        report = self.validate_wrapper(constraints, multithread, num_worker)
-        report_dj = self.validate_datajudge(constraints, multithread, num_worker)
+        report = self.validate_wrapper(constraints,
+                                       multithread,
+                                       num_worker)
+        report_dj = self.validate_datajudge(constraints,
+                                            multithread,
+                                            num_worker)
         if only_dj:
             return None, report_dj
         return report, report_dj
@@ -394,7 +367,7 @@ class Run:
         profiles = self._run_handler.get_artifact_profile()
         if profiles:
             return profiles
-        self._fetch_data()
+
         self._run_handler.profile(self.run_info.resources,
                                   multithread,
                                   num_worker)
@@ -409,7 +382,7 @@ class Run:
         profiles = self._run_handler.get_datajudge_profile()
         if profiles:
             return profiles
-        self._fetch_data()
+
         self._run_handler.profile(self.run_info.resources,
                                   multithread,
                                   num_worker)
@@ -423,8 +396,10 @@ class Run:
         """
         Execute profiling on resources.
         """
-        profile = self.profile_wrapper(multithread, num_worker)
-        profile_dj = self.profile_datajudge(multithread, num_worker)
+        profile = self.profile_wrapper(multithread,
+                                       num_worker)
+        profile_dj = self.profile_datajudge(multithread,
+                                            num_worker)
         if only_dj:
             return None, profile_dj
         return profile, profile_dj
@@ -450,16 +425,21 @@ class Run:
 
     # Input data persistence
 
-    def persist_data(self) -> None:
+    def persist_data(self,
+                     format: Optional[str] = "csv") -> None:
         """
         Persist input data as artifact.
+
+        Parameters
+        ----------
+        format : str
+            Format with which to persist input data.
+
         """
         self._check_artifacts_uri()
-        self._fetch_data()
-        for res in self.run_info.resources:
-            for path in listify(res.tmp_pth):
-                filename = get_name_from_uri(path)
-                self._persist_artifact(path, filename)
+        self._run_handler.persist_data(self.run_info.resources,
+                                       format,
+                                       self.run_info.run_artifacts_uri)
 
     # Context manager
 
@@ -487,7 +467,7 @@ class Run:
         self.run_info.finished = get_time()
         self._log_run()
 
-        self._client.clean_all()
+        self._run_handler.clean_all()
 
     # Dunders
 

@@ -90,7 +90,7 @@ class ProfileBuilderDummy(PluginBuilder):
     """
     def build(self,
               resources: List[DataResource]
-              ) -> ProfilePluginDummy:
+              ) -> List[ProfilePluginDummy]:
         """
         Build a plugin.
         """

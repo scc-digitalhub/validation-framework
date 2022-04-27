@@ -4,12 +4,13 @@ Contains registries of Stores and Runs and respective
 factory methods.
 """
 # pylint: disable=raise-missing-from
+from pathlib import Path
 from typing import Union
 
 from datajudge.store_artifact import (AzureArtifactStore, DummyArtifactStore,
                                       FTPArtifactStore, HTTPArtifactStore,
                                       LocalArtifactStore, S3ArtifactStore)
-from datajudge.store_artifact.dremio_artifact_store import DremioArtifactStore
+from datajudge.store_artifact.odbc_artifact_store import ODBCArtifactStore
 from datajudge.store_artifact.sql_artifact_store import SQLArtifactStore
 from datajudge.store_metadata import (DigitalHubMetadataStore,
                                       DummyMetadataStore, LocalMetadataStore)
@@ -17,6 +18,7 @@ from datajudge.utils.commons import API_BASE
 from datajudge.utils.config import StoreConfig
 from datajudge.utils.file_utils import get_absolute_path
 from datajudge.utils.uri_utils import check_url, get_uri_scheme, rebuild_uri
+from datajudge.utils.utils import get_uiid
 
 # Schemes
 
@@ -26,7 +28,7 @@ S3_SCHEME = ["s3"]
 AZURE_SCHEME = ["wasb", "wasbs"]
 FTP_SCHEME = ["ftp"]
 SQL_SCHEME = ["sql"]
-DREMIO_SCHEME = ["dremio"]
+ODBC_SCHEME = ["dremio"]
 DUMMY_SCHEME = ["dummy"]
 
 # Registries
@@ -49,7 +51,7 @@ ARTIFACT_STORE_REGISTRY = {
     "https": HTTPArtifactStore,
     "ftp": FTPArtifactStore,
     "sql": SQLArtifactStore,
-    "dremio": DremioArtifactStore,
+    "dremio": ODBCArtifactStore,
     "dummy": DummyArtifactStore,
 }
 
@@ -64,8 +66,11 @@ class StoreBuilder:
 
     """
 
-    def __init__(self, project_id: str) -> None:
+    def __init__(self,
+                 project_id: str,
+                 tmp_dir: str) -> None:
         self.project_id = project_id
+        self.tmp_dir = tmp_dir
 
     def build(self,
               config: Union[dict, StoreConfig],
@@ -116,10 +121,13 @@ class StoreBuilder:
         Function that returns artifact stores.
         """
         new_uri = self.resolve_artifact_uri(cfg.uri, scheme)
+        temp_partition = str(Path(self.tmp_dir, get_uiid()))
         try:
             return {
                 "name": cfg.name,
-                "store": ARTIFACT_STORE_REGISTRY[scheme](new_uri, cfg.config),
+                "store": ARTIFACT_STORE_REGISTRY[scheme](new_uri,
+                                                         temp_partition,
+                                                         cfg.config),
                 "is_default": cfg.isDefault
             }
         except KeyError:
@@ -134,7 +142,7 @@ class StoreBuilder:
             return get_absolute_path(uri, "artifact")
         if scheme in [*AZURE_SCHEME, *S3_SCHEME,
                       *HTTP_SCHEME, *FTP_SCHEME,
-                      *SQL_SCHEME, *DREMIO_SCHEME]:
+                      *SQL_SCHEME, *ODBC_SCHEME]:
             return rebuild_uri(uri, "artifact")
         if scheme in [*DUMMY_SCHEME]:
             return uri
@@ -145,13 +153,13 @@ class StoreBuilder:
         """
         Try to convert a store configuration in a StoreConfig model.
         """
+        if config is None:
+            return StoreConfig(name="_dummy",
+                               uri="dummy://",
+                               isDefault=True)
         if not isinstance(config, StoreConfig):
-            if config is None:
-                return StoreConfig(name="_dummy",
-                                   uri="dummy://",
-                                   isDefault=True)
             try:
                 return StoreConfig(**config)
             except TypeError:
-                raise RuntimeError("Malformed store configuration.")
+                raise TypeError("Malformed store configuration.")
         return config

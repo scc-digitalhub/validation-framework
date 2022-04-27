@@ -3,6 +3,7 @@ Frictionless implementation of validation plugin.
 """
 # pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
+import resource
 
 import typing
 from copy import deepcopy
@@ -136,27 +137,19 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
     """
     Validation plugin builder.
     """
-    def setup(self,
-              resources: List[DataResource]) -> None:
-        """
-        Setup method.
-        """
-        for resource in resources:
-            if resource.schema is None:
-                resource.schema = self._infer_schema(resource.tmp_pth)
-
     def build(self,
               resources: List[DataResource],
-              constraints: List[Constraint]) -> ValidationPluginFrictionless:
+              constraints: List[Constraint]
+              ) -> List[ValidationPluginFrictionless]:
         """
         Build a plugin for every resource and every constraint.
         """
-        self.setup(resources)
-        f_constraint = self.filter_constraints(constraints)
-
+        f_constraints = self.filter_constraints(constraints)
         plugins = []
-        for resource in resources:
-            for const in f_constraint:
+        for res in resources:
+            resource = self.fetch_resource(res)
+            resource.schema = self.get_schema(resource)
+            for const in f_constraints:
                 if resource.name in const.resources:
                     plugin = ValidationPluginFrictionless()
                     plugin.setup(resource, const, self.exec_args)
@@ -164,13 +157,15 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
 
         return plugins
 
-    @staticmethod
-    def _infer_schema(path: str) -> dict:
+    def get_schema(self,
+                   resource: DataResource) -> dict:
         """
-        Infer schema of a resource.
+        Infer simple schema of a resource if not present.
         """
-        schema = describe_schema(path=path)
-        return {"fields": [{"name": field["name"]} for field in schema["fields"]]}
+        if resource.schema is None:
+            schema = describe_schema(path=resource.tmp_pth)
+            return {"fields": [{"name": field["name"]} for field in schema["fields"]]}
+        return resource.schema
 
     @staticmethod
     def filter_constraints(constraints: List[Constraint]

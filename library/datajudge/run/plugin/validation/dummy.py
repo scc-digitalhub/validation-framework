@@ -100,7 +100,7 @@ class ValidationBuilderDummy(ValidationPluginBuilder):
     def build(self,
               resources: List[DataResource],
               constraints: List[Constraint]
-              ) -> ValidationPluginDummy:
+              ) -> List[ValidationPluginDummy]:
         """
         Build a plugin.
         """

@@ -63,7 +63,7 @@ def check_make_dir(uri: str) -> None:
     """
     if not check_dir(uri):
         make_dir(uri)
-    
+
 
 # Files
 

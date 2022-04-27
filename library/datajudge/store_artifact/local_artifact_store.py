@@ -20,14 +20,6 @@ class LocalArtifactStore(ArtifactStore):
     Allows the client to interact with local filesystem.
 
     """
-
-    def __init__(self,
-                 artifact_uri: str,
-                 config: Optional[dict] = None
-                 ) -> None:
-        super().__init__(artifact_uri, config)
-        self._check_access_to_storage(self.artifact_uri)
-
     def persist_artifact(self,
                          src: Any,
                          dst: str,
@@ -57,13 +49,18 @@ class LocalArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    def fetch_artifact(self, src: str, dst: str) -> str:
+    def fetch_artifact(self, src: str, file_format: str) -> str:
         """
         Method to fetch an artifact.
         For this store, simply returns original file
         positions.
         """
-        check_make_dir(dst)
+        tmp_path = self.resource_paths.get_resource(src)
+        if tmp_path is not None:
+            return tmp_path
+
+        # Register resource on store
+        self.resource_paths.register(src, src)
         return src
 
     # pylint: disable=arguments-differ

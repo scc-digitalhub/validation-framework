@@ -4,13 +4,15 @@ Run handler module.
 from __future__ import annotations
 
 import concurrent.futures
+from copy import deepcopy
 import typing
 from typing import Any, List
 
 from datajudge.run.plugin.plugin_factory import builder_factory
 from datajudge.utils.commons import (INFERENCE, PROFILING, VALIDATION,
                                      RES_WRAP, RES_DJ, RES_RENDER, RES_LIB)
-from datajudge.utils.utils import flatten_list
+from datajudge.utils.uri_utils import get_name_from_uri
+from datajudge.utils.utils import flatten_list, listify
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
@@ -18,6 +20,7 @@ if typing.TYPE_CHECKING:
     from datajudge.data.datajudge_report import DatajudgeReport
     from datajudge.data.datajudge_schema import DatajudgeSchema
     from datajudge.run.plugin.base_plugin import Plugin, PluginBuilder
+    from datajudge.client.store_handler import StoreHandler
     from datajudge.utils.config import Constraint, RunConfig
 
 
@@ -75,9 +78,11 @@ class RunHandler:
     """
 
     def __init__(self,
-                 config: RunConfig) -> None:
+                 config: RunConfig,
+                 store_handler: StoreHandler) -> None:
 
         self._config = config
+        self._store_handler = store_handler
         self._registry = RunHandlerRegistry()
 
     def infer(self,
@@ -88,7 +93,9 @@ class RunHandler:
         """
         Wrapper for plugins infer methods.
         """
-        builders = builder_factory(self._config.inference, INFERENCE)
+        builders = builder_factory(self._config.inference,
+                                   INFERENCE,
+                                   self._store_handler.get_all_art_stores())
         plugins = self.create_plugins(builders, resources)
         if multithread:
             self.pool_execute(plugins, INFERENCE, num_worker)
@@ -104,7 +111,9 @@ class RunHandler:
         """
         Wrapper for plugins validate methods.
         """
-        builders = builder_factory(self._config.validation, VALIDATION)
+        builders = builder_factory(self._config.validation,
+                                   VALIDATION,
+                                   self._store_handler.get_all_art_stores())
         plugins = self.create_plugins(builders, resources, constraints)
         if multithread:
             self.pool_execute(plugins, VALIDATION, num_worker)
@@ -120,7 +129,9 @@ class RunHandler:
         """
         Wrapper for plugins profile methods.
         """
-        builders = builder_factory(self._config.profiling, PROFILING)
+        builders = builder_factory(self._config.profiling,
+                                   PROFILING,
+                                   self._store_handler.get_all_art_stores())
         plugins = self.create_plugins(builders, resources)
         if multithread:
             self.pool_execute(plugins, PROFILING, num_worker)
@@ -128,7 +139,8 @@ class RunHandler:
             self.sequential_execute(plugins, PROFILING)
 
     @staticmethod
-    def create_plugins(builders: PluginBuilder, *args) -> List[Plugin]:
+    def create_plugins(builders: PluginBuilder,
+                       *args) -> List[Plugin]:
         """
         Return a list of plugins.
         """
@@ -244,3 +256,49 @@ class RunHandler:
         Get a list of profiles ready to be persisted.
         """
         return flatten_list([obj.artifact for obj in self.get_item(PROFILING, RES_RENDER)])
+
+    def log_metadata(self,
+                     src: dict,
+                     dst: str,
+                     src_type: str,
+                     overwrite: bool) -> None:
+        """
+        Method to log metadata in the metadata store.
+        """
+        store = self._store_handler.get_md_store()
+        store.log_metadata(src, dst, src_type, overwrite)
+
+    def persist_artifact(self,
+                         src: Any,
+                         dst: str,
+                         src_name: str,
+                         metadata: dict) -> None:
+        """
+        Method to persist artifacts in the default artifact store.
+        """
+        store = self._store_handler.get_def_store()
+        store.persist_artifact(src, dst, src_name, metadata)
+
+    def persist_data(self,
+                     resources: List[DataResource],
+                     file_format: str,
+                     dst: str) -> None:
+        """
+        Persist input data as artifact.
+        """
+        for res in resources:
+            resource = deepcopy(res)
+            for store in self._store_handler.get_all_art_stores():
+               if store["name"] == resource.store:
+                    resource.tmp_pth = store["store"].fetch_artifact(resource.path,
+                                                                     file_format)
+
+            for path in listify(resource.tmp_pth):
+                filename = get_name_from_uri(path)
+                self.persist_artifact(path, dst, filename, {})
+
+    def clean_all(self) -> None:
+        """
+        Clean up.
+        """
+        self._store_handler.clean_all()

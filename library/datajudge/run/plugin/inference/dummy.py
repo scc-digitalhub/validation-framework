@@ -89,7 +89,7 @@ class InferenceBuilderDummy(PluginBuilder):
     """
     def build(self,
               resources: List[DataResource]
-              ) -> InferencePluginDummy:
+              ) -> List[InferencePluginDummy]:
         """
         Build a plugin.
         """

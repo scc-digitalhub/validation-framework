@@ -52,9 +52,16 @@ class ValidationPluginDuckDB(Validation):
         """
         Validate a Data Resource.
         """
-        #self.connection = duckdb.connect("a.duckdb", read_only=True)
-        self.connection.execute(self.constraint.query)
-        result = self.connection.fetchdf()
+        try:
+            self.connection.execute(self.constraint.query)
+            result = self.connection.fetchdf()
+        except Exception as ex:
+            return {
+                "result": {},
+                "valid": False,
+                "errors": ex.args
+            }
+
         valid, errors = self.evaluate_validity(result,
                                                self.constraint.check,
                                                self.constraint.expect,
@@ -100,7 +107,7 @@ class ValidationPluginDuckDB(Validation):
                 raise ValidationError("Invalid expectation.")
 
         except Exception as ex:
-                return False, ex.args
+            return False, ex.args
 
     @staticmethod
     def evaluate_empty(result: Any,
@@ -231,29 +238,17 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
     """
     DuckDB validation plugin builder.
     """
-    def setup(self,
-              resources: List[DataResource],
-              constraints: List[Constraint]) -> None:
-        """
-        Setup db connection and register resources.
-        """
-        # Setup connection
-        #self.con = duckdb.connect(database=":memory:")
-        self.con = duckdb.connect(":memory:")
-
-        # Filter and register resource
-        res_names = set(flatten_list([deepcopy(const.resources) for const in constraints]))
-        res_to_register = [res for res in resources if res.name in res_names]
-        self._register_resources(res_to_register)
-
     def build(self,
               resources: List[DataResource],
-              constraints: List[Constraint]) -> ValidationPluginDuckDB:
+              constraints: List[Constraint]
+              ) -> List[ValidationPluginDuckDB]:
         """
         Build a plugin for every resource and every constraint.
         """
+        self.setup_connection()
         f_constraint = self.filter_constraints(constraints)
-        self.setup(resources, f_constraint)
+        f_resources = self.filter_resources(resources, f_constraint)
+        self.register_resources(f_resources)
 
         plugins = []
         for const in f_constraint:
@@ -263,32 +258,49 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
 
         return plugins
 
-    def _register_resources(self, resources: List[DataResource]) -> None:
+    def setup_connection(self) -> None:
         """
-        Register resources.
+        Setup db connection.
         """
-        # Write resources in db
+        self.con = duckdb.connect(":memory:")
+
+    def filter_resources(self,
+                         resources: List[DataResource],
+                         constraints: List[Constraint]
+                         ) -> List[DataResource]:
+        """
+        Filter resources used by validator.
+        """
+        res_names = set(flatten_list([deepcopy(const.resources) for const in constraints]))
+        return [res for res in resources if res.name in res_names]
+
+    def register_resources(self,
+                           resources: List[DataResource]
+                           ) -> None:
+        """
+        Register resources in db.
+        """
         for res in resources:
+            resource = self.fetch_resource(res)
 
             # Handle multiple paths
-            if isinstance(res.path, list):
-                for idx, pth in enumerate(res.tmp_pth):
+            if isinstance(resource.path, list):
+                for idx, pth in enumerate(resource.tmp_pth):
                     if idx == 0:
-                        sql = f"CREATE TABLE {res.name} AS SELECT * FROM '{pth}';"
+                        sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{pth}';"
                     else:
-                        sql = f"COPY {res.name} FROM '{pth}' (AUTO_DETECT TRUE);"
+                        sql = f"COPY {resource.name} FROM '{pth}' (AUTO_DETECT TRUE);"
                     self.con.execute(sql)
 
             # Handle single path
             else:
-                sql = f"CREATE TABLE {res.name} AS SELECT * FROM '{res.tmp_pth}';"
+                sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{resource.tmp_pth}';"
                 self.con.execute(sql)
 
     @staticmethod
     def filter_constraints(constraints: List[Constraint]
-                        ) -> List[ConstraintsDuckDB]:
-        return [const for const in constraints
-                if const.type == DUCKDB]
+                           ) -> List[ConstraintsDuckDB]:
+        return [const for const in constraints if const.type == DUCKDB]
 
     def destroy(self) -> None:
         """

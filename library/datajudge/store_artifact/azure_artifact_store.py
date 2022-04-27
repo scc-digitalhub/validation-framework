@@ -1,16 +1,15 @@
 """
 Implementation of azure artifact store.
 """
+# pylint: disable=import-error
 import json
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, IO, Optional
 
-# pylint: disable=import-error
 from azure.storage.blob import BlobServiceClient
+
 from datajudge.store_artifact.artifact_store import ArtifactStore
-from datajudge.utils.azure_utils import (check_container, get_object,
-                                         upload_file, upload_fileobj)
 from datajudge.utils.file_utils import check_make_dir, check_path, get_path
 from datajudge.utils.io_utils import wrap_string, write_bytes, write_bytesio
 from datajudge.utils.uri_utils import (build_key, get_name_from_uri,
@@ -24,12 +23,12 @@ class AzureArtifactStore(ArtifactStore):
     Allows the client to interact with azure based storages.
 
     """
-
     def __init__(self,
                  artifact_uri: str,
+                 temp_dir: str,
                  config: Optional[dict] = None
                  ) -> None:
-        super().__init__(artifact_uri, config)
+        super().__init__(artifact_uri, temp_dir, config)
         # Get BlobService Client
         self.client = self._get_client()
 
@@ -53,18 +52,18 @@ class AzureArtifactStore(ArtifactStore):
 
         # Local file
         if isinstance(src, (str, Path)) and check_path(src):
-            upload_file(self.cont_client, key, src, metadata)
+            self._upload_file(key, src, metadata)
 
         # Dictionary
         elif isinstance(src, dict) and src_name is not None:
             src = json.dumps(src)
             src = write_bytesio(src)
-            upload_fileobj(self.cont_client, key, src, metadata)
+            self._upload_fileobj(key, src, metadata)
 
         # StringIO/BytesIO buffer
         elif isinstance(src, (BytesIO, StringIO)) and src_name is not None:
             src = wrap_string(src)
-            upload_fileobj(self.cont_client, key, src, metadata)
+            self._upload_fileobj(key, src, metadata)
 
         else:
             raise NotImplementedError
@@ -75,7 +74,7 @@ class AzureArtifactStore(ArtifactStore):
         """
         # Get file from remote
         key = get_uri_path(src)
-        obj = get_object(self.cont_client, key)
+        obj = self._get_object(key)
 
         # Store locally
         check_make_dir(dst)
@@ -88,7 +87,7 @@ class AzureArtifactStore(ArtifactStore):
         """
         Check access to storage.
         """
-        if not check_container(self.cont_client):
+        if not self._check_container():
             raise RuntimeError("No access to Azure container!")
 
     def _get_client(self) -> BlobServiceClient:
@@ -112,3 +111,41 @@ class AzureArtifactStore(ArtifactStore):
                                          credential=acc_key)
 
         raise Exception("You must provide credentials!")
+
+    def _check_container(self) -> bool:
+        """
+        Check access to a container.
+        """
+        return self.client.exists()
+
+    def _upload_fileobj(self,
+                        name: str,
+                        data: IO,
+                        metadata: dict) -> None:
+        """
+        Upload fileobj to Azure.
+        """
+        self.client.upload_blob(name=name,
+                                data=data,
+                                metadata=metadata,
+                                overwrite=True)
+
+    def _upload_file(self,
+                    name: str,
+                    path: str,
+                    metadata: dict) -> None:
+        """
+        Upload file to Azure.
+        """
+        with open(path, "rb") as file:
+            self.client.upload_blob(name=name,
+                                    data=file,
+                                    metadata=metadata,
+                                    overwrite=True)
+
+    def _get_object(self,
+                    path: str) -> bytes:
+        """
+        Download object from Azure.
+        """
+        return self.client.download_blob(path).readall()

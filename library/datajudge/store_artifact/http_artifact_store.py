@@ -6,11 +6,13 @@ from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Any, Optional, Tuple
 
+import requests
+from requests.models import HTTPError
+
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import check_make_dir, check_path, get_path
 from datajudge.utils.io_utils import write_bytes
-from datajudge.utils.rest_utils import (api_get_call, api_put_call,
-                                        check_url_availability)
+from datajudge.utils.rest_utils import api_get_call, api_put_call
 from datajudge.utils.uri_utils import check_url, get_name_from_uri, rebuild_uri
 
 
@@ -24,10 +26,11 @@ class HTTPArtifactStore(ArtifactStore):
 
     def __init__(self,
                  artifact_uri: str,
+                 temp_dir: str,
                  config: Optional[dict] = None
                  ) -> None:
-        super().__init__(artifact_uri, config)
-        self._check_access_to_storage(self.artifact_uri)
+        super().__init__(artifact_uri, temp_dir, config)
+        
 
     def persist_artifact(self,
                          src: Any,
@@ -62,21 +65,32 @@ class HTTPArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    def fetch_artifact(self, src: str, dst: str) -> str:
+    def fetch_artifact(self,
+                       src: str,
+                       file_format: str) -> str:
         """
         Method to fetch an artifact.
         """
-        # Get file from remote
+        self._check_access_to_storage(self.artifact_uri)
+        
         key = rebuild_uri(src)
+        tmp_path = self.resource_paths.get_resource(key)
+        if tmp_path is not None:
+            return tmp_path
+
+        # Get file from remote
         kwargs = self._parse_auth({})
         res = api_get_call(key, **kwargs)
         obj = res.content
 
         # Store locally
-        check_make_dir(dst)
+        check_make_dir(self.temp_dir)
         name = get_name_from_uri(key)
-        filepath = get_path(dst, name)
+        filepath = get_path(self.temp_dir, name)
         write_bytes(obj, filepath)
+        
+        # Register resource on store
+        self.resource_paths.register(key, filepath)
         return filepath
 
     # pylint: disable=arguments-differ
@@ -85,10 +99,24 @@ class HTTPArtifactStore(ArtifactStore):
         Check if there is access to the storage.
         """
         try:
-            check_url_availability(dst)
+            self._check_url_availability(dst)
         except Exception as ex:
             raise ex
 
+    @staticmethod
+    def _check_url_availability(url: str) -> None:
+        """
+        Check URL availability.
+        """
+        try:
+            response = requests.head(url)
+            if not response.ok:
+                raise HTTPError("Something wrong, response code ",
+                                f"{response.status_code} for url ",
+                                f"{url}.")
+        except Exception as ex:
+            raise ex
+        
     def _parse_auth(self, kwargs: dict) -> dict:
         """
         Parse auth config.

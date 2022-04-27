@@ -3,6 +3,7 @@ Frictionless implementation of inference plugin.
 """
 # pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
+from copy import deepcopy
 
 import typing
 from typing import List
@@ -111,12 +112,13 @@ class InferenceBuilderFrictionless(PluginBuilder):
 
     def build(self,
               resources: List[DataResource]
-              ) -> InferencePluginFrictionless:
+              ) -> List[InferencePluginFrictionless]:
         """
         Build a plugin.
         """
         plugins = []
-        for resource in resources:
+        for res in resources:
+            resource = self.fetch_resource(res)
             plugin = InferencePluginFrictionless()
             plugin.setup(resource, self.exec_args)
             plugins.append(plugin)

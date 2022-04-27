@@ -7,6 +7,38 @@ from typing import Any, Optional
 from datajudge.utils.uri_utils import rebuild_uri
 
 
+class ResourceRegistry:
+    """
+    Generic registry object to keep track of resources.
+    """
+    def __init__(self) -> None:
+        self.registry = {}
+
+    def register(self,
+                 res_name: str,
+                 tmp_path: str) -> None:
+        """
+        Register a resource temporary path.
+        """
+        if res_name not in self.registry:
+            self.registry[res_name] = tmp_path
+
+    def get_resource(self, res_name: str) -> str:
+        """
+        Return resource temporary path.
+        """
+        try:
+            return self.registry[res_name]
+        except KeyError:
+            return None
+
+    def clean_all(self) -> None:
+        """
+        Remove resource from registry.
+        """
+        self.registry = {}
+
+
 class ArtifactStore:
     """
     Abstract artifact class that defines methods to persist
@@ -39,10 +71,13 @@ class ArtifactStore:
 
     def __init__(self,
                  artifact_uri: str,
+                 temp_dir: str,
                  config: Optional[dict] = None
                  ) -> None:
         self.artifact_uri = artifact_uri
+        self.temp_dir = temp_dir
         self.config = config
+        self.resource_paths = ResourceRegistry()
 
     @abstractmethod
     def persist_artifact(self,
@@ -56,7 +91,7 @@ class ArtifactStore:
         """
 
     @abstractmethod
-    def fetch_artifact(self, src: str, dst: str) -> str:
+    def fetch_artifact(self, src: str, file_format: str) -> str:
         """
         Method to fetch an artifact.
         """
@@ -74,3 +109,9 @@ class ArtifactStore:
         Return the path of the artifact store for the Run.
         """
         return rebuild_uri(self.artifact_uri, exp_name, run_id)
+
+    def clean_paths(self) -> None:
+        """
+        Delete all temporary paths references from stores.
+        """
+        self.resource_paths.clean_all()

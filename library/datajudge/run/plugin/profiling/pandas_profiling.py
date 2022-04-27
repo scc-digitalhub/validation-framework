@@ -189,12 +189,13 @@ class ProfileBuilderPandasProfiling(PluginBuilder):
     """
     def build(self,
               resources: List[DataResource]
-              ) -> ProfilePluginPandasProfiling:
+              ) -> List[ProfilePluginPandasProfiling]:
         """
         Build a plugin.
         """
         plugins = []
-        for resource in resources:
+        for res in resources:
+            resource = self.fetch_resource(res)
             plugin = ProfilePluginPandasProfiling()
             plugin.setup(resource, self.exec_args)
             plugins.append(plugin)

@@ -26,9 +26,10 @@ class FTPArtifactStore(ArtifactStore):
 
     def __init__(self,
                  artifact_uri: str,
+                 temp_dir: str,
                  config: Optional[dict] = None
                  ) -> None:
-        super().__init__(artifact_uri, config)
+        super().__init__(artifact_uri, temp_dir, config)
         if self.config is None:
             parsed = parse_uri(self.artifact_uri)
             self.config = {
@@ -79,12 +80,17 @@ class FTPArtifactStore(ArtifactStore):
             else:
                 raise NotImplementedError
 
-    def fetch_artifact(self, src: str, dst: str) -> str:
+    def fetch_artifact(self, src: str, file_format: str) -> str:
         """
         Method to fetch an artifact.
         """
-        # Get file from remote (write on BytesIO)
         key = get_uri_path(src)
+
+        # Get file from remote (write on BytesIO)
+        tmp_path = self.resource_paths.get_resource(key)
+        if tmp_path is not None:
+            return tmp_path
+
         bytesio = BytesIO()
         with self._get_client() as ftp:
             ftp.retrbinary("RETR " + key, bytesio.write)
@@ -92,10 +98,13 @@ class FTPArtifactStore(ArtifactStore):
         obj = bytesio.read()
 
         # Store locally
-        check_make_dir(dst)
+        check_make_dir(self.temp_dir)
         name = get_name_from_uri(key)
-        filepath = get_path(dst, name)
+        filepath = get_path(self.temp_dir, name)
         write_bytes(obj, filepath)
+        
+        # Register resource on store
+        self.resource_paths.register(key, filepath)
         return filepath
 
     # pylint: disable=arguments-differ

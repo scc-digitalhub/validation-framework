@@ -110,33 +110,3 @@ def write_object(buff: IO,
     write_mode = "wb" if isinstance(buff, BytesIO) else "w"
     with open(dst, write_mode) as file:
         shutil.copyfileobj(buff, file)
-
-
-def write_sqlalchemy_table(obj: Any,
-                           filepath: str) -> None:
-    """
-    Write a SQLAlchemy query result as csv.
-    """
-    with open(filepath, "w") as csvfile:
-        outcsv = csv.writer(csvfile,
-                            delimiter=',',
-                            quotechar='"',
-                            quoting=csv.QUOTE_MINIMAL)
-        header = list(obj.keys())
-        outcsv.writerow(header)
-        outcsv.writerows(obj.fetchall())
-
-
-def write_dremio_table(obj: Any,
-                       filepath: str) -> None:
-    """
-    Write a SQLAlchemy query result as csv.
-    """
-    with open(filepath, "w") as csvfile:
-        outcsv = csv.writer(csvfile,
-                            delimiter=',',
-                            quotechar='"',
-                            quoting=csv.QUOTE_MINIMAL)
-        header = [col[0] for col in obj.description]
-        outcsv.writerow(header)
-        outcsv.writerows(obj.fetchall())

@@ -9,7 +9,8 @@ from __future__ import annotations
 import typing
 from typing import Any, List, Optional, Union
 
-from datajudge.client.client_handler import ClientHandler
+from datajudge.client.store_handler import StoreHandler
+from datajudge.client.run_builder import RunBuilder
 
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
@@ -49,7 +50,7 @@ class Client:
                  tmp_dir: Optional[str] = "./djruns/tmp"
                  ) -> None:
         """
-        Client constructor. Parameters are passed to a ClientHandler
+        Client constructor. Parameters are passed to a StoreHandler
         constructor that manages Client opration.
 
         Parameters
@@ -64,10 +65,11 @@ class Client:
             Default temporary folder where to download data.
 
         """
-        self._client_handler = ClientHandler(metadata_store,
-                                             store,
-                                             project,
-                                             tmp_dir)
+        self._store_handler = StoreHandler(metadata_store,
+                                           store,
+                                           project,
+                                           tmp_dir)
+        self._run_builder = RunBuilder(self._store_handler)
 
     def add_store(self, store: StoreConfig) -> None:
         """
@@ -79,7 +81,7 @@ class Client:
             Store configuration.
 
         """
-        self._client_handler.add_artifact_store(store)
+        self._store_handler.add_artifact_store(store)
 
     def create_run(self,
                    resources: Union[List[DataResource], DataResource],
@@ -111,14 +113,14 @@ class Client:
             Return a specific Run object.
 
         """
-        return self._client_handler.create_run(resources,
-                                               run_config,
-                                               experiment,
-                                               run_id,
-                                               overwrite)
+        return self._run_builder.create_run(resources,
+                                            run_config,
+                                            experiment,
+                                            run_id,
+                                            overwrite)
 
     def log_metadata(self,
-                     metadata: dict,
+                     src: dict,
                      dst: str,
                      src_type: str,
                      overwrite: bool) -> None:
@@ -127,7 +129,7 @@ class Client:
 
         Parameters
         ----------
-        metadata : dict
+        src : dict
             A dictionary to be logged.
         dst : str
             URI destination of metadata.
@@ -137,7 +139,8 @@ class Client:
             If True, overwrite existent metadata.
 
         """
-        self._client_handler.log_metadata(metadata, dst, src_type, overwrite)
+        store = self._store_handler.get_md_store()
+        store.log_metadata(src, dst, src_type, overwrite)
 
     def persist_artifact(self,
                          src: Any,
@@ -160,10 +163,12 @@ class Client:
             Optional metadata to attach on artifact.
 
         """
-        self._client_handler.persist_artifact(src, dst, src_name, metadata)
+        store = self._store_handler.get_def_store()
+        store.persist_artifact(src, dst, src_name, metadata)
 
     def fetch_artifact(self,
                        uri: str,
+                       file_format: str,
                        store_name: Optional[str] = None) -> str:
         """
         Fetch artifact from backend and store locally.
@@ -172,6 +177,8 @@ class Client:
         ----------
         uri : str
             URI of artifact to fetch.
+        format : str
+            Format with which to save the data.
         store_name : str, default = None
             Store name where to fetch an artifact. If no name
             is passed, the client uses the default store.
@@ -182,10 +189,5 @@ class Client:
             Local path to fetched artifact.
 
         """
-        return self._client_handler.fetch_artifact(uri, store_name)
-
-    def clean_all(self) -> None:
-        """
-        Clean up temp_dir contents.
-        """
-        self._client_handler.clean_all()
+        store = self._store_handler.get_art_store(store_name)
+        store.fetch_artifact(uri, format)
