@@ -7,7 +7,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
 import it.smartcommunitylab.validationstorage.model.Store;
@@ -106,6 +108,7 @@ public class StoreDTO {
         this.isDefault = isDefault;
     }
 
+    @JsonGetter(value="isDefault")
     public boolean isDefault() {
         return isDefault != null ? isDefault.booleanValue() : false;
     }

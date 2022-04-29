@@ -12,8 +12,8 @@ public class ValidationStorageUtils {
      * @param input String to normalize.
      * @return Result of input normalization.
      */
-    public static String normalizeString(String input) {
-        return Normalizer.normalize(input.toLowerCase(), Normalizer.Form.NFKD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
-    }
+//    public static String normalizeString(String input) {
+//        return Normalizer.normalize(input.toLowerCase(), Normalizer.Form.NFKD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+//    }
     
 }

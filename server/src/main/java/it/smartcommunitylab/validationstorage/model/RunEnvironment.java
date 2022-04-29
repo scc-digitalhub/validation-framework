@@ -14,7 +14,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
+import it.smartcommunitylab.validationstorage.converter.SerializableMapConverter;
 
 /**
  * Short report on the validation's result.
@@ -44,7 +44,7 @@ public class RunEnvironment {
     private String datajudgeVersion;
 
     @Lob
-    @Convert(converter = HashMapConverter.class)
+    @Convert(converter = SerializableMapConverter.class)
     private Map<String, Serializable> contents;
 
     public String getId() {

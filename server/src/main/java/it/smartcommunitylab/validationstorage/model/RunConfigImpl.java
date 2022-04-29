@@ -7,7 +7,7 @@ import javax.persistence.Convert;
 import javax.persistence.Embeddable;
 import javax.persistence.Lob;
 
-import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
+import it.smartcommunitylab.validationstorage.converter.SerializableMapConverter;
 
 @Embeddable
 public class RunConfigImpl implements Serializable {
@@ -23,7 +23,7 @@ public class RunConfigImpl implements Serializable {
     private String library;
     
     @Lob
-    @Convert(converter = HashMapConverter.class)
+    @Convert(converter = SerializableMapConverter.class)
     private Map<String, Serializable> execArgs;
     
     @Override

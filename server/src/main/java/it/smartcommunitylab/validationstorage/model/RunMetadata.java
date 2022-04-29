@@ -1,7 +1,7 @@
 package it.smartcommunitylab.validationstorage.model;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import javax.persistence.Column;
@@ -16,7 +16,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
+import it.smartcommunitylab.validationstorage.converter.SerializableMapConverter;
 
 /**
  * Lists metadata about a run.
@@ -43,19 +43,19 @@ public class RunMetadata {
     private String runId;
 
     @Column(name = "created_date")
-    private LocalDate createdDate;
+    private LocalDateTime createdDate;
     
     @Column(name = "started_date")
-    private LocalDate startedDate;
+    private LocalDateTime startedDate;
     
     @Column(name = "finished_date")
-    private LocalDate finishedDate;
+    private LocalDateTime finishedDate;
     
     @Embedded
     private ReportMetadata metadata;
 
     @Lob
-    @Convert(converter = HashMapConverter.class)
+    @Convert(converter = SerializableMapConverter.class)
     private Map<String, Serializable> contents;
 
     public String getId() {
@@ -90,27 +90,27 @@ public class RunMetadata {
         this.runId = runId;
     }
 
-    public LocalDate getCreatedDate() {
+    public LocalDateTime getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(LocalDate createdDate) {
+    public void setCreatedDate(LocalDateTime createdDate) {
         this.createdDate = createdDate;
     }
 
-    public LocalDate getStartedDate() {
+    public LocalDateTime getStartedDate() {
         return startedDate;
     }
 
-    public void setStartedDate(LocalDate startedDate) {
+    public void setStartedDate(LocalDateTime startedDate) {
         this.startedDate = startedDate;
     }
 
-    public LocalDate getFinishedDate() {
+    public LocalDateTime getFinishedDate() {
         return finishedDate;
     }
 
-    public void setFinishedDate(LocalDate finishedDate) {
+    public void setFinishedDate(LocalDateTime finishedDate) {
         this.finishedDate = finishedDate;
     }
 

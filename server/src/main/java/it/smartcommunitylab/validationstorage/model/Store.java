@@ -13,7 +13,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.persistence.UniqueConstraint;
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
+import it.smartcommunitylab.validationstorage.converter.SerializableMapConverter;
 
 @Entity
 @Table(name = "stores", uniqueConstraints = @UniqueConstraint(columnNames = { "project_id", "name" }))
@@ -37,7 +37,7 @@ public class Store {
 
     @Lob
     @Column(name = "config_map")
-    @Convert(converter = HashMapConverter.class)
+    @Convert(converter = SerializableMapConverter.class)
     private Map<String, Serializable> config;
 
     @Column(name = "is_default")

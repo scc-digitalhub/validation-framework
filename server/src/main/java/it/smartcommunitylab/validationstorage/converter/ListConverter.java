@@ -19,7 +19,6 @@ public abstract class ListConverter<T extends Serializable> implements Attribute
     protected ListConverter(Class<?> targetClass) {
         typeRef = objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, targetClass);
     }
-    
 
     @Override
     public String convertToDatabaseColumn(List<T> list) {

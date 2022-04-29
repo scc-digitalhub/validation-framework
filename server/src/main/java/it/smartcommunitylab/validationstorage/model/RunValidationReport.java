@@ -15,7 +15,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.smartcommunitylab.validationstorage.common.ValidationStorageConstants;
-import it.smartcommunitylab.validationstorage.converter.HashMapConverter;
+import it.smartcommunitylab.validationstorage.converter.SerializableMapConverter;
 import it.smartcommunitylab.validationstorage.converter.TypedErrorListConverter;
 import it.smartcommunitylab.validationstorage.typed.TypedError;
 
@@ -59,7 +59,7 @@ public class RunValidationReport {
     List<TypedError> errors;
     
     @Lob
-    @Convert(converter = HashMapConverter.class)
+    @Convert(converter = SerializableMapConverter.class)
     private Map<String, Serializable> contents;
 
     public String getId() {

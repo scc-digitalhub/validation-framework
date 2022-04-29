@@ -4,9 +4,9 @@ import it.smartcommunitylab.validationstorage.model.RunDataSchema;
 
 import java.util.List;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface RunDataSchemaRepository extends CrudRepository<RunDataSchema, String> {
+public interface RunDataSchemaRepository extends JpaRepository<RunDataSchema, String> {
     
     List<RunDataSchema> findByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
     

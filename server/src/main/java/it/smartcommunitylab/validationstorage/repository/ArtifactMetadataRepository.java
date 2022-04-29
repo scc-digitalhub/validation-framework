@@ -3,11 +3,11 @@ package it.smartcommunitylab.validationstorage.repository;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import it.smartcommunitylab.validationstorage.model.ArtifactMetadata;
 
-public interface ArtifactMetadataRepository extends CrudRepository<ArtifactMetadata, String> {
+public interface ArtifactMetadataRepository extends JpaRepository<ArtifactMetadata, String> {
     List<ArtifactMetadata> findByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
     
     List<ArtifactMetadata> findByRunId(String runId);

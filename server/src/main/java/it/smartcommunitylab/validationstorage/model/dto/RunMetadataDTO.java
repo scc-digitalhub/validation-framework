@@ -1,7 +1,7 @@
 package it.smartcommunitylab.validationstorage.model.dto;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,11 +34,11 @@ public class RunMetadataDTO {
     @JsonProperty("run")
     private String runId;
 
-    private LocalDate createdDate;
+    private LocalDateTime createdDate;
 
-    private LocalDate startedDate;
+    private LocalDateTime startedDate;
 
-    private LocalDate finishedDate;
+    private LocalDateTime finishedDate;
     
     private ReportMetadata metadata;
 
@@ -112,27 +112,27 @@ public class RunMetadataDTO {
         this.runId = runId;
     }
 
-    public LocalDate getCreatedDate() {
+    public LocalDateTime getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(LocalDate createdDate) {
+    public void setCreatedDate(LocalDateTime createdDate) {
         this.createdDate = createdDate;
     }
 
-    public LocalDate getStartedDate() {
+    public LocalDateTime getStartedDate() {
         return startedDate;
     }
 
-    public void setStartedDate(LocalDate startedDate) {
+    public void setStartedDate(LocalDateTime startedDate) {
         this.startedDate = startedDate;
     }
 
-    public LocalDate getFinishedDate() {
+    public LocalDateTime getFinishedDate() {
         return finishedDate;
     }
 
-    public void setFinishedDate(LocalDate finishedDate) {
+    public void setFinishedDate(LocalDateTime finishedDate) {
         this.finishedDate = finishedDate;
     }
 

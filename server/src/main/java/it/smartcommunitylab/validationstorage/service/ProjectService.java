@@ -3,10 +3,15 @@ package it.smartcommunitylab.validationstorage.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -81,6 +86,15 @@ public class ProjectService {
         }
         
         return dtos;
+    }
+    
+    //@PostFilter(ValidationStorageConstants.POSTFILTER_ID)
+    public Page<ProjectDTO> findProjects(Set<String> authorities, Pageable pageable) {
+        Page<Project> documents = repository.findByNameIn(authorities, pageable);
+        List<ProjectDTO> documentsList = documents.getContent().stream().map(ProjectDTO::from).collect(Collectors.toList());
+        Page<ProjectDTO> results = new PageImpl<>(documentsList, documents.getPageable(), documents.getTotalElements());
+        
+        return results;
     }
     
     public ProjectDTO findProjectById(String id) {

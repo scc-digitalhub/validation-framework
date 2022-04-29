@@ -3,11 +3,11 @@ package it.smartcommunitylab.validationstorage.repository;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import it.smartcommunitylab.validationstorage.model.Run;
 
-public interface RunRepository extends CrudRepository<Run, String> {
+public interface RunRepository extends JpaRepository<Run, String> {
     
     List<Run> findByProjectIdAndExperimentId(String projectId, String experimentId);
     

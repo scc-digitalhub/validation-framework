@@ -19,6 +19,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 /**
@@ -68,7 +69,8 @@ public class ApiConfigurerAdapter extends WebSecurityConfigurerAdapter {
      * @return
      */
     private RequestMatcher getRequestMatcher() {
-        return new AntPathRequestMatcher("/api/**");
+        return new OrRequestMatcher(new AntPathRequestMatcher("/api/**"), new AntPathRequestMatcher("/console/**"));
+        //return new AntPathRequestMatcher("/api/**");
     }
 
     /**
@@ -85,20 +87,15 @@ public class ApiConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 if (source == null)
                     return null;
 
-                Map<String, Object> validationMap = source.getClaimAsMap(authenticationProperties.getAacClaim());
-                if (validationMap == null)
-                    return null;
+                List<String> projects = source.getClaimAsStringList(authenticationProperties.getAacClaimProjects());//.getClaimAsMap(authenticationProperties.getAacClaim());
 
-                if (validationMap.get(authenticationProperties.getAacClaimProjects()) instanceof List<?>) {
-                    List<?> projects = (List<?>) validationMap.get(authenticationProperties.getAacClaimProjects());
-                    if (projects != null)
-                        return projects.stream()
-                                .map(p -> new SimpleGrantedAuthority(
-                                        authenticationProperties.getProjectAuthorityPrefix() + p))
-                                .collect(Collectors.toList());
-                    return null;
-                } else
-                    return null;
+                if (projects != null) {
+                    return projects.stream()
+                            .map(p -> new SimpleGrantedAuthority(
+                                    authenticationProperties.getProjectAuthorityPrefix() + p))
+                            .collect(Collectors.toList());
+                }
+                return null;
             }
 
         });

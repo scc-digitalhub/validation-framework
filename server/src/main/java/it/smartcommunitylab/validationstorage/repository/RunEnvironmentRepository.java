@@ -5,9 +5,9 @@ import it.smartcommunitylab.validationstorage.model.RunEnvironment;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface RunEnvironmentRepository extends CrudRepository<RunEnvironment, String> {
+public interface RunEnvironmentRepository extends JpaRepository<RunEnvironment, String> {
     
     List<RunEnvironment> findByProjectId(String projectId);
     

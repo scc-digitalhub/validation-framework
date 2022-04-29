@@ -1,10 +1,17 @@
 package it.smartcommunitylab.validationstorage.model;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 @Embeddable
-public class ReportMetadata {
+public class ReportMetadata implements Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -2030656080790315543L;
+
     @Column(name = "datajudge_version")
     private String datajudgeVersion;
     

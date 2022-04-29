@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -216,6 +220,14 @@ public class ExperimentService {
             dtos.add(ExperimentDTO.from(r));
             
         return dtos;
+    }
+    
+    public Page<ExperimentDTO> findExperiments(String projectId, Pageable pageable) {
+        Page<Experiment> documents = experimentRepository.findByProjectId(projectId, pageable);
+        List<ExperimentDTO> documentsList = documents.getContent().stream().map(ExperimentDTO::from).collect(Collectors.toList());
+        Page<ExperimentDTO> results = new PageImpl<>(documentsList, documents.getPageable(), documents.getTotalElements());
+        
+        return results;
     }
    
     public ExperimentDTO findExperimentByName(String projectId, String name) {

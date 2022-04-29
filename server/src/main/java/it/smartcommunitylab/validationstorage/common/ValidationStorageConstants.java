@@ -26,8 +26,8 @@ public class ValidationStorageConstants {
     
     // Conditions for PreAuthorize and similar annotations
     public static final String PREAUTH_PROJECTID = "hasAuthority(@authenticationProperties.getProjectAuthorityPrefix() + #projectId)";
-    public static final String PREAUTH_ID = "hasAuthority(@authenticationProperties.getProjectAuthorityPrefix() + #id)";
-    public static final String PREAUTH_REQUEST_ID = "hasAuthority(@authenticationProperties.getProjectAuthorityPrefix() + #request.getId())";
+    public static final String PREAUTH_ID = "hasAuthority(@authenticationProperties.getProjectAuthorityPrefix() + #name)";
+    public static final String PREAUTH_REQUEST_ID = "hasAuthority(@authenticationProperties.getProjectAuthorityPrefix() + #request.getName())";
     public static final String POSTFILTER_ID = "hasAuthority(@authenticationProperties.getProjectAuthorityPrefix() + filterObject.getName())";
     
     // Patterns to check validity of certain fields

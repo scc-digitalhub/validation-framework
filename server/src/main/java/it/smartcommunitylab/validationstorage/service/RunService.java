@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -505,6 +507,14 @@ public class RunService {
         }
 
         return dtos;
+    }
+    
+    public Page<RunDTO> findRuns(String projectId, String experimentName, Pageable pageable) {
+//        Page<Experiment> documents = experimentRepository.findByProjectId(projectId, pageable);
+//        List<ExperimentDTO> documentsList = documents.getContent().stream().map(ExperimentDTO::from).collect(Collectors.toList());
+//        Page<ExperimentDTO> results = new PageImpl<>(documentsList, documents.getPageable(), documents.getTotalElements());
+//        
+//        return results;
     }
    
     public RunDTO findRunById(String projectId, String experimentName, String id) {

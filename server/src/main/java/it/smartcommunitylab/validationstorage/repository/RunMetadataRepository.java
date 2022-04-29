@@ -3,11 +3,11 @@ package it.smartcommunitylab.validationstorage.repository;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import it.smartcommunitylab.validationstorage.model.RunMetadata;
 
-public interface RunMetadataRepository extends CrudRepository<RunMetadata, String> {
+public interface RunMetadataRepository extends JpaRepository<RunMetadata, String> {
     
     List<RunMetadata> findByProjectId(String projectId);
     

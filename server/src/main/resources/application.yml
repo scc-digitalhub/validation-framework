@@ -4,6 +4,9 @@ server:
     include-message: ${ERROR_INCLUDE_MESSAGE:always}
 
 spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant-path-matcher
   security:
     oauth2:
       client:
@@ -24,5 +27,5 @@ auth:
   enabled: ${AUTH_ENABLED:true}
   project-authority-prefix: ${PROJECT_AUTHORITY_PREFIX:PROJECT_}
   aac-claim: ${AAC_CLAIM:validation}
-  aac-claim-projects: ${AAC_CLAIM_PROJECTS:projects}
+  aac-claim-projects: ${AAC_CLAIM_PROJECTS:validation/projects}
   users:

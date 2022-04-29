@@ -4,9 +4,9 @@ import it.smartcommunitylab.validationstorage.model.RunValidationReport;
 
 import java.util.List;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface RunValidationReportRepository extends CrudRepository<RunValidationReport, String> {
+public interface RunValidationReportRepository extends JpaRepository<RunValidationReport, String> {
     
     List<RunValidationReport> findByProjectIdAndExperimentIdAndRunId(String projectId, String experimentId, String runId);
     

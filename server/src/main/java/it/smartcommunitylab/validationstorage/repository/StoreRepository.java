@@ -3,11 +3,11 @@ package it.smartcommunitylab.validationstorage.repository;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import it.smartcommunitylab.validationstorage.model.Store;
 
-public interface StoreRepository extends CrudRepository<Store, String> {
+public interface StoreRepository extends JpaRepository<Store, String> {
     
     List<Store> findByProjectId(String projectId);
     

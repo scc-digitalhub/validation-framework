@@ -40,7 +40,7 @@ public class UiConfigurerAdapter extends WebSecurityConfigurerAdapter {
     @Autowired
     private AuthenticationProperties authenticationProperties;
 
-    @Autowired
+    //@Autowired
     private PasswordEncoder passwordEncoder;
 
     //@Autowired
@@ -48,7 +48,7 @@ public class UiConfigurerAdapter extends WebSecurityConfigurerAdapter {
         InMemoryUserDetailsManagerConfigurer<AuthenticationManagerBuilder> configurer = auth.inMemoryAuthentication();
 
         for (AuthenticationProperties.User user : authenticationProperties.getUsers()) {
-            configurer.withUser(user.getUsername()).password(passwordEncoder.encode(user.getPassword()))
+            configurer.withUser(user.getUsername()).password(passwordEncoder().encode(user.getPassword()))
                     .authorities(user.getAuthorities().toArray(new String[0]));
         }
     }
