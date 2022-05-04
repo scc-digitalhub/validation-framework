@@ -5,11 +5,13 @@ import csv
 from typing import Any
 
 import pyodbc
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.file_utils import check_make_dir, get_path
-from datajudge.utils.uri_utils import get_table_path_from_uri
+from datajudge.utils.uri_utils import get_uri_netloc
 
 
 class ODBCArtifactStore(ArtifactStore):
@@ -39,16 +41,17 @@ class ODBCArtifactStore(ArtifactStore):
         connection = self._get_connection()
         self._check_access_to_storage(connection)
         
-        table_name = get_table_path_from_uri(src)
+        table_name = self._get_table_name(src)
         tmp_path = self.resource_paths.get_resource(table_name)
         if tmp_path is not None:
             return tmp_path
         
         # Query table and store locally
-        obj = self._get_table(connection, table_name)
         check_make_dir(self.temp_dir)
         filepath = get_path(self.temp_dir, f"{table_name.lower()}.{file_format}")
-        self._write_table(obj, filepath)
+        obj = self._get_data(connection, table_name)
+        self._write_table(obj, filepath, file_format)
+
         connection.close()
         
         # Register resource on store
@@ -80,25 +83,66 @@ class ODBCArtifactStore(ArtifactStore):
         except Exception:
             raise StoreError("Something wrong with connection configuration.")
 
-    def _get_table(self,
-                   connection: pyodbc.Connection,
-                   table_name: str):
+    @staticmethod
+    def _get_table_name(uri: str) -> str:
+        """
+        Return table name from path.
+        """
+        return get_uri_netloc(uri)
+
+    def _get_data(self,
+                  connection: pyodbc.Connection,
+                  table_full_name: str):
         """
         Return a table.
-        """
-        return connection.execute("SELECT * FROM {}".format(table_name))
+        """        
+        sql = """
+              SELECT  CONCAT(TABLE_SCHEMA, '.', TABLE_NAME) as table_full_name
+              FROM    INFORMATION_SCHEMA.VIEWS
+              """
+
+        # Workaround to avoid sql injection. We check that the table name
+        # provided by the user exists.
+        tables = connection.execute(sql).fetchall()
+        table_list = list(map(lambda x: x[0], tables))
+        if table_full_name in table_list:
+            try:
+                return connection.execute(f"SELECT * FROM {table_full_name}")
+            except Exception:
+                raise StoreError("Something wrong with data fetching.")
+        raise StoreError("Something wrong with resource name.")
 
     @staticmethod
-    def _write_table(obj: Any,
-                     filepath: str) -> None:
+    def _write_table(query_result: Any,
+                     filepath: str,
+                     file_format: str) -> None:
         """
-        Write a query result as csv.
+        Persist a query result.
         """
-        with open(filepath, "w") as csvfile:
-            outcsv = csv.writer(csvfile,
-                                delimiter=',',
-                                quotechar='"',
-                                quoting=csv.QUOTE_MINIMAL)
-            header = [col[0] for col in obj.description]
-            outcsv.writerow(header)
-            outcsv.writerows(obj.fetchmany(256))
+        header = [col[0] for col in query_result.description]
+
+        if file_format == "csv":  
+            with open(filepath, "w") as csvfile:
+                outcsv = csv.writer(csvfile,
+                                    delimiter=',',
+                                    quotechar='"',
+                                    quoting=csv.QUOTE_MINIMAL)
+                outcsv.writerow(header)
+                while True:
+                    res = query_result.fetchmany(1028)
+                    if res:
+                        outcsv.writerows(res)
+                    else:
+                        break
+
+        elif file_format == "parquet":
+            arrays = []
+            while True:
+                res = query_result.fetchmany(1024)
+                if res:
+                    for row in res:
+                        arrays.append(dict(zip(header, row)))
+                else:
+                    tab = pa.Table.from_pylist(arrays)
+                    pq.write_table(tab, filepath)
+                    break

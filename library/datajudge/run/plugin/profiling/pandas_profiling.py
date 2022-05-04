@@ -106,6 +106,14 @@ class ProfilePluginPandasProfiling(Profiling):
             else:
                 df = pd.read_excel(path, **kwargs)
             return df
+        
+        if file_format == "parquet":
+            if is_list:
+                list_df = [pd.read_parquet(i) for i in path]
+                df = pd.concat(list_df)
+            else:
+                df = pd.read_parquet(path)
+            return df
 
         raise ValueError("Invalid extension. \
                           Only CSV and XLS supported!")

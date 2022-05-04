@@ -40,13 +40,6 @@ def get_name_from_uri(uri: str) -> str:
     return Path(uri).name
 
 
-def get_table_path_from_uri(uri: str) -> str:
-    """
-    Return table name from path.
-    """
-    return get_uri_netloc(uri)
-
-
 def rebuild_uri(uri: str, *args) -> str:
     """
     Rebuild an URI.

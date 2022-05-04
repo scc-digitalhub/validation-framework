@@ -126,9 +126,9 @@ class AzureArtifactStore(ArtifactStore):
         Upload fileobj to Azure.
         """
         client.upload_blob(name=name,
-                                data=data,
-                                metadata=metadata,
-                                overwrite=True)
+                           data=data,
+                           metadata=metadata,
+                           overwrite=True)
 
     def _upload_file(self,
                      client: ContainerClient,

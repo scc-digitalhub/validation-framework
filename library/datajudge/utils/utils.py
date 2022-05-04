@@ -22,7 +22,10 @@ def flatten_list(list_of_list: List[List[Any]]) -> List[Any]:
     """
     Flatten a list of list.
     """
-    return functools.reduce(operator.iconcat, list_of_list)
+    try:
+        return functools.reduce(operator.iconcat, list_of_list)
+    except TypeError:
+        return []
 
 
 def listify(obj: Union[List, Tuple, Any]) -> List[Any]:
