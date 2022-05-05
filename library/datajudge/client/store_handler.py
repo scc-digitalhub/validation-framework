@@ -174,7 +174,7 @@ class StoreHandler:
 
         try:
             assert default["is_default"]
-        except AssertionError:
+        except (AssertionError, TypeError):
             raise StoreError("Please configure one store as default.")
 
     def get_md_store(self) -> MetadataStore:
@@ -200,7 +200,7 @@ class StoreHandler:
         Get all artifact stores from registry.
         """
         return self._store_registry.get_all_stores(STORE_TYPE_ARTIFACT)
-    
+
     def clean_all(self) -> None:
         """
         Clean up temp_dir contents.

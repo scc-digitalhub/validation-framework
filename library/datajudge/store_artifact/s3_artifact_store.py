@@ -5,7 +5,7 @@ Implementation of S3 artifact store.
 import json
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, IO, Optional, Type
+from typing import Any, IO, Type
 
 import boto3
 import botocore.client
@@ -62,34 +62,30 @@ class S3ArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    def fetch_artifact(self, src: str, file_format: str) -> str:
+    def _get_and_register_artifact(self,
+                                   src: str,
+                                   file_format: str) -> str:
         """
-        Method to fetch an artifact.
+        Method to fetch an artifact from the backend an to register
+        it on the paths registry.
         """
         client = self._get_client()
         bucket = get_uri_netloc(self.artifact_uri)
         self._check_access_to_storage(client, bucket)
-
-        if format == "s3":
-            return self._build_encoded_s3_path(client, src)
-
         key = get_uri_path(src)
 
-        tmp_path = self.resource_paths.get_resource(key)
-        if tmp_path is not None:
-            return tmp_path
+        # Eventually return a presigned URL
+        if file_format == "s3":
+            return self._get_presigned_url(client, key)
 
         # Get file from remote
-        obj = self._get_object(client, bucket, key)
+        obj = self._get_data(client, bucket, key)
 
         # Store locally
-        check_make_dir(self.temp_dir)
-        name = get_name_from_uri(key)
-        filepath = get_path(self.temp_dir, name)
-        write_bytes(obj, filepath)
+        filepath = self._store_data(obj, key)
 
         # Register resource on store
-        self.resource_paths.register(key, filepath)
+        self._register_resource(f"{src}_{file_format}", filepath)
         return filepath
 
     def _get_client(self) -> s3_client:
@@ -109,13 +105,15 @@ class S3ArtifactStore(ArtifactStore):
         except ClientError:
             raise StoreError("No access to s3 bucket!")
 
-    def _build_encoded_s3_path(self,
-                               client: s3_client,
-                               bucket: str,
-                               src: str) -> str:
+    def _get_presigned_url(self,
+                           client: s3_client,
+                           bucket: str,
+                           src: str) -> str:
         """
         Encode credentials in S3 URI.
         """
+        if src.startswith("/"):
+            src = src[1:]
         return client.generate_presigned_url(
                     ClientMethod="get_object",
                     Params={"Bucket": bucket,
@@ -134,9 +132,9 @@ class S3ArtifactStore(ArtifactStore):
         """
         ex_args = {"Metadata": metadata}
         client.upload_file(Filename=src,
-                                Bucket=bucket,
-                                Key=key,
-                                ExtraArgs=ex_args)
+                           Bucket=bucket,
+                           Key=key,
+                           ExtraArgs=ex_args)
 
     def _upload_fileobj(self,
                         client: s3_client,
@@ -154,7 +152,7 @@ class S3ArtifactStore(ArtifactStore):
                               Key=key,
                               ExtraArgs=ex_args)
 
-    def _get_object(self,
+    def _get_data(self,
                     client: s3_client,
                     bucket: str,
                     key: str) -> bytes:
@@ -164,3 +162,15 @@ class S3ArtifactStore(ArtifactStore):
         obj = client.get_object(Bucket=bucket,
                                 Key=key)
         return obj['Body'].read()
+
+    def _store_data(self,
+                    obj: bytes,
+                    key: str) -> str:
+        """
+        Store data locally in temporary folder and return tmp path.
+        """
+        check_make_dir(self.temp_dir)
+        name = get_name_from_uri(key)
+        filepath = get_path(self.temp_dir, name)
+        write_bytes(obj, filepath)
+        return filepath

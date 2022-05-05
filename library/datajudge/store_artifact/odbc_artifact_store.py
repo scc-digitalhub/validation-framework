@@ -32,30 +32,29 @@ class ODBCArtifactStore(ArtifactStore):
         """
         raise NotImplementedError
 
-    def fetch_artifact(self,
-                       src: str,
-                       file_format: str) -> str:
+    def _get_and_register_artifact(self,
+                                   src: str,
+                                   file_format: str) -> str:
         """
-        Method to fetch an artifact.
+        Method to fetch an artifact from the backend an to register
+        it on the paths registry.
         """
         connection = self._get_connection()
         self._check_access_to_storage(connection)
-        
         table_name = self._get_table_name(src)
-        tmp_path = self.resource_paths.get_resource(table_name)
-        if tmp_path is not None:
-            return tmp_path
-        
-        # Query table and store locally
-        check_make_dir(self.temp_dir)
-        filepath = get_path(self.temp_dir, f"{table_name.lower()}.{file_format}")
-        obj = self._get_data(connection, table_name)
-        self._write_table(obj, filepath, file_format)
+        key = f"{table_name.lower()}.{file_format}"
 
+        # Query table
+        obj = self._get_data(connection, table_name)
+
+        # Store locally
+        filepath = self._store_data(obj, key, file_format)
+
+        # Dispose connection
         connection.close()
-        
+
         # Register resource on store
-        self.resource_paths.register(table_name, filepath)
+        self._register_resource(f"{src}_{file_format}", filepath)
         return filepath
 
     def _check_access_to_storage(self,
@@ -95,7 +94,7 @@ class ODBCArtifactStore(ArtifactStore):
                   table_full_name: str):
         """
         Return a table.
-        """        
+        """
         sql = """
               SELECT  CONCAT(TABLE_SCHEMA, '.', TABLE_NAME) as table_full_name
               FROM    INFORMATION_SCHEMA.VIEWS
@@ -112,6 +111,18 @@ class ODBCArtifactStore(ArtifactStore):
                 raise StoreError("Something wrong with data fetching.")
         raise StoreError("Something wrong with resource name.")
 
+    def _store_data(self,
+                    obj: Any,
+                    key: str,
+                    file_format: str) -> str:
+        """
+        Store data locally in temporary folder and return tmp path.
+        """
+        check_make_dir(self.temp_dir)
+        filepath = get_path(self.temp_dir, key)
+        self._write_table(obj, filepath, file_format)
+        return filepath
+
     @staticmethod
     def _write_table(query_result: Any,
                      filepath: str,
@@ -121,7 +132,7 @@ class ODBCArtifactStore(ArtifactStore):
         """
         header = [col[0] for col in query_result.description]
 
-        if file_format == "csv":  
+        if file_format == "csv":
             with open(filepath, "w") as csvfile:
                 outcsv = csv.writer(csvfile,
                                     delimiter=',',

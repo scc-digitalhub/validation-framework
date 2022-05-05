@@ -79,34 +79,24 @@ class FTPArtifactStore(ArtifactStore):
             else:
                 raise NotImplementedError
 
-    def fetch_artifact(self,
-                       src: str,
-                       file_format: str) -> str:
+    def _get_and_register_artifact(self,
+                                   src: str,
+                                   file_format: str) -> str:
         """
-        Method to fetch an artifact.
+        Method to fetch an artifact from the backend an to register
+        it on the paths registry.
         """
         self._check_access_to_storage(self.path)
         key = get_uri_path(src)
 
         # Get file from remote (write on BytesIO)
-        tmp_path = self.resource_paths.get_resource(key)
-        if tmp_path is not None:
-            return tmp_path
-
-        bytesio = BytesIO()
-        with self._get_client() as ftp:
-            ftp.retrbinary("RETR " + key, bytesio.write)
-            bytesio.seek(0)
-        obj = bytesio.read()
+        obj = self._get_data(key)
 
         # Store locally
-        check_make_dir(self.temp_dir)
-        name = get_name_from_uri(key)
-        filepath = get_path(self.temp_dir, name)
-        write_bytes(obj, filepath)
-        
+        filepath = self._store_data(obj, key)
+
         # Register resource on store
-        self.resource_paths.register(key, filepath)
+        self._register_resource(f"{src}_{file_format}", filepath)
         return filepath
 
     # pylint: disable=arguments-differ
@@ -149,3 +139,25 @@ class FTPArtifactStore(ArtifactStore):
                 parent = str(Path(path).parent)
                 self._mkdir(parent)
                 self._mkdir(path)
+
+    def _get_data(self, key: str) -> bytes:
+        """
+        Return bytes fetched from storage.
+        """
+        bytesio = BytesIO()
+        with self._get_client() as ftp:
+            ftp.retrbinary("RETR " + key, bytesio.write)
+            bytesio.seek(0)
+        return bytesio.read()
+
+    def _store_data(self,
+                    obj: bytes,
+                    key: str) -> str:
+        """
+        Store data locally in temporary folder and return tmp path.
+        """
+        check_make_dir(self.temp_dir)
+        name = get_name_from_uri(key)
+        filepath = get_path(self.temp_dir, name)
+        write_bytes(obj, filepath)
+        return filepath

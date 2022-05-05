@@ -35,33 +35,30 @@ class SQLArtifactStore(ArtifactStore):
         """
         raise NotImplementedError
 
-    def fetch_artifact(self,
-                       src: str,
-                       file_format: str) -> str:
+    def _get_and_register_artifact(self,
+                                   src: str,
+                                   file_format: str) -> str:
         """
-        Method to fetch an artifact.
+        Method to fetch an artifact from the backend an to register
+        it on the paths registry.
         """
         engine = self._get_engine()
         self._check_access_to_storage(engine)
-
         table_name = self._get_table_name(src)
         schema = self._get_schema(src)
-        full_name = f"{schema}.{table_name}"
-        
-        tmp_path = self.resource_paths.get_resource(full_name)
-        if tmp_path is not None:
-            return tmp_path
+        key = f"{schema}.{table_name}.{file_format}"
 
-        # Query table and store locally
-        check_make_dir(self.temp_dir)
-        filepath = get_path(self.temp_dir, f"{full_name}.{file_format}")
+        # Query table
         obj = self._get_data(engine, table_name, schema)
-        self._write_table(obj, filepath, file_format)
 
+        # Store locally
+        filepath = self._store_data(obj, key, file_format)
+
+        # Dispose engine
         engine.dispose()
 
         # Register resource on store
-        self.resource_paths.register(full_name, filepath)
+        self._register_resource(f"{src}_{file_format}", filepath)
         return filepath
 
     def _check_access_to_storage(self,
@@ -116,6 +113,18 @@ class SQLArtifactStore(ArtifactStore):
             results = conn.execute(query)
         return results
 
+    def _store_data(self,
+                    obj: CursorResult,
+                    key: str,
+                    file_format: str) -> str:
+        """
+        Store data locally in temporary folder and return tmp path.
+        """
+        check_make_dir(self.temp_dir)
+        filepath = get_path(self.temp_dir, key)
+        self._write_table(obj, filepath, file_format)
+        return filepath
+
     @staticmethod
     def _write_table(query_result: CursorResult,
                      filepath: str,
@@ -123,7 +132,7 @@ class SQLArtifactStore(ArtifactStore):
         """
         Write a query result as csv.
         """
-        if file_format == "csv":    
+        if file_format == "csv":
             with open(filepath, "w") as csvfile:
                 outcsv = csv.writer(csvfile,
                                     delimiter=',',
@@ -137,7 +146,7 @@ class SQLArtifactStore(ArtifactStore):
                         outcsv.writerows(res)
                     else:
                         break
-    
+
         elif file_format == "parquet":
             arrays = []
             while True:

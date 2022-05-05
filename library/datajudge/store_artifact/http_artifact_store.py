@@ -30,7 +30,7 @@ class HTTPArtifactStore(ArtifactStore):
                  config: Optional[dict] = None
                  ) -> None:
         super().__init__(artifact_uri, temp_dir, config)
-        
+
 
     def persist_artifact(self,
                          src: Any,
@@ -41,56 +41,26 @@ class HTTPArtifactStore(ArtifactStore):
         """
         Persist an artifact.
         """
-        self._check_access_to_storage(dst)
+        raise NotImplementedError
 
-        url = check_url(dst)
-
-        kwargs = self._parse_auth({})
-
-        # Local file
-        if isinstance(src, (str, Path)) and check_path(src):
-            kwargs["data"] = open(src, "rb").read()
-            api_put_call(url, **kwargs)
-
-        # Dictionary
-        elif isinstance(src, dict) and src_name is not None:
-            kwargs["data"] = json.dumps(src)
-            api_put_call(url, **kwargs)
-
-        # StringIO/BytesIO buffer
-        elif isinstance(src, (BytesIO, StringIO)) and src_name is not None:
-            kwargs["data"] = src.read()
-            api_put_call(url, **kwargs)
-
-        else:
-            raise NotImplementedError
-
-    def fetch_artifact(self,
-                       src: str,
-                       file_format: str) -> str:
+    def _get_and_register_artifact(self,
+                                   src: str,
+                                   file_format: str) -> str:
         """
-        Method to fetch an artifact.
+        Method to fetch an artifact from the backend an to register
+        it on the paths registry.
         """
         self._check_access_to_storage(self.artifact_uri)
-        
         key = rebuild_uri(src)
-        tmp_path = self.resource_paths.get_resource(key)
-        if tmp_path is not None:
-            return tmp_path
 
         # Get file from remote
-        kwargs = self._parse_auth({})
-        res = api_get_call(key, **kwargs)
-        obj = res.content
+        obj = self._get_data(key)
 
         # Store locally
-        check_make_dir(self.temp_dir)
-        name = get_name_from_uri(key)
-        filepath = get_path(self.temp_dir, name)
-        write_bytes(obj, filepath)
-        
+        filepath = self._store_data(obj, key)
+
         # Register resource on store
-        self.resource_paths.register(key, filepath)
+        self._register_resource(f"{src}_{file_format}", filepath)
         return filepath
 
     # pylint: disable=arguments-differ
@@ -116,11 +86,12 @@ class HTTPArtifactStore(ArtifactStore):
                                 f"{url}.")
         except Exception as ex:
             raise ex
-        
-    def _parse_auth(self, kwargs: dict) -> dict:
+
+    def _parse_auth(self) -> dict:
         """
         Parse auth config.
         """
+        kwargs = {}
         if self.config is not None:
             if self.config["auth"] == "basic":
                 kwargs["auth"] = self.config["user"], self.config["password"]
@@ -129,3 +100,23 @@ class HTTPArtifactStore(ArtifactStore):
                     "Authorization": f"Bearer {self.config['token']}"
                 }
         return kwargs
+
+    def _get_data(self, key: str) -> bytes:
+        """
+        Get data from remote.
+        """
+        kwargs = self._parse_auth()
+        res = api_get_call(key, **kwargs)
+        return res.content
+
+    def _store_data(self,
+                    obj: bytes,
+                    key: str) -> str:
+        """
+        Store data locally in temporary folder and return tmp path.
+        """
+        check_make_dir(self.temp_dir)
+        name = get_name_from_uri(key)
+        filepath = get_path(self.temp_dir, name)
+        write_bytes(obj, filepath)
+        return filepath

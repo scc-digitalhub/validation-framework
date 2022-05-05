@@ -3,11 +3,13 @@ Implementation of azure artifact store.
 """
 # pylint: disable=import-error
 import json
+from datetime import datetime, timedelta
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, IO
+from typing import IO, Any
 
-from azure.storage.blob import BlobServiceClient, ContainerClient
+from azure.storage.blob import (BlobSasPermissions, BlobServiceClient,
+                                ContainerClient, generate_blob_sas)
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import check_make_dir, check_path, get_path
@@ -56,32 +58,30 @@ class AzureArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    def fetch_artifact(self,
-                       src: str, 
-                       file_format: str) -> str:
+    def _get_and_register_artifact(self,
+                                   src: str,
+                                   file_format: str) -> str:
         """
-        Method to fetch an artifact.
+        Method to fetch an artifact from the backend an to register
+        it on the paths registry.
         """
-        # Get container client
+        # Get container client and object key
         client = self._get_client()
         self._check_access_to_storage(client)
-
         key = get_uri_path(src)
-        tmp_path = self.resource_paths.get_resource(key)
-        if tmp_path is not None:
-            return tmp_path
-        
+
+        # Eventually return a presigned URL
+        if file_format == "azure":
+            return self._get_presigned_url(client, key)
+
         # Get file from remote
-        obj = self._get_object(client, key)
+        obj = self._get_data(client, key)
 
         # Store locally
-        check_make_dir(self.temp_dir)
-        name = get_name_from_uri(key)
-        filepath = get_path(self.temp_dir, name)
-        write_bytes(obj, filepath)
+        filepath = self._store_data(obj, key)
 
         # Register resource on store
-        self.resource_paths.register(key, filepath)
+        self._register_resource(f"{src}_{file_format}", filepath)
         return filepath
 
     def _get_client(self) -> ContainerClient:
@@ -89,7 +89,7 @@ class AzureArtifactStore(ArtifactStore):
         Return BlobServiceClient client.
         """
         container = get_uri_netloc(self.artifact_uri)
-        
+
         if self.config is not None:
             conn_string = self.config.get("connection_string")
             acc_name = self.config.get("azure_account_name")
@@ -116,6 +116,22 @@ class AzureArtifactStore(ArtifactStore):
         """
         if not client.exists():
             raise RuntimeError("No access to Azure container!")
+
+    def _get_presigned_url(self,
+                           client: ContainerClient,
+                           src: str) -> str:
+        """
+        Encode credentials in Azure URI.
+        """
+        if src.startswith("/"):
+            src = src[1:]
+        read_sas_blob = generate_blob_sas(account_name=client.credential.account_name,
+                                          container_name=client.container_name,
+                                          blob_name=src,
+                                          account_key=client.credential.account_key,
+                                          permission=BlobSasPermissions(read=True),
+                                          expiry=datetime.utcnow() + timedelta(hours=2))
+        return f"{client.primary_endpoint}/{src}?{read_sas_blob}"
 
     def _upload_fileobj(self,
                         client: ContainerClient,
@@ -144,10 +160,22 @@ class AzureArtifactStore(ArtifactStore):
                                metadata=metadata,
                                overwrite=True)
 
-    def _get_object(self,
-                    client: ContainerClient,
-                    path: str) -> bytes:
+    def _get_data(self,
+                  client: ContainerClient,
+                  key: str) -> bytes:
         """
         Download object from Azure.
         """
-        return client.download_blob(path).readall()
+        return client.download_blob(key).readall()
+
+    def _store_data(self,
+                    obj: bytes,
+                    key: str) -> str:
+        """
+        Store data locally in temporary folder and return tmp path.
+        """
+        check_make_dir(self.temp_dir)
+        name = get_name_from_uri(key)
+        filepath = get_path(self.temp_dir, name)
+        write_bytes(obj, filepath)
+        return filepath

@@ -49,18 +49,15 @@ class LocalArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    def fetch_artifact(self, src: str, file_format: str) -> str:
+    def _get_and_register_artifact(self,
+                                   src: str,
+                                   file_format: str) -> str:
         """
-        Method to fetch an artifact.
-        For this store, simply returns original file
-        positions.
+        Method to fetch an artifact from the backend an to register
+        it on the paths registry.
         """
-        tmp_path = self.resource_paths.get_resource(src)
-        if tmp_path is not None:
-            return tmp_path
-
-        # Register resource on store
-        self.resource_paths.register(src, src)
+        # For the local stor, simply return actual file position.
+        self._register_resource(f"{src}_{file_format}", src)
         return src
 
     # pylint: disable=arguments-differ
@@ -72,3 +69,15 @@ class LocalArtifactStore(ArtifactStore):
         """
         if write and not check_dir(dst):
             make_dir(dst)
+
+    def _get_data(self, key: str) -> None:
+        """
+        Do nothing.
+        """
+
+    def _store_data(self,
+                    obj: bytes,
+                    key: str) -> str:
+        """
+        Do nothing.
+        """

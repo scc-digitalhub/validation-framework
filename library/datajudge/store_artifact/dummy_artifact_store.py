@@ -23,7 +23,9 @@ class DummyArtifactStore(ArtifactStore):
         Do nothing.
         """
 
-    def fetch_artifact(self, src: str, dst: str) -> None:
+    def _get_and_register_artifact(self,
+                                   src: str,
+                                   file_format: str) -> str:
         """
         Return none.
         """
@@ -38,4 +40,14 @@ class DummyArtifactStore(ArtifactStore):
                               run_id: str) -> None:
         """
         Return none.
+        """
+
+    def _get_data(self, *args) -> Any:
+        """
+        Do nothing.
+        """
+
+    def _store_data(self, *args) -> str:
+        """
+        Do nothing.
         """
