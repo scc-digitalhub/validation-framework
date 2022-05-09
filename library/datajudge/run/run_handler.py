@@ -4,8 +4,8 @@ Run handler module.
 from __future__ import annotations
 
 import concurrent.futures
-from copy import deepcopy
 import typing
+from copy import deepcopy
 from typing import Any, List
 
 from datajudge.run.plugin.plugin_factory import builder_factory

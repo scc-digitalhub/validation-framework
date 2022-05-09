@@ -21,8 +21,11 @@ class Inference(Plugin, metaclass=ABCMeta):
         """
         Method that call specific execution.
         """
+        self.logger.info(f"Execute inference: plugin {self.lib_name} {self._id}, resource {self.resource.name}")
         lib_result = self.infer()
+        self.logger.info(f"Render datajudge result: plugin {self.lib_name} {self._id}")
         dj_result = self.render_datajudge(lib_result)
+        self.logger.info(f"Render artifact: plugin {self.lib_name} {self._id}")
         render_result = self.render_artifact(lib_result)
         return {
             RES_WRAP: lib_result,

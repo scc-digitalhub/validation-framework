@@ -20,9 +20,10 @@ class LocalMetadataStore(MetadataStore):
     """
 
     def __init__(self,
+                 name: str,
                  uri_metadata: str,
                  config:  Optional[dict] = None) -> None:
-        super().__init__(uri_metadata, config)
+        super().__init__(name, uri_metadata, config)
         self._filenames = {
             self._RUN_METADATA: cfg.FN_RUN_METADATA,
             self._DJ_REPORT: cfg.FN_DJ_REPORT,

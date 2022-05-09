@@ -11,6 +11,8 @@ from typing import Any, List
 from datajudge.data.data_resource import DataResource
 
 from datajudge.run.plugin.plugin_utils import RenderTuple
+from datajudge.utils.commons import LOGGER
+from datajudge.utils.utils import get_uiid
 
 if typing.TYPE_CHECKING:
     from datajudge.run.plugin.plugin_utils import Result
@@ -23,8 +25,10 @@ class Plugin(metaclass=ABCMeta):
     """
 
     def __init__(self) -> None:
+        self._id = get_uiid()
         self.lib_name = self.get_lib_name()
         self.lib_version = self.get_lib_version()
+        self.logger = LOGGER
 
     @abstractmethod
     def setup(self, *args, **kwargs) -> None:

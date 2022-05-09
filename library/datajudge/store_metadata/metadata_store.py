@@ -39,6 +39,7 @@ class MetadataStore(metaclass=ABCMeta):
     _RUN_ENV = cfg.MT_RUN_ENV
 
     def __init__(self,
+                 name: str,
                  uri_metadata: str,
                  config:  Optional[dict] = None) -> None:
         self.uri_metadata = uri_metadata

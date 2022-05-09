@@ -94,7 +94,8 @@ class StoreBuilder:
         try:
             return {
                 "name": cfg.name,
-                "store": METADATA_STORE_REGISTRY[scheme](new_uri,
+                "store": METADATA_STORE_REGISTRY[scheme](cfg.name,
+                                                         new_uri,
                                                          cfg.config)
             }
         except KeyError:
@@ -125,7 +126,8 @@ class StoreBuilder:
         try:
             return {
                 "name": cfg.name,
-                "store": ARTIFACT_STORE_REGISTRY[scheme](new_uri,
+                "store": ARTIFACT_STORE_REGISTRY[scheme](cfg.name,
+                                                         new_uri,
                                                          temp_partition,
                                                          cfg.config),
                 "is_default": cfg.isDefault

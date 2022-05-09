@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, List, Optional
 
 from datajudge.data import BlobLog, EnvLog
-from datajudge.utils.commons import (DATAJUDGE_VERSION, MT_ARTIFACT_METADATA,
+from datajudge.utils.commons import (DATAJUDGE_VERSION, LOGGER, MT_ARTIFACT_METADATA,
                                      MT_DJ_PROFILE, MT_DJ_REPORT, MT_DJ_SCHEMA,
                                      MT_RUN_ENV, MT_RUN_METADATA, STATUS_ERROR,
                                      STATUS_FINISHED, STATUS_INIT,
@@ -259,7 +259,7 @@ class Run:
         objects = self._run_handler.get_rendered_schema()
         for obj in objects:
             self._persist_artifact(obj.object,
-                                  self._render_artifact_name(obj.filename))
+                                   self._render_artifact_name(obj.filename))
 
     # Validation
 
@@ -354,7 +354,7 @@ class Run:
         objects = self._run_handler.get_rendered_report()
         for obj in objects:
             self._persist_artifact(obj.object,
-                                  self._render_artifact_name(obj.filename))
+                                   self._render_artifact_name(obj.filename))
 
     # Profiling
 
@@ -421,7 +421,7 @@ class Run:
         objects = self._run_handler.get_rendered_profile()
         for obj in objects:
             self._persist_artifact(obj.object,
-                                  self._render_artifact_name(obj.filename))
+                                   self._render_artifact_name(obj.filename))
 
     # Input data persistence
 
@@ -445,6 +445,7 @@ class Run:
 
     def __enter__(self) -> Run:
         # Set run status
+        LOGGER.info(f"Starting run {self.run_info.run_id}")
         self.run_info.begin_status = STATUS_INIT
         self.run_info.started = get_time()
         self._log_run()
@@ -466,6 +467,7 @@ class Run:
 
         self.run_info.finished = get_time()
         self._log_run()
+        LOGGER.info(f"Run finished. Clean up of temp resources")
 
         self._run_handler.clean_all()
 

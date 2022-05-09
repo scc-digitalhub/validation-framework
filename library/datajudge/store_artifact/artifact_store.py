@@ -3,6 +3,7 @@ Abstract class for artifact store.
 """
 from abc import ABCMeta, abstractmethod
 from typing import Any, Optional
+from datajudge.utils.commons import LOGGER
 
 from datajudge.utils.uri_utils import rebuild_uri
 
@@ -51,10 +52,6 @@ class ArtifactStore:
     config : dict, default = None
         A dictionary with the credentials/configurations
         for the backend storage.
-    data : bool, default = False
-        If True, Run uses ArtifactStore only to fetch artifact
-        from backend. If False, Run uses ArtifactStore only to
-        persist data into the backend.
 
     Methods
     -------
@@ -70,10 +67,12 @@ class ArtifactStore:
     __metaclass__ = ABCMeta
 
     def __init__(self,
+                 name: str,
                  artifact_uri: str,
                  temp_dir: str,
                  config: Optional[dict] = None
                  ) -> None:
+        self.name = name
         self.artifact_uri = artifact_uri
         self.temp_dir = temp_dir
         self.config = config
@@ -100,6 +99,7 @@ class ArtifactStore:
         tmp_path = self.get_resource(f"{src}_{file_format}")
         if tmp_path is not None:
             return tmp_path
+        LOGGER.info(f"Fetching resource {src} from store {self.name}")
         return self._get_and_register_artifact(src, file_format)
 
     @abstractmethod
