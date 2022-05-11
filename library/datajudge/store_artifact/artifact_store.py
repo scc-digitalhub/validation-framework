@@ -3,9 +3,9 @@ Abstract class for artifact store.
 """
 from abc import ABCMeta, abstractmethod
 from typing import Any, Optional
-from datajudge.utils.commons import LOGGER
 
 from datajudge.utils.uri_utils import rebuild_uri
+from datajudge.utils.utils import LOGGER
 
 
 class ResourceRegistry:
@@ -42,13 +42,17 @@ class ResourceRegistry:
 
 class ArtifactStore:
     """
-    Abstract artifact class that defines methods to persist
-    artifacts into different storage backends.
+    Abstract artifact class that defines methods to persist/fetch
+    artifacts into/from different storage backends.
 
     Attributes
     ----------
+    name : str
+        Name of store.
     artifact_uri : str
         An URI string that points to the storage.
+    temp_dir : str
+        Temporary download path.
     config : dict, default = None
         A dictionary with the credentials/configurations
         for the backend storage.

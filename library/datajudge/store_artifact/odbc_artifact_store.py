@@ -70,15 +70,10 @@ class ODBCArtifactStore(ArtifactStore):
 
     def _get_connection(self) -> pyodbc.Connection:
         """
-        Create engine from connection string.
+        Create connection object from configuration.
         """
         try:
-            return pyodbc.connect(driver=self.config.get("driver"),
-                                  host=self.config.get("host"),
-                                  port=self.config.get("port"),
-                                  user=self.config.get("user"),
-                                  password=self.config.get("password"),
-                                  autocommit=True)
+            return pyodbc.connect(**self.config)
         except Exception:
             raise StoreError("Something wrong with connection configuration.")
 
@@ -95,13 +90,12 @@ class ODBCArtifactStore(ArtifactStore):
         """
         Return a table.
         """
+        # Workaround to avoid sql injection. We check that the table name
+        # provided by the user exists.
         sql = """
               SELECT  CONCAT(TABLE_SCHEMA, '.', TABLE_NAME) as table_full_name
               FROM    INFORMATION_SCHEMA.VIEWS
               """
-
-        # Workaround to avoid sql injection. We check that the table name
-        # provided by the user exists.
         tables = connection.execute(sql).fetchall()
         table_list = list(map(lambda x: x[0], tables))
         if table_full_name in table_list:
@@ -128,7 +122,7 @@ class ODBCArtifactStore(ArtifactStore):
                      filepath: str,
                      file_format: str) -> None:
         """
-        Persist a query result.
+        Write a query result as file.
         """
         header = [col[0] for col in query_result.description]
 
@@ -146,7 +140,7 @@ class ODBCArtifactStore(ArtifactStore):
                     else:
                         break
 
-        elif file_format == "parquet":
+        else:
             arrays = []
             while True:
                 res = query_result.fetchmany(1024)

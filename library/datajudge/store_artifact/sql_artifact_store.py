@@ -130,7 +130,7 @@ class SQLArtifactStore(ArtifactStore):
                      filepath: str,
                      file_format: str) -> None:
         """
-        Write a query result as csv.
+        Write a query result as file.
         """
         if file_format == "csv":
             with open(filepath, "w") as csvfile:
@@ -147,7 +147,7 @@ class SQLArtifactStore(ArtifactStore):
                     else:
                         break
 
-        elif file_format == "parquet":
+        else:
             arrays = []
             while True:
                 res = query_result.fetchmany(1024)

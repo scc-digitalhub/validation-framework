@@ -14,8 +14,7 @@ class StoreError(DatajudgeError):
     Raised when incontered errors on Stores.
     """
     def __init__(self, msg: str):
-        self.message = msg
-        super().__init__(self.message)
+        super().__init__(msg)
 
 
 class RunError(DatajudgeError):
@@ -23,8 +22,7 @@ class RunError(DatajudgeError):
     Raised when incontered errors on Runs.
     """
     def __init__(self, msg: str):
-        self.message = msg
-        super().__init__(self.message)
+        super().__init__(msg)
 
 
 class ValidationError(DatajudgeError):
@@ -32,5 +30,4 @@ class ValidationError(DatajudgeError):
     Raised when incontered errors on validation.
     """
     def __init__(self, msg: str):
-        self.message = msg
-        super().__init__(self.message)
+        super().__init__(msg)

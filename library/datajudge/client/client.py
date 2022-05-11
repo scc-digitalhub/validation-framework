@@ -22,47 +22,46 @@ class Client:
     """
     Client class.
 
-    The Client is a public interface that exposes methods to interact
-    with storages and create runs.
-
-    The Client has an handler that registers the stores used in runs and
-    experiments.
+    The Client is a public interface that exposes methods to create
+    runs and allows the user to add artifact stores to the pool of runs stores.
 
     Methods
     -------
     add_store :
-        Add new artifact store.
+        Add new artifact store to the list of stores at runs disposition.
     create_run :
         Create a new run.
     log_metadata :
         Log metadata to the metadata store.
     persist_artifact :
-        Persist artifact to the artifact store.
+        Persist artifact to a default artifact store.
     fetch_artifact :
-        Fetch artifact from backend storage.
+        Fetch artifact from backend storages.
 
     """
 
     def __init__(self,
-                 metadata_store: Optional[List[StoreConfig]] = None,
-                 store: Optional[List[StoreConfig]] = None,
+                 metadata_store: Optional[StoreConfig] = None,
+                 store: Optional[Union[StoreConfig, List[StoreConfig]]] = None,
                  project: Optional[str] = "project",
                  tmp_dir: Optional[str] = "./djruns/tmp"
                  ) -> None:
         """
-        Client constructor. Parameters are passed to a StoreHandler
-        constructor that manages Client opration.
+        The Client constructor build a StoreHandler to keep track of stores,
+        both metadata and artifact, and a RunBuilder to create runs.
+        All the parameters passed to the Client interface are passed to the
+        StoreHandler.
 
         Parameters
         ----------
-        metadata_store : StoreConfig or dict or list, default = None
-            Dictionary containing configuration for the store.
-        store : StoreConfig or dict or list, default = None
-            Dictionary containing configuration for the store.
+        metadata_store : StoreConfig, default = None
+            StoreConfig containing configuration for the metadata store.
+        store : StoreConfig or List[StoreConfig], default = None
+            (List of) StoreConfig containing configuration for the artifact stores.
         project : str
-            The id of the project, needed for the rest metadata store.
+            The id of the project, required for the DigitalHub metadata store.
         tmp_dir : str
-            Default temporary folder where to download data.
+            Default local temporary folder where to store input data.
 
         """
         self._store_handler = StoreHandler(metadata_store,
@@ -95,12 +94,12 @@ class Client:
         Parameters
         ----------
         experiment : str
-            Experiment name. An experiment is a logical unit for ordinate
-            runs made on a Data Package/Data Resource.
-        data_resource : DataResource
-            A DataResource object.
+            Name of the experiment. An experiment is a logical unit
+            for ordering the runs execution.
+        data_resource : DataResource or List[DataResource]
+            (List of) DataResource object(s).
         run_config : RunConfig
-            Run configuration object.
+            RunConfig object.
         run_id : str, default = None
             Optional string parameter for user defined run id.
         overwrite : bool, default = False
@@ -110,7 +109,7 @@ class Client:
         Returns
         -------
         Run :
-            Return a specific Run object.
+            Return a Run object.
 
         """
         return self._run_builder.create_run(resources,
@@ -190,4 +189,4 @@ class Client:
 
         """
         store = self._store_handler.get_art_store(store_name)
-        store.fetch_artifact(uri, format)
+        store.fetch_artifact(uri, file_format)

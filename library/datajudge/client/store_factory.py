@@ -1,7 +1,5 @@
 """
-Factories module.
-Contains registries of Stores and Runs and respective
-factory methods.
+StoreFactory module.
 """
 # pylint: disable=raise-missing-from
 from pathlib import Path
@@ -59,11 +57,6 @@ ARTIFACT_STORE_REGISTRY = {
 class StoreBuilder:
     """
     StoreBuilder class.
-
-    In the library workflow, it's associated with
-    a client and a project. It builds stores for a
-    specific client.
-
     """
 
     def __init__(self,
@@ -76,7 +69,7 @@ class StoreBuilder:
               config: Union[dict, StoreConfig],
               md_store: bool = False) -> dict:
         """
-        Generic build method.
+        Builder method that recieves store configurations.
         """
         cfg = self.cfg_conversion(config)
         scheme = get_uri_scheme(cfg.uri)
@@ -86,7 +79,7 @@ class StoreBuilder:
 
     def build_metadata_store(self, cfg: StoreConfig, scheme: str) -> dict:
         """
-        Function that returns metadata stores.
+        Method to create a metadata stores.
         """
         new_uri = self.resolve_uri_metadata(cfg.uri,
                                             scheme,
@@ -106,7 +99,7 @@ class StoreBuilder:
                              scheme: str,
                              project_name: str) -> str:
         """
-        Build metadata URI store to be formatted by client.
+        Resolve metadata URI location.
         """
         if scheme in [*LOCAL_SCHEME]:
             return get_absolute_path(uri, "metadata")
@@ -119,7 +112,7 @@ class StoreBuilder:
 
     def build_artifact_store(self, cfg: StoreConfig, scheme: str) -> dict:
         """
-        Function that returns artifact stores.
+        Method to create a artifact stores.
         """
         new_uri = self.resolve_artifact_uri(cfg.uri, scheme)
         temp_partition = str(Path(self.tmp_dir, get_uiid()))
@@ -138,7 +131,7 @@ class StoreBuilder:
     @staticmethod
     def resolve_artifact_uri(uri: str, scheme: str) -> str:
         """
-        Build artifact URI store to be formatted by client.
+        Resolve artifact URI location.
         """
         if scheme in [*LOCAL_SCHEME]:
             return get_absolute_path(uri, "artifact")
@@ -153,7 +146,9 @@ class StoreBuilder:
     @staticmethod
     def cfg_conversion(config: Union[StoreConfig, dict]) -> StoreConfig:
         """
-        Try to convert a store configuration in a StoreConfig model.
+        Try to convert a dictionary in a StoreConfig model.
+        In case the config parameter is None, return a dummy store basic
+        config.
         """
         if config is None:
             return StoreConfig(name="_dummy",

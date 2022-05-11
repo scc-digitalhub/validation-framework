@@ -1,11 +1,9 @@
 """
 Module for common terms definition.
 """
-
-# Datajudge version
 import logging
 
-
+# Datajudge version
 DATAJUDGE_VERSION = "0.2.0"
 
 # Libraries
@@ -68,21 +66,3 @@ STATUS_RUNNING = "executing"
 STATUS_INTERRUPTED = "interrupdted"
 STATUS_FINISHED = "finished"
 STATUS_ERROR = "error"
-
-
-# LOGGER
-LOGGER = logging.getLogger("datajudge")
-LOGGER.setLevel(logging.INFO)
-
-# create console handler and set level to debug
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
-
-# create formatter
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-# add formatter to ch
-ch.setFormatter(formatter)
-
-# add ch to logger
-LOGGER.addHandler(ch)

@@ -3,10 +3,29 @@ Common generic utils.
 """
 # pylint: disable=import-error
 import functools
+import logging
 import operator
 from datetime import datetime
 from typing import Any, List, Optional, Tuple, Union
 from uuid import uuid4
+
+
+# LOGGER
+LOGGER = logging.getLogger("datajudge")
+LOGGER.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+LOGGER.addHandler(ch)
 
 
 def get_uiid(_id: Optional[str] = None) -> str:

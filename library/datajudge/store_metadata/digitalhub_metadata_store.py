@@ -6,12 +6,12 @@ from collections import namedtuple
 from json.decoder import JSONDecodeError
 from typing import Optional
 
+import requests
 from requests.models import Response
 
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils import commons as cfg
 from datajudge.utils.exceptions import RunError
-from datajudge.utils.rest_utils import api_post_call, api_put_call
 from datajudge.utils.uri_utils import check_url
 
 
@@ -99,10 +99,10 @@ class DigitalHubMetadataStore(MetadataStore):
                 kwargs["params"] = {
                     "overwrite": "true" if overwrite else "false"
                 }
-            response = api_post_call(dst, **kwargs)
+            response = requests.post(dst, **kwargs)
             self._parse_response(response, src_type)
         else:
-            response = api_put_call(dst, **kwargs)
+            response = requests.put(dst, **kwargs)
             self._parse_response(response, src_type)
 
     def _build_source_destination(self,

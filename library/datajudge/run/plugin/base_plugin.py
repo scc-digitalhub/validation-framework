@@ -11,8 +11,7 @@ from typing import Any, List
 from datajudge.data.data_resource import DataResource
 
 from datajudge.run.plugin.plugin_utils import RenderTuple
-from datajudge.utils.commons import LOGGER
-from datajudge.utils.utils import get_uiid
+from datajudge.utils.utils import LOGGER, get_uiid
 
 if typing.TYPE_CHECKING:
     from datajudge.run.plugin.plugin_utils import Result

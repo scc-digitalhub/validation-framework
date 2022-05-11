@@ -1,19 +1,15 @@
 """
 Implementation of REST artifact store.
 """
-import json
-from io import BytesIO, StringIO
-from pathlib import Path
 from typing import Any, Optional, Tuple
 
 import requests
 from requests.models import HTTPError
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
-from datajudge.utils.file_utils import check_make_dir, check_path, get_path
+from datajudge.utils.file_utils import check_make_dir, get_path
 from datajudge.utils.io_utils import write_bytes
-from datajudge.utils.rest_utils import api_get_call, api_put_call
-from datajudge.utils.uri_utils import check_url, get_name_from_uri, rebuild_uri
+from datajudge.utils.uri_utils import get_name_from_uri, rebuild_uri
 
 
 class HTTPArtifactStore(ArtifactStore):
@@ -81,8 +77,8 @@ class HTTPArtifactStore(ArtifactStore):
         try:
             response = requests.head(url)
             if not response.ok:
-                raise HTTPError("Something wrong, response code ",
-                                f"{response.status_code} for url ",
+                raise HTTPError("Something wrong, response code " +
+                                f"{response.status_code} for url " +
                                 f"{url}.")
         except Exception as ex:
             raise ex
@@ -106,7 +102,7 @@ class HTTPArtifactStore(ArtifactStore):
         Get data from remote.
         """
         kwargs = self._parse_auth()
-        res = api_get_call(key, **kwargs)
+        res = requests.get(key, **kwargs)
         return res.content
 
     def _store_data(self,

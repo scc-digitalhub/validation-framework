@@ -18,11 +18,14 @@ if typing.TYPE_CHECKING:
 
 class RunBuilder:
     """
-    RunBuilder object to create runs.
+    RunBuilder object to initialize and create runs.
 
     """
     def __init__(self,
                  store_handler: StoreHandler) -> None:
+        """
+        The RunBuilder recieves a store handler to get stores.
+        """
         self._store_handler = store_handler
 
     def _init_run(self,

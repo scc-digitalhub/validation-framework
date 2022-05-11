@@ -81,7 +81,7 @@ class StoreHandler:
     """
     Handler layer between the Client interface, stores and factories.
 
-    The StoreHandler contain a register where it keeps track of stores.
+    The StoreHandler contain a register that keeps track of stores.
 
     """
     def __init__(self,
@@ -92,31 +92,31 @@ class StoreHandler:
 
         self._store_registry = StoreRegistry()
         self._store_builder = StoreBuilder(project, tmp_dir)
-        self.setup(metadata_store, store)
+        self._setup(metadata_store, store)
 
         self._tmp_dir = tmp_dir
 
-    def setup(self,
-              metadata_store: Optional[StoreConfig] = None,
-              store: Optional[List[StoreConfig]] = None
-              ) -> None:
+    def _setup(self,
+               metadata_store: Optional[StoreConfig] = None,
+               store: Optional[List[StoreConfig]] = None
+               ) -> None:
         """
-        Build stores according to configurations provided
+        Build stores according to configurations provided by user
         and register them into the store registry.
         """
 
         # Build metadata store
-        self.add_metadata_store(metadata_store)
+        self._add_metadata_store(metadata_store)
 
         # Build artifact stores
         for cfg in listify(store):
             self.add_artifact_store(cfg)
 
         # Register default store
-        self.update_default_store()
+        self._update_default_store()
 
-    def add_metadata_store(self,
-                           config: Union[StoreConfig, dict]) -> None:
+    def _add_metadata_store(self,
+                            config: Union[StoreConfig, dict]) -> None:
         """
         Add a metadata store to the registry.
         """
@@ -133,17 +133,16 @@ class StoreHandler:
         if self.get_art_store(store.get("name")) is None:
             self._store_registry.register(store, STORE_TYPE_ARTIFACT)
         else:
-            raise StoreError("There is already a store with that name.\
-                              Please choose another name to identify \
-                              the store.")
+            raise StoreError("There is already a store with that name. ", +
+                             "Please choose another name to identify the store")
 
-    def update_default_store(self) -> None:
+    def _update_default_store(self) -> None:
         """
         Select default store in the store registry.
 
-        Raise if there are no store to choose from. If only one store is
+        Raise exception if there are no store to choose from. If only one store is
         provided, that one is choosed as default. If multiple stores are
-        provided, only one store MUST be configured as isDefault.
+        provided, only one store MUST be configured with an isDefault flag.
 
         When you configure a client without artifact store configuration, the
         default store is a Dummy store. There is no option to update the
@@ -185,7 +184,7 @@ class StoreHandler:
 
     def get_art_store(self, name: str) -> ArtifactStore:
         """
-        Get artifact store from registry.
+        Get artifact store from registry by name.
         """
         return self._store_registry.get_store(STORE_TYPE_ARTIFACT, name)
 
@@ -203,15 +202,15 @@ class StoreHandler:
 
     def clean_all(self) -> None:
         """
-        Clean up temp_dir contents.
+        Clean up temporary download directory contents.
         """
-        self.clean_temp_path_store_cache()
+        self._clean_temp_path_store_cache()
         try:
             clean_all(self._tmp_dir)
         except FileNotFoundError:
             pass
 
-    def clean_temp_path_store_cache(self) -> None:
+    def _clean_temp_path_store_cache(self) -> None:
         """
         Get rid of reference to temporary paths stored
         in artifact stores.
