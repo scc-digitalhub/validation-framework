@@ -3,7 +3,6 @@ Frictionless implementation of profiling plugin.
 """
 # pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
-from copy import deepcopy
 
 import typing
 from typing import List
@@ -61,11 +60,7 @@ class ProfilePluginFrictionless(Profiling):
         rep = result.artifact.to_dict()
         duration = result.duration
         fields = rep.get("schema", {}).get("fields")
-        try:
-            rep.pop("schema")
-        except KeyError:
-            pass
-        stats = rep
+        stats = {k: v for k, v in rep.items() if k != "schema"}
         return DatajudgeProfile(self.get_lib_name(),
                                 self.get_lib_version(),
                                 duration,

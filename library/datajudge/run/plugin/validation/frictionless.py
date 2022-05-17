@@ -3,7 +3,6 @@ Frictionless implementation of validation plugin.
 """
 # pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
-import resource
 
 import typing
 from copy import deepcopy
@@ -11,6 +10,7 @@ from typing import List
 
 import frictionless
 from frictionless import Report, Resource, Schema, describe_schema
+from frictionless.exception import FrictionlessException
 
 from datajudge.data.datajudge_report import DatajudgeReport
 from datajudge.run.plugin.validation.validation_plugin import (
@@ -162,10 +162,13 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
         """
         Infer simple schema of a resource if not present.
         """
-        if resource.schema is None:
-            schema = describe_schema(path=resource.tmp_pth)
-            return {"fields": [{"name": field["name"]} for field in schema["fields"]]}
-        return resource.schema
+        try:
+            schema = Schema(resource.schema)
+            if schema == {}:
+                schema = Schema.describe(path=resource.tmp_pth)
+            return {"fields": [{"name": field["name"]} for field in schema["fields"]]}    
+        except FrictionlessException as fex:
+            raise fex
 
     @staticmethod
     def filter_constraints(constraints: List[Constraint]

@@ -1,16 +1,35 @@
 """
 Module for common terms definition.
 """
-import logging
-
 # Datajudge version
 DATAJUDGE_VERSION = "0.2.0"
 
 # Libraries
-DUMMY = "_dummy"
 FRICTIONLESS = "frictionless"
 PANDAS_PROFILING = "pandas_profiling"
 DUCKDB = "duckdb"
+
+# Store type
+DUMMY = "_dummy"
+LOCAL = "local"
+HTTP = "http"
+FTP = "ftp"
+S3 = "s3"
+AZURE = "azure"
+SQL = "sql"
+ODBC = "odbc"
+
+
+# Schemes
+LOCAL_SCHEME = ["", "file"]
+HTTP_SCHEME = ["http", "https"]
+S3_SCHEME = ["s3"]
+AZURE_SCHEME = ["wasb", "wasbs"]
+FTP_SCHEME = ["ftp"]
+SQL_SCHEME = ["sql"]
+ODBC_SCHEME = ["dremio", "odbc"]
+DUMMY_SCHEME = ["_dummy"]
+
 
 # DuckDB sonstraints expectation
 EMPTY = "empty"

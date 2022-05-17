@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, List, Optional
 
 from datajudge.data import BlobLog, EnvLog
-from datajudge.utils.commons import (DATAJUDGE_VERSION, MT_ARTIFACT_METADATA,
+from datajudge.utils.commons import (DATAJUDGE_VERSION, DUMMY_SCHEME, MT_ARTIFACT_METADATA,
                                      MT_DJ_PROFILE, MT_DJ_REPORT, MT_DJ_SCHEMA,
                                      MT_RUN_ENV, MT_RUN_METADATA, STATUS_ERROR,
                                      STATUS_FINISHED, STATUS_INIT,
@@ -185,14 +185,14 @@ class Run:
         """
         Check metadata uri existence.
         """
-        if self.run_info.run_metadata_uri is None:
+        if self.run_info.run_metadata_uri in DUMMY_SCHEME:
             raise StoreError("Please configure a metadata store.")
 
     def _check_artifacts_uri(self) -> None:
         """
         Check artifact uri existence.
         """
-        if self.run_info.run_artifacts_uri is None:
+        if self.run_info.run_artifacts_uri in DUMMY_SCHEME:
             raise StoreError("Please configure a artifact store.")
 
     # Inference
@@ -434,11 +434,11 @@ class Run:
         locally in the format requested by the user. If the specific
         format is not managed by the store, the store will persist the
         data in a default format.
-        
+
         In the case of SQL/ODBC storage, the format will be parquet.
         In the case of remote/REST/local stores, the persistence format
         will be the same as the artifacts present in the storage.
-        
+
         Finally, note that some stores (S3 and Azure) provide for the
         possibility of building presigned URLs by specifying a format
         ('s3' and 'azure' respectively).
@@ -482,7 +482,7 @@ class Run:
 
         self.run_info.finished = get_time()
         self._log_run()
-        LOGGER.info(f"Run finished. Clean up of temp resources")
+        LOGGER.info(f"Run finished. Clean up of temp resources.")
 
         self._run_handler.clean_all()
 

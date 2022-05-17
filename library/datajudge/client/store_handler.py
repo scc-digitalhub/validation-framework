@@ -47,6 +47,10 @@ class StoreRegistry:
         Register a new store.
         """
         if store_type == STORE_TYPE_ARTIFACT:
+            for s in self.get_all_stores(store_type):
+                if s.get("name") == store.get("name"):
+                    raise StoreError("There is already a store with that name. " +
+                                     "Please choose another name to identify the store")
             self.registry[store_type].append(store)
         else:
             self.registry[store_type] = store
@@ -61,12 +65,12 @@ class StoreRegistry:
             return self.registry[store_type]["store"]
 
         if store_type == STORE_TYPE_ARTIFACT:
-            if store_name is not None:
-                for store in self.registry[store_type]:
-                    if store_name == store.get("name"):
-                        return store["store"]
-                return None
-            return self.registry[DEFAULT_STORE]["store"]
+            if store_name is None:
+                return self.registry[DEFAULT_STORE]["store"]
+            for store in self.registry[store_type]:
+                if store_name == store.get("name"):
+                    return store["store"]
+            raise StoreError(f"No store with name {store_name}")
 
         raise StoreError("Invalid store type.")
 
@@ -129,12 +133,7 @@ class StoreHandler:
         Add an artifact store to the registry.
         """
         store = self._store_builder.build(config)
-
-        if self.get_art_store(store.get("name")) is None:
-            self._store_registry.register(store, STORE_TYPE_ARTIFACT)
-        else:
-            raise StoreError("There is already a store with that name. ", +
-                             "Please choose another name to identify the store")
+        self._store_registry.register(store, STORE_TYPE_ARTIFACT)
 
     def _update_default_store(self) -> None:
         """

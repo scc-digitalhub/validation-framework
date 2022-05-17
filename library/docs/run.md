@@ -6,97 +6,131 @@ The `Run` object is  created by a `Client` and can perform various tasks:
 - Log descriptive metadata
 - Persist artifacts
 - Fetch input data from the backend
-- Start validation/profiling process
+- Start validation/profiling/inference process
 
-The `Run` wraps some methods exposed by validation frameworks. *Datajudge* can support different validation libraries. At the moment we have implemented a plugin for `frictionless`.
-To create a `Run`, we need to instantiate a `Client` and a `DataResource`.
+## Run initialization
+
+The `Run` wraps some methods exposed by other validation frameworks. *Datajudge* can support different validation libraries.
+To create a `Run`, we need to instantiate a `Client`, define `Stores` and `DataResources` and provide a `RunConfig`.
 
 ```python
 import datajudge as dj
 
-client = dj.Client()
-data = dj.DataResource("path/to/data")
+# Metadata Store (local)
+METADATA_STORE = dj.StoreConfig(title="Local Metadata Store",
+                                type="local",
+                                name="local_md",
+                                uri="./djruns")
 
+# Artifact store (local)
+STORE_LOCAL_01 = dj.StoreConfig(name="local",
+                                type="local",
+                                uri="./djruns",
+                                isDefault=True)
+
+RESOURCE = dj.DataResource(path="local/path/to/data",
+                           name="res-name",
+                           store="local")
+
+RUN_CFG = dj.RunConfig(
+        inference=[{"library": "frictionless"}],
+        validation=[{"library": "frictionless"}],
+        profiling=[{"library": "frictionless"}]
+)
+
+
+client = dj.Client(metadata_store=METADATA_STORE,
+                   store=STORE_LOCAL_01) # Could be also a list like [STORE_LOCAL_01]
 ```
 
-The run can be initialized with `Client.create_run` method. The parameters required are:
+The run can be initialized with the `create_run` method exposed by the `Client` API. The parameters required are:
 
-- A `DataResource` object
-- A `str` describing the validation framework to use.
+- A single `DataResource` object or a list of them.
+- A `RunConfig` object that contains the configuration for the framework used in the validation/profiling/inference processes.
 
-The method `create_run` accepts also other two keywords arguments:
+The method `create_run` accepts also other three keywords arguments:
 
+- `experiment_name`, a name for the experiment the run belongs to
 - `run_id`, specify the ID of the run
 - `overwrite`, if there is already a run with the specified ID, enable the overwriting of all metadata tied to that run
 
 ```python
 
-run = client.create_run(data,
-                        "frictionless",
-                        run_id="some_str_id",
-                        overwrite=True)
-
+run = client.create_run(resources=RESOURCE, run_config=RUN_CFG)
 ```
 
-You can use the `Run` as context manager ...
+## RunConfig
+
+The `RunConfig` is a *pydantic* object to that defines which operations the `Run` will perform. The `RunConfig` accepts three parameters:
+
+- `inference`
+- `validation`
+- `profiling`
+
+Each one of these parameters configure which library will be used to perform the required operation. The library configuration is done like this:
+
+```python
+inference_config = {
+                "library": "frictionless",
+                "execArgs": {},
+                "tmpFormat": "csv"
+}
+
+RUN_CFG = dj.RunConfig(
+        inference=[inference_config]
+)
+```
+
+In this example we configure an *inference* operation using a `dict`. The arguments are the following:
+
+- `library`, mandatory, defines the framework used in the operation
+- `execArgs`, optional, arguments passed to the operation performed by the framework
+- `tmpFormat`, optional, format used to store/fetch artifacts from `ArtifactStore`
+
+## Run execution
+
+You can now use the `Run` as context manager ...
 
 ```python
 
 with run:
     # SOME CODE
-
+    run.some_method()
 ```
 
-... or not.
+... or as a generic object.
 
 ```python
 
 run.some_method()
-
 ```
 
-Note that if the `Run` is used outside the context manager, some metadata will not be updated in the `run_metadata` output.
-The `Run` object is flexible. You can perform validations directly with it ...
+Note that if the `Run` is used outside the context manager, some metadata will not be produced, i.e. run duration.
+The `Run` exposes a variety of methods. In general, these methods cover four needs:
+
+- Execute a specific operation over some resources
+  - [Validation]("../validation.md")
+  - [Profiling]("../profiling.md")
+  - [Inference]("../inference.md")
+- Log datajudge metadata to a backend
+- Persist artifact produced by the execution frameworks
+- Persist input data as artifacts
+
+An example can be as follows:
 
 ```python
 
-run = client.create_run(data, "frictionless")
-
 with run:
 
-    # The validation process is started automatically
-    run.log_DJ_REPORT()
-    run.persist_report()
+    # Method that executes inference over run's resources
+    run.infer()
 
-    # or manually
-    report = run.validate_resource()
-    run.log_DJ_REPORT(report)
-    run.persist_report(report)
+    # Log the datajudge version of an inferred schema
+    run.log_schema()
 
-```
+    # Persist the artifact produced by the inference framework
+    run.persist_schema()
 
-... or use it only to handle metadata logging and artifacts fetching/persistence, leaving the management of the validation process to a third-party framework. For this specific scenario, you could use a *generic* run.
-
-```python
-from frictionless import validate_resource, Schema, Resource
-
-run = client.create_run(data, "generic")
-
-with run:
-
-    # Fetch input data/validation schema
-    path_data = run.fetch_input_data()
-    path_schema = run.fetch_validation_schema()
-
-    # Create a frictionless resource and schema
-    resource = Resource(path_data)
-    schema = Schema(path_schema)
-
-    # Validate with frictionless
-    report = validate_resource(resource, schema=schema)
-
-    # Use run method to log/persist report
-    run.log_DJ_REPORT(report)
-    run.persist_report(report)
-
+    # Persist the input data as artifact
+    run.persist_data()
 ```

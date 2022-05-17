@@ -1,11 +1,16 @@
 # Authentication
 
-*Datajudge* allows passing credential to backend storage through the `Client`.
-When a `Client` is instantiated, you can set the credentials for three `store` objects:
+*Datajudge* allows passing credentials to backend storages through the `Client`.
 
-- `Metadata store`
-- `Artifact store`
-- `Data store`
+- [Authentication](#authentication)
+  - [Metadata store](#metadata-store)
+  - [Artifact store](#artifact-store)
+    - [Azure](#azure)
+    - [S3](#s3)
+    - [FTP](#ftp)
+    - [HTTP](#http)
+    - [SQL](#sql)
+    - [ODBC](#odbc)
 
 ## Metadata store
 
@@ -15,7 +20,7 @@ At the moment there are two backends supported, the *local filesystem* and the *
 The *DigitalHub API backend* implements a basic authentication method. You can execute runs in the context of a specific `project`. You must provides to the `Client` three things:
 
 - Project id
-- Endpoint of DigitalHub API
+- URI of DigitalHub API
 - Credentials dictionary with authentication type (basic with username/password, oauth with bearer token provided by user).
 
 The way to build arguments for the `Client` is the following:
@@ -24,7 +29,7 @@ The way to build arguments for the `Client` is the following:
 import datajudge as dj
 
 project_name = "projId"
-API_ENDPOINT = "http://ip_address:port"
+API_URI = "http://ip_address:port"
 ```
 
 For the authentication there are two options, *basic*
@@ -49,42 +54,46 @@ API_CREDENTIALS = {
 Setted the variables, the `Client` can be created.
 
 ```python
-client = dj.Client(project_name=project_name,
-                   metadata_store_uri=API_ENDPOINT,
-                   metadata_store_config=API_CREDENTIALS)
 
+metadata_store = dj.StoreConfig(name="name", uri="uri", config=API_CREDENTIALS)
+client = dj.Client(project_name=project_name,
+                   metadata_store=metadata_store)
 ```
 
-## Artifact/Data store
+## Artifact store
 
 The `Client` uses these objects to persist/fetch data into/from the backend storage.
-*Datajudge* offers five plugin out-of-the-box for *Artifact/Data store*, and four of them may require authentication:
+*Datajudge* offers seven plugin out-of-the-box for the *Artifact stores*.
 
-- Azure
-- S3
-- FTP
-- HTTP
-
-Similarly to the *Metadata store*, the way of passing credentials to the `Client` is the following:
+The mechanism of providing credentials to the store is the same as for the *Metadata store*:
 
 ```python
 import datajudge as dj
 
-client = dj.Client(artifact_store_uri=ENDPOINT,
-                   artifact_store_config=CREDENTIALS,
-                   data_store_uri=ENDPOINT,
-                   data_store_config=CREDENTIALS)
+CREDENTIALS = {"some": "config"}
+STORE_TYPE = "store-type"
+URI = "some-uri"
 
+store = dj.StoreConfig(name="name", type=STORE_TYPE, uri=URI, config=CREDENTIALS)
+client = dj.Client(store=store)
 ```
 
 ### Azure
 
-**Endpoint**</br>
-The endpoint is a parsable URI `str` and must have *wasb* or *wasbs* scheme.
+**Store type**</br>
+To initialize an Azure store use:
 
 ```python
 
-ENDPOINT = "wasbs://container/partition(s)"
+STORE_TYPE = "azure"
+```
+
+**URI**</br>
+URI must be a parsable `str` and must have *wasb* or *wasbs* scheme.
+
+```python
+
+URI = "wasbs://container(/partitions)"
 ```
 
 **Credentials**</br>
@@ -110,12 +119,20 @@ CREDENTIALS = {
 
 ### S3
 
-**Endpoint**</br>
-The endpoint is a parsable URI `str` and must have *s3* scheme.
+**Store type**</br>
+To initialize an S3 store use:
 
 ```python
 
-ENDPOINT = "s3://container/partition(s)"
+STORE_TYPE = "s3"
+```
+
+**URI**</br>
+URI must be a parsable `str` and must have *s3* scheme.
+
+```python
+
+URI = "s3://container(/partitions)"
 ```
 
 **Credentials**</br>
@@ -126,19 +143,26 @@ The parameters are the `**kwargs` passed to a `boto3.client` constructor.
 CREDENTIALS = {
     "endpoint_url": "http://host:port/",
     "aws_access_key_id": "acc_key",
-    "aws_secret_access_key": "sec_key",
-    "region_name": 'us-east-1'
+    "aws_secret_access_key": "sec_key"
 }
 ```
 
 ### FTP
 
-**Endpoint**</br>
-The endpoint is a parsable URI `str` and must have *ftp* scheme.
+**Store type**</br>
+To initialize an FTP store use:
 
 ```python
 
-ENDPOINT = "ftp://host:port/path"
+STORE_TYPE = "ftp"
+```
+
+**URI**</br>
+URI must be a parsable `str` and must have *ftp* scheme.
+
+```python
+
+URI = "ftp://host:port/path"
 ```
 
 **Credentials**</br>
@@ -148,8 +172,7 @@ The credentials can be provided in a `dict` or directly in the *endpoint path*. 
 
 ```python
 
-ENDPOINT = "ftp://user:password@host:port/path"
-CREDENTIALS = None
+URI = "ftp://user:password@host:port/path"
 ```
 
 - *dict*
@@ -165,12 +188,20 @@ CREDENTIALS = {
 
 ### HTTP
 
-**Endpoint**</br>
-The endpoint is a parsable URI `str` and must have *http* or *https* scheme.
+**Store type**</br>
+To initialize an HTTP store use:
 
 ```python
 
-ENDPOINT = "http://host:port/path"
+STORE_TYPE = "http"
+```
+
+**URI**</br>
+URI must be a parsable `str` and must have *http* or *https* scheme.
+
+```python
+
+URI = "http://host:port/path"
 ```
 
 **Credentials**</br>
@@ -190,5 +221,64 @@ or
 CREDENTIALS = {
     "auth": "oauth",
     "token": "token"
+}
+```
+
+### SQL
+
+**Store type**</br>
+To initialize an SQL store use:
+
+```python
+
+STORE_TYPE = "sql"
+```
+
+**URI**</br>
+URI must be a parsable `str` and must have *sql* scheme.
+
+```python
+
+URI = "sql://{db}.{schema}"
+```
+
+**Credentials**</br>
+The credentials must be provided in a SQLAlchemy connection string.
+
+```python
+
+CREDENTIALS = {"connection_string": "dbtype+driver://user:pass@host:port/db"}
+```
+
+### ODBC
+
+**Store type**</br>
+To initialize an ODBC store use:
+
+```python
+
+STORE_TYPE = "odbc"
+```
+
+**URI**</br>
+URI must be a parsable `str` and must have *odbc* or *dremio* scheme.
+
+```python
+
+URI = "odbc(/dremio)://{db_space}.{schema}"
+```
+
+**Credentials**</br>
+The credentials must be provided in a `dict`.
+
+```python
+
+CREDENTIALS = {
+    "host": "host",
+    "port": "port",
+    "user": "user",
+    "password": "password",
+    "driver": "ODBC-driver-name",
+    "autocommit": True
 }
 ```

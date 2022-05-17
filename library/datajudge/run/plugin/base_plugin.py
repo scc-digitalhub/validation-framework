@@ -11,6 +11,7 @@ from typing import Any, List
 from datajudge.data.data_resource import DataResource
 
 from datajudge.run.plugin.plugin_utils import RenderTuple
+from datajudge.utils.exceptions import StoreError
 from datajudge.utils.utils import LOGGER, get_uiid
 
 if typing.TYPE_CHECKING:
@@ -113,3 +114,5 @@ class PluginBuilder:
                 resource.tmp_pth = store["store"].fetch_artifact(resource.path,
                                                                  self.file_format)
                 return resource
+        raise StoreError(f"No store registered with name '{resource.store}'. " +
+                         f"Impossible to fetch resource '{resource.name}'")

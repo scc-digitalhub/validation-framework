@@ -12,6 +12,7 @@ from datajudge.run.plugin.inference.inference_plugin import Inference
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.utils.commons import DUMMY
 from datajudge.run.plugin.plugin_utils import exec_decorator
+from datajudge.utils.config import DUMMY_RES
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
@@ -73,14 +74,14 @@ class InferencePluginDummy(Inference):
         """
         Get library name.
         """
-        return None
+        return DUMMY
 
     @staticmethod
     def get_lib_version() -> str:
         """
         Get library version.
         """
-        return None
+        return DUMMY
 
 
 class InferenceBuilderDummy(PluginBuilder):
@@ -95,6 +96,6 @@ class InferenceBuilderDummy(PluginBuilder):
         """
         plugins = []
         plugin = InferencePluginDummy()
-        plugin.setup(resources, self.exec_args)
+        plugin.setup(DUMMY_RES, self.exec_args)
         plugins.append(plugin)
         return plugins

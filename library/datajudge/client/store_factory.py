@@ -12,45 +12,33 @@ from datajudge.store_artifact.odbc_artifact_store import ODBCArtifactStore
 from datajudge.store_artifact.sql_artifact_store import SQLArtifactStore
 from datajudge.store_metadata import (DigitalHubMetadataStore,
                                       DummyMetadataStore, LocalMetadataStore)
-from datajudge.utils.commons import API_BASE
-from datajudge.utils.config import StoreConfig
+from datajudge.utils.commons import (API_BASE, AZURE, AZURE_SCHEME, DUMMY,
+                                     DUMMY_SCHEME, FTP, FTP_SCHEME, HTTP,
+                                     HTTP_SCHEME, LOCAL, LOCAL_SCHEME, ODBC,
+                                     ODBC_SCHEME, S3, S3_SCHEME, SQL,
+                                     SQL_SCHEME)
+from datajudge.utils.config import DUMMY_STORE, StoreConfig
 from datajudge.utils.file_utils import get_absolute_path
 from datajudge.utils.uri_utils import check_url, get_uri_scheme, rebuild_uri
 from datajudge.utils.utils import get_uiid
 
-# Schemes
-
-LOCAL_SCHEME = ["", "file"]
-HTTP_SCHEME = ["http", "https"]
-S3_SCHEME = ["s3"]
-AZURE_SCHEME = ["wasb", "wasbs"]
-FTP_SCHEME = ["ftp"]
-SQL_SCHEME = ["sql"]
-ODBC_SCHEME = ["dremio"]
-DUMMY_SCHEME = ["dummy"]
-
 # Registries
 
-METADATA_STORE_REGISTRY = {
-    "": LocalMetadataStore,
-    "file": LocalMetadataStore,
-    "http": DigitalHubMetadataStore,
-    "https": DigitalHubMetadataStore,
-    "dummy": DummyMetadataStore,
+MD_STORES = {
+    LOCAL: LocalMetadataStore,
+    HTTP: DigitalHubMetadataStore,
+    DUMMY: DummyMetadataStore,
 }
 
-ARTIFACT_STORE_REGISTRY = {
-    "": LocalArtifactStore,
-    "file": LocalArtifactStore,
-    "s3": S3ArtifactStore,
-    "wasb": AzureArtifactStore,
-    "wasbs": AzureArtifactStore,
-    "http": HTTPArtifactStore,
-    "https": HTTPArtifactStore,
-    "ftp": FTPArtifactStore,
-    "sql": SQLArtifactStore,
-    "dremio": ODBCArtifactStore,
-    "dummy": DummyArtifactStore,
+ART_STORES = {
+    LOCAL: LocalArtifactStore,
+    HTTP: HTTPArtifactStore,
+    S3: S3ArtifactStore,
+    AZURE: AzureArtifactStore,
+    FTP: FTPArtifactStore,
+    SQL: SQLArtifactStore,
+    ODBC: ODBCArtifactStore,
+    DUMMY: DummyArtifactStore,
 }
 
 
@@ -71,25 +59,23 @@ class StoreBuilder:
         """
         Builder method that recieves store configurations.
         """
-        cfg = self.cfg_conversion(config)
-        scheme = get_uri_scheme(cfg.uri)
+        cfg = self._check_config(config)
         if md_store:
-            return self.build_metadata_store(cfg, scheme)
-        return self.build_artifact_store(cfg, scheme)
+            return self.build_metadata_store(cfg)
+        return self.build_artifact_store(cfg)
 
-    def build_metadata_store(self, cfg: StoreConfig, scheme: str) -> dict:
+    def build_metadata_store(self, cfg: StoreConfig) -> dict:
         """
         Method to create a metadata stores.
         """
+        scheme = get_uri_scheme(cfg.uri)
         new_uri = self.resolve_uri_metadata(cfg.uri,
                                             scheme,
                                             self.project_id)
         try:
             return {
                 "name": cfg.name,
-                "store": METADATA_STORE_REGISTRY[scheme](cfg.name,
-                                                         new_uri,
-                                                         cfg.config)
+                "store": MD_STORES[cfg.type](cfg.name, new_uri, cfg.config)
             }
         except KeyError:
             raise NotImplementedError
@@ -110,19 +96,17 @@ class StoreBuilder:
             return uri
         raise NotImplementedError
 
-    def build_artifact_store(self, cfg: StoreConfig, scheme: str) -> dict:
+    def build_artifact_store(self, cfg: StoreConfig) -> dict:
         """
         Method to create a artifact stores.
         """
+        scheme = get_uri_scheme(cfg.uri)
         new_uri = self.resolve_artifact_uri(cfg.uri, scheme)
-        temp_partition = str(Path(self.tmp_dir, get_uiid()))
+        tmp = str(Path(self.tmp_dir, get_uiid()))
         try:
             return {
                 "name": cfg.name,
-                "store": ARTIFACT_STORE_REGISTRY[scheme](cfg.name,
-                                                         new_uri,
-                                                         temp_partition,
-                                                         cfg.config),
+                "store": ART_STORES[cfg.type](cfg.name, new_uri, tmp, cfg.config),
                 "is_default": cfg.isDefault
             }
         except KeyError:
@@ -144,16 +128,14 @@ class StoreBuilder:
         raise NotImplementedError
 
     @staticmethod
-    def cfg_conversion(config: Union[StoreConfig, dict]) -> StoreConfig:
+    def _check_config(config: Union[StoreConfig, dict]) -> StoreConfig:
         """
         Try to convert a dictionary in a StoreConfig model.
         In case the config parameter is None, return a dummy store basic
         config.
         """
         if config is None:
-            return StoreConfig(name="_dummy",
-                               uri="dummy://",
-                               isDefault=True)
+            return DUMMY_STORE
         if not isinstance(config, StoreConfig):
             try:
                 return StoreConfig(**config)

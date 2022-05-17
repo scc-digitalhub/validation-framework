@@ -10,7 +10,7 @@ from typing import List
 from datajudge.data.datajudge_report import DatajudgeReport
 from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
 from datajudge.utils.commons import DUMMY
-from datajudge.utils.config import Constraint
+from datajudge.utils.config import DUMMY_CONST, DUMMY_RES, Constraint
 from datajudge.run.plugin.plugin_utils import exec_decorator
 
 if typing.TYPE_CHECKING:
@@ -78,14 +78,14 @@ class ValidationPluginDummy(Validation):
         """
         Get library name.
         """
-        return None
+        return DUMMY
 
     @staticmethod
     def get_lib_version() -> str:
         """
         Get library version.
         """
-        return None
+        return DUMMY
 
 
 class ValidationBuilderDummy(ValidationPluginBuilder):
@@ -106,11 +106,7 @@ class ValidationBuilderDummy(ValidationPluginBuilder):
         """
         plugins = []
         plugin = ValidationPluginDummy()
-        dummy_constraint = Constraint(name="dummy",
-                                      title="",
-                                      resources=["None"],
-                                      weight=1)
-        plugin.setup(resources, dummy_constraint, self.exec_args)
+        plugin.setup(DUMMY_RES, DUMMY_CONST, self.exec_args)
         plugins.append(plugin)
         return plugins
 

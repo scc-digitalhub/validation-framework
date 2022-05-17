@@ -126,6 +126,7 @@ class FTPArtifactStore(ArtifactStore):
         ftp.login(self.config["user"], self.config["password"])
         yield ftp
         ftp.close()
+        del ftp
 
     def _mkdir(self, path):
         """

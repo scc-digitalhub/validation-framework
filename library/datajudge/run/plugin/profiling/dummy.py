@@ -12,6 +12,7 @@ from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.utils.commons import DUMMY
 from datajudge.run.plugin.plugin_utils import exec_decorator
+from datajudge.utils.config import DUMMY_RES
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
@@ -74,14 +75,14 @@ class ProfilePluginDummy(Profiling):
         """
         Get library name.
         """
-        return None
+        return DUMMY
 
     @staticmethod
     def get_lib_version() -> str:
         """
         Get library version.
         """
-        return None
+        return DUMMY
 
 
 class ProfileBuilderDummy(PluginBuilder):
@@ -96,6 +97,6 @@ class ProfileBuilderDummy(PluginBuilder):
         """
         plugins = []
         plugin = ProfilePluginDummy()
-        plugin.setup(resources, self.exec_args)
+        plugin.setup(DUMMY_RES, self.exec_args)
         plugins.append(plugin)
         return plugins
