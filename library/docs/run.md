@@ -109,9 +109,9 @@ Note that if the `Run` is used outside the context manager, some metadata will n
 The `Run` exposes a variety of methods. In general, these methods cover four needs:
 
 - Execute a specific operation over some resources
-  - [Validation]("../validation.md")
-  - [Profiling]("../profiling.md")
-  - [Inference]("../inference.md")
+  - [Validation](./validation.md)
+  - [Profiling](./profiling.md)
+  - [Inference](./inference.md)
 - Log datajudge metadata to a backend
 - Persist artifact produced by the execution frameworks
 - Persist input data as artifacts

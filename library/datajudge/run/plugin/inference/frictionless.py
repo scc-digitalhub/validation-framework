@@ -48,7 +48,7 @@ class InferencePluginFrictionless(Inference):
         Method that call infer on a resource and return an
         inferred schema.
         """
-        return describe_schema(path=self.resource.tmp_pth,
+        return Schema.describe(path=self.resource.tmp_pth,
                                name=self.resource.name,
                                **self.exec_args)
 

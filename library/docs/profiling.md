@@ -2,11 +2,6 @@
 
 The profiling process is the process where a framework try to profile a `DataResource`.
 
-## Library supported
-
-- `frictionless`
-- `pandas_profiling`
-
 ## Run methods
 
 ```python
@@ -21,8 +16,6 @@ with run:
     run.profile_datajudge()
     run.log_profile()
     run.persist_profile()
-
-
 ```
 
 ### Execution methods
@@ -37,3 +30,39 @@ Execution method tell plugings to execute profiling over a resource. All this me
 
 - `run.log_profile()`, log `DatajudgeProfile` into the `MetadataStore`
 - `run.profile()`, persist artifact into the default `ArtifactStore`
+
+## Library supported
+
+- `frictionless`
+
+```python
+run_config = {
+
+    # The only parameter accepted is "frictionless"
+    "library": "frictionless",
+
+    # execArgs accepted are the ones passed to the constructor of Resource().
+    "execArgs": {},
+
+    # This arguments is related more to the stores than the run plugins,
+    # but in general, to perform a better profilation with frictionless,
+    # a csv format is better.
+    "tmpFormat": "csv"
+}
+```
+
+- `pandas_profiling`
+
+```python
+run_config = {
+
+    # The only parameter accepted is "pandas_profiling"
+    "library": "pandas_profiling",
+
+    # execArgs accepted are the ones passed to the method ProfileReport().
+    "execArgs": {"minimal": True},
+
+    # This arguments is related more to the stores than the run plugins.
+    "tmpFormat": "csv" or "parquet"
+}
+```

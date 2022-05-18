@@ -5,14 +5,12 @@
 
 - `Run metadata`
   - Describe the validation run. By validation run, we mean a defined validation process executed in a defined organizational context (called *experiment*).
-- `Data Resource`
-  - According to the Frictionless technical specifications, *Datajudge* produces a descriptor file of the input data.
-- `Short Report`
-  - A concise and anonymized version of the report created by the validation framework.
-- `Short Schema`
+- `Datajudge Report`
+  - A concise and anonymized version of the report created by a validation framework.
+- `Datajudge Schema`
   - A simple representation of the input data schema, describing columns names and types.
-- `Short Profile`
-  - A reduced and anonymized version of the report produced by `pandas profiling` package.
+- `Datajudge Profile`
+  - A reduced and anonymized version of the report produced by a profiling framework.
 - `Artifact metadata`
   - A series of metadata that associate the artifacts persisted by the user with a run and indicate their location.
 

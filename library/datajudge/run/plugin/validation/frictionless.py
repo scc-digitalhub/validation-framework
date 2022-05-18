@@ -166,7 +166,7 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
             schema = Schema(resource.schema)
             if schema == {}:
                 schema = Schema.describe(path=resource.tmp_pth)
-            return {"fields": [{"name": field["name"]} for field in schema["fields"]]}    
+            return {"fields": [{"name": field["name"]} for field in schema["fields"]]}
         except FrictionlessException as fex:
             raise fex
 

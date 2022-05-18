@@ -2,10 +2,6 @@
 
 The inference process is the process where a framework try to infer the data schema of a `DataResource`.
 
-## Library supported
-
-- `frictionless`
-
 ## Run methods
 
 ```python
@@ -20,8 +16,6 @@ with run:
     run.infer_datajudge()
     run.log_schema()
     run.persist_schema()
-
-
 ```
 
 ### Execution methods
@@ -36,3 +30,24 @@ Execution method tell plugings to execute inference over a resource. All this me
 
 - `run.log_schema()`, log `DatajudgeSchema` into the `MetadataStore`
 - `run.infer()`, persist artifact into the default `ArtifactStore`
+
+## Library supported
+
+- `frictionless`
+
+```python
+run_config = {
+
+    # The only parameter accepted is "frictionless"
+    "library": "frictionless",
+
+    # execArgs accepted are the ones passed to the method Schema.describe().
+    # Note that arguments `path` and `name` are already taken.
+    "execArgs": {},
+
+    # This arguments is related more to the stores than the run plugins,
+    # but in general, to perform a successful schema inference with frictionless,
+    # a csv format is better.
+    "tmpFormat": "csv"
+}
+```
