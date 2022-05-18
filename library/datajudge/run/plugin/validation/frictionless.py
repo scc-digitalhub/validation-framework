@@ -17,6 +17,7 @@ from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import FRICTIONLESS
 from datajudge.run.plugin.plugin_utils import exec_decorator
+from datajudge.utils.exceptions import RunError
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
@@ -164,8 +165,10 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
         """
         try:
             schema = Schema(resource.schema)
-            if schema == {}:
+            if not schema:
                 schema = Schema.describe(path=resource.tmp_pth)
+                if not schema:
+                    raise RunError("Frictionless was unable to infer schema of resource.")
             return {"fields": [{"name": field["name"]} for field in schema["fields"]]}
         except FrictionlessException as fex:
             raise fex
