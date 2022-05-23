@@ -42,6 +42,8 @@ MAXIMUM = "maximum"
 CHECK_VALUE = "value"
 CHECK_ROWS = "rows"
 
+DUCKDB_DB = "tmp.duckdb"
+
 # API endpoints
 API_BASE = "/api/project/"
 API_RUN_METADATA = "/run-metadata"

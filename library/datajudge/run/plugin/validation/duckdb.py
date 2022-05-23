@@ -5,8 +5,10 @@ Frictionless implementation of validation plugin.
 from __future__ import annotations
 
 import re
+import shutil
 import typing
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, List, Tuple
 
 import duckdb
@@ -14,7 +16,7 @@ import duckdb
 from datajudge.data.datajudge_report import DatajudgeReport
 from datajudge.run.plugin.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
-from datajudge.utils.commons import (CHECK_ROWS, CHECK_VALUE, DUCKDB, EMPTY,
+from datajudge.utils.commons import (CHECK_ROWS, CHECK_VALUE, DUCKDB, DUCKDB_DB, EMPTY,
                                      EXACT, MAXIMUM, MINIMUM, NON_EMPTY, RANGE)
 from datajudge.utils.exceptions import ValidationError
 from datajudge.utils.utils import flatten_list
@@ -32,19 +34,19 @@ class ValidationPluginDuckDB(Validation):
 
     def __init__(self) -> None:
         super().__init__()
-        self.connection = None
+        self.db = None
         self.constraint = None
         self.exec_args = None
-        #self.multithread = True
+        self.multiprocess = True
 
     def setup(self,
-              connection: Any,
-              constraint: ConstraintsDuckDB,
+              db: str,
+              constraint: str,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
-        self.connection = connection
+        self.db = db
         self.constraint = constraint
         self.exec_args = exec_args
 
@@ -54,14 +56,17 @@ class ValidationPluginDuckDB(Validation):
         Validate a Data Resource.
         """
         try:
-            self.connection.execute(self.constraint.query)
-            result = self.connection.fetchdf()
+            conn = duckdb.connect(database=self.db, read_only=True)
+            conn.execute(self.constraint.query)
+            result = conn.fetchdf()
         except Exception as ex:
             return {
                 "result": {},
                 "valid": False,
                 "errors": ex.args
             }
+        finally:
+            conn.close()
 
         valid, errors = self.evaluate_validity(result,
                                                self.constraint.check,
@@ -250,11 +255,12 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         f_constraint = self.filter_constraints(constraints)
         f_resources = self.filter_resources(resources, f_constraint)
         self.register_resources(f_resources)
+        self.tear_down_connection()
 
         plugins = []
         for const in f_constraint:
             plugin = ValidationPluginDuckDB()
-            plugin.setup(self.con.cursor(), const, self.exec_args)
+            plugin.setup(self.tmp_db, const, self.exec_args)
             plugins.append(plugin)
 
         return plugins
@@ -263,7 +269,9 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         Setup db connection.
         """
-        self.con = duckdb.connect(":memory:", check_same_thread=False)
+        self.tmp_db = f"./tmp/{DUCKDB_DB}"
+        Path(self.tmp_db).parent.mkdir(parents=True, exist_ok=True)
+        self.con = duckdb.connect(database=self.tmp_db, read_only=False)
 
     def filter_resources(self,
                          resources: List[DataResource],
@@ -305,6 +313,12 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
                 sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{resource.tmp_pth}';"
                 self.con.execute(sql)
 
+    def tear_down_connection(self) -> None:
+        """
+        Close connection.
+        """
+        self.con.close()
+
     @staticmethod
     def filter_constraints(constraints: List[Constraint]
                            ) -> List[ConstraintsDuckDB]:
@@ -314,4 +328,4 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         Destory db.
         """
-        self.con.close()
+        shutil.rmtree(self.tmp_db)
