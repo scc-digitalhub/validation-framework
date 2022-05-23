@@ -87,7 +87,7 @@ class RunHandler:
 
     def infer(self,
               resources: List[DataResource],
-              multithread: bool = False,
+              parallel: bool = False,
               num_worker: int = 10
               ) -> None:
         """
@@ -97,15 +97,12 @@ class RunHandler:
                                    INFERENCE,
                                    self._store_handler.get_all_art_stores())
         plugins = self.create_plugins(builders, resources)
-        if multithread:
-            self.pool_execute(plugins, INFERENCE, num_worker)
-        else:
-            self.sequential_execute(plugins, INFERENCE)
+        self.scheduler(plugins, INFERENCE, parallel, num_worker)
 
     def validate(self,
                  resources: List[DataResource],
                  constraints: List[Constraint],
-                 multithread: bool = False,
+                 parallel: bool = False,
                  num_worker: int = 10
                  ) -> None:
         """
@@ -115,15 +112,12 @@ class RunHandler:
                                    VALIDATION,
                                    self._store_handler.get_all_art_stores())
         plugins = self.create_plugins(builders, resources, constraints)
-        if multithread:
-            self.pool_execute(plugins, VALIDATION, num_worker)
-        else:
-            self.sequential_execute(plugins, VALIDATION)
+        self.scheduler(plugins, VALIDATION, parallel, num_worker)
         self.destroy_builders(builders)
 
     def profile(self,
                 resources: List[DataResource],
-                multithread: bool = False,
+                parallel: bool = False,
                 num_worker: int = 10
                 ) -> None:
         """
@@ -133,10 +127,7 @@ class RunHandler:
                                    PROFILING,
                                    self._store_handler.get_all_art_stores())
         plugins = self.create_plugins(builders, resources)
-        if multithread:
-            self.pool_execute(plugins, PROFILING, num_worker)
-        else:
-            self.sequential_execute(plugins, PROFILING)
+        self.scheduler(plugins, PROFILING, parallel, num_worker)
 
     @staticmethod
     def create_plugins(builders: PluginBuilder,
@@ -145,6 +136,30 @@ class RunHandler:
         Return a list of plugins.
         """
         return flatten_list([builder.build(*args) for builder in builders])
+
+    def scheduler(self,
+                  plugins: List[Plugin],
+                  ops: str,
+                  parallel: bool,
+                  num_worker: int) -> None:
+        """
+        Schedule execution to avoid multiprocessing issues.
+        """
+        multiprocess = []
+        multithreading = []
+        sequential = []
+        for p in plugins:
+            if p.multiprocess and parallel:
+                multiprocess.append(p)
+            elif p.multithread and parallel:
+                multithreading.append(p)
+            else:
+                sequential.append(p)
+
+        # Revisite this
+        self.sequential_execute(sequential, ops)
+        self.pool_execute_multithread(multithreading, ops, num_worker)
+        self.pool_execute_multiprocess(multiprocess, ops, num_worker)
 
     def sequential_execute(self,
                            plugins: List[Plugin],
@@ -156,13 +171,25 @@ class RunHandler:
             data = self.execute(plugin)
             self.register_results(ops, data)
 
-    def pool_execute(self,
-                     plugins: List[Plugin],
-                     ops: str,
-                     num_worker: int) -> None:
+    def pool_execute_multiprocess(self,
+                                  plugins: List[Plugin],
+                                  ops: str,
+                                  num_worker: int) -> None:
         """
-        Instantiate a multithreading pool to execute
-        operations in parallel.
+        Instantiate a concurrent.future.ProcessPoolExecutor pool to
+        execute operations in multiprocessing.
+        """
+        with concurrent.futures.ProcessPoolExecutor(max_workers=num_worker) as pool:
+            for data in pool.map(self.execute, plugins):
+                self.register_results(ops, data)
+
+    def pool_execute_multithread(self,
+                                 plugins: List[Plugin],
+                                 ops: str,
+                                 num_worker: int) -> None:
+        """
+        Instantiate a concurrent.future.ThreadPoolExecutor pool to
+        execute operations in multithreading.
         """
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_worker) as pool:
             for data in pool.map(self.execute, plugins):

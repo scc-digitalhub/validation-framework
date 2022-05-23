@@ -32,6 +32,7 @@ class InferencePluginFrictionless(Inference):
         super().__init__()
         self.resource = None
         self.exec_args = None
+        self.multiprocess = True
 
     def setup(self,
               resource: DataResource,
@@ -48,9 +49,10 @@ class InferencePluginFrictionless(Inference):
         Method that call infer on a resource and return an
         inferred schema.
         """
-        return Schema.describe(path=self.resource.tmp_pth,
-                               name=self.resource.name,
-                               **self.exec_args)
+        schema = Schema.describe(path=self.resource.tmp_pth,
+                                 name=self.resource.name,
+                                 **self.exec_args)
+        return Schema(schema.to_dict())
 
     @exec_decorator
     def render_datajudge(self, result: Result) -> DatajudgeSchema:

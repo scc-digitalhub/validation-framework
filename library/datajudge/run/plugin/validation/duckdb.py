@@ -35,6 +35,7 @@ class ValidationPluginDuckDB(Validation):
         self.connection = None
         self.constraint = None
         self.exec_args = None
+        #self.multithread = True
 
     def setup(self,
               connection: Any,
@@ -262,7 +263,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         Setup db connection.
         """
-        self.con = duckdb.connect(":memory:")
+        self.con = duckdb.connect(":memory:", check_same_thread=False)
 
     def filter_resources(self,
                          resources: List[DataResource],
@@ -282,6 +283,13 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         for res in resources:
             resource = self.fetch_resource(res)
+
+            # If resource is already registered, continue
+            try:
+                if bool(self.con.table(f"{resource.name}")):
+                    continue
+            except RuntimeError:
+                pass
 
             # Handle multiple paths
             if isinstance(resource.path, list):

@@ -10,6 +10,7 @@ from typing import List, Optional, Union
 from datajudge.data import DataResource
 from datajudge.run import Run, RunHandler, RunInfo
 from datajudge.utils.config import RunConfig
+from datajudge.utils.exceptions import RunError
 from datajudge.utils.utils import get_uiid, listify
 
 if typing.TYPE_CHECKING:
@@ -52,6 +53,17 @@ class RunBuilder:
         store = self._store_handler.get_def_store()
         return store.get_run_artifacts_uri(exp_name, run_id)
 
+    def _check_unique_resource(self,
+                               resources: List[DataResource]) -> None:
+        """
+        Check that resources have unique names.
+        """
+        exists = []
+        for res in resources:
+            if res.name in exists:
+                raise RunError(f"Resource with name {res.name} already exists!")
+            exists.append(res.name)
+
     def create_run(self,
                    resources: Union[List[DataResource], DataResource],
                    run_config: RunConfig,
@@ -62,6 +74,7 @@ class RunBuilder:
         Create a new run.
         """
         resources = listify(resources)
+        self._check_unique_resource(resources)
         run_id = get_uiid(run_id)
 
         self._init_run(experiment, run_id, overwrite)

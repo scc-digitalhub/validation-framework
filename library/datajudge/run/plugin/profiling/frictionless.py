@@ -31,6 +31,7 @@ class ProfilePluginFrictionless(Profiling):
         super().__init__()
         self.resource = None
         self.exec_args = None
+        self.multiprocess = True
 
     def setup(self,
               resource: DataResource,
@@ -46,11 +47,11 @@ class ProfilePluginFrictionless(Profiling):
         """
         Do nothing.
         """
-        profile = Resource(self.resource.tmp_pth,
-                           **self.exec_args)
-        profile.infer()
-        profile.expand()
-        return profile
+        profile = Resource().describe(self.resource.tmp_pth,
+                                      expand=True,
+                                      stats=True,
+                                      **self.exec_args)
+        return Resource(profile.to_dict())
 
     @exec_decorator
     def render_datajudge(self, result: Result) -> DatajudgeProfile:

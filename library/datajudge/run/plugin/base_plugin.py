@@ -29,6 +29,8 @@ class Plugin(metaclass=ABCMeta):
         self.lib_name = self.get_lib_name()
         self.lib_version = self.get_lib_version()
         self.logger = LOGGER
+        self.multiprocess = False
+        self.multithread = False
 
     @abstractmethod
     def setup(self, *args, **kwargs) -> None:

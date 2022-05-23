@@ -42,6 +42,7 @@ class ProfilePluginPandasProfiling(Profiling):
         super().__init__()
         self.resource = None
         self.exec_args = None
+        self.multiprocess = True
 
     def setup(self,
               resource: DataResource,
@@ -59,7 +60,8 @@ class ProfilePluginPandasProfiling(Profiling):
         """
         file_format, pandas_kwargs = self._infer_args(self.resource.tmp_pth)
         df = self._read_df(self.resource.tmp_pth, file_format, **pandas_kwargs)
-        profile = ProfileReport(df, **self.exec_args)
+        profile = ProfileReport(df, lazy=False, **self.exec_args)
+        profile = ProfileReport().loads(profile.dumps())
         return profile
 
     @staticmethod
@@ -69,9 +71,8 @@ class ProfilePluginPandasProfiling(Profiling):
         optional arguments for pandas.
         """
         # Possibily, redo this part with simple custom inference
-        res = Resource(data_path)
-        res.infer()
-        res.expand()
+        res = Resource().describe(data_path, expand=True)
+        res = res.to_dict()
 
         file_format = res.get("format", "csv")
         pandas_args = {
@@ -115,8 +116,7 @@ class ProfilePluginPandasProfiling(Profiling):
                 df = pd.read_parquet(path)
             return df
 
-        raise ValueError("Invalid extension. \
-                          Only CSV and XLS supported!")
+        raise ValueError("File extension not supported!")
 
     @exec_decorator
     def render_datajudge(self, result: Result) -> DatajudgeProfile:

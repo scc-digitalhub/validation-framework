@@ -9,7 +9,7 @@ from copy import deepcopy
 from typing import List
 
 import frictionless
-from frictionless import Report, Resource, Schema, describe_schema
+from frictionless import Report, Resource, Schema
 from frictionless.exception import FrictionlessException
 
 from datajudge.data.datajudge_report import DatajudgeReport
@@ -17,7 +17,6 @@ from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import FRICTIONLESS
 from datajudge.run.plugin.plugin_utils import exec_decorator
-from datajudge.utils.exceptions import RunError
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
@@ -35,6 +34,7 @@ class ValidationPluginFrictionless(Validation):
         self.resource = None
         self.constraint = None
         self.exec_args = None
+        self.multiprocess = True
 
     def setup(self,
               resource: DataResource,
@@ -53,10 +53,11 @@ class ValidationPluginFrictionless(Validation):
         Validate a Data Resource.
         """
         schema = self.rebuild_constraints()
-        resource = Resource(path=self.resource.tmp_pth,
-                            schema=schema)
-        return frictionless.validate(resource,
-                                     **self.exec_args)
+        res = Resource(path=self.resource.tmp_pth,
+                       schema=schema).validate(**self.exec_args)
+        # Workaround: when using multiprocessin, we need to convert
+        # the report in a dict.
+        return Report(res.to_dict())
 
     def rebuild_constraints(self) -> Schema:
         """
@@ -97,6 +98,21 @@ class ValidationPluginFrictionless(Validation):
         spec = ["fieldName", "rowNumber", "code", "note", "description"]
         flat_report = report.flatten(spec=spec)
         errors = [dict(zip(spec, err)) for err in flat_report]
+
+        # # If frictionless is unable to infer schema or a schema
+        # # is not provided, the resource results valid, but is hard to
+        # # track the thing. If no schema is detected in the resource
+        # # validate, datajudge will consider the validation false
+        # _schema_check = report.get("tasks")[0].resource.schema
+        # if not _schema_check.get("fields", False):
+        #     errors.append({
+        #         "fieldName": None,
+        #         "rowNumber": None,
+        #         "code": None,
+        #         "note": "No schema provided for resource",
+        #         "description": "Check if resource as no extension"
+        #     })
+        #     valid = False
 
         return DatajudgeReport(self.get_lib_name(),
                                self.get_lib_version(),
@@ -168,7 +184,7 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
             if not schema:
                 schema = Schema.describe(path=resource.tmp_pth)
                 if not schema:
-                    raise RunError("Frictionless was unable to infer schema of resource.")
+                    return {"fields": []}
             return {"fields": [{"name": field["name"]} for field in schema["fields"]]}
         except FrictionlessException as fex:
             raise fex
