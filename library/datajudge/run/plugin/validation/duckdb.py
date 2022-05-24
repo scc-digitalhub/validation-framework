@@ -88,29 +88,47 @@ class ValidationPluginDuckDB(Validation):
         """
         try:
 
-            # Check tipology on values or rows
             if check == CHECK_VALUE:
+
+                # Evaluation made on a single value as result of
+                # a query.
+
                 result = query_result.iloc[0, 0]
+
+                if expect == EXACT:
+                    return self.evaluate_exact(result, value)
+                elif expect == RANGE:
+                    return self.evaluate_range(result, value)
+                elif expect == MINIMUM:
+                    return self.evaluate_min(result, value)
+                elif expect == MAXIMUM:
+                    return self.evaluate_max(result, value)
+                else:
+                    raise ValidationError("Invalid expectation.")
+
             elif check == CHECK_ROWS:
+
+                # Evaluation made on number of rows
+
                 result = query_result.shape[0]
+
+                if expect == EMPTY:
+                    return self.evaluate_empty(result, empty=True)
+                elif expect == NON_EMPTY:
+                    return self.evaluate_empty(result, empty=False)
+                elif expect == EXACT:
+                    return self.evaluate_exact(result, value)
+                elif expect == RANGE:
+                    return self.evaluate_range(result, value)
+                elif expect == MINIMUM:
+                    return self.evaluate_min(result, value)
+                elif expect == MAXIMUM:
+                    return self.evaluate_max(result, value)
+                else:
+                    raise ValidationError("Invalid expectation.")
+
             else:
                 raise ValidationError("Invalid check typology.")
-
-            # Specific evaluation
-            if expect == EMPTY:
-                return self.evaluate_empty(result, empty=True)
-            elif expect == NON_EMPTY:
-                return self.evaluate_empty(result, empty=False)
-            elif expect == EXACT:
-                return self.evaluate_exact(result, value)
-            elif expect == RANGE:
-                return self.evaluate_range(result, value)
-            elif expect == MINIMUM:
-                return self.evaluate_min(result, value)
-            elif expect == MAXIMUM:
-                return self.evaluate_max(result, value)
-            else:
-                raise ValidationError("Invalid expectation.")
 
         except Exception as ex:
             return False, ex.args
@@ -128,7 +146,7 @@ class ValidationPluginDuckDB(Validation):
                 return True, None
             return False, "Table is not empty."
         else:
-            if result != 0:
+            if result > 0:
                 return True, None
             return False, "Table is empty."
 
@@ -328,4 +346,4 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         Destory db.
         """
-        shutil.rmtree(self.tmp_db)
+        shutil.rmtree(Path(self.tmp_db).parent)

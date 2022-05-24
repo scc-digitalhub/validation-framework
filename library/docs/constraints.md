@@ -84,9 +84,10 @@ The parameters to define a `ConstraintsDuckDB` are the following:
     - "(num1, num2]" upper exclusive, lower inclusive
     - "[num1, num2)" upper inclusive, lower exclusive
     - "[num1, num2]" upper inclusive, lower inclusive
+  - *minimum* and *maximum* are inclusive
 - *check*, tipology of result to evaluate
   - *rows* check number of rows
-  - *value* check a single value, e.g. a *select count(\*)*
+  - *value* check a single value, e.g. a *select count(\*)*. If a query result in more than one column, the evaluator will take into account only the first column in the first row
 
 ```python
 import datajudge as dj
@@ -100,17 +101,104 @@ STORE_LOCAL_01 = dj.StoreConfig(name="local",
 
 # Data Resource
 RES_LOCAL_01 = dj.DataResource(path="path-to-data",
-                               name="example-resource",
+                               name="example_resource",
                                store="local")
 
 
-# Example constraint. We expect that the reesource is not empty.
+# EXAMPLE CONSTRAINTS
+
+# Empty/non-empty table. The evaluation is allowed when check is "rows"
+
+# Expecting empty table as result of the validation query
 CONSTRAINT_01 = dj.ConstraintsDuckdb(type="duckdb",
                                      title="Example duckdb constraint",
                                      name="example-const",
-                                     resources=["example-resource"],
-                                     query="select * from exampl-resource"
+                                     resources=["example_resource"],
+                                     query="select * from example_resource"
+                                     expect="empty",
+                                     check="rows"
+                                     weight=5)
+
+# Expecting non-empty table as result of the validation query
+CONSTRAINT_02 = dj.ConstraintsDuckdb(type="duckdb",
+                                     title="Example duckdb constraint",
+                                     name="example-const",
+                                     resources=["example_resource"],
+                                     query="select * from example_resource"
                                      expect="non-empty",
                                      check="rows"
                                      weight=5)
+
+# Exact value
+
+# Expecting a table with 10 rows
+CONSTRAINT_03 = dj.ConstraintsDuckdb(type="duckdb",
+                                     title="Example duckdb constraint",
+                                     name="example-const",
+                                     resources=["example_resource"],
+                                     query="select field from example_resource"
+                                     expect="exact",
+                                     check="rows",
+                                     value=10
+                                     weight=5)
+
+# Expecting a table with 10 as result of the count
+CONSTRAINT_04 = dj.ConstraintsDuckdb(type="duckdb",
+                                     title="Example duckdb constraint",
+                                     name="example-const",
+                                     resources=["example_resource"],
+                                     query="select count(field) from example_resource"
+                                     expect="exact",
+                                     check="value"
+                                     value=10,
+                                     weight=5)
+
+# Minimum/maximum (both check are inclusive of the value)
+
+# Expecting a table with number of rows >= 10
+CONSTRAINT_05 = dj.ConstraintsDuckdb(type="duckdb",
+                                     title="Example duckdb constraint",
+                                     name="example-const",
+                                     resources=["example_resource"],
+                                     query="select field from example_resource"
+                                     expect="minimum",
+                                     check="rows",
+                                     value=10
+                                     weight=5)
+
+# Expecting a table with result of count <= 10
+CONSTRAINT_06 = dj.ConstraintsDuckdb(type="duckdb",
+                                     title="Example duckdb constraint",
+                                     name="example-const",
+                                     resources=["example_resource"],
+                                     query="select count(field) from example_resource"
+                                     expect="maximum",
+                                     check="value"
+                                     value=10,
+                                     weight=5)
+
+# Range (value expect a string of parentheses and number)
+
+# Expecting a table with number of rows > 10 and <= 15
+CONSTRAINT_07 = dj.ConstraintsDuckdb(type="duckdb",
+                                     title="Example duckdb constraint",
+                                     name="example-const",
+                                     resources=["example_resource"],
+                                     query="select field from example_resource"
+                                     expect="range",
+                                     check="rows",
+                                     value="(10,15]"
+                                     weight=5)
+
+# Expecting a table with resulting value >= 10.87 and < 15.63
+CONSTRAINT_08 = dj.ConstraintsDuckdb(type="duckdb",
+                                     title="Example duckdb constraint",
+                                     name="example-const",
+                                     resources=["example_resource"],
+                                     query="select mean(field) from example_resource"
+                                     expect="rows",
+                                     check="value"
+                                     value="[10.87,15.63)",
+                                     weight=5)
+
 ```

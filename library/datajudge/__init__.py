@@ -5,6 +5,8 @@ from datajudge.data import DataResource
 from datajudge.client import Client
 from datajudge.utils.config import (RunConfig, StoreConfig,
                                     ConstraintsDuckDB, ConstraintsFrictionless)
+from datajudge.utils.utils import frictionless_schema_converter
+
 
 __all__ = [
     "Client",
@@ -12,5 +14,6 @@ __all__ = [
     "RunConfig",
     "StoreConfig",
     "ConstraintsDuckDB",
-    "ConstraintsFrictionless"
+    "ConstraintsFrictionless",
+    "frictionless_schema_converter"
 ]
