@@ -74,12 +74,14 @@ class ArtifactStore:
                  name: str,
                  artifact_uri: str,
                  temp_dir: str,
-                 config: Optional[dict] = None
+                 config: Optional[dict] = None,
+                 is_default = False
                  ) -> None:
         self.name = name
         self.artifact_uri = artifact_uri
         self.temp_dir = temp_dir
         self.config = config
+        self.is_default = is_default
         self.resource_paths = ResourceRegistry()
 
     @abstractmethod

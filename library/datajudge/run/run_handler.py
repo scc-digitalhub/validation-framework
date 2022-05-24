@@ -284,6 +284,18 @@ class RunHandler:
         """
         return flatten_list([obj.artifact for obj in self.get_item(PROFILING, RES_RENDER)])
 
+    def get_libraries(self) -> List[dict]:
+        """
+        Return libraries used by run.
+        """
+        libs = {}
+        for op in [INFERENCE, PROFILING, VALIDATION]:
+            libs[op] = []
+            for i in self.get_item(op, RES_LIB):
+                if dict(**i) not in libs[op]:
+                    libs[op].append(i)
+        return libs
+
     def log_metadata(self,
                      src: dict,
                      dst: str,
@@ -316,9 +328,9 @@ class RunHandler:
         for res in resources:
             resource = deepcopy(res)
             for store in self._store_handler.get_all_art_stores():
-               if store["name"] == resource.store:
-                    resource.tmp_pth = store["store"].fetch_artifact(resource.path,
-                                                                     file_format)
+               if store.name == resource.store:
+                    resource.tmp_pth = store.fetch_artifact(resource.path,
+                                                            file_format)
 
             for path in listify(resource.tmp_pth):
                 filename = get_name_from_uri(path)

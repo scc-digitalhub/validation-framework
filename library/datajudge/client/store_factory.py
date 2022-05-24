@@ -73,10 +73,7 @@ class StoreBuilder:
                                             scheme,
                                             self.project_id)
         try:
-            return {
-                "name": cfg.name,
-                "store": MD_STORES[cfg.type](cfg.name, new_uri, cfg.config)
-            }
+            return MD_STORES[cfg.type](cfg.name, new_uri, cfg.config)
         except KeyError:
             raise NotImplementedError
 
@@ -104,11 +101,11 @@ class StoreBuilder:
         new_uri = self.resolve_artifact_uri(cfg.uri, scheme)
         tmp = str(Path(self.tmp_dir, get_uiid()))
         try:
-            return {
-                "name": cfg.name,
-                "store": ART_STORES[cfg.type](cfg.name, new_uri, tmp, cfg.config),
-                "is_default": cfg.isDefault
-            }
+            return ART_STORES[cfg.type](cfg.name,
+                                        new_uri,
+                                        tmp,
+                                        cfg.config,
+                                        cfg.isDefault)
         except KeyError:
             raise NotImplementedError
 

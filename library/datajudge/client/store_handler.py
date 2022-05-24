@@ -48,7 +48,7 @@ class StoreRegistry:
         """
         if store_type == STORE_TYPE_ARTIFACT:
             for s in self.get_all_stores(store_type):
-                if s.get("name") == store.get("name"):
+                if s.name == store.name:
                     raise StoreError("There is already a store with that name. " +
                                      "Please choose another name to identify the store")
             self.registry[store_type].append(store)
@@ -62,14 +62,14 @@ class StoreRegistry:
         Return a store from registry.
         """
         if store_type in (STORE_TYPE_METADATA, DEFAULT_STORE):
-            return self.registry[store_type]["store"]
+            return self.registry[store_type]
 
         if store_type == STORE_TYPE_ARTIFACT:
             if store_name is None:
-                return self.registry[DEFAULT_STORE]["store"]
+                return self.registry[DEFAULT_STORE]
             for store in self.registry[store_type]:
-                if store_name == store.get("name"):
-                    return store["store"]
+                if store_name == store.name:
+                    return store
             raise StoreError(f"No store with name {store_name}")
 
         raise StoreError("Invalid store type.")
@@ -158,12 +158,12 @@ class StoreHandler:
 
         if len(stores) == 1:
             default = stores[0]
-            default["is_default"] = True
+            default.is_default = True
             self._store_registry.register(default, DEFAULT_STORE)
             return
 
         for store in stores:
-            if store.get("is_default", False):
+            if store.is_default:
                 if default is None:
                     default = store
                     self._store_registry.register(default, DEFAULT_STORE)
@@ -171,7 +171,7 @@ class StoreHandler:
                     raise StoreError("Configure only one store as default.")
 
         try:
-            assert default["is_default"]
+            assert default.is_default
         except (AssertionError, TypeError):
             raise StoreError("Please configure one store as default.")
 
@@ -216,4 +216,4 @@ class StoreHandler:
         """
         stores = self.get_all_art_stores()
         for store in stores:
-            store["store"].clean_paths()
+            store.clean_paths()

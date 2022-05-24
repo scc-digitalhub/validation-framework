@@ -195,6 +195,12 @@ class Run:
         if self.run_info.run_artifacts_uri in DUMMY_SCHEME:
             raise StoreError("Please configure a artifact store.")
 
+    def _get_libraries(self) -> None:
+        """
+        Return the list of libraries used by the run.
+        """
+        self.run_info.run_libraries = self._run_handler.get_libraries()
+
     # Inference
 
     def infer_wrapper(self,
@@ -480,6 +486,7 @@ class Run:
         else:
             self.run_info.end_status = STATUS_ERROR
 
+        self._get_libraries()
         self.run_info.finished = get_time()
         self._log_run()
         LOGGER.info(f"Run finished. Clean up of temp resources.")

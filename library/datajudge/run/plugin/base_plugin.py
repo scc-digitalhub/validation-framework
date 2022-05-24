@@ -112,9 +112,9 @@ class PluginBuilder:
         """
         resource = deepcopy(res)
         for store in self.stores:
-            if store["name"] == resource.store:
-                resource.tmp_pth = store["store"].fetch_artifact(resource.path,
-                                                                 self.file_format)
+            if store.name == resource.store:
+                resource.tmp_pth = store.fetch_artifact(resource.path,
+                                                        self.file_format)
                 return resource
         raise StoreError(f"No store registered with name '{resource.store}'. " +
                          f"Impossible to fetch resource '{resource.name}'")
