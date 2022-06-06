@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import typing
 from copy import deepcopy
-from typing import List
+from typing import List, Union
 
 import frictionless
 from frictionless import Report, Resource, Schema
@@ -15,12 +15,13 @@ from frictionless.exception import FrictionlessException
 from datajudge.data.datajudge_report import DatajudgeReport
 from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
-from datajudge.utils.commons import FRICTIONLESS
+from datajudge.utils.commons import FRICTIONLESS, FRICTIONLESS_SCHEMA
 from datajudge.run.plugin.plugin_utils import exec_decorator
+from datajudge.utils.config import ConstraintsFrictionless, ConstraintFullFrictionless
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
-    from datajudge.utils.config import Constraint, ConstraintsFrictionless
+    from datajudge.utils.config import Constraint
     from datajudge.run.plugin.base_plugin import Result
 
 
@@ -34,7 +35,7 @@ class ValidationPluginFrictionless(Validation):
         self.resource = None
         self.constraint = None
         self.exec_args = None
-        self.multiprocess = True
+        self.exec_multiprocess = True
 
     def setup(self,
               resource: DataResource,
@@ -55,7 +56,7 @@ class ValidationPluginFrictionless(Validation):
         schema = self.rebuild_constraints()
         res = Resource(path=self.resource.tmp_pth,
                        schema=schema).validate(**self.exec_args)
-        # Workaround: when using multiprocessin, we need to convert
+        # Workaround: when using multiprocessing, we need to convert
         # the report in a dict.
         return Report(res.to_dict())
 
@@ -63,28 +64,31 @@ class ValidationPluginFrictionless(Validation):
         """
         Rebuild constraints.
         """
-        field_name = self.constraint.field
-        field_type = self.constraint.fieldType
-        val = self.constraint.value
-        con_type = self.constraint.constraint
-        weight = self.constraint.weight
+        if isinstance(self.constraint, ConstraintsFrictionless):
+            field_name = self.constraint.field
+            field_type = self.constraint.fieldType
+            val = self.constraint.value
+            con_type = self.constraint.constraint
+            weight = self.constraint.weight
 
-        schema = deepcopy(self.resource.schema)
+            schema = deepcopy(self.resource.schema)
 
-        for field in schema["fields"]:
-            if field["name"] == field_name:
-                field["error"] = {"weight": weight}
-                if con_type == "type":
-                    field["type"] = field_type
-                elif con_type == "format":
-                    field["type"] = field_type
-                    field["format"] = val
-                else:
-                    field["type"] = field_type
-                    field["constraints"] = {con_type: val}
-                break
+            for field in schema["fields"]:
+                if field["name"] == field_name:
+                    field["error"] = {"weight": weight}
+                    if con_type == "type":
+                        field["type"] = field_type
+                    elif con_type == "format":
+                        field["type"] = field_type
+                        field["format"] = val
+                    else:
+                        field["type"] = field_type
+                        field["constraints"] = {con_type: val}
+                    break
+            return Schema(schema)
 
-        return Schema(schema)
+        elif isinstance(self.constraint, ConstraintFullFrictionless):
+            return Schema(self.constraint.table_schema)
 
     @exec_decorator
     def render_datajudge(self, result: Result) -> DatajudgeReport:
@@ -191,9 +195,9 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
 
     @staticmethod
     def filter_constraints(constraints: List[Constraint]
-                           ) -> List[ConstraintsFrictionless]:
+                           ) -> List[Union[ConstraintsFrictionless, ConstraintFullFrictionless]]:
         return [const for const in constraints
-                if const.type == FRICTIONLESS]
+                if const.type in (FRICTIONLESS, FRICTIONLESS_SCHEMA)]
 
     def destroy(self) -> None:
         """

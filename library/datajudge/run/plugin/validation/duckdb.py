@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import re
 import shutil
+from tabnanny import check
 import typing
 from copy import deepcopy
 from pathlib import Path
@@ -37,7 +38,7 @@ class ValidationPluginDuckDB(Validation):
         self.db = None
         self.constraint = None
         self.exec_args = None
-        self.multiprocess = True
+        self.exec_multiprocess = True
 
     def setup(self,
               db: str,
@@ -49,6 +50,7 @@ class ValidationPluginDuckDB(Validation):
         self.db = db
         self.constraint = constraint
         self.exec_args = exec_args
+        self.parse_args()
 
     @exec_decorator
     def validate(self) -> dict:
@@ -269,6 +271,8 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         Build a plugin for every resource and every constraint.
         """
+        self.check_args()
+        
         self.setup_connection()
         f_constraint = self.filter_constraints(constraints)
         f_resources = self.filter_resources(resources, f_constraint)
@@ -282,6 +286,9 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
             plugins.append(plugin)
 
         return plugins
+
+    def check_args(self) -> None:
+        pass
 
     def setup_connection(self) -> None:
         """

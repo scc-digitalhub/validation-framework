@@ -30,8 +30,13 @@ SQL_SCHEME = ["sql"]
 ODBC_SCHEME = ["dremio", "odbc"]
 DUMMY_SCHEME = ["_dummy"]
 
+# Constraints
 
-# DuckDB sonstraints expectation
+# Frictionless
+FRICTIONLESS_SCHEMA = "frictionless_schema"
+
+
+# DuckDB constraints expectation
 EMPTY = "empty"
 NON_EMPTY = "non-empty"
 EXACT = "exact"

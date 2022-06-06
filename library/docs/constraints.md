@@ -72,8 +72,8 @@ The parameters to define a `ConstraintsDuckDB` are the following:
     - When you select from a resource, the resource must be written lowercase
     - The name of the resource where you select from must be in the list of resources passed to the constraint
 - *expect*, expected tipology of result
-  - *empty*
-  - *non-empty*
+  - *empty* (only for *check = rows*)
+  - *non-empty* (only for *check = rows*)
   - *exact*
   - *range*
   - *minimum*

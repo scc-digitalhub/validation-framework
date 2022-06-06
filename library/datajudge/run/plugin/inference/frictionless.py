@@ -32,7 +32,7 @@ class InferencePluginFrictionless(Inference):
         super().__init__()
         self.resource = None
         self.exec_args = None
-        self.multiprocess = True
+        self.exec_multiprocess = True
 
     def setup(self,
               resource: DataResource,

@@ -147,12 +147,15 @@ class RunHandler:
         """
         multiprocess = []
         multithreading = []
+        distributed = []
         sequential = []
         for p in plugins:
-            if p.multiprocess and parallel:
+            if p.exec_multiprocess and parallel:
                 multiprocess.append(p)
-            elif p.multithread and parallel:
+            elif p.exec_multithread and parallel:
                 multithreading.append(p)
+            elif p.exec_distributed and parallel:
+                distributed.append(p)
             else:
                 sequential.append(p)
 
