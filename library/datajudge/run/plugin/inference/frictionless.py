@@ -60,21 +60,28 @@ class InferencePluginFrictionless(Inference):
         Return a DatajudgeSchema.
         """
 
-        field_infer = result.artifact.get("fields", [])
+        exec_err = result.errors
         duration = result.duration
 
-        dj_schema_fields = []
-        if field_infer:
-            for field in field_infer:
-                dj_schema_fields.append({
-                    "name": field.get("name", ""),
-                    "type": field.get("type", "")
-                    })
+        if exec_err is None:
+            field_infer = result.artifact.get("fields", [])
+            duration = result.duration
+
+            dj_schema_fields = []
+            if field_infer:
+                for field in field_infer:
+                    dj_schema_fields.append({
+                        "name": field.get("name", ""),
+                        "type": field.get("type", "")
+                        })
+            else:
+                dj_schema_fields = [{"name": None, "type": None}]
         else:
-            dj_schema_fields = [{"name": None, "type": None}]
+            dj_schema_fields = None
 
         return DatajudgeSchema(self.get_lib_name(),
                                self.get_lib_version(),
+                               exec_err,
                                duration,
                                dj_schema_fields)
 

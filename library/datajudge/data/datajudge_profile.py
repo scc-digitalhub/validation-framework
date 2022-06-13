@@ -2,6 +2,8 @@
 DatajudgeProfile module.
 """
 # pylint: disable=too-many-arguments,too-few-public-methods
+from typing import Union
+
 from datajudge.data.datajudge_base_report import DatajudgeBaseReport
 
 
@@ -22,10 +24,11 @@ class DatajudgeProfile(DatajudgeBaseReport):
     def __init__(self,
                  lib_name: str,
                  lib_version: str,
+                 execution_errors: Union[str, list],
                  duration: float,
                  stats: dict,
                  fields: dict) -> None:
-        super().__init__(lib_name, lib_version, duration)
+        super().__init__(lib_name, lib_version, execution_errors, duration)
         self.stats = stats
         self.fields = fields
 
@@ -36,6 +39,7 @@ class DatajudgeProfile(DatajudgeBaseReport):
         schema = {
             "libraryName": self.lib_name,
             "libraryVersion": self.lib_version,
+            "execution_errors": self.execution_errors,
             "duration": self.duration,
             "stats": self.stats,
             "fields": self.fields,

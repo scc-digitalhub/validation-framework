@@ -220,12 +220,20 @@ class ValidationPluginDuckDB(Validation):
         """
         Return a DatajudgeReport.
         """
-        constraint = self.constraint.dict()
+        exec_err = result.errors
         duration = result.duration
-        valid = result.artifact.get("valid")
-        errors = result.artifact.get("errors")
+        constraint = self.constraint.dict()
+
+        if exec_err is None:
+            valid = result.artifact.get("valid")
+            errors = result.artifact.get("errors")
+        else:
+            valid = False
+            errors = None
+
         return DatajudgeReport(self.get_lib_name(),
                                self.get_lib_version(),
+                               exec_err,
                                duration,
                                constraint,
                                valid,
@@ -244,6 +252,9 @@ class ValidationPluginDuckDB(Validation):
         filename = self._fn_report.format(f"{DUCKDB}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
+
+    def parse_args(self):
+        pass
 
     @staticmethod
     def get_lib_name() -> str:
@@ -272,7 +283,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         Build a plugin for every resource and every constraint.
         """
         self.check_args()
-        
+
         self.setup_connection()
         f_constraint = self.filter_constraints(constraints)
         f_resources = self.filter_resources(resources, f_constraint)

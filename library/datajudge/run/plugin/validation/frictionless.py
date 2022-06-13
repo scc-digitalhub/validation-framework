@@ -95,31 +95,24 @@ class ValidationPluginFrictionless(Validation):
         """
         Return a DatajudgeReport.
         """
-        report = result.artifact
+        exec_err = result.errors
+        duration = result.duration
         constraint = self.constraint.dict()
-        duration = report.get("time")
-        valid = report.get("valid")
-        spec = ["fieldName", "rowNumber", "code", "note", "description"]
-        flat_report = report.flatten(spec=spec)
-        errors = [dict(zip(spec, err)) for err in flat_report]
 
-        # # If frictionless is unable to infer schema or a schema
-        # # is not provided, the resource results valid, but is hard to
-        # # track the thing. If no schema is detected in the resource
-        # # validate, datajudge will consider the validation false
-        # _schema_check = report.get("tasks")[0].resource.schema
-        # if not _schema_check.get("fields", False):
-        #     errors.append({
-        #         "fieldName": None,
-        #         "rowNumber": None,
-        #         "code": None,
-        #         "note": "No schema provided for resource",
-        #         "description": "Check if resource as no extension"
-        #     })
-        #     valid = False
+        if exec_err is None:
+            report = result.artifact
+            duration = report.get("time")
+            valid = report.get("valid")
+            spec = ["fieldName", "rowNumber", "code", "note", "description"]
+            flat_report = report.flatten(spec=spec)
+            errors = [dict(zip(spec, err)) for err in flat_report]
+        else:
+            valid = False
+            errors = None
 
         return DatajudgeReport(self.get_lib_name(),
                                self.get_lib_version(),
+                               exec_err,
                                duration,
                                constraint,
                                valid,

@@ -58,12 +58,20 @@ class ProfilePluginFrictionless(Profiling):
         """
         Return a DatajudgeProfile.
         """
-        rep = result.artifact.to_dict()
+        exec_err = result.errors
         duration = result.duration
-        fields = rep.get("schema", {}).get("fields")
-        stats = {k: v for k, v in rep.items() if k != "schema"}
+
+        if result.errors is not None:
+            rep = result.artifact.to_dict()
+            fields = rep.get("schema", {}).get("fields")
+            stats = {k: v for k, v in rep.items() if k != "schema"}
+        else:
+            fields = None
+            stats = None
+
         return DatajudgeProfile(self.get_lib_name(),
                                 self.get_lib_version(),
+                                exec_err,
                                 duration,
                                 stats,
                                 fields)

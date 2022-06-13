@@ -123,30 +123,37 @@ class ProfilePluginPandasProfiling(Profiling):
         """
         Return a DatajudgeProfile.
         """
-        # Profile preparation
-        json_str = result.artifact.to_json()
-        json_str = json_str.replace("NaN", "null")
-        full_profile = json.loads(json_str)
+        exec_err = result.errors
+        duration = result.duration
 
-        # Short profile args
-        args = {
-            k: full_profile.get(k, {}) for k in PROFILE_COLUMNS
-        }
+        if exec_err is None:
+            # Profile preparation
+            json_str = result.artifact.to_json()
+            json_str = json_str.replace("NaN", "null")
+            full_profile = json.loads(json_str)
 
-        # Variables overwriting by filtering
-        var = args.get("variables", {})
-        for key in var:
-            args["variables"][key] = {
-                k: var[key][k] for k in PROFILE_FIELDS
+            # Short profile args
+            args = {
+                k: full_profile.get(k, {}) for k in PROFILE_COLUMNS
             }
 
-        # Get fields, stats and duration
-        fields = args.get("variables", {})
-        stats = args.get("table", {})
-        duration = result.duration
+            # Variables overwriting by filtering
+            var = args.get("variables", {})
+            for key in var:
+                args["variables"][key] = {
+                    k: var[key][k] for k in PROFILE_FIELDS
+                }
+
+            # Get fields, stats and duration
+            fields = args.get("variables", {})
+            stats = args.get("table", {})
+        else:
+            fields = None
+            stats = None
 
         return DatajudgeProfile(self.get_lib_name(),
                                 self.get_lib_version(),
+                                exec_err,
                                 duration,
                                 stats,
                                 fields)

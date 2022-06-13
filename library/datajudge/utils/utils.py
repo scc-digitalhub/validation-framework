@@ -69,10 +69,10 @@ def get_time() -> str:
 
 def frictionless_schema_converter(schema: Union[dict, Schema],
                                   resource_name: str) -> List[ConstraintsFrictionless]:
-    
+
     constraints = []
     for field in schema.get("fields", []):
-        
+
         cnt = 0
 
         type_ = field.get("type")
@@ -89,7 +89,7 @@ def frictionless_schema_converter(schema: Union[dict, Schema],
                                         weight=5)
             constraints.append(c)
             cnt += 1
-            
+
         format_ = field.get("format")
         if format_ is not None:
             name = f'{field.get("name", "")}_{str(cnt)}'
@@ -105,7 +105,7 @@ def frictionless_schema_converter(schema: Union[dict, Schema],
             constraints.append(c)
             cnt += 1
 
-        
+
         c_list = field.get("constraints", {})
         if c_list:
             for k, v in c_list.items():
@@ -121,5 +121,5 @@ def frictionless_schema_converter(schema: Union[dict, Schema],
                                             weight=5)
                 constraints.append(c)
                 cnt += 1
-    
+
     return constraints
