@@ -12,7 +12,7 @@ from datajudge.data.data_resource import DataResource
 from datajudge.utils.commons import (AZURE, CHECK_ROWS, CHECK_VALUE, DUCKDB,
                                      DUMMY, EMPTY, EXACT, FRICTIONLESS, FRICTIONLESS_SCHEMA, FTP,
                                      HTTP, LOCAL, MAXIMUM, MINIMUM, NON_EMPTY,
-                                     ODBC, RANGE, S3, SQL)
+                                     ODBC, RANGE, S3, SQL, SQLALCHEMY)
 
 
 class StoreConfig(BaseModel):
@@ -53,11 +53,18 @@ class ConstraintsDuckDB(Constraint):
     check: Literal[CHECK_VALUE, CHECK_ROWS] = CHECK_ROWS
 
 
+class ConstraintsSqlAlchemy(Constraint):
+    type: Literal[SQLALCHEMY]
+    query: str
+    expect: Literal[EMPTY, NON_EMPTY, EXACT, RANGE, MINIMUM, MAXIMUM]
+    value: Optional[Any] = None
+    check: Literal[CHECK_VALUE, CHECK_ROWS] = CHECK_ROWS
+
+
 class ExecConfig(BaseModel):
     _id: str = Field(default_factory=uuid4)
     library: Optional[str] = DUMMY
     execArgs: Optional[dict] = {}
-    storeArtifact: bool = False
     tmpFormat: Optional[str] = "csv"
 
 

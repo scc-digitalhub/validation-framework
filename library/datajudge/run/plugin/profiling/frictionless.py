@@ -61,17 +61,17 @@ class ProfilePluginFrictionless(Profiling):
         exec_err = result.errors
         duration = result.duration
 
-        if result.errors is not None:
+        if exec_err is None:
             rep = result.artifact.to_dict()
             fields = rep.get("schema", {}).get("fields")
             stats = {k: v for k, v in rep.items() if k != "schema"}
         else:
+            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
             fields = None
             stats = None
 
         return DatajudgeProfile(self.get_lib_name(),
                                 self.get_lib_version(),
-                                exec_err,
                                 duration,
                                 stats,
                                 fields)

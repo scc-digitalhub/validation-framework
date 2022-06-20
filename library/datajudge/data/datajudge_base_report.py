@@ -3,7 +3,6 @@ Datajudge base report module.
 """
 # pylint: disable=too-many-arguments,too-few-public-methods
 from abc import ABCMeta, abstractmethod
-from typing import Union
 
 
 class DatajudgeBaseReport(metaclass=ABCMeta):
@@ -29,12 +28,10 @@ class DatajudgeBaseReport(metaclass=ABCMeta):
     def __init__(self,
                  lib_name: str,
                  lib_version: str,
-                 execution_errors: Union[str, list],
                  duration: float
                  ) -> None:
         self.lib_name = lib_name
         self.lib_version = lib_version
-        self.execution_errors = execution_errors
         self.duration = duration
 
     @abstractmethod

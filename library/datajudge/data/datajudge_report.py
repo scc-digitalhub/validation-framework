@@ -28,12 +28,11 @@ class DatajudgeReport(DatajudgeBaseReport):
     def __init__(self,
                  lib_name: str,
                  lib_version: str,
-                 execution_errors: Union[str, list],
                  duration: float,
                  constraint: dict,
                  valid: bool,
                  errors: List[Mapping]) -> None:
-        super().__init__(lib_name, lib_version, execution_errors, duration)
+        super().__init__(lib_name, lib_version, duration)
         self.constraint = constraint
         self.valid = valid
         self.errors = errors
@@ -45,7 +44,6 @@ class DatajudgeReport(DatajudgeBaseReport):
         report = {
             "libraryName": self.lib_name,
             "libraryVersion": self.lib_version,
-            "execution_errors": self.execution_errors,
             "duration": self.duration,
             "constraint": self.constraint,
             "valid": self.valid,

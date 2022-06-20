@@ -13,9 +13,10 @@ from datajudge.run.plugin import (InferenceBuilderDummy,
                                   ProfileBuilderPandasProfiling,
                                   ValidationBuilderDuckDB,
                                   ValidationBuilderDummy,
-                                  ValidationBuilderFrictionless)
+                                  ValidationBuilderFrictionless,
+                                  ValidationBuilderSqlAlchemy)
 from datajudge.utils.commons import (DUCKDB, DUMMY, FRICTIONLESS, INFERENCE,
-                                    PROFILING, VALIDATION, PANDAS_PROFILING)
+                                    PROFILING, SQLALCHEMY, VALIDATION, PANDAS_PROFILING)
 
 if typing.TYPE_CHECKING:
     from datajudge.utils.config import ExecConfig
@@ -30,6 +31,7 @@ REGISTRY = {
         DUMMY: ValidationBuilderDummy,
         DUCKDB: ValidationBuilderDuckDB,
         FRICTIONLESS: ValidationBuilderFrictionless,
+        SQLALCHEMY: ValidationBuilderSqlAlchemy,
         },
     PROFILING: {
         DUMMY: ProfileBuilderDummy,

@@ -5,49 +5,49 @@ Frictionless implementation of validation plugin.
 from __future__ import annotations
 
 import re
-import shutil
-from tabnanny import check
 import typing
 from copy import deepcopy
-from pathlib import Path
 from typing import Any, List, Tuple
 
-import duckdb
+import pandas as pd
+from sqlalchemy import create_engine
+import sqlalchemy
 
 from datajudge.data.datajudge_report import DatajudgeReport
 from datajudge.run.plugin.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
-from datajudge.utils.commons import (CHECK_ROWS, CHECK_VALUE, DUCKDB, DUCKDB_DB, EMPTY,
-                                     EXACT, MAXIMUM, MINIMUM, NON_EMPTY, RANGE)
+from datajudge.store_artifact.sql_artifact_store import SQLArtifactStore
+from datajudge.utils.commons import (CHECK_ROWS, CHECK_VALUE, DUCKDB, EMPTY,
+                                     EXACT, MAXIMUM, MINIMUM, NON_EMPTY, RANGE, SQL, SQLALCHEMY)
 from datajudge.utils.exceptions import ValidationError
 from datajudge.utils.utils import flatten_list
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
     from datajudge.run.plugin.base_plugin import Result
-    from datajudge.utils.config import Constraint, ConstraintsDuckDB
+    from datajudge.utils.config import Constraint, ConstraintsSqlAlchemy
 
 
-class ValidationPluginDuckDB(Validation):
+class ValidationPluginSqlAlchemy(Validation):
     """
     DuckDB implementation of validation plugin.
     """
 
     def __init__(self) -> None:
         super().__init__()
-        self.db = None
+        self.conn_str = None
         self.constraint = None
         self.exec_args = None
         self.exec_multiprocess = True
 
     def setup(self,
-              db: str,
+              conn_str: str,
               constraint: str,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
-        self.db = db
+        self.conn_str = conn_str
         self.constraint = constraint
         self.exec_args = exec_args
         self.parse_args()
@@ -58,9 +58,8 @@ class ValidationPluginDuckDB(Validation):
         Validate a Data Resource.
         """
         try:
-            conn = duckdb.connect(database=self.db, read_only=True)
-            conn.execute(self.constraint.query)
-            result = conn.fetchdf()
+            engine = create_engine(self.conn_str)
+            result = pd.read_sql(self.constraint.query, engine)
         except Exception as ex:
             return {
                 "result": {},
@@ -68,7 +67,7 @@ class ValidationPluginDuckDB(Validation):
                 "errors": ex.args
             }
         finally:
-            conn.close()
+            engine.dispose()
 
         valid, errors = self.evaluate_validity(result,
                                                self.constraint.check,
@@ -80,8 +79,11 @@ class ValidationPluginDuckDB(Validation):
             "errors": errors
         }
 
+    def fetch_data(self) -> None:
+        pass
+
     def evaluate_validity(self,
-                          query_result: Any,
+                          query_result: pd.DataFrame,
                           check: str,
                           expect: str,
                           value: Any) -> Tuple[bool, list]:
@@ -261,53 +263,58 @@ class ValidationPluginDuckDB(Validation):
         """
         Get library name.
         """
-        return duckdb.__name__
+        return sqlalchemy.__name__
 
     @staticmethod
     def get_lib_version() -> str:
         """
         Get library version.
         """
-        return duckdb.__version__
+        return sqlalchemy.__version__
 
 
-class ValidationBuilderDuckDB(ValidationPluginBuilder):
+class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
     """
-    DuckDB validation plugin builder.
+    SqlAlchemy validation plugin builder.
     """
     def build(self,
               resources: List[DataResource],
               constraints: List[Constraint]
-              ) -> List[ValidationPluginDuckDB]:
+              ) -> List[ValidationPluginSqlAlchemy]:
         """
         Build a plugin for every resource and every constraint.
         """
+        self.setup()
         self.check_args()
 
-        self.setup_connection()
         f_constraint = self.filter_constraints(constraints)
         f_resources = self.filter_resources(resources, f_constraint)
-        self.register_resources(f_resources)
-        self.tear_down_connection()
 
         plugins = []
         for const in f_constraint:
-            plugin = ValidationPluginDuckDB()
-            plugin.setup(self.tmp_db, const, self.exec_args)
+            conn_str = self.check_resource_location(const.resources, f_resources)
+            plugin = ValidationPluginSqlAlchemy()
+            plugin.setup(conn_str, const, self.exec_args)
             plugins.append(plugin)
 
         return plugins
 
+    def setup(self) -> None:
+        """
+        Filter builder store to retain only SQLStores and set file format.
+        """
+        self.file_format = "sql"
+        self.stores = [store for store in self.stores if isinstance(store, SQLArtifactStore)]
+        if not self.stores:
+            raise ValidationError("At least one resource must be inside a db to use sqlalchemy validator.")
+
     def check_args(self) -> None:
         pass
 
-    def setup_connection(self) -> None:
-        """
-        Setup db connection.
-        """
-        self.tmp_db = f"./tmp/{DUCKDB_DB}"
-        Path(self.tmp_db).parent.mkdir(parents=True, exist_ok=True)
-        self.con = duckdb.connect(database=self.tmp_db, read_only=False)
+    @staticmethod
+    def filter_constraints(constraints: List[Constraint]
+                           ) -> List[ConstraintsSqlAlchemy]:
+        return [const for const in constraints if const.type==SQLALCHEMY]
 
     def filter_resources(self,
                          resources: List[DataResource],
@@ -317,51 +324,30 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         Filter resources used by validator.
         """
         res_names = set(flatten_list([deepcopy(const.resources) for const in constraints]))
-        return [res for res in resources if res.name in res_names]
+        res_to_validate = [res for res in resources if res.name in res_names]
+        st_names = [store.name for store in self.stores]
+        res_in_db = [res for res in res_to_validate if res.store in st_names]
+        return res_in_db            
 
-    def register_resources(self,
-                           resources: List[DataResource]
-                           ) -> None:
+    def check_resource_location(self,
+                                const_resources: List[str],
+                                resources: List[DataResource]
+                                ) -> str:
         """
-        Register resources in db.
+        Check univocity of resources location and return connection
+        string for db access.
         """
-        for res in resources:
-            resource = self.fetch_resource(res)
-
-            # If resource is already registered, continue
-            try:
-                if bool(self.con.table(f"{resource.name}")):
-                    continue
-            except RuntimeError:
-                pass
-
-            # Handle multiple paths
-            if isinstance(resource.path, list):
-                for idx, pth in enumerate(resource.tmp_pth):
-                    if idx == 0:
-                        sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{pth}';"
-                    else:
-                        sql = f"COPY {resource.name} FROM '{pth}' (AUTO_DETECT TRUE);"
-                    self.con.execute(sql)
-
-            # Handle single path
-            else:
-                sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{resource.tmp_pth}';"
-                self.con.execute(sql)
-
-    def tear_down_connection(self) -> None:
-        """
-        Close connection.
-        """
-        self.con.close()
-
-    @staticmethod
-    def filter_constraints(constraints: List[Constraint]
-                           ) -> List[ConstraintsDuckDB]:
-        return [const for const in constraints if const.type == DUCKDB]
+        conn_strings = []
+        for c_res in const_resources:
+            for res in resources:
+                if res.name == c_res:
+                    resource = self.fetch_resource(res)
+                    conn_strings.append(resource.tmp_pth)
+        if len(set(conn_strings)) > 1:
+            raise ValidationError("Resources must be in the same database.")
+        return conn_strings[0]
 
     def destroy(self) -> None:
         """
-        Destory db.
+        Destory plugins.
         """
-        shutil.rmtree(Path(self.tmp_db).parent)

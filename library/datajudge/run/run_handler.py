@@ -108,6 +108,7 @@ class RunHandler:
         """
         Wrapper for plugins validate methods.
         """
+        constraints = listify(constraints)
         builders = builder_factory(self._config.validation,
                                    VALIDATION,
                                    self._store_handler.get_all_art_stores())

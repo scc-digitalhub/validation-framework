@@ -77,11 +77,11 @@ class InferencePluginFrictionless(Inference):
             else:
                 dj_schema_fields = [{"name": None, "type": None}]
         else:
+            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
             dj_schema_fields = None
 
         return DatajudgeSchema(self.get_lib_name(),
                                self.get_lib_version(),
-                               exec_err,
                                duration,
                                dj_schema_fields)
 

@@ -42,6 +42,9 @@ class SQLArtifactStore(ArtifactStore):
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
         """
+        if file_format == "sql":
+            return self.config.get("connection_string")
+
         engine = self._get_engine()
         self._check_access_to_storage(engine)
         table_name = self._get_table_name(src)

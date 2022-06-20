@@ -8,6 +8,8 @@ DATAJUDGE_VERSION = "0.2.0"
 FRICTIONLESS = "frictionless"
 PANDAS_PROFILING = "pandas_profiling"
 DUCKDB = "duckdb"
+SQLALCHEMY = "sqlalchemy"
+
 
 # Store type
 DUMMY = "_dummy"

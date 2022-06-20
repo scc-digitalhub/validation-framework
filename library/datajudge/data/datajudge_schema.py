@@ -22,10 +22,9 @@ class DatajudgeSchema(DatajudgeBaseReport):
     def __init__(self,
                  lib_name: str,
                  lib_version: str,
-                 execution_errors: Union[str, list],
                  duration: float,
                  fields: list) -> None:
-        super().__init__(lib_name, lib_version, execution_errors, duration)
+        super().__init__(lib_name, lib_version, duration)
         self.fields = fields
 
     def to_dict(self) -> dict:
@@ -35,7 +34,6 @@ class DatajudgeSchema(DatajudgeBaseReport):
         schema = {
             "libraryName": self.lib_name,
             "libraryVersion": self.lib_version,
-            "execution_errors": self.execution_errors,
             "duration": self.duration,
             "fields": self.fields,
         }

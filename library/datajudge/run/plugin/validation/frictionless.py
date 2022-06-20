@@ -107,12 +107,12 @@ class ValidationPluginFrictionless(Validation):
             flat_report = report.flatten(spec=spec)
             errors = [dict(zip(spec, err)) for err in flat_report]
         else:
+            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
             valid = False
             errors = None
 
         return DatajudgeReport(self.get_lib_name(),
                                self.get_lib_version(),
-                               exec_err,
                                duration,
                                constraint,
                                valid,
