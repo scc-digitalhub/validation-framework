@@ -1,7 +1,6 @@
 # Constraints
 
 A `Constraint` is a rule that resource must fit to be considered valid. You can define as many `Constraint` as you want, and *datajudge* will parse them and pass to the desired framework of validation.
-We now support two validation framework, `frictionless` and `duckdb`.
 
 `Constraint`s share the following parameters
 
@@ -10,9 +9,8 @@ We now support two validation framework, `frictionless` and `duckdb`.
 - *resources*, targeted LIST of resources
 - *weight*, optional, importance of an eventual error
 
-## Frictionless constraint
+## Frictionless single constraint
 
-`frictionless` uses a `table_schema` to validate a resource. We do not accept `table_schemas`, instead we pass to the framework one or more contraints.
 The parameters to define a `ConstraintsFrictionless` are the following:
 
 - *type*, MUST be "frictionless"
@@ -59,6 +57,47 @@ CONSTRAINT_01 = dj.ConstraintsFrictionless(type="frictionless",
                                            fieldType="string",
                                            constraint="maxLength",
                                            value=11,
+                                           weight=5)
+```
+
+## Frictionless schema constraint
+
+The parameters to define a `ConstraintFullFrictionless` are the following:
+
+- *type*, MUST be "frictionless_schema"
+- *schema*, a dictionary (or a frictionless `Schema`), formatted as `frictionless Schema`.
+
+Example:
+
+```python
+import datajudge as dj
+
+# Artifact Store
+STORE_LOCAL_01 = dj.StoreConfig(name="local",
+                                type="local",
+                                uri="./djruns",
+                                isDefault=True)
+
+
+# Data Resource
+RES_LOCAL_01 = dj.DataResource(path="path-to-data",
+                               name="example-resource",
+                               store="local")
+
+SCHEMA_01 = {
+  "fields": [
+    {"name":"col1", "type": "string"},
+    {"name":"col2", "type": "integer"},
+    {"name":"col3", "type": "float"},
+  ]
+}
+
+# Example constraint. We will pass to a validator a full frictionless schema.
+CONSTRAINT_01 = dj.ConstraintsFrictionless(type="frictionless_schema",
+                                           title="Example frictionless_schema constraint",
+                                           name="example-const",
+                                           resources=["example-resource"],
+                                           schema=SCHEMA_01,
                                            weight=5)
 ```
 
@@ -199,6 +238,62 @@ CONSTRAINT_08 = dj.ConstraintsDuckdb(type="duckdb",
                                      expect="rows",
                                      check="value"
                                      value="[10.87,15.63)",
+                                     weight=5)
+
+```
+
+## SQLAlchemy constraint
+
+The parameters to define a `ConstraintsSqlAlchemy` are the following:
+
+- *type*, MUST be "sqlalchemy"
+- *query*, an SQL query that will be executed on the database
+- *expect*, expected tipology of result
+  - *empty* (only for *check = rows*)
+  - *non-empty* (only for *check = rows*)
+  - *exact*
+  - *range*
+  - *minimum*
+  - *maximum*
+- *value*, value expected
+  - Please note that when *expect* is equals to *range*, this parameter accepts a string formatted as follows
+    - "(num1, num2)" upper exclusive, lower exclusive
+    - "(num1, num2]" upper exclusive, lower inclusive
+    - "[num1, num2)" upper inclusive, lower exclusive
+    - "[num1, num2]" upper inclusive, lower inclusive
+  - *minimum* and *maximum* are inclusive
+- *check*, tipology of result to evaluate
+  - *rows* check number of rows
+  - *value* check a single value, e.g. a *select count(\*)*. If a query result in more than one column, the evaluator will take into account only the first column in the first row
+
+```python
+import datajudge as dj
+
+# Artifact Store
+CONFIG_SQL_01 = {
+    "connection_string": f"postgresql://user:password@host:port/database"
+}
+STORE_SQL_01 = dj.StoreConfig(name="postgres",
+                              type="sql",
+                              uri=f"sql://database",
+                              config=CONFIG_SQL_01)
+# Data Resource
+RES_SQL_01 = dj.DataResource(path=f"sql://schema.table",
+                             name="example_resource",
+                             store="postgres")
+
+# EXAMPLE CONSTRAINTS
+
+# The sqlalchemy constraints are basically the same as duckdb ones
+
+# Expecting empty table as result of the validation query
+CONSTRAINT_01 = dj.ConstraintsDuckdb(type="sqlalchemy",
+                                     title="Example sqlalchemy constraint",
+                                     name="example-const",
+                                     resources=["example_resource"],
+                                     query="select * from example_resource"
+                                     expect="empty",
+                                     check="rows"
                                      weight=5)
 
 ```

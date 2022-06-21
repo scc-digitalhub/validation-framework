@@ -66,3 +66,14 @@ run_config = {
     "tmpFormat": "csv" or "parquet"
 }
 ```
+
+- `sqlalchemy`
+
+The `sqlalchemy` validator executes query defined in a *constraints* on the database side. To execute a validation without execution errors, there MUST be at least one user defined `SQLArtifactStore` passed to a `Client` and a `DataResource` associated with that store.
+
+```python
+run_config = {
+    # The only parameter accepted is "sqlalchemy"
+    "library": "sqlalchemy"
+}
+```

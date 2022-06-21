@@ -39,13 +39,12 @@ METADATA_STORE = dj.StoreConfig(title="Local Metadata Store",
                                 name="local_md",
                                 uri="./djruns")
 
-
 # Artifact Store
 STORE_LOCAL_01 = dj.StoreConfig(name="local",
+                                type="local",
                                 uri="./djruns",
                                 isDefault=True)
 
 client = dj.Client(metadata_store=METADATA_STORE,
                    store=STORE_LOCAL_01)
-
 ```
