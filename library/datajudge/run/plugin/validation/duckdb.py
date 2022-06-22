@@ -1,26 +1,23 @@
 """
-Frictionless implementation of validation plugin.
+DuckDB implementation of validation plugin.
 """
 # pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
 
-import re
 import shutil
-from tabnanny import check
 import typing
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, List, Tuple
+from typing import List
 
 import duckdb
 
 from datajudge.data.datajudge_report import DatajudgeReport
 from datajudge.run.plugin.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
-from datajudge.utils.commons import (CHECK_ROWS, CHECK_VALUE, DUCKDB, DUCKDB_DB, EMPTY,
-                                     EXACT, MAXIMUM, MINIMUM, NON_EMPTY, RANGE)
-from datajudge.utils.exceptions import ValidationError
-from datajudge.utils.utils import flatten_list
+from datajudge.utils.commons import DUCKDB, DUCKDB_DB
+from datajudge.utils.sql_checks import evaluate_validity
+from datajudge.utils.utils import flatten_list, listify
 
 if typing.TYPE_CHECKING:
     from datajudge.data.data_resource import DataResource
@@ -60,160 +57,20 @@ class ValidationPluginDuckDB(Validation):
         try:
             conn = duckdb.connect(database=self.db, read_only=True)
             conn.execute(self.constraint.query)
-            result = conn.fetchdf()
-        except Exception as ex:
+            result = conn.fetchdf()    
+            valid, errors = evaluate_validity(result,
+                                              self.constraint.check,
+                                              self.constraint.expect,
+                                              self.constraint.value)
             return {
-                "result": {},
-                "valid": False,
-                "errors": ex.args
+                "result": result.to_dict(),
+                "valid": valid,
+                "errors": listify(errors)
             }
+        except Exception as ex:
+            raise ex
         finally:
             conn.close()
-
-        valid, errors = self.evaluate_validity(result,
-                                               self.constraint.check,
-                                               self.constraint.expect,
-                                               self.constraint.value)
-        return {
-            "result": result.to_dict(),
-            "valid": valid,
-            "errors": errors
-        }
-
-    def evaluate_validity(self,
-                          query_result: Any,
-                          check: str,
-                          expect: str,
-                          value: Any) -> Tuple[bool, list]:
-        """
-        Evaluate validity of query results.
-        """
-        try:
-
-            if check == CHECK_VALUE:
-
-                # Evaluation made on a single value as result of
-                # a query.
-
-                result = query_result.iloc[0, 0]
-
-                if expect == EXACT:
-                    return self.evaluate_exact(result, value)
-                elif expect == RANGE:
-                    return self.evaluate_range(result, value)
-                elif expect == MINIMUM:
-                    return self.evaluate_min(result, value)
-                elif expect == MAXIMUM:
-                    return self.evaluate_max(result, value)
-                else:
-                    raise ValidationError("Invalid expectation.")
-
-            elif check == CHECK_ROWS:
-
-                # Evaluation made on number of rows
-
-                result = query_result.shape[0]
-
-                if expect == EMPTY:
-                    return self.evaluate_empty(result, empty=True)
-                elif expect == NON_EMPTY:
-                    return self.evaluate_empty(result, empty=False)
-                elif expect == EXACT:
-                    return self.evaluate_exact(result, value)
-                elif expect == RANGE:
-                    return self.evaluate_range(result, value)
-                elif expect == MINIMUM:
-                    return self.evaluate_min(result, value)
-                elif expect == MAXIMUM:
-                    return self.evaluate_max(result, value)
-                else:
-                    raise ValidationError("Invalid expectation.")
-
-            else:
-                raise ValidationError("Invalid check typology.")
-
-        except Exception as ex:
-            return False, ex.args
-
-    @staticmethod
-    def evaluate_empty(result: Any,
-                       empty: bool) -> tuple:
-        """
-        Evaluate table emptiness.
-        """
-        # Could be done with evaluate_exact,
-        # but we want a specific error.
-        if empty:
-            if result == 0:
-                return True, None
-            return False, "Table is not empty."
-        else:
-            if result > 0:
-                return True, None
-            return False, "Table is empty."
-
-    @staticmethod
-    def evaluate_exact(result: Any, value: Any) -> tuple:
-        """
-        Evaluate if a value is exactly as expected.
-        """
-        if bool(result == value):
-            return True, None
-        return False, f"Expected value {value}, instead got {result}."
-
-    @staticmethod
-    def evaluate_min(result: Any, value: Any) -> tuple:
-        """
-        Check if a value is bigger than a specific value.
-        """
-        if bool(float(result) >= value):
-            return True, None
-        return False, f"Minimum value {value}, instead got {result}."
-
-    @staticmethod
-    def evaluate_max(result: Any, value: Any) -> tuple:
-        """
-        Check if a value is lesser than a specific value.
-        """
-        if bool(float(result) <= value):
-            return True, None
-        return False, f"Maximum value {value}, instead got {result}."
-
-    @staticmethod
-    def evaluate_range(result: Any, _range: Any) -> tuple:
-        """
-        Check if a value is in desired range.
-        """
-        regex = r"^(\[|\()([+-]?[0-9]+[.]?[0-9]*),\s?([+-]?[0-9]+[.]?[0-9]*)(\]|\))$"
-        mtc = re.match(regex, _range)
-        if mtc:
-            # Upper and lower limit type
-            # [ ] are inclusive
-            # ( ) are exclusive
-            ll = mtc.group(1)
-            ul = mtc.group(4)
-
-            # Minimum and maximum range values
-            _min = float(mtc.group(2))
-            _max = float(mtc.group(3))
-
-            # Value to check to float
-            cv = float(result)
-
-            if ll == "[" and ul == "]":
-                valid = (_min <= cv <= _max)
-            elif ll == "[" and ul == ")":
-                valid = (_min <= cv < _max)
-            elif ll == "(" and ul == "]":
-                valid = (_min < cv <= _max)
-            elif ll == "(" and ul == ")":
-                valid = (_min < cv < _max)
-
-            if valid:
-                return True, None
-            return False, f"Expected value between {ll}{mtc.group(2)}, \
-                            {mtc.group(3)}{ul}."
-        return False, "Invalid range format."
 
     @exec_decorator
     def render_datajudge(self, result: Result) -> DatajudgeReport:

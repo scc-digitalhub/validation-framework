@@ -102,16 +102,6 @@ class Run:
                        DATAJUDGE_VERSION,
                        content).to_dict()
 
-    def _get_dict(self, obj: Any) -> dict:
-        """
-        Transform datajudge reports in dictionary.
-        """
-        try:
-            return obj.to_dict()
-        except TypeError:
-            LOGGER.error("Failed to convert result in dictionary. ",
-                         "Check logs for more infos.")
-
     def _log_metadata(self,
                       metadata: dict,
                       src_type: str) -> None:
@@ -265,8 +255,7 @@ class Run:
         self._check_metadata_uri()
         objects = self._run_handler.get_datajudge_schema()
         for obj in objects:
-            dict_obj = self._get_dict(obj)
-            metadata = self._get_blob(dict_obj)
+            metadata = self._get_blob(obj.to_dict())
             self._log_metadata(metadata, MT_DJ_SCHEMA)
 
     def persist_schema(self) -> None:
@@ -361,8 +350,7 @@ class Run:
         self._check_metadata_uri()
         objects = self._run_handler.get_datajudge_report()
         for obj in objects:
-            dict_obj = self._get_dict(obj)
-            metadata = self._get_blob(dict_obj)
+            metadata = self._get_blob(obj.to_dict())
             self._log_metadata(metadata, MT_DJ_REPORT)
 
     def persist_report(self) -> None:
@@ -429,8 +417,8 @@ class Run:
         self._check_metadata_uri()
         objects = self._run_handler.get_datajudge_profile()
         for obj in objects:
-            dict_obj = self._get_dict(obj)
-            metadata = self._get_blob(dict_obj)
+            
+            metadata = self._get_blob(obj.to_dict())
             self._log_metadata(metadata, MT_DJ_PROFILE)
 
     def persist_profile(self) -> None:
