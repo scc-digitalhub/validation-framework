@@ -7,12 +7,13 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
-from datajudge.data.data_resource import DataResource
 
+from datajudge.data import DataResource
 from datajudge.utils.commons import (AZURE, CHECK_ROWS, CHECK_VALUE, DUCKDB,
-                                     DUMMY, EMPTY, EXACT, FRICTIONLESS, FRICTIONLESS_SCHEMA, FTP,
-                                     HTTP, LOCAL, MAXIMUM, MINIMUM, NON_EMPTY,
-                                     ODBC, RANGE, S3, SQL, SQLALCHEMY)
+                                     DUMMY, EMPTY, EXACT, FRICTIONLESS,
+                                     FRICTIONLESS_SCHEMA, FTP, HTTP, LOCAL,
+                                     MAXIMUM, MINIMUM, NON_EMPTY, ODBC, RANGE,
+                                     S3, SQL, SQLALCHEMY)
 
 
 class StoreConfig(BaseModel):

@@ -12,7 +12,7 @@ import frictionless
 from frictionless import Report, Resource, Schema
 from frictionless.exception import FrictionlessException
 
-from datajudge.data.datajudge_report import DatajudgeReport
+from datajudge.data import DatajudgeReport
 from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import FRICTIONLESS, FRICTIONLESS_SCHEMA
@@ -20,7 +20,7 @@ from datajudge.run.plugin.plugin_utils import exec_decorator
 from datajudge.utils.config import ConstraintsFrictionless, ConstraintFullFrictionless
 
 if typing.TYPE_CHECKING:
-    from datajudge.data.data_resource import DataResource
+    from datajudge.data import DataResource
     from datajudge.utils.config import Constraint
     from datajudge.run.plugin.base_plugin import Result
 

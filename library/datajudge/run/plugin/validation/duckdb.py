@@ -12,7 +12,7 @@ from typing import List
 
 import duckdb
 
-from datajudge.data.datajudge_report import DatajudgeReport
+from datajudge.data import DatajudgeReport
 from datajudge.run.plugin.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
 from datajudge.utils.commons import DUCKDB, DUCKDB_DB
@@ -20,7 +20,7 @@ from datajudge.utils.sql_checks import evaluate_validity
 from datajudge.utils.utils import flatten_list, listify
 
 if typing.TYPE_CHECKING:
-    from datajudge.data.data_resource import DataResource
+    from datajudge.data import DataResource
     from datajudge.run.plugin.base_plugin import Result
     from datajudge.utils.config import Constraint, ConstraintsDuckDB
 

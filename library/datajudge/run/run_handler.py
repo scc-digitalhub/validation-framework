@@ -15,10 +15,8 @@ from datajudge.utils.uri_utils import get_name_from_uri
 from datajudge.utils.utils import flatten_list, listify
 
 if typing.TYPE_CHECKING:
-    from datajudge.data.data_resource import DataResource
-    from datajudge.data.datajudge_profile import DatajudgeProfile
-    from datajudge.data.datajudge_report import DatajudgeReport
-    from datajudge.data.datajudge_schema import DatajudgeSchema
+    from datajudge.data import (DataResource, DatajudgeProfile,
+                                DatajudgeSchema, DatajudgeReport)
     from datajudge.run.plugin.base_plugin import Plugin, PluginBuilder
     from datajudge.client.store_handler import StoreHandler
     from datajudge.utils.config import Constraint, RunConfig

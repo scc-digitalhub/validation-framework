@@ -8,8 +8,8 @@ from copy import deepcopy
 import typing
 from abc import ABCMeta, abstractmethod
 from typing import Any, List
-from datajudge.data.data_resource import DataResource
 
+from datajudge.data import DataResource
 from datajudge.run.plugin.plugin_utils import RenderTuple
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.utils import LOGGER, get_uiid

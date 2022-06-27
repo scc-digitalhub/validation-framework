@@ -15,7 +15,7 @@ from datajudge.run.plugin.plugin_utils import exec_decorator
 from datajudge.utils.config import DUMMY_RES
 
 if typing.TYPE_CHECKING:
-    from datajudge.data.data_resource import DataResource
+    from datajudge.data import DataResource
     from datajudge.run.plugin.base_plugin import Result
 
 

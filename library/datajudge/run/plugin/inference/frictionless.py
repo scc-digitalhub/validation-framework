@@ -3,13 +3,11 @@ Frictionless implementation of inference plugin.
 """
 # pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
-from copy import deepcopy
 
 import typing
 from typing import List
 
 import frictionless
-from frictionless import describe_schema
 from frictionless.schema import Schema
 
 from datajudge.data import DatajudgeSchema
@@ -19,7 +17,7 @@ from datajudge.utils.commons import FRICTIONLESS
 from datajudge.run.plugin.plugin_utils import exec_decorator
 
 if typing.TYPE_CHECKING:
-    from datajudge.data.data_resource import DataResource
+    from datajudge.data import DataResource
     from datajudge.run.plugin.base_plugin import Result
 
 
@@ -65,8 +63,6 @@ class InferencePluginFrictionless(Inference):
 
         if exec_err is None:
             field_infer = result.artifact.get("fields", [])
-            duration = result.duration
-
             dj_schema_fields = []
             if field_infer:
                 for field in field_infer:

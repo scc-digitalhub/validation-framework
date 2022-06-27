@@ -10,7 +10,7 @@ from typing import List
 import frictionless
 from frictionless import Resource
 
-from datajudge.data.datajudge_profile import DatajudgeProfile
+from datajudge.data import DatajudgeProfile
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.utils.commons import FRICTIONLESS
@@ -18,7 +18,7 @@ from datajudge.utils.io_utils import write_bytesio
 from datajudge.run.plugin.plugin_utils import exec_decorator
 
 if typing.TYPE_CHECKING:
-    from datajudge.data.data_resource import DataResource
+    from datajudge.data import DataResource
     from datajudge.run.plugin.base_plugin import Result
 
 

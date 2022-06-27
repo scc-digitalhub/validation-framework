@@ -7,14 +7,14 @@ from __future__ import annotations
 import typing
 from typing import List
 
-from datajudge.data.datajudge_report import DatajudgeReport
+from datajudge.data import DatajudgeReport
 from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
 from datajudge.utils.commons import DUMMY
 from datajudge.utils.config import DUMMY_CONST, DUMMY_RES, Constraint
 from datajudge.run.plugin.plugin_utils import exec_decorator
 
 if typing.TYPE_CHECKING:
-    from datajudge.data.data_resource import DataResource
+    from datajudge.data import DataResource
     from datajudge.run.plugin.base_plugin import Result
 
 
