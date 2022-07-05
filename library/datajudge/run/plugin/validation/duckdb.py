@@ -16,7 +16,7 @@ from datajudge.data import DatajudgeReport
 from datajudge.run.plugin.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
 from datajudge.utils.commons import DUCKDB
-from datajudge.utils.sql_checks import evaluate_validity
+from datajudge.run.plugin.utils.sql_checks import evaluate_validity
 from datajudge.utils.utils import flatten_list, listify
 
 if typing.TYPE_CHECKING:

@@ -9,17 +9,16 @@ from copy import deepcopy
 from typing import List
 
 import great_expectations as ge
-import pandas as pd
-from great_expectations.core.batch import RuntimeBatchRequest
-from ruamel import yaml
+from great_expectations.core.expectation_validation_result import ExpectationValidationResult
 
 from datajudge.data import DatajudgeReport
 from datajudge.run.plugin.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import GREAT_EXPECTATION
-from datajudge.utils.dataframe_reader import DataFrameReader
-from datajudge.utils.utils import get_uiid, listify
+from datajudge.run.plugin.utils.dataframe_reader import DataFrameReader
+from datajudge.run.plugin.utils.great_expectation_utils import get_great_expectation_validator
+from datajudge.utils.utils import listify
 
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
@@ -56,60 +55,12 @@ class ValidationPluginGreatExpectation(Validation):
         Validate a Data Resource.
         """
         data = DataFrameReader(self.resource.tmp_pth).read_df()
-        report = self.evaluate_validity_ge(data,
-                                           self.constraint.expectation,
-                                           self.constraint.expectation_args)
-        return report
-
-    def evaluate_validity_ge(self,
-                             df: pd.DataFrame,
-                             func_name: str,
-                             func_args: dict) -> dict:
-
-        context = ge.get_context()
-        data_source_name = str(self.resource.name)
-        data_asset_name = str(self.resource.title)
-        expectation_suite_name = f"suite_{get_uiid()}"
-
-        datasource_config = {
-            "name": data_source_name,
-            "class_name": "Datasource",
-            "module_name": "great_expectations.datasource",
-            "execution_engine": {
-                "module_name": "great_expectations.execution_engine",
-                "class_name": "PandasExecutionEngine",
-            },
-            "data_connectors": {
-                "default_runtime_data_connector_name": {
-                    "class_name": "RuntimeDataConnector",
-                    "module_name": "great_expectations.datasource.data_connector",
-                    "batch_identifiers": ["default_identifier_name"],
-                },
-            },
-        }
-
-        context.test_yaml_config(yaml.dump(datasource_config))
-        context.add_datasource(**datasource_config)
-
-        batch_request = RuntimeBatchRequest(
-            datasource_name=data_source_name,
-            data_connector_name="default_runtime_data_connector_name",
-            data_asset_name=data_asset_name,
-            runtime_parameters={"batch_data": df},
-            batch_identifiers={"default_identifier_name": "default_identifier"},
-        )
-        context.create_expectation_suite(
-            expectation_suite_name=expectation_suite_name,
-            overwrite_existing=True
-        )
-        validator = context.get_validator(
-            batch_request=batch_request,
-            expectation_suite_name=expectation_suite_name
-        )
-
-        validation_func = validator.validate_expectation(func_name)
-        results = validation_func(**func_args)
-        return results
+        validator = get_great_expectation_validator(data,
+                                                    str(self.resource.name),
+                                                    str(self.resource.title))
+        validation_func = validator.validate_expectation(self.constraint.expectation)
+        result = validation_func(**self.constraint.expectation_args)
+        return ExpectationValidationResult(**result.to_json_dict())
 
     @exec_decorator
     def render_datajudge(self, result: Result) -> DatajudgeReport:

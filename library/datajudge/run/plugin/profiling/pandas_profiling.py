@@ -16,7 +16,7 @@ from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.plugin_utils import exec_decorator
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.utils.commons import PANDAS_PROFILING
-from datajudge.utils.dataframe_reader import DataFrameReader
+from datajudge.run.plugin.utils.dataframe_reader import DataFrameReader
 from datajudge.utils.io_utils import write_bytesio
 
 if typing.TYPE_CHECKING:

@@ -18,7 +18,7 @@ from datajudge.run.plugin.validation.validation_plugin import Validation, Valida
 from datajudge.store_artifact.sql_artifact_store import SQLArtifactStore
 from datajudge.utils.commons import SQLALCHEMY
 from datajudge.utils.exceptions import ValidationError
-from datajudge.utils.sql_checks import evaluate_validity
+from datajudge.run.plugin.utils.sql_checks import evaluate_validity
 from datajudge.utils.utils import flatten_list, listify
 
 if typing.TYPE_CHECKING:

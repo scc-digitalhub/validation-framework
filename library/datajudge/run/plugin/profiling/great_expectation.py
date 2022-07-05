@@ -9,19 +9,16 @@ from copy import deepcopy
 from typing import List
 
 import great_expectations as ge
-import pandas as pd
-from great_expectations.core.batch import RuntimeBatchRequest
 from great_expectations.core.expectation_suite import ExpectationSuite
 from great_expectations.profile.user_configurable_profiler import UserConfigurableProfiler
-from ruamel import yaml
 
 from datajudge.data import DatajudgeProfile
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.plugin_utils import exec_decorator
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.utils.commons import GREAT_EXPECTATION
-from datajudge.utils.dataframe_reader import DataFrameReader
-from datajudge.utils.utils import get_uiid
+from datajudge.run.plugin.utils.dataframe_reader import DataFrameReader
+from datajudge.run.plugin.utils.great_expectation_utils import get_great_expectation_validator
 
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
@@ -54,60 +51,12 @@ class ProfilePluginGreatExpectation(Profiling):
         Profile a Data Resource.
         """
         data = DataFrameReader(self.resource.tmp_pth).read_df()
-        report = self.profile_ge(data)
-        return report
-
-    def profile_ge(self,
-                   df: pd.DataFrame) -> dict:
-
-        
-        data_source_name = str(self.resource.name)
-        data_asset_name = str(self.resource.title)
-        expectation_suite_name = f"suite_{get_uiid()}"
-
-        #great_expectations init
-
-        context = ge.get_context()
-
-        datasource_config = {
-            "name": data_source_name,
-            "class_name": "Datasource",
-            "module_name": "great_expectations.datasource",
-            "execution_engine": {
-                "module_name": "great_expectations.execution_engine",
-                "class_name": "PandasExecutionEngine",
-            },
-            "data_connectors": {
-                "default_runtime_data_connector_name": {
-                    "class_name": "RuntimeDataConnector",
-                    "module_name": "great_expectations.datasource.data_connector",
-                    "batch_identifiers": ["default_identifier_name"],
-                },
-            },
-        }
-
-        context.test_yaml_config(yaml.dump(datasource_config))
-        context.add_datasource(**datasource_config)
-
-        batch_request = RuntimeBatchRequest(
-            datasource_name=data_source_name,
-            data_connector_name="default_runtime_data_connector_name",
-            data_asset_name=data_asset_name,
-            runtime_parameters={"batch_data": df},
-            batch_identifiers={"default_identifier_name": "default_identifier"},
-        )
-        context.create_expectation_suite(
-            expectation_suite_name=expectation_suite_name,
-            overwrite_existing=True
-        )
-        validator = context.get_validator(
-            batch_request=batch_request,
-            expectation_suite_name=expectation_suite_name
-        )
-
+        validator = get_great_expectation_validator(data,
+                                                    str(self.resource.name),
+                                                    str(self.resource.title))
         profiler = UserConfigurableProfiler(profile_dataset=validator)
-        suite = profiler.build_suite()
-        return ExpectationSuite(**suite.to_json_dict())
+        result = profiler.build_suite()
+        return ExpectationSuite(**result.to_json_dict())
 
     @exec_decorator
     def render_datajudge(self, result: Result) -> DatajudgeProfile:
