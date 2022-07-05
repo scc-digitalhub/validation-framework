@@ -3,11 +3,13 @@ from datajudge.run.plugin.inference import (InferenceBuilderDummy,
                                             InferenceBuilderFrictionless)
 from datajudge.run.plugin.profiling import (ProfileBuilderDummy,
                                             ProfileBuilderFrictionless,
-                                            ProfileBuilderPandasProfiling)
+                                            ProfileBuilderPandasProfiling,
+                                            ProfileBuilderGreatExpectation)
 from datajudge.run.plugin.validation import (ValidationBuilderDummy,
                                              ValidationBuilderDuckDB,
                                              ValidationBuilderFrictionless,
-                                             ValidationBuilderSqlAlchemy)
+                                             ValidationBuilderSqlAlchemy,
+                                             ValidationBuilderGreatExpectation)
 
 __all__ = [
     "PluginBuilder",
@@ -16,8 +18,10 @@ __all__ = [
     "ProfileBuilderDummy",
     "ProfileBuilderFrictionless",
     "ProfileBuilderPandasProfiling",
+    "ProfileBuilderGreatExpectation",
     "ValidationBuilderDummy",
     "ValidationBuilderDuckDB",
     "ValidationBuilderFrictionless",
-    "ValidationBuilderSqlAlchemy"
+    "ValidationBuilderSqlAlchemy",
+    "ValidationBuilderGreatExpectation"
 ]

@@ -6,19 +6,18 @@ from __future__ import annotations
 
 import json
 import typing
-from typing import List, Tuple, Union
+from typing import List
 
-import pandas as pd
 import pandas_profiling
-from frictionless import Resource
 from pandas_profiling import ProfileReport
 
 from datajudge.data import DatajudgeProfile
-from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.utils.commons import PANDAS_PROFILING
-from datajudge.utils.io_utils import write_bytesio
 from datajudge.run.plugin.plugin_utils import exec_decorator
+from datajudge.run.plugin.profiling.profiling_plugin import Profiling
+from datajudge.utils.commons import PANDAS_PROFILING
+from datajudge.utils.dataframe_reader import DataFrameReader
+from datajudge.utils.io_utils import write_bytesio
 
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
@@ -57,66 +56,11 @@ class ProfilePluginPandasProfiling(Profiling):
     def profile(self) -> ProfileReport:
         """
         Generate pandas_profiling profile.
-        """
-        file_format, pandas_kwargs = self._infer_args(self.resource.tmp_pth)
-        df = self._read_df(self.resource.tmp_pth, file_format, **pandas_kwargs)
+        """      
+        df = DataFrameReader(self.resource.tmp_pth).read_df()
         profile = ProfileReport(df, lazy=False, **self.exec_args)
         profile = ProfileReport().loads(profile.dumps())
         return profile
-
-    @staticmethod
-    def _infer_args(data_path: str) -> Tuple[str, dict]:
-        """
-        Infer with frictionless file format and
-        optional arguments for pandas.
-        """
-        # Possibily, redo this part with simple custom inference
-        res = Resource().describe(data_path, expand=True)
-        res = res.to_dict()
-
-        file_format = res.get("format", "csv")
-        pandas_args = {
-            "sep": res.get("dialect", {}).get("delimiter", ","),
-            "encoding": res.get("encoding", "utf-8")
-        }
-        return file_format, pandas_args
-
-    @staticmethod
-    def _read_df(path: Union[str, List[str]],
-                 file_format: str,
-                 **kwargs: dict) -> pd.DataFrame:
-        """
-        Read a file into a pandas DataFrame.
-        """
-
-        # Check if path is a list of paths
-        is_list = isinstance(path, list)
-
-        if file_format == "csv":
-            if is_list:
-                list_df = [pd.read_csv(i, **kwargs) for i in path]
-                df = pd.concat(list_df)
-            else:
-                df = pd.read_csv(path, **kwargs)
-            return df
-
-        if file_format in ["xls", "xlsx", "ods", "odf"]:
-            if is_list:
-                list_df = [pd.read_excel(i, **kwargs) for i in path]
-                df = pd.concat(list_df)
-            else:
-                df = pd.read_excel(path, **kwargs)
-            return df
-
-        if file_format == "parquet":
-            if is_list:
-                list_df = [pd.read_parquet(i) for i in path]
-                df = pd.concat(list_df)
-            else:
-                df = pd.read_parquet(path)
-            return df
-
-        raise ValueError("File extension not supported!")
 
     @exec_decorator
     def render_datajudge(self, result: Result) -> DatajudgeProfile:

@@ -11,7 +11,7 @@ from typing_extensions import Literal
 from datajudge.data import DataResource
 from datajudge.utils.commons import (AZURE, CHECK_ROWS, CHECK_VALUE, DUCKDB,
                                      DUMMY, EMPTY, EXACT, FRICTIONLESS,
-                                     FRICTIONLESS_SCHEMA, FTP, HTTP, LOCAL,
+                                     FRICTIONLESS_SCHEMA, FTP, GREAT_EXPECTATION, HTTP, LOCAL,
                                      MAXIMUM, MINIMUM, NON_EMPTY, ODBC, RANGE,
                                      S3, SQL, SQLALCHEMY)
 
@@ -60,6 +60,12 @@ class ConstraintsSqlAlchemy(Constraint):
     expect: Literal[EMPTY, NON_EMPTY, EXACT, RANGE, MINIMUM, MAXIMUM]
     value: Optional[Any] = None
     check: Literal[CHECK_VALUE, CHECK_ROWS] = CHECK_ROWS
+
+
+class ConstraintsGreatExpectation(Constraint):
+    type: Literal[GREAT_EXPECTATION]
+    expectation: str
+    expectation_args: dict
 
 
 class ExecConfig(BaseModel):

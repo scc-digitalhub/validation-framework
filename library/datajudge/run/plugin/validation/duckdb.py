@@ -15,7 +15,7 @@ import duckdb
 from datajudge.data import DatajudgeReport
 from datajudge.run.plugin.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
-from datajudge.utils.commons import DUCKDB, DUCKDB_DB
+from datajudge.utils.commons import DUCKDB
 from datajudge.utils.sql_checks import evaluate_validity
 from datajudge.utils.utils import flatten_list, listify
 
@@ -162,7 +162,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         Setup db connection.
         """
-        self.tmp_db = f"./tmp/{DUCKDB_DB}"
+        self.tmp_db = "./tmp/tmp.duckdb"
         Path(self.tmp_db).parent.mkdir(parents=True, exist_ok=True)
         self.con = duckdb.connect(database=self.tmp_db, read_only=False)
 

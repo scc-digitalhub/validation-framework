@@ -9,6 +9,7 @@ FRICTIONLESS = "frictionless"
 PANDAS_PROFILING = "pandas_profiling"
 DUCKDB = "duckdb"
 SQLALCHEMY = "sqlalchemy"
+GREAT_EXPECTATION = "great_expectation"
 
 
 # Store type
@@ -37,8 +38,7 @@ DUMMY_SCHEME = ["_dummy"]
 # Frictionless
 FRICTIONLESS_SCHEMA = "frictionless_schema"
 
-
-# DuckDB constraints expectation
+# SQL constraints expectation
 EMPTY = "empty"
 NON_EMPTY = "non-empty"
 EXACT = "exact"
@@ -49,7 +49,6 @@ MAXIMUM = "maximum"
 CHECK_VALUE = "value"
 CHECK_ROWS = "rows"
 
-DUCKDB_DB = "tmp.duckdb"
 
 # API endpoints
 API_BASE = "/api/project/"

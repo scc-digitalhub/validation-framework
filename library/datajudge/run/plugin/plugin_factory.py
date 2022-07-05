@@ -11,11 +11,13 @@ from datajudge.run.plugin import (InferenceBuilderDummy,
                                   ProfileBuilderDummy,
                                   ProfileBuilderFrictionless,
                                   ProfileBuilderPandasProfiling,
+                                  ProfileBuilderGreatExpectation,
                                   ValidationBuilderDuckDB,
                                   ValidationBuilderDummy,
                                   ValidationBuilderFrictionless,
-                                  ValidationBuilderSqlAlchemy)
-from datajudge.utils.commons import (DUCKDB, DUMMY, FRICTIONLESS, INFERENCE,
+                                  ValidationBuilderSqlAlchemy,
+                                  ValidationBuilderGreatExpectation)
+from datajudge.utils.commons import (DUCKDB, DUMMY, FRICTIONLESS, GREAT_EXPECTATION, INFERENCE,
                                     PROFILING, SQLALCHEMY, VALIDATION, PANDAS_PROFILING)
 
 if typing.TYPE_CHECKING:
@@ -32,11 +34,13 @@ REGISTRY = {
         DUCKDB: ValidationBuilderDuckDB,
         FRICTIONLESS: ValidationBuilderFrictionless,
         SQLALCHEMY: ValidationBuilderSqlAlchemy,
+        GREAT_EXPECTATION: ValidationBuilderGreatExpectation,
         },
     PROFILING: {
         DUMMY: ProfileBuilderDummy,
         FRICTIONLESS: ProfileBuilderFrictionless,
         PANDAS_PROFILING: ProfileBuilderPandasProfiling,
+        GREAT_EXPECTATION: ProfileBuilderGreatExpectation,
         }
 }
 
