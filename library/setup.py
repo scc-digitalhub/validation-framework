@@ -28,8 +28,9 @@ setup(
     extras_require={
         "all": [
             "duckdb==0.3.4",
-            "frictionless==4.37.0",
+            "frictionless==4.40.3",
             "pandas-profiling==3.2.0",
+            "great-expectations==0.15.12",
             ],
     },
     packages=find_packages()

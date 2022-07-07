@@ -16,8 +16,8 @@ from datajudge.data import DatajudgeReport
 from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import FRICTIONLESS, FRICTIONLESS_SCHEMA
-from datajudge.run.plugin.plugin_utils import exec_decorator
-from datajudge.utils.config import ConstraintsFrictionless, ConstraintFullFrictionless
+from datajudge.run.plugin.utils.plugin_utils import exec_decorator
+from datajudge.utils.config import ConstraintFrictionless, ConstraintFullFrictionless
 
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
@@ -39,7 +39,7 @@ class ValidationPluginFrictionless(Validation):
 
     def setup(self,
               resource: DataResource,
-              constraint: ConstraintsFrictionless,
+              constraint: ConstraintFrictionless,
               exec_args: dict) -> None:
         """
         Set plugin resource.
@@ -64,7 +64,7 @@ class ValidationPluginFrictionless(Validation):
         """
         Rebuild constraints.
         """
-        if isinstance(self.constraint, ConstraintsFrictionless):
+        if isinstance(self.constraint, ConstraintFrictionless):
             field_name = self.constraint.field
             field_type = self.constraint.fieldType
             val = self.constraint.value
@@ -188,7 +188,7 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
 
     @staticmethod
     def filter_constraints(constraints: List[Constraint]
-                           ) -> List[Union[ConstraintsFrictionless, ConstraintFullFrictionless]]:
+                           ) -> List[Union[ConstraintFrictionless, ConstraintFullFrictionless]]:
         return [const for const in constraints
                 if const.type in (FRICTIONLESS, FRICTIONLESS_SCHEMA)]
 

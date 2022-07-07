@@ -13,7 +13,7 @@ from typing import List
 import duckdb
 
 from datajudge.data import DatajudgeReport
-from datajudge.run.plugin.plugin_utils import exec_decorator
+from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
 from datajudge.utils.commons import DUCKDB
 from datajudge.run.plugin.utils.sql_checks import evaluate_validity
@@ -22,7 +22,7 @@ from datajudge.utils.utils import flatten_list, listify
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
     from datajudge.run.plugin.base_plugin import Result
-    from datajudge.utils.config import Constraint, ConstraintsDuckDB
+    from datajudge.utils.config import Constraint, ConstraintDuckDB
 
 
 class ValidationPluginDuckDB(Validation):
@@ -214,7 +214,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
 
     @staticmethod
     def filter_constraints(constraints: List[Constraint]
-                           ) -> List[ConstraintsDuckDB]:
+                           ) -> List[ConstraintDuckDB]:
         return [const for const in constraints if const.type == DUCKDB]
 
     def destroy(self) -> None:

@@ -11,7 +11,7 @@ from datajudge.data import DatajudgeProfile
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.utils.commons import DUMMY
-from datajudge.run.plugin.plugin_utils import exec_decorator
+from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.utils.config import DUMMY_RES
 
 if typing.TYPE_CHECKING:

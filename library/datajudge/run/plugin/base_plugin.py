@@ -10,12 +10,12 @@ from abc import ABCMeta, abstractmethod
 from typing import Any, List
 
 from datajudge.data import DataResource
-from datajudge.run.plugin.plugin_utils import RenderTuple
+from datajudge.run.plugin.utils.plugin_utils import RenderTuple
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.utils import LOGGER, get_uiid
 
 if typing.TYPE_CHECKING:
-    from datajudge.run.plugin.plugin_utils import Result
+    from datajudge.run.plugin.utils.plugin_utils import Result
     from datajudge.store_artifact.artifact_store import ArtifactStore
 
 

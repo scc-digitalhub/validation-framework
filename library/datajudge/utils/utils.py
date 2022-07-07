@@ -11,7 +11,7 @@ from uuid import uuid4
 
 from frictionless import Schema
 
-from datajudge.utils.config import ConstraintsFrictionless
+from datajudge.utils.config import ConstraintFrictionless
 
 
 # LOGGER
@@ -68,7 +68,7 @@ def get_time() -> str:
 
 
 def frictionless_schema_converter(schema: Union[dict, Schema],
-                                  resource_name: str) -> List[ConstraintsFrictionless]:
+                                  resource_name: str) -> List[ConstraintFrictionless]:
 
     constraints = []
     for field in schema.get("fields", []):
@@ -78,7 +78,7 @@ def frictionless_schema_converter(schema: Union[dict, Schema],
         type_ = field.get("type")
         if type_ is not None:
             name = f'{field.get("name", "")}_{str(cnt)}'
-            c = ConstraintsFrictionless(type="frictionless",
+            c = ConstraintFrictionless(type="frictionless",
                                         name=name,
                                         resources=[resource_name],
                                         title=name,
@@ -93,7 +93,7 @@ def frictionless_schema_converter(schema: Union[dict, Schema],
         format_ = field.get("format")
         if format_ is not None:
             name = f'{field.get("name", "")}_{str(cnt)}'
-            c = ConstraintsFrictionless(type="frictionless",
+            c = ConstraintFrictionless(type="frictionless",
                                         name=name,
                                         resources=[resource_name],
                                         title=name,
@@ -110,7 +110,7 @@ def frictionless_schema_converter(schema: Union[dict, Schema],
         if c_list:
             for k, v in c_list.items():
                 name = f'{field.get("name", "")}_{str(cnt)}'
-                c = ConstraintsFrictionless(type="frictionless",
+                c = ConstraintFrictionless(type="frictionless",
                                             name=name,
                                             resources=[resource_name],
                                             title=name,

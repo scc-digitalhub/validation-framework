@@ -11,7 +11,7 @@ from datajudge.data import DatajudgeReport
 from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
 from datajudge.utils.commons import DUMMY
 from datajudge.utils.config import DUMMY_CONST, DUMMY_RES, Constraint
-from datajudge.run.plugin.plugin_utils import exec_decorator
+from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource

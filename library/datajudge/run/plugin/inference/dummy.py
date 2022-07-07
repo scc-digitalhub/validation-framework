@@ -11,7 +11,7 @@ from datajudge.data import DatajudgeSchema
 from datajudge.run.plugin.inference.inference_plugin import Inference
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.utils.commons import DUMMY
-from datajudge.run.plugin.plugin_utils import exec_decorator
+from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.utils.config import DUMMY_RES
 
 if typing.TYPE_CHECKING:

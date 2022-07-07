@@ -19,8 +19,8 @@ from datajudge.utils.utils import LOGGER, get_time
 if typing.TYPE_CHECKING:
     from datajudge.data import (DatajudgeProfile, DatajudgeSchema,
                                 DatajudgeReport)
-    from datajudge.run.run_handler import RunHandler
-    from datajudge.run.run_info import RunInfo
+    from datajudge.run.run.Run_handler import RunHandler
+    from datajudge.run.run.Run_info import RunInfo
     from datajudge.utils.config import Constraint
 
 

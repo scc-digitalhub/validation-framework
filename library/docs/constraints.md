@@ -11,7 +11,7 @@ A `Constraint` is a rule that resource must fit to be considered valid. You can 
 
 ## Frictionless single constraint
 
-The parameters to define a `ConstraintsFrictionless` are the following:
+The parameters to define a `ConstraintFrictionless` are the following:
 
 - *type*, MUST be "frictionless"
 - *field*, specified targeted field
@@ -49,7 +49,7 @@ RES_LOCAL_01 = dj.DataResource(path="path-to-data",
 
 # Example constraint. We expect that the values of the
 #  specified field have a maximum lenght of 11 characters.
-CONSTRAINT_01 = dj.ConstraintsFrictionless(type="frictionless",
+CONSTRAINT_01 = dj.ConstraintFrictionless(type="frictionless",
                                            title="Example frictionless constraint",
                                            name="example-const",
                                            resources=["example-resource"],
@@ -93,7 +93,7 @@ SCHEMA_01 = {
 }
 
 # Example constraint. We will pass to a validator a full frictionless schema.
-CONSTRAINT_01 = dj.ConstraintsFrictionless(type="frictionless_schema",
+CONSTRAINT_01 = dj.ConstraintFrictionless(type="frictionless_schema",
                                            title="Example frictionless_schema constraint",
                                            name="example-const",
                                            resources=["example-resource"],
@@ -103,7 +103,7 @@ CONSTRAINT_01 = dj.ConstraintsFrictionless(type="frictionless_schema",
 
 ## DuckDB constraint
 
-The parameters to define a `ConstraintsDuckDB` are the following:
+The parameters to define a `ConstraintDuckDB` are the following:
 
 - *type*, MUST be "duckdb"
 - *query*, an SQL query that will be executed on the resources
@@ -149,7 +149,7 @@ RES_LOCAL_01 = dj.DataResource(path="path-to-data",
 # Empty/non-empty table. The evaluation is allowed when check is "rows"
 
 # Expecting empty table as result of the validation query
-CONSTRAINT_01 = dj.ConstraintsDuckdb(type="duckdb",
+CONSTRAINT_01 = dj.ConstraintDuckDB(type="duckdb",
                                      title="Example duckdb constraint",
                                      name="example-const",
                                      resources=["example_resource"],
@@ -159,7 +159,7 @@ CONSTRAINT_01 = dj.ConstraintsDuckdb(type="duckdb",
                                      weight=5)
 
 # Expecting non-empty table as result of the validation query
-CONSTRAINT_02 = dj.ConstraintsDuckdb(type="duckdb",
+CONSTRAINT_02 = dj.ConstraintDuckDB(type="duckdb",
                                      title="Example duckdb constraint",
                                      name="example-const",
                                      resources=["example_resource"],
@@ -171,7 +171,7 @@ CONSTRAINT_02 = dj.ConstraintsDuckdb(type="duckdb",
 # Exact value
 
 # Expecting a table with 10 rows
-CONSTRAINT_03 = dj.ConstraintsDuckdb(type="duckdb",
+CONSTRAINT_03 = dj.ConstraintDuckDB(type="duckdb",
                                      title="Example duckdb constraint",
                                      name="example-const",
                                      resources=["example_resource"],
@@ -182,7 +182,7 @@ CONSTRAINT_03 = dj.ConstraintsDuckdb(type="duckdb",
                                      weight=5)
 
 # Expecting a table with 10 as result of the count
-CONSTRAINT_04 = dj.ConstraintsDuckdb(type="duckdb",
+CONSTRAINT_04 = dj.ConstraintDuckDB(type="duckdb",
                                      title="Example duckdb constraint",
                                      name="example-const",
                                      resources=["example_resource"],
@@ -195,7 +195,7 @@ CONSTRAINT_04 = dj.ConstraintsDuckdb(type="duckdb",
 # Minimum/maximum (both check are inclusive of the value)
 
 # Expecting a table with number of rows >= 10
-CONSTRAINT_05 = dj.ConstraintsDuckdb(type="duckdb",
+CONSTRAINT_05 = dj.ConstraintDuckDB(type="duckdb",
                                      title="Example duckdb constraint",
                                      name="example-const",
                                      resources=["example_resource"],
@@ -206,7 +206,7 @@ CONSTRAINT_05 = dj.ConstraintsDuckdb(type="duckdb",
                                      weight=5)
 
 # Expecting a table with result of count <= 10
-CONSTRAINT_06 = dj.ConstraintsDuckdb(type="duckdb",
+CONSTRAINT_06 = dj.ConstraintDuckDB(type="duckdb",
                                      title="Example duckdb constraint",
                                      name="example-const",
                                      resources=["example_resource"],
@@ -219,7 +219,7 @@ CONSTRAINT_06 = dj.ConstraintsDuckdb(type="duckdb",
 # Range (value expect a string of parentheses and number)
 
 # Expecting a table with number of rows > 10 and <= 15
-CONSTRAINT_07 = dj.ConstraintsDuckdb(type="duckdb",
+CONSTRAINT_07 = dj.ConstraintDuckDB(type="duckdb",
                                      title="Example duckdb constraint",
                                      name="example-const",
                                      resources=["example_resource"],
@@ -230,7 +230,7 @@ CONSTRAINT_07 = dj.ConstraintsDuckdb(type="duckdb",
                                      weight=5)
 
 # Expecting a table with resulting value >= 10.87 and < 15.63
-CONSTRAINT_08 = dj.ConstraintsDuckdb(type="duckdb",
+CONSTRAINT_08 = dj.ConstraintDuckDB(type="duckdb",
                                      title="Example duckdb constraint",
                                      name="example-const",
                                      resources=["example_resource"],
@@ -244,7 +244,7 @@ CONSTRAINT_08 = dj.ConstraintsDuckdb(type="duckdb",
 
 ## SQLAlchemy constraint
 
-The parameters to define a `ConstraintsSqlAlchemy` are the following:
+The parameters to define a `ConstraintSqlAlchemy` are the following:
 
 - *type*, MUST be "sqlalchemy"
 - *query*, an SQL query that will be executed on the database
@@ -287,7 +287,7 @@ RES_SQL_01 = dj.DataResource(path=f"sql://schema.table",
 # The sqlalchemy constraints are basically the same as duckdb ones
 
 # Expecting empty table as result of the validation query
-CONSTRAINT_01 = dj.ConstraintsDuckdb(type="sqlalchemy",
+CONSTRAINT_01 = dj.ConstraintDuckDB(type="sqlalchemy",
                                      title="Example sqlalchemy constraint",
                                      name="example-const",
                                      resources=["example_resource"],

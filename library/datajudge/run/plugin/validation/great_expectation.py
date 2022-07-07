@@ -12,7 +12,7 @@ import great_expectations as ge
 from great_expectations.core.expectation_validation_result import ExpectationValidationResult
 
 from datajudge.data import DatajudgeReport
-from datajudge.run.plugin.plugin_utils import exec_decorator
+from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import GREAT_EXPECTATION
@@ -23,7 +23,7 @@ from datajudge.utils.utils import listify
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
     from datajudge.run.plugin.base_plugin import Result
-    from datajudge.utils.config import Constraint, ConstraintsGreatExpectation
+    from datajudge.utils.config import Constraint, ConstraintGreatExpectation
 
 
 class ValidationPluginGreatExpectation(Validation):
@@ -40,7 +40,7 @@ class ValidationPluginGreatExpectation(Validation):
 
     def setup(self,
               resource: DataResource,
-              constraint: ConstraintsGreatExpectation,
+              constraint: ConstraintGreatExpectation,
               exec_args: dict) -> None:
         """
         Set plugin resource.
@@ -140,7 +140,7 @@ class ValidationBuilderGreatExpectation(ValidationPluginBuilder):
 
     @staticmethod
     def filter_constraints(constraints: List[Constraint]
-                           ) -> List[ConstraintsGreatExpectation]:
+                           ) -> List[ConstraintGreatExpectation]:
         return [const for const in constraints if const.type==GREAT_EXPECTATION]
 
     def destroy(self) -> None:

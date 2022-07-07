@@ -13,7 +13,7 @@ from pandas_profiling import ProfileReport
 
 from datajudge.data import DatajudgeProfile
 from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.run.plugin.plugin_utils import exec_decorator
+from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.utils.commons import PANDAS_PROFILING
 from datajudge.run.plugin.utils.dataframe_reader import DataFrameReader

@@ -15,7 +15,7 @@ from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.utils.commons import FRICTIONLESS
 from datajudge.utils.io_utils import write_bytesio
-from datajudge.run.plugin.plugin_utils import exec_decorator
+from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
