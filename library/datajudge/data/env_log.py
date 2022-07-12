@@ -33,14 +33,7 @@ class EnvLog:
         """
         Return a dictionary.
         """
-        env_data = {
-            "platform": self.platform,
-            "pythonVersion": self.python_version,
-            "cpuModel": self.cpu_model,
-            "cpuCore": self.cpu_core,
-            "ram": self.ram
-        }
-        return env_data
+        return self.__dict__
 
     def __repr__(self) -> str:
         return str(self.to_dict())

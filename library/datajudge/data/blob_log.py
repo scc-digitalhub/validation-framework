@@ -20,11 +20,6 @@ class BlobLog:
     contents : dict, default None
         Blob of metadata to log.
 
-    Methods
-    -------
-    dict :
-        Transform the object in a dictionary.
-
     """
 
     def __init__(self,

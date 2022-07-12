@@ -9,7 +9,7 @@ from dataclasses import dataclass
 @dataclass
 class DatajudgeBaseReport(metaclass=ABCMeta):
     """
-    Datajudge base report abstract class
+    Datajudge base report abstract class.
 
     Attributes
     ----------
@@ -20,13 +20,7 @@ class DatajudgeBaseReport(metaclass=ABCMeta):
     duration : float
         Time required by the execution process.
 
-    Methods
-    -------
-    to_dict :
-        Return a dictionary report.
-
     """
-
     lib_name: str
     lib_version: str
     duration: float
@@ -44,9 +38,7 @@ class DatajudgeBaseReport(metaclass=ABCMeta):
 @dataclass
 class DatajudgeProfile(DatajudgeBaseReport):
     """
-    DatajudgeProfile object consisting in a succint
-    version of an inferred data profile produced by
-    some profiling framework.
+    Succint version of a profile produced by some profiling library.
 
     Attributes
     ----------
@@ -63,18 +55,16 @@ class DatajudgeProfile(DatajudgeBaseReport):
 @dataclass
 class DatajudgeReport(DatajudgeBaseReport):
     """
-    Short report object consisting in a succint
-    version of a report produced by some validation
-    library.
+    Succint version of a report produced by some validation library.
 
     Attributes
     ----------
+    constraint : dict
+        Constraint validated.
     valid : bool
         Validation outcome.
-        Derived from the validation report.
     errors : list
         List of errors found by validation process.
-        Derived from the validation report.
 
     """
     constraint: dict
@@ -85,9 +75,7 @@ class DatajudgeReport(DatajudgeBaseReport):
 @dataclass
 class DatajudgeSchema(DatajudgeBaseReport):
     """
-    DatajudgeSchema object consisting in a succint
-    version of an inferred data schema produced
-    by some validation framework.
+    Succint version of an inferred schema produced by some inference library.
 
     Attributes
     ----------
