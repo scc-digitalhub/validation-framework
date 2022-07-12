@@ -1,7 +1,7 @@
 # Run
 
 A `Run` is a data validation/profiling process executed in a defined organizational context (called `experiment`) and performed by some validation framework.
-The `Run` object is  created by a `Client` and can perform various tasks:
+The `Run` object is created by a `Client` and can perform various tasks:
 
 - Log descriptive metadata
 - Persist artifacts

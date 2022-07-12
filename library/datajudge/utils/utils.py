@@ -69,6 +69,21 @@ def get_time() -> str:
 
 def frictionless_schema_converter(schema: Union[dict, Schema],
                                   resource_name: str) -> List[ConstraintFrictionless]:
+    """
+    Convert a frictionless schema in a list of ConstraintFrictionless.
+
+    Parameters
+    ----------
+    schema : Union[dict, Schema]
+        A valid frictionless Resource table schema.
+    resource_name : str
+        Name of the resource.
+
+    Returns
+    -------
+    List[ConstraintFrictionless]
+        A list of ConstraintFrictionless.
+    """
 
     constraints = []
     for field in schema.get("fields", []):

@@ -9,7 +9,7 @@ from datajudge.utils.utils import listify
 
 
 class DataFrameReader:
-    
+
     def __init__(self,
                  data_path: str) -> None:
         self.data_path = data_path
@@ -28,7 +28,7 @@ class DataFrameReader:
         Read a file into a pandas DataFrame.
         """
         self._infer_resource()
-        
+
         path = self.resource.get("path")
         file_format = self.resource.get("format", "csv")
         pandas_args = {
@@ -47,5 +47,5 @@ class DataFrameReader:
             list_df = [pd.read_parquet(i) for i in path]
         else:
             raise ValueError("File extension not supported!")
-        
+
         return pd.concat(list_df)

@@ -56,7 +56,7 @@ class ProfilePluginPandasProfiling(Profiling):
     def profile(self) -> ProfileReport:
         """
         Generate pandas_profiling profile.
-        """      
+        """
         df = DataFrameReader(self.resource.tmp_pth).read_df()
         profile = ProfileReport(df, lazy=False, **self.exec_args)
         profile = ProfileReport().loads(profile.dumps())

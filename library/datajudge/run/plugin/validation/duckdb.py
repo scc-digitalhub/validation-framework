@@ -57,7 +57,7 @@ class ValidationPluginDuckDB(Validation):
         try:
             conn = duckdb.connect(database=self.db, read_only=True)
             conn.execute(self.constraint.query)
-            result = conn.fetchdf()    
+            result = conn.fetchdf()
             valid, errors = evaluate_validity(result,
                                               self.constraint.check,
                                               self.constraint.expect,

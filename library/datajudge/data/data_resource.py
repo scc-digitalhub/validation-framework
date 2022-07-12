@@ -7,27 +7,24 @@ from typing import Optional, Union
 
 class DataResource:
     """
-    Oobject that represents a resource.
+    Object that represents a resource.
 
     Attributes
     ----------
+    path : Union[str, list]
+        An URI (or a list of URI) that point to data.
     name : str
         Name of the Data Resource.
-    path : str
-        An URI (or a list of URI) that point to data.
-    store : str
-        Store name where to find the resource.
-    package : str, default = None
-        Package name that Resource belongs to.
-    title : str, default = None
-        Human readable name for the resource.
-    description : str, default = None
-        A description of the resource.
-
-    Methods
-    -------
-    dict :
-        Transform the object in a dictionary.
+    store : Optional[str], optional
+        Store name where to find the resource, by default None
+    schema : Optional[dict], optional
+        Resource schema, by default None
+    package : Optional[str], optional
+        Package name that Resource belongs to, by default None
+    title : Optional[str], optional
+        Human readable name for the resource, by default None
+    description : Optional[str], optional
+        A description of the resource, by default None
 
     """
 
@@ -50,7 +47,7 @@ class DataResource:
 
     def to_dict(self) -> dict:
         """
-        Return dictionary of non null values.
+        Return a dict.
         """
         data = {
             "path": self.path,

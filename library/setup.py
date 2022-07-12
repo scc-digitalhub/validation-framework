@@ -7,7 +7,7 @@ install_requires = [
     "botocore==1.25.8",
     "psycopg2-binary==2.9.3",
     "pyarrow==7.0.0",
-    "pydantic==1.9.0",
+    "pydantic==1.9.1",
     "pyodbc==4.0.32",
     "requests==2.27.1",
     "SQLAlchemy==1.4.36",

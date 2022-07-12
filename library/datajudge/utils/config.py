@@ -19,33 +19,27 @@ from datajudge.utils.commons import (AZURE, CHECK_ROWS, CHECK_VALUE, DUCKDB,
 class StoreConfig(BaseModel):
     """
     Store configuration class.
-    
-    This object define the configuration of a Store passed to a 
-    Client in order to create a Store object to interact with 
+    This object define the configuration of a Store passed to a
+    Client in order to create a Store object to interact with
     various backend storages.
-
-    Attributes
-    ----------
-    name : str
-        Store id.
-    type : str
-        Store type to instantiate.
-    uri : str
-        Store URI.
-    title : str, optional
-        Human readable name for Store.
-    isDefault : bool, optional
-        Determine if a Store is the default one.
-    config : dict, optional
-        Dictionary containing the configuration for the backend.
-
     """
     name: str
+    """Store id."""
+
     type: Literal[LOCAL, HTTP, FTP, S3, AZURE, SQL, ODBC, DUMMY]
+    """Store type to instantiate."""
+
     uri: str
+    """Store URI."""
+
     title: Optional[str] = None
+    """Human readable name for Store."""
+
     isDefault: Optional[bool] = False
+    """Determine if a Store is the default one."""
+
     config: Optional[dict] = None
+    """Dictionary containing the configuration for the backend."""
 
 
 class Constraint(BaseModel):
@@ -54,203 +48,130 @@ class Constraint(BaseModel):
     """
     _id: str = Field(default_factory=uuid4)
     name: str
+    """Constraint id."""
+
     title: str
+    """Human readable name for the constraint."""
+
     resources: List[str]
+    """List of resources affected by the constraint."""
+
     weight: int
+    """Criticity of an eventual error encountered in the validation for the constraint."""
 
 
 class ConstraintFrictionless(Constraint):
     """
-    Frictionless contraint.
-    
-    Attributes
-    ----------
-    name : str
-        Constraint id.
-    title : str
-        Human readable name for the constraint.
-    resources : list
-        List of resources affected by the constraint.
-    weight : int
-        Criticity of an eventual error encountered in the
-        validation for the constraint.
-    type : str = "frictionless"
-        Constraint type (mandatory "frictionless").
-    field : str
-        Field to validate.
-    fieldType : str
-        Datatype of the field to validate.
-    constraint : str
-        Frictionless constraint typology.
-    value : Any
-        Value of the constraint.
-
+    Frictionless constraint.
     """
-    type: Literal[FRICTIONLESS]
+    type: str = Field(FRICTIONLESS, const=True)
+    """Constraint type ("frictionless")."""
+
     field: str
+    """Field to validate."""
+
     fieldType: str
+    """Datatype of the field to validate."""
+
     constraint: str
+    """Frictionless constraint typology."""
+
     value: Any
+    """Value of the constraint."""
 
 
 class ConstraintFullFrictionless(Constraint):
     """
-    Frictionless full schema contraint.
-    
-    Attributes
-    ----------
-    name : str
-        Constraint id.
-    title : str
-        Human readable name for the constraint.
-    resources : list
-        List of resources affected by the constraint.
-    weight : int
-        Criticity of an eventual error encountered in the
-        validation for the constraint.
-    type : str = "frictionless_schema"
-        Constraint type (mandatory "frictionless_schema").
-    table_schema : dict
-        Table schema to validate a resource.
-
+    Frictionless full schema constraint.
     """
-    type: Literal[FRICTIONLESS_SCHEMA]
+    type: str = Field(FRICTIONLESS_SCHEMA, const=True)
+    """Constraint type ("frictionless_schema")."""
+
     table_schema: dict
+    """Table schema to validate a resource."""
 
 
 class ConstraintDuckDB(Constraint):
     """
-    DuckDB contraint.
-    
-    Attributes
-    ----------
-    name : str
-        Constraint id.
-    title : str
-        Human readable name for the constraint.
-    resources : list
-        List of resources affected by the constraint.
-    weight : int
-        Criticity of an eventual error encountered in the
-        validation for the constraint.
-    type : str = "duckdb"
-        Constraint type (mandatory "duckdb").
-    query : str
-        SQL query to execute over resources.
-    expect : str
-        SQL constraint type to check.
-    value : Any
-        Value of the constraint.
-    check : str, optional
-        Modality of constraint checking (On rows or single value).
-
+    DuckDB constraint.
     """
-    type: Literal[DUCKDB]
+    type: str = Field(DUCKDB, const=True)
+    """Constraint type ("duckdb")."""
+
     query: str
+    """SQL query to execute over resources."""
+
     expect: Literal[EMPTY, NON_EMPTY, EXACT, RANGE, MINIMUM, MAXIMUM]
+    """SQL constraint type to check."""
+
     value: Optional[Any] = None
+    """Value of the constraint."""
+
     check: Literal[CHECK_VALUE, CHECK_ROWS] = CHECK_ROWS
+    """Modality of constraint checking (On rows or single value)."""
 
 
 class ConstraintSqlAlchemy(Constraint):
     """
-    SqlAlchemy contraint.
-    
-    Attributes
-    ----------
-    name : str
-        Constraint id.
-    title : str
-        Human readable name for the constraint.
-    resources : list
-        List of resources affected by the constraint.
-    weight : int
-        Criticity of an eventual error encountered in the
-        validation for the constraint.
-    type : str = "sqlalchemy"
-        Constraint type (mandatory "sqlalchemy").
-    query : str
-        SQL query to execute over resources.
-    expect : str
-        SQL constraint type to check.
-    value : Any
-        Value of the constraint.
-    check : str, optional
-        Modality of constraint checking (On rows or single value).
-
+    SqlAlchemy constraint.
     """
-    type: Literal[SQLALCHEMY]
+    type: str = Field(SQLALCHEMY, const=True)
+    """Constraint type ("sqlalchemy")."""
+
     query: str
+    """SQL query to execute over resources."""
+
     expect: Literal[EMPTY, NON_EMPTY, EXACT, RANGE, MINIMUM, MAXIMUM]
+    """SQL constraint type to check."""
+
     value: Optional[Any] = None
+    """Value of the constraint."""
+
     check: Literal[CHECK_VALUE, CHECK_ROWS] = CHECK_ROWS
+    """Modality of constraint checking (On rows or single value)."""
 
 
 class ConstraintGreatExpectation(Constraint):
     """
-    Great Expectation contraint.
-    
-    Attributes
-    ----------
-    name : str
-        Constraint id.
-    title : str
-        Human readable name for the constraint.
-    resources : list
-        List of resources affected by the constraint.
-    weight : int
-        Criticity of an eventual error encountered in the
-        validation for the constraint.
-    type : str = "great_expectation"
-        Constraint type (mandatory "great_expectation").
-    expectation : str
-        Name of the expectation to apply to data.
-    expect : str
-        Arguments for the exepectation.
-
+    Great Expectation constraint.
     """
-    type: Literal[GREAT_EXPECTATION]
+    type: str = Field(GREAT_EXPECTATION, const=True)
+    """Constraint type ("great_expectation")."""
+
     expectation: str
+    """Name of the expectation to apply to data."""
+
     expectation_args: dict
+    """Arguments for the exepectation."""
 
 
 class ExecConfig(BaseModel):
     """
     Generic configuration for run operation.
-    
-    Attributes
-    ----------
-    library : str, optional
-        Library to use for performing an operation.
-    execArgs : dict, optional
-        Execution arguments to pass to plugins.
-    tmpFormat : str
-        Specific format to fetch data from backend.
-
     """
     _id: str = Field(default_factory=uuid4)
     library: Optional[str] = DUMMY
+    """Library to use for performing an operation."""
+
     execArgs: Optional[dict] = {}
+    """Execution arguments to pass to plugins."""
+
     tmpFormat: Optional[str] = "csv"
+    """Specific format to fetch data from backend."""
 
 
 class RunConfig(BaseModel):
     """
     Run configuration object.
-    
-    Attributes
-    ----------
-    validation : List[ExecConfig], optional
-        List of validation configuration.
-    inference : List[ExecConfig], optional
-        List of inference configuration.
-    profiling : List[ExecConfig], optional
-        List of profiling configuration.
-
     """
     validation: Optional[List[ExecConfig]] = [ExecConfig()]
+    """List of validation configuration."""
+
     inference: Optional[List[ExecConfig]] = [ExecConfig()]
+    """List of inference configuration."""
+
     profiling: Optional[List[ExecConfig]] = [ExecConfig()]
+    """List of profiling configuration."""
 
 
 # Dummy generic configs

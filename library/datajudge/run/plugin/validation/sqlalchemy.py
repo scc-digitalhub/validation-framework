@@ -183,7 +183,7 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         res_to_validate = [res for res in resources if res.name in res_names]
         st_names = [store.name for store in self.stores]
         res_in_db = [res for res in res_to_validate if res.store in st_names]
-        return res_in_db            
+        return res_in_db
 
     def regroup_constraint_resources(self,
                                      constraints: List[Constraint],
@@ -196,7 +196,7 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         constraint_connection = []
 
         for const in constraints:
-            
+
             conn_strings = []
             for res in resources:
                 if res.name in const.resources:
@@ -204,7 +204,7 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
                     conn_strings.append(resource.tmp_pth)
             if len(set(conn_strings)) > 1:
                 raise ValidationError("Resources must be in the same database.")
-        
+
             try:
                 constraint_connection.append({
                     "constraint": const,

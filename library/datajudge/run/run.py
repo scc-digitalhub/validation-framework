@@ -19,43 +19,52 @@ from datajudge.utils.utils import LOGGER, get_time
 if typing.TYPE_CHECKING:
     from datajudge.data import (DatajudgeProfile, DatajudgeSchema,
                                 DatajudgeReport)
-    from datajudge.run.run.Run_handler import RunHandler
-    from datajudge.run.run.Run_info import RunInfo
+    from datajudge.run.run_handler import RunHandler
+    from datajudge.run.run_info import RunInfo
     from datajudge.utils.config import Constraint
 
 
 class Run:
     """
     Run object.
-    The Run is the main interface to interact with data,
-    metadata and operational framework. With the Run, you
-    can infer, validate and profile resources, log and
-    persist data and metadata.
+    The Run is the main interface to interact with data, metadata and
+    operational framework. With the Run, you can infer, validate and
+    profile resources, log and persist data and metadata.
 
     Methods
     -------
-    infer :
-        Execute schema inference over a resource.
-    validate :
-        Execute validation over a resource.
-    profile :
-        Execute profiling over a resource.
-    log_schema :
-        Log datajudge schema.
-    log_report :
-        Log datajudge report.
-    log_profile :
-        Log datajudge profile.
-    persist_schema :
-        Persist schema produced by an inference framework.
-    persist_report :
-        Persist report produced by a validation framework.
-    persist_profile :
-        Persist profile produced by a profiling framework.
-    persist_data :
-        Persist input data into default store.
-    fetch_data :
-        Fetch input data from artifact store.
+    infer_wrapper
+        Execute schema inference on resources with inference frameworks.
+    infer_datajudge
+        Execute schema inference on resources with Datajudge.
+    infer
+        Execute schema inference on resources.
+    log_schema
+        Log DatajudgeSchemas.
+    persist_schema
+        Persist frameworks schemas.
+    validate_wrapper
+        Execute validation on resources with validation frameworks.
+    validate_datajudge
+        Execute validation on resources with Datajudge.
+    validate
+        Execute validation on resources.
+    log_report
+        Log DatajudgeReports.
+    persist_report
+        Persist frameworks reports.
+    profile_wrapper
+        Execute profiling on resources with profiling frameworks.
+    profile_datajudge
+        Execute profiling on resources with Datajudge.
+    profile
+        Execute profiling on resources.
+    log_profile
+        Log DatajudgeProfiles.
+    persist_profile
+        Persist frameworks profiles.
+    persist_data
+        Persist input data as artifacts into default store.
 
     """
 
@@ -206,7 +215,20 @@ class Run:
                       parallel: bool = False,
                       num_worker: int = 10) -> List[Any]:
         """
-        Execute schema inference on resources.
+        Execute schema inference on resources with inference frameworks.
+
+        Parameters
+        ----------
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+
+        Returns
+        -------
+        List[Any]
+            Return a list of framework results.
+
         """
         schemas = self._run_handler.get_artifact_schema()
         if schemas:
@@ -221,7 +243,20 @@ class Run:
                         parallel: bool = False,
                         num_worker: int = 10) -> List[DatajudgeSchema]:
         """
-        Produce datajudge inference schema.
+        Execute schema inference on resources with Datajudge.
+
+        Parameters
+        ----------
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+
+        Returns
+        -------
+        List[DatajudgeSchema]
+            Return a list of DatajudgeSchemas.
+
         """
         schemas = self._run_handler.get_datajudge_schema()
         if schemas:
@@ -238,6 +273,21 @@ class Run:
               only_dj: bool = False) -> Any:
         """
         Execute schema inference on resources.
+
+        Parameters
+        ----------
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+        only_dj : bool, optional
+            Flag to return only the Datajudge report, by default False
+
+        Returns
+        -------
+        Any
+            Return a list of DatajudgeSchemas and the
+            corresponding list of framework results.
         """
         schema = self.infer_wrapper(parallel,
                                     num_worker)
@@ -249,7 +299,7 @@ class Run:
 
     def log_schema(self) -> None:
         """
-        Log datajudge schema.
+        Log DatajudgeSchemas.
         """
         self._check_metadata_uri()
         objects = self._run_handler.get_datajudge_schema()
@@ -259,7 +309,7 @@ class Run:
 
     def persist_schema(self) -> None:
         """
-        Persist an inferred schema produced by a validation framework.
+        Persist frameworks schemas.
         """
         objects = self._run_handler.get_rendered_schema()
         for obj in objects:
@@ -267,20 +317,27 @@ class Run:
                                    self._render_artifact_name(obj.filename))
 
     # Validation
-
     def validate_wrapper(self,
                          constraints: List[Constraint],
                          parallel: bool = False,
                          num_worker: int = 10
                          ) -> List[Any]:
         """
-        Execute validation on resources.
+        Execute validation on resources with validation frameworks.
 
         Parameters
         ----------
-        constraints : dict
+        constraints : List[Constraint]
             List of constraint to validate resources.
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
 
+        Returns
+        -------
+        List[Any]
+            Return a list of framework results.
 
         """
         reports = self._run_handler.get_artifact_report()
@@ -299,12 +356,21 @@ class Run:
                            num_worker: int = 10
                            ) -> List[DatajudgeReport]:
         """
-        Produce datajudge validation report.
+        Execute validation on resources with Datajudge.
 
         Parameters
         ----------
-        constraints : dict, default = None
+        constraints : List[Constraint]
             List of constraint to validate resources.
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+
+        Returns
+        -------
+        List[DatajudgeReport]
+            Return a list of DatajudgeReport.
 
         """
         reports = self._run_handler.get_datajudge_report()
@@ -328,8 +394,20 @@ class Run:
 
         Parameters
         ----------
-        constraints : dict, default = None
+        constraints : List[Constraint]
             List of constraint to validate resources.
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+        only_dj : bool, optional
+            Flag to return only the Datajudge report, by default False
+
+        Returns
+        -------
+        Any
+            Return a list of DatajudgeReport and the
+            corresponding list of framework results.
 
         """
         report = self.validate_wrapper(constraints,
@@ -344,7 +422,7 @@ class Run:
 
     def log_report(self) -> None:
         """
-        Log short report.
+        Log DatajudgeReports.
         """
         self._check_metadata_uri()
         objects = self._run_handler.get_datajudge_report()
@@ -354,7 +432,7 @@ class Run:
 
     def persist_report(self) -> None:
         """
-        Persist a report produced by a validation framework.
+        Persist frameworks reports.
         """
         objects = self._run_handler.get_rendered_report()
         for obj in objects:
@@ -367,7 +445,20 @@ class Run:
                         parallel: bool = False,
                         num_worker: int = 10) -> List[Any]:
         """
-        Execute profiling on resources.
+        Execute profiling on resources with profiling frameworks.
+
+        Parameters
+        ----------
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+
+        Returns
+        -------
+        List[Any]
+            Return a list of framework results.
+
         """
         profiles = self._run_handler.get_artifact_profile()
         if profiles:
@@ -382,7 +473,20 @@ class Run:
                           parallel: bool = False,
                           num_worker: int = 10) -> List[DatajudgeProfile]:
         """
-        Produce datajudge profiling report.
+        Execute profiling on resources with Datajudge.
+
+        Parameters
+        ----------
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+
+        Returns
+        -------
+        List[DatajudgeProfile]
+            Return a list of DatajudgeProfile.
+
         """
         profiles = self._run_handler.get_datajudge_profile()
         if profiles:
@@ -400,6 +504,22 @@ class Run:
                 ) -> Any:
         """
         Execute profiling on resources.
+
+        Parameters
+        ----------
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+        only_dj : bool, optional
+            Flag to return only the Datajudge report, by default False
+
+        Returns
+        -------
+        Any
+            Return a list of DatajudgeProfile and the
+            corresponding list of framework results.
+
         """
         profile = self.profile_wrapper(parallel,
                                        num_worker)
@@ -411,18 +531,18 @@ class Run:
 
     def log_profile(self) -> None:
         """
-        Log a data profile.
+        Log DatajudgeProfiles.
         """
         self._check_metadata_uri()
         objects = self._run_handler.get_datajudge_profile()
         for obj in objects:
-            
+
             metadata = self._get_blob(obj.to_dict())
             self._log_metadata(metadata, MT_DJ_PROFILE)
 
     def persist_profile(self) -> None:
         """
-        Persist a data profile produced by a profiling framework.
+        Persist frameworks profiles.
         """
         objects = self._run_handler.get_rendered_profile()
         for obj in objects:
@@ -434,7 +554,8 @@ class Run:
     def persist_data(self,
                      file_format: Optional[str] = "parquet") -> None:
         """
-        Persist input data as artifact.
+        Persist input data as artifacts into default store.
+        
         Depending on the functioning of the store object on which the
         artifacts are stored, the store will try to download the data
         locally in the format requested by the user. If the specific
@@ -453,8 +574,8 @@ class Run:
 
         Parameters
         ----------
-        format : str
-            Format with which to persist input data.
+        file_format : Optional[str], optional
+            Format with which to persist input data, by default "parquet"
 
         """
         self._check_artifacts_uri()
