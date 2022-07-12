@@ -4,21 +4,26 @@ GreatExpectation implementation of profiling plugin.
 # pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
 
+import os
 import typing
 from copy import deepcopy
+from pathlib import Path
 from typing import List
 
 import great_expectations as ge
 from great_expectations.core.expectation_suite import ExpectationSuite
-from great_expectations.profile.user_configurable_profiler import UserConfigurableProfiler
+from great_expectations.profile.user_configurable_profiler import \
+    UserConfigurableProfiler
 
 from datajudge.data import DatajudgeProfile
 from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
-from datajudge.utils.commons import GREAT_EXPECTATION
 from datajudge.run.plugin.utils.dataframe_reader import DataFrameReader
-from datajudge.run.plugin.utils.great_expectation_utils import get_great_expectation_validator
+from datajudge.run.plugin.utils.great_expectation_utils import \
+    get_great_expectation_validator
+from datajudge.run.plugin.utils.plugin_utils import exec_decorator
+from datajudge.utils.commons import GREAT_EXPECTATION
+from datajudge.utils.file_utils import clean_all
 
 if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
@@ -91,7 +96,7 @@ class ProfilePluginGreatExpectation(Profiling):
             _object = {"errors": result.errors}
         else:
             _object = result.artifact.to_json_dict()
-        filename = self._fn_report.format(f"{GREAT_EXPECTATION}.json")
+        filename = self._fn_profile.format(f"{GREAT_EXPECTATION}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
@@ -127,3 +132,10 @@ class ProfileBuilderGreatExpectation(PluginBuilder):
             plugin.setup(resource, self.exec_args)
             plugins.append(plugin)
         return plugins
+
+    def destroy(self) -> None:
+        """
+        Destory plugins.
+        """
+        path = Path(os.getcwd(), "ge_ctxt")
+        clean_all(path)

@@ -1,21 +1,32 @@
+import os
+from pathlib import Path
 from typing import Any
 
-import great_expectations as ge
 import pandas as pd
 from great_expectations.core.batch import RuntimeBatchRequest
+from great_expectations.data_context.data_context import DataContext
 from ruamel import yaml
 
 from datajudge.utils.utils import get_uiid
 
 
+def get_data_context() -> DataContext:
+    """
+    Create data context for great expectation and return path.
+    """
+    base_path = Path(os.getcwd(), "ge_ctxt")
+    tmp_path = Path(base_path, get_uiid())
+    tmp_path.mkdir(parents=True)
+    return DataContext.create(project_root_dir=tmp_path)
+
+
 def get_great_expectation_validator(data: pd.DataFrame,
                                     data_source_name: str,
                                     data_asset_name: str) -> Any:
-    #great_expectations init
 
     expectation_suite_name = f"suite_{get_uiid()}"
 
-    context = ge.get_context()
+    context = get_data_context()
 
     datasource_config = {
         "name": data_source_name,

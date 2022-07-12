@@ -100,3 +100,8 @@ class ProfileBuilderDummy(PluginBuilder):
         plugin.setup(DUMMY_RES, self.exec_args)
         plugins.append(plugin)
         return plugins
+
+    def destroy(self) -> None:
+        """
+        Destory plugins.
+        """

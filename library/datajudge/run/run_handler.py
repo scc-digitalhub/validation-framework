@@ -96,6 +96,7 @@ class RunHandler:
                                    self._store_handler.get_all_art_stores())
         plugins = self.create_plugins(builders, resources)
         self.scheduler(plugins, INFERENCE, parallel, num_worker)
+        self.destroy_builders(builders)
 
     def validate(self,
                  resources: List[DataResource],
@@ -127,6 +128,7 @@ class RunHandler:
                                    self._store_handler.get_all_art_stores())
         plugins = self.create_plugins(builders, resources)
         self.scheduler(plugins, PROFILING, parallel, num_worker)
+        self.destroy_builders(builders)
 
     @staticmethod
     def create_plugins(builders: PluginBuilder,

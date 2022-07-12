@@ -555,7 +555,7 @@ class Run:
                      file_format: Optional[str] = "parquet") -> None:
         """
         Persist input data as artifacts into default store.
-        
+
         Depending on the functioning of the store object on which the
         artifacts are stored, the store will try to download the data
         locally in the format requested by the user. If the specific

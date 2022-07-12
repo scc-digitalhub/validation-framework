@@ -64,9 +64,3 @@ class ValidationPluginBuilder(PluginBuilder):
         """
         Filter constraints by library.
         """
-
-    @abstractmethod
-    def destroy(self) -> None:
-        """
-        Destroy builder.
-        """

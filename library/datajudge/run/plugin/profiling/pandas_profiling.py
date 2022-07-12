@@ -159,3 +159,9 @@ class ProfileBuilderPandasProfiling(PluginBuilder):
             plugin.setup(resource, self.exec_args)
             plugins.append(plugin)
         return plugins
+
+    def destroy(self) -> None:
+        """
+        Destory plugins.
+        """
+

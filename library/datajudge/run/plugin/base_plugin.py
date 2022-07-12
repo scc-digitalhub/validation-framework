@@ -120,3 +120,9 @@ class PluginBuilder:
                 return resource
         raise StoreError(f"No store registered with name '{resource.store}'. " +
                          f"Impossible to fetch resource '{resource.name}'")
+
+    @abstractmethod
+    def destroy(self) -> None:
+        """
+        Destroy builder.
+        """
