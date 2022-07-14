@@ -1,7 +1,7 @@
 """
 Validation plugin abstract class module.
 """
-# pylint: disable=too-few-public-methods
+
 from __future__ import annotations
 
 import typing
@@ -27,9 +27,11 @@ class Validation(Plugin, metaclass=ABCMeta):
         """
         Method that call specific execution.
         """
-        self.logger.info(f"Execute validation: plugin {self.lib_name} {self._id}, constraint {self.constraint.name}, resources {self.constraint.resources}")
+        self.logger.info(
+            f"Execute validation: plugin {self.lib_name} {self._id}, constraint {self.constraint.name}, resources {self.constraint.resources}")
         lib_result = self.validate()
-        self.logger.info(f"Render datajudge result: plugin {self.lib_name} {self._id}")
+        self.logger.info(
+            f"Render datajudge result: plugin {self.lib_name} {self._id}")
         dj_result = self.render_datajudge(lib_result)
         self.logger.info(f"Render artifact: plugin {self.lib_name} {self._id}")
         render_result = self.render_artifact(lib_result)
@@ -46,16 +48,11 @@ class Validation(Plugin, metaclass=ABCMeta):
         Validate a resource.
         """
 
+
 class ValidationPluginBuilder(PluginBuilder):
     """
     Validation plugin builder.
     """
-    @abstractmethod
-    def setup(self,
-              *args) -> None:
-        """
-        Setup builder.
-        """
 
     @staticmethod
     @abstractmethod

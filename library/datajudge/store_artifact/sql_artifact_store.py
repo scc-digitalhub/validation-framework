@@ -155,7 +155,7 @@ class SQLArtifactStore(ArtifactStore):
             while True:
                 res = query_result.fetchmany(1024)
                 if res:
-                    arrays.extend(list(map(lambda x: dict(x), res)))
+                    arrays.extend(list(map(dict(), res)))
                 else:
                     tab = pa.Table.from_pylist(arrays)
                     pq.write_table(tab, filepath)

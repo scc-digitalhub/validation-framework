@@ -99,7 +99,7 @@ class FTPArtifactStore(ArtifactStore):
         self._register_resource(f"{src}_{file_format}", filepath)
         return filepath
 
-    # pylint: disable=arguments-differ
+
     def _check_access_to_storage(self,
                                  dst: str,
                                  write: bool = False) -> None:

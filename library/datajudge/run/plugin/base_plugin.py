@@ -1,7 +1,7 @@
 """
 Base abstract Run Plugin module.
 """
-# pylint: disable=too-many-arguments,too-few-public-methods
+
 from __future__ import annotations
 from copy import deepcopy
 
@@ -93,6 +93,7 @@ class PluginBuilder:
     """
     Abstract PluginBuilder class.
     """
+
     def __init__(self,
                  exec_args: dict,
                  file_format: str,

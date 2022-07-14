@@ -1,7 +1,7 @@
 """
 Datajudge base report module.
 """
-# pylint: disable=too-many-arguments,too-few-public-methods
+
 from abc import ABCMeta
 from dataclasses import dataclass
 

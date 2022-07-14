@@ -1,7 +1,7 @@
 """
 Plugin utils module.
 """
-# pylint: disable=too-many-arguments,too-few-public-methods
+
 import time
 
 from collections import namedtuple

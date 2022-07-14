@@ -12,6 +12,7 @@ class ResourceRegistry:
     """
     Generic registry object to keep track of resources.
     """
+
     def __init__(self) -> None:
         self.registry = {}
 
@@ -75,7 +76,7 @@ class ArtifactStore:
                  artifact_uri: str,
                  temp_dir: str,
                  config: Optional[dict] = None,
-                 is_default = False
+                 is_default=False
                  ) -> None:
         self.name = name
         self.artifact_uri = artifact_uri

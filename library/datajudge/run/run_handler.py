@@ -27,6 +27,7 @@ class RunHandlerRegistry:
     Generic registry object to store objects
     based on operations.
     """
+
     def __init__(self) -> None:
         self.registry = {}
         self.setup()
@@ -150,15 +151,15 @@ class RunHandler:
         multithreading = []
         distributed = []
         sequential = []
-        for p in plugins:
-            if p.exec_multiprocess and parallel:
-                multiprocess.append(p)
-            elif p.exec_multithread and parallel:
-                multithreading.append(p)
-            elif p.exec_distributed and parallel:
-                distributed.append(p)
+        for plugin in plugins:
+            if plugin.exec_multiprocess and parallel:
+                multiprocess.append(plugin)
+            elif plugin.exec_multithread and parallel:
+                multithreading.append(plugin)
+            elif plugin.exec_distributed and parallel:
+                distributed.append(plugin)
             else:
-                sequential.append(p)
+                sequential.append(plugin)
 
         # Revisite this
         self.sequential_execute(sequential, ops)
@@ -199,7 +200,8 @@ class RunHandler:
             for data in pool.map(self.execute, plugins):
                 self.register_results(ops, data)
 
-    def execute(self, plugin: Plugin) -> dict:
+    @staticmethod
+    def execute(plugin: Plugin) -> dict:
         """
         Wrap plugins main execution method. The handler create
         builders to build plugins. Once the plugin are built,
@@ -220,8 +222,8 @@ class RunHandler:
         for key, value in result.items():
             self._registry.register(operation, key, value)
 
-    def destroy_builders(self,
-                         builders: List[PluginBuilder]) -> None:
+    @staticmethod
+    def destroy_builders(builders: List[PluginBuilder]) -> None:
         """
         Destroy builders.
         """
@@ -293,11 +295,11 @@ class RunHandler:
         Return libraries used by run.
         """
         libs = {}
-        for op in [INFERENCE, PROFILING, VALIDATION]:
-            libs[op] = []
-            for i in self.get_item(op, RES_LIB):
-                if dict(**i) not in libs[op]:
-                    libs[op].append(i)
+        for ops in [INFERENCE, PROFILING, VALIDATION]:
+            libs[ops] = []
+            for i in self.get_item(ops, RES_LIB):
+                if dict(**i) not in libs[ops]:
+                    libs[ops].append(i)
         return libs
 
     def log_metadata(self,
@@ -332,7 +334,7 @@ class RunHandler:
         for res in resources:
             resource = deepcopy(res)
             for store in self._store_handler.get_all_art_stores():
-               if store.name == resource.store:
+                if store.name == resource.store:
                     resource.tmp_pth = store.fetch_artifact(resource.path,
                                                             file_format)
 

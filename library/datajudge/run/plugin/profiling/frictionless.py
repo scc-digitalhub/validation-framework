@@ -1,7 +1,7 @@
 """
 Frictionless implementation of profiling plugin.
 """
-# pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
+
 from __future__ import annotations
 
 import typing
@@ -66,7 +66,8 @@ class ProfilePluginFrictionless(Profiling):
             fields = rep.get("schema", {}).get("fields")
             stats = {k: v for k, v in rep.items() if k != "schema"}
         else:
-            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
+            self.logger.error(
+                f"Execution error {str(exec_err)} for plugin {self._id}")
             fields = None
             stats = None
 
@@ -109,6 +110,7 @@ class ProfileBuilderFrictionless(PluginBuilder):
     """
     Profile plugin builder.
     """
+
     def build(self,
               resources: List[DataResource]
               ) -> List[ProfilePluginFrictionless]:

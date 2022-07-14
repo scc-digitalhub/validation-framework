@@ -1,7 +1,7 @@
 """
 Implementation of S3 artifact store.
 """
-# pylint: disable=import-error
+# pylint: disable=unused-import
 import json
 from io import BytesIO, StringIO
 from pathlib import Path
@@ -19,7 +19,7 @@ from datajudge.utils.uri_utils import (build_key, get_name_from_uri,
                                        get_uri_netloc, get_uri_path)
 
 
-s3_client = Type["botocore.client.S3"]
+S3Client = Type["botocore.client.S3"]
 
 
 class S3ArtifactStore(ArtifactStore):
@@ -29,6 +29,7 @@ class S3ArtifactStore(ArtifactStore):
     Allows the client to interact with S3 based storages.
 
     """
+
     def persist_artifact(self,
                          src: Any,
                          dst: str,
@@ -76,7 +77,7 @@ class S3ArtifactStore(ArtifactStore):
 
         # Eventually return a presigned URL
         if file_format == "s3":
-            return self._get_presigned_url(client, key)
+            return self._get_presigned_url(client, bucket, key)
 
         # Get file from remote
         obj = self._get_data(client, bucket, key)
@@ -88,14 +89,14 @@ class S3ArtifactStore(ArtifactStore):
         self._register_resource(f"{src}_{file_format}", filepath)
         return filepath
 
-    def _get_client(self) -> s3_client:
+    def _get_client(self) -> S3Client:
         """
         Return a boto client.
         """
         return boto3.client("s3", **self.config)
 
     def _check_access_to_storage(self,
-                                 client: s3_client,
+                                 client: S3Client,
                                  bucket: str) -> None:
         """
         Check access to storage.
@@ -105,8 +106,8 @@ class S3ArtifactStore(ArtifactStore):
         except ClientError:
             raise StoreError("No access to s3 bucket!")
 
-    def _get_presigned_url(self,
-                           client: s3_client,
+    @staticmethod
+    def _get_presigned_url(client: S3Client,
                            bucket: str,
                            src: str) -> str:
         """
@@ -115,13 +116,13 @@ class S3ArtifactStore(ArtifactStore):
         if src.startswith("/"):
             src = src[1:]
         return client.generate_presigned_url(
-                    ClientMethod="get_object",
-                    Params={"Bucket": bucket,
-                            "Key": src},
-                    ExpiresIn=7200)
+            ClientMethod="get_object",
+            Params={"Bucket": bucket,
+                    "Key": src},
+            ExpiresIn=7200)
 
-    def _upload_file(self,
-                     client: s3_client,
+    @staticmethod
+    def _upload_file(client: S3Client,
                      bucket: str,
                      src: str,
                      key: str,
@@ -136,8 +137,8 @@ class S3ArtifactStore(ArtifactStore):
                            Key=key,
                            ExtraArgs=ex_args)
 
-    def _upload_fileobj(self,
-                        client: s3_client,
+    @staticmethod
+    def _upload_fileobj(client: S3Client,
                         bucket: str,
                         obj: IO,
                         key: str,
@@ -152,10 +153,10 @@ class S3ArtifactStore(ArtifactStore):
                               Key=key,
                               ExtraArgs=ex_args)
 
-    def _get_data(self,
-                    client: s3_client,
-                    bucket: str,
-                    key: str) -> bytes:
+    @staticmethod
+    def _get_data(client: S3Client,
+                  bucket: str,
+                  key: str) -> bytes:
         """
         Download object from S3.
         """

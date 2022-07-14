@@ -1,7 +1,6 @@
 """
 RunBuilder module.
 """
-# pylint: disable=raise-missing-from,too-many-arguments
 from __future__ import annotations
 
 import typing
@@ -22,6 +21,7 @@ class RunBuilder:
     RunBuilder object to initialize and create runs.
 
     """
+
     def __init__(self,
                  store_handler: StoreHandler) -> None:
         """
@@ -53,15 +53,16 @@ class RunBuilder:
         store = self._store_handler.get_def_store()
         return store.get_run_artifacts_uri(exp_name, run_id)
 
-    def _check_unique_resource(self,
-                               resources: List[DataResource]) -> None:
+    @staticmethod
+    def _check_unique_resource(resources: List[DataResource]) -> None:
         """
         Check that resources have unique names.
         """
         exists = []
         for res in resources:
             if res.name in exists:
-                raise RunError(f"Resource with name {res.name} already exists!")
+                raise RunError(
+                    f"Resource with name {res.name} already exists!")
             exists.append(res.name)
 
     def create_run(self,

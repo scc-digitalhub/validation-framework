@@ -1,7 +1,6 @@
 """
 Pandas profiling implementation of profiling plugin.
 """
-# pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods,invalid-name
 from __future__ import annotations
 
 import json
@@ -92,7 +91,8 @@ class ProfilePluginPandasProfiling(Profiling):
             fields = args.get("variables", {})
             stats = args.get("table", {})
         else:
-            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
+            self.logger.error(
+                f"Execution error {str(exec_err)} for plugin {self._id}")
             fields = None
             stats = None
 
@@ -146,6 +146,7 @@ class ProfileBuilderPandasProfiling(PluginBuilder):
     """
     Profile plugin builder.
     """
+
     def build(self,
               resources: List[DataResource]
               ) -> List[ProfilePluginPandasProfiling]:
@@ -164,4 +165,3 @@ class ProfileBuilderPandasProfiling(PluginBuilder):
         """
         Destory plugins.
         """
-

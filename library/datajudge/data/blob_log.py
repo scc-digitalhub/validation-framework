@@ -2,7 +2,7 @@
 BlobLog class.
 It represents the metadata logged into the backend.
 """
-# pylint: disable=too-many-arguments
+
 
 
 class BlobLog:

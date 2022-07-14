@@ -1,3 +1,6 @@
+"""
+Great expectation utils module.
+"""
 import os
 from pathlib import Path
 from typing import Any
@@ -12,7 +15,7 @@ from datajudge.utils.utils import get_uiid
 
 def get_data_context() -> DataContext:
     """
-    Create data context for great expectation and return path.
+    Create data context for great expectation.
     """
     base_path = Path(os.getcwd(), "ge_ctxt")
     tmp_path = Path(base_path, get_uiid())
@@ -23,6 +26,10 @@ def get_data_context() -> DataContext:
 def get_great_expectation_validator(data: pd.DataFrame,
                                     data_source_name: str,
                                     data_asset_name: str) -> Any:
+    """
+    Get a great expectation validator to perfor validation
+    or profiling.
+    """
 
     expectation_suite_name = f"suite_{get_uiid()}"
 

@@ -2,7 +2,6 @@
 EnvLog module.
 Basic log structure for execution enviroment.
 """
-# pylint: disable=import-error
 import os
 import platform
 

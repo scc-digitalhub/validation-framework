@@ -1,7 +1,7 @@
 """
 Dummy implementation of profiling plugin.
 """
-# pylint: disable=arguments-differ,too-few-public-methods
+# pylint: disable=unused-argument
 from __future__ import annotations
 
 import typing

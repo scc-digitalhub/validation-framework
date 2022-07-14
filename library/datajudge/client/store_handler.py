@@ -1,7 +1,7 @@
 """
 StoreHandler module.
 """
-# pylint: disable=raise-missing-from,too-many-arguments
+
 from __future__ import annotations
 
 import typing
@@ -41,19 +41,19 @@ class StoreRegistry:
         self.registry[STORE_TYPE_METADATA] = None
 
     def register(self,
-                 store: dict,
+                 new_store: dict,
                  store_type: str) -> None:
         """
         Register a new store.
         """
         if store_type == STORE_TYPE_ARTIFACT:
-            for s in self.get_all_stores(store_type):
-                if s.name == store.name:
+            for store in self.get_all_stores(store_type):
+                if store.name == new_store.name:
                     raise StoreError("There is already a store with that name. " +
                                      "Please choose another name to identify the store")
-            self.registry[store_type].append(store)
+            self.registry[store_type].append(new_store)
         else:
-            self.registry[store_type] = store
+            self.registry[store_type] = new_store
 
     def get_store(self,
                   store_type: str,
@@ -88,6 +88,7 @@ class StoreHandler:
     The StoreHandler contain a register that keeps track of stores.
 
     """
+
     def __init__(self,
                  metadata_store: Optional[StoreConfig] = None,
                  store: Optional[List[StoreConfig]] = None,

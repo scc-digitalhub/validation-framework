@@ -1,7 +1,7 @@
 """
 Profiling plugin abstract class module.
 """
-# pylint: disable=import-error,invalid-name
+
 from abc import ABCMeta, abstractmethod
 from typing import Any
 
@@ -21,9 +21,11 @@ class Profiling(Plugin, metaclass=ABCMeta):
         """
         Method that call specific execution.
         """
-        self.logger.info(f"Execute profiling: plugin {self.lib_name} {self._id}, resource {self.resource.name}")
+        self.logger.info(
+            f"Execute profiling: plugin {self.lib_name} {self._id}, resource {self.resource.name}")
         lib_result = self.profile()
-        self.logger.info(f"Render datajudge result: plugin {self.lib_name} {self._id}")
+        self.logger.info(
+            f"Render datajudge result: plugin {self.lib_name} {self._id}")
         dj_result = self.render_datajudge(lib_result)
         self.logger.info(f"Render artifact: plugin {self.lib_name} {self._id}")
         render_result = self.render_artifact(lib_result)

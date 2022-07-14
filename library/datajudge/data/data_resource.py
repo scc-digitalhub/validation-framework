@@ -1,7 +1,7 @@
 """
 DataResource module.
 """
-# pylint: disable=too-many-arguments,too-few-public-methods
+
 from typing import Optional, Union
 
 

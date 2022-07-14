@@ -1,7 +1,6 @@
 """
 DuckDB implementation of validation plugin.
 """
-# pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
 from __future__ import annotations
 
 import shutil
@@ -23,6 +22,7 @@ if typing.TYPE_CHECKING:
     from datajudge.data import DataResource
     from datajudge.run.plugin.base_plugin import Result
     from datajudge.utils.config import Constraint, ConstraintDuckDB
+    from datajudge.store_artifact.artifact_store import ArtifactStore
 
 
 class ValidationPluginDuckDB(Validation):
@@ -85,7 +85,8 @@ class ValidationPluginDuckDB(Validation):
             valid = result.artifact.get("valid")
             errors = result.artifact.get("errors")
         else:
-            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
+            self.logger.error(
+                f"Execution error {str(exec_err)} for plugin {self._id}")
             valid = False
             errors = None
 
@@ -111,7 +112,9 @@ class ValidationPluginDuckDB(Validation):
         return artifacts
 
     def parse_args(self):
-        pass
+        """
+        Argument parsing.
+        """
 
     @staticmethod
     def get_lib_name() -> str:
@@ -132,6 +135,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
     """
     DuckDB validation plugin builder.
     """
+
     def build(self,
               resources: List[DataResource],
               constraints: List[Constraint]
@@ -156,7 +160,9 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         return plugins
 
     def check_args(self) -> None:
-        pass
+        """
+        Arguments check.
+        """
 
     def setup_connection(self) -> None:
         """
@@ -166,14 +172,15 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         Path(self.tmp_db).parent.mkdir(parents=True, exist_ok=True)
         self.con = duckdb.connect(database=self.tmp_db, read_only=False)
 
-    def filter_resources(self,
-                         resources: List[DataResource],
+    @staticmethod
+    def filter_resources(resources: List[DataResource],
                          constraints: List[Constraint]
                          ) -> List[DataResource]:
         """
         Filter resources used by validator.
         """
-        res_names = set(flatten_list([deepcopy(const.resources) for const in constraints]))
+        res_names = set(flatten_list(
+            [deepcopy(const.resources) for const in constraints]))
         return [res for res in resources if res.name in res_names]
 
     def register_resources(self,
@@ -215,6 +222,9 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
     @staticmethod
     def filter_constraints(constraints: List[Constraint]
                            ) -> List[ConstraintDuckDB]:
+        """
+        Filter out ConstraintDuckDB.
+        """
         return [const for const in constraints if const.type == DUCKDB]
 
     def destroy(self) -> None:

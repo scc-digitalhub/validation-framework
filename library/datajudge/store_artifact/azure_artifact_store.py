@@ -1,7 +1,6 @@
 """
 Implementation of azure artifact store.
 """
-# pylint: disable=import-error
 import json
 from datetime import datetime, timedelta
 from io import BytesIO, StringIO
@@ -25,6 +24,7 @@ class AzureArtifactStore(ArtifactStore):
     Allows the client to interact with azure based storages.
 
     """
+
     def persist_artifact(self,
                          src: Any,
                          dst: str,
@@ -98,7 +98,7 @@ class AzureArtifactStore(ArtifactStore):
             # Check connection string
             if conn_string is not None:
                 client = BlobServiceClient.from_connection_string(
-                                                  conn_str=conn_string)
+                    conn_str=conn_string)
                 return client.get_container_client(container)
 
             # Otherwise account name + key
@@ -110,15 +110,16 @@ class AzureArtifactStore(ArtifactStore):
 
         raise Exception("You must provide credentials!")
 
-    def _check_access_to_storage(self, client: ContainerClient) -> None:
+    @staticmethod
+    def _check_access_to_storage(client: ContainerClient) -> None:
         """
         Check access to storage.
         """
         if not client.exists():
             raise RuntimeError("No access to Azure container!")
 
-    def _get_presigned_url(self,
-                           client: ContainerClient,
+    @staticmethod
+    def _get_presigned_url(client: ContainerClient,
                            src: str) -> str:
         """
         Encode credentials in Azure URI.
@@ -129,12 +130,13 @@ class AzureArtifactStore(ArtifactStore):
                                           container_name=client.container_name,
                                           blob_name=src,
                                           account_key=client.credential.account_key,
-                                          permission=BlobSasPermissions(read=True),
+                                          permission=BlobSasPermissions(
+                                              read=True),
                                           expiry=datetime.utcnow() + timedelta(hours=2))
         return f"{client.primary_endpoint}/{src}?{read_sas_blob}"
 
-    def _upload_fileobj(self,
-                        client: ContainerClient,
+    @staticmethod
+    def _upload_fileobj(client: ContainerClient,
                         name: str,
                         data: IO,
                         metadata: dict) -> None:
@@ -146,8 +148,8 @@ class AzureArtifactStore(ArtifactStore):
                            metadata=metadata,
                            overwrite=True)
 
-    def _upload_file(self,
-                     client: ContainerClient,
+    @staticmethod
+    def _upload_file(client: ContainerClient,
                      name: str,
                      path: str,
                      metadata: dict) -> None:

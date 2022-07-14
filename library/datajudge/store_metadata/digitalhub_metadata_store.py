@@ -1,7 +1,6 @@
 """
 Implementation of REST metadata store designed by Digital Society Lab.
 """
-# pylint: disable=import-error
 from collections import namedtuple
 from json.decoder import JSONDecodeError
 from typing import Optional

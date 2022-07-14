@@ -1,4 +1,6 @@
-# pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
+"""
+SQL checks module.
+"""
 from __future__ import annotations
 
 import re
@@ -27,16 +29,15 @@ def evaluate_validity(query_result: Any,
 
             if expect == EXACT:
                 return evaluate_exact(result, value)
-            elif expect == RANGE:
+            if expect == RANGE:
                 return evaluate_range(result, value)
-            elif expect == MINIMUM:
+            if expect == MINIMUM:
                 return evaluate_min(result, value)
-            elif expect == MAXIMUM:
+            if expect == MAXIMUM:
                 return evaluate_max(result, value)
-            else:
-                raise ValidationError("Invalid expectation.")
+            raise ValidationError("Invalid expectation.")
 
-        elif check == CHECK_ROWS:
+        if check == CHECK_ROWS:
 
             # Evaluation made on number of rows
 
@@ -44,28 +45,26 @@ def evaluate_validity(query_result: Any,
 
             if expect == EMPTY:
                 return evaluate_empty(result, empty=True)
-            elif expect == NON_EMPTY:
+            if expect == NON_EMPTY:
                 return evaluate_empty(result, empty=False)
-            elif expect == EXACT:
+            if expect == EXACT:
                 return evaluate_exact(result, value)
-            elif expect == RANGE:
+            if expect == RANGE:
                 return evaluate_range(result, value)
-            elif expect == MINIMUM:
+            if expect == MINIMUM:
                 return evaluate_min(result, value)
-            elif expect == MAXIMUM:
+            if expect == MAXIMUM:
                 return evaluate_max(result, value)
-            else:
-                raise ValidationError("Invalid expectation.")
+            raise ValidationError("Invalid expectation.")
 
-        else:
-            raise ValidationError("Invalid check typology.")
+        raise ValidationError("Invalid check typology.")
 
     except Exception as ex:
         return False, ex.args
 
 
 def evaluate_empty(result: Any,
-                    empty: bool) -> tuple:
+                   empty: bool) -> tuple:
     """
     Evaluate table emptiness.
     """
@@ -75,10 +74,9 @@ def evaluate_empty(result: Any,
         if result == 0:
             return True, None
         return False, "Table is not empty."
-    else:
-        if result > 0:
-            return True, None
-        return False, "Table is empty."
+    if result > 0:
+        return True, None
+    return False, "Table is empty."
 
 
 def evaluate_exact(result: Any, value: Any) -> tuple:

@@ -27,7 +27,6 @@ class HTTPArtifactStore(ArtifactStore):
                  ) -> None:
         super().__init__(artifact_uri, temp_dir, config)
 
-
     def persist_artifact(self,
                          src: Any,
                          dst: str,
@@ -59,7 +58,7 @@ class HTTPArtifactStore(ArtifactStore):
         self._register_resource(f"{src}_{file_format}", filepath)
         return filepath
 
-    # pylint: disable=arguments-differ
+
     def _check_access_to_storage(self, dst: str) -> None:
         """
         Check if there is access to the storage.

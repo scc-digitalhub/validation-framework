@@ -1,12 +1,11 @@
 """
 Common IO utils.
 """
-import csv
 import json
 import shutil
 from io import BufferedReader, BytesIO, StringIO, TextIOWrapper
 from pathlib import Path
-from typing import Any, IO, Union
+from typing import IO, Union
 
 
 #  https://stackoverflow.com/questions/55889474/convert-io-stringio-to-io-bytesio

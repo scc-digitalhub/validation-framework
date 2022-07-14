@@ -1,7 +1,7 @@
 """
 Frictionless implementation of inference plugin.
 """
-# pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
+
 from __future__ import annotations
 
 import typing
@@ -69,11 +69,12 @@ class InferencePluginFrictionless(Inference):
                     dj_schema_fields.append({
                         "name": field.get("name", ""),
                         "type": field.get("type", "")
-                        })
+                    })
             else:
                 dj_schema_fields = [{"name": None, "type": None}]
         else:
-            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
+            self.logger.error(
+                f"Execution error {str(exec_err)} for plugin {self._id}")
             dj_schema_fields = None
 
         return DatajudgeSchema(self.get_lib_name(),

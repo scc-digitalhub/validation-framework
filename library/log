@@ -1,0 +1,21 @@
+************* Module datajudge.store_artifact.odbc_artifact_store
+datajudge/store_artifact/odbc_artifact_store.py:8:0: E0401: Unable to import 'pyodbc' (import-error)
+************* Module datajudge.run.plugin.utils.sql_checks
+datajudge/run/plugin/utils/sql_checks.py:14:0: R0911: Too many return statements (11/6) (too-many-return-statements)
+datajudge/run/plugin/utils/sql_checks.py:14:0: R0912: Too many branches (13/12) (too-many-branches)
+************* Module datajudge.run.plugin.validation.validation_plugin
+datajudge/run/plugin/validation/validation_plugin.py:31:81: E1101: Instance of 'Validation' has no 'constraint' member (no-member)
+datajudge/run/plugin/validation/validation_plugin.py:31:115: E1101: Instance of 'Validation' has no 'constraint' member (no-member)
+************* Module datajudge.run.plugin.validation.duckdb
+datajudge/run/plugin/validation/duckdb.py:58:19: E1101: Module 'duckdb' has no 'connect' member (no-member)
+datajudge/run/plugin/validation/duckdb.py:173:19: E1101: Module 'duckdb' has no 'connect' member (no-member)
+datajudge/run/plugin/validation/duckdb.py:171:8: W0201: Attribute 'tmp_db' defined outside __init__ (attribute-defined-outside-init)
+datajudge/run/plugin/validation/duckdb.py:173:8: W0201: Attribute 'con' defined outside __init__ (attribute-defined-outside-init)
+************* Module datajudge.run.plugin.profiling.profiling_plugin
+datajudge/run/plugin/profiling/profiling_plugin.py:25:78: E1101: Instance of 'Profiling' has no 'resource' member (no-member)
+************* Module datajudge.run.plugin.inference.inference_plugin
+datajudge/run/plugin/inference/inference_plugin.py:25:78: E1101: Instance of 'Inference' has no 'resource' member (no-member)
+
+------------------------------------------------------------------
+Your code has been rated at 9.85/10 (previous run: 9.49/10, +0.36)
+

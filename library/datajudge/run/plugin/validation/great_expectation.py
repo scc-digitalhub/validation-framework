@@ -1,7 +1,7 @@
 """
 GreatExpectation implementation of validation plugin.
 """
-# pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
+
 from __future__ import annotations
 
 import os
@@ -61,7 +61,8 @@ class ValidationPluginGreatExpectation(Validation):
         validator = get_great_expectation_validator(data,
                                                     str(self.resource.name),
                                                     str(self.resource.title))
-        validation_func = validator.validate_expectation(self.constraint.expectation)
+        validation_func = validator.validate_expectation(
+            self.constraint.expectation)
         result = validation_func(**self.constraint.expectation_args)
         return ExpectationValidationResult(**result.to_json_dict())
 
@@ -79,7 +80,8 @@ class ValidationPluginGreatExpectation(Validation):
             valid = res.get("success")
             errors = listify(res.get("result"))
         else:
-            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
+            self.logger.error(
+                f"Execution error {str(exec_err)} for plugin {self._id}")
             valid = False
             errors = None
 
@@ -123,6 +125,7 @@ class ValidationBuilderGreatExpectation(ValidationPluginBuilder):
     """
     GreatExpectation validation plugin builder.
     """
+
     def build(self,
               resources: List[DataResource],
               constraints: List[Constraint]
@@ -144,7 +147,10 @@ class ValidationBuilderGreatExpectation(ValidationPluginBuilder):
     @staticmethod
     def filter_constraints(constraints: List[Constraint]
                            ) -> List[ConstraintGreatExpectation]:
-        return [const for const in constraints if const.type==GREAT_EXPECTATION]
+        """
+        Filter out ConstraintGreatExpectation.
+        """
+        return [const for const in constraints if const.type == GREAT_EXPECTATION]
 
     def destroy(self) -> None:
         """

@@ -1,7 +1,7 @@
 """
 Frictionless implementation of validation plugin.
 """
-# pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
+
 from __future__ import annotations
 
 import typing
@@ -87,8 +87,8 @@ class ValidationPluginFrictionless(Validation):
                     break
             return Schema(schema)
 
-        elif isinstance(self.constraint, ConstraintFullFrictionless):
-            return Schema(self.constraint.table_schema)
+        # Otherwise return the full table schema
+        return Schema(self.constraint.table_schema)
 
     @exec_decorator
     def render_datajudge(self, result: Result) -> DatajudgeReport:
@@ -107,7 +107,8 @@ class ValidationPluginFrictionless(Validation):
             flat_report = report.flatten(spec=spec)
             errors = [dict(zip(spec, err)) for err in flat_report]
         else:
-            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
+            self.logger.error(
+                f"Execution error {str(exec_err)} for plugin {self._id}")
             valid = False
             errors = None
 
@@ -151,6 +152,7 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
     """
     Validation plugin builder.
     """
+
     def build(self,
               resources: List[DataResource],
               constraints: List[Constraint]
@@ -171,8 +173,8 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
 
         return plugins
 
-    def get_schema(self,
-                   resource: DataResource) -> dict:
+    @staticmethod
+    def get_schema(resource: DataResource) -> dict:
         """
         Infer simple schema of a resource if not present.
         """
@@ -189,6 +191,9 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
     @staticmethod
     def filter_constraints(constraints: List[Constraint]
                            ) -> List[Union[ConstraintFrictionless, ConstraintFullFrictionless]]:
+        """
+        Filter out ConstraintFrictionless and ConstraintFullFrictionless
+        """
         return [const for const in constraints
                 if const.type in (FRICTIONLESS, FRICTIONLESS_SCHEMA)]
 

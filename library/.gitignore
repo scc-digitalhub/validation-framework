@@ -133,3 +133,6 @@ dmypy.json
 # VScode
 \.vscode/*
 *.code-workspace
+
+# pylint
+.pylintrc

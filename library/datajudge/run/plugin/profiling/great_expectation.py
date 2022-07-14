@@ -1,7 +1,7 @@
 """
 GreatExpectation implementation of profiling plugin.
 """
-# pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
+
 from __future__ import annotations
 
 import os
@@ -73,10 +73,11 @@ class ProfilePluginGreatExpectation(Profiling):
 
         if exec_err is None:
             res = deepcopy(result.artifact).to_json_dict()
-            fields = [i for i in res.get("meta", {}).get("columns", {}).keys()]
+            fields = list(res.get("meta", {}).get("columns", {}).keys())
             stats = res.get("expectations")
         else:
-            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
+            self.logger.error(
+                f"Execution error {str(exec_err)} for plugin {self._id}")
             fields = None
             stats = None
 
@@ -119,6 +120,7 @@ class ProfileBuilderGreatExpectation(PluginBuilder):
     """
     Profile plugin builder.
     """
+
     def build(self,
               resources: List[DataResource]
               ) -> List[ProfilePluginGreatExpectation]:

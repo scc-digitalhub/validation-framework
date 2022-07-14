@@ -42,6 +42,7 @@ class MetadataStore(metaclass=ABCMeta):
                  name: str,
                  uri_metadata: str,
                  config:  Optional[dict] = None) -> None:
+        self.name = name
         self.uri_metadata = uri_metadata
         self.config = config
 

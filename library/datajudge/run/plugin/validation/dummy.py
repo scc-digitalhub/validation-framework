@@ -1,7 +1,7 @@
 """
 Dummy implementation of validation plugin.
 """
-# pylint: disable=arguments-differ,too-few-public-methods
+# pylint: disable=unused-argument
 from __future__ import annotations
 
 import typing
@@ -92,10 +92,6 @@ class ValidationBuilderDummy(ValidationPluginBuilder):
     """
     Dummy validation plugin builder.
     """
-    def setup(self, *args) -> None:
-        """
-        Setup builder.
-        """
 
     def build(self,
               resources: List[DataResource],
@@ -110,13 +106,14 @@ class ValidationBuilderDummy(ValidationPluginBuilder):
         plugins.append(plugin)
         return plugins
 
+    @staticmethod
     def filter_constraints(constraints: List[Constraint]
                            ) -> List[Constraint]:
         """
-        Filter constraints by library.
+        Do nothing.
         """
 
     def destroy(self, *args) -> None:
         """
-        Destroy builder.
+        Do nothing.
         """

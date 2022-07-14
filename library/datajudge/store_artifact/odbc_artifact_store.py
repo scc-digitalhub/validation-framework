@@ -1,6 +1,7 @@
 """
 Implementation of ODBC artifact store.
 """
+
 import csv
 from typing import Any
 

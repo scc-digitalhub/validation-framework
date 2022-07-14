@@ -1,7 +1,7 @@
 """
 SQLAlchemy implementation of validation plugin.
 """
-# pylint: disable=import-error,no-name-in-module,arguments-differ,no-member,too-few-public-methods
+
 from __future__ import annotations
 
 import typing
@@ -86,7 +86,8 @@ class ValidationPluginSqlAlchemy(Validation):
             valid = result.artifact.get("valid")
             errors = result.artifact.get("errors")
         else:
-            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
+            self.logger.error(
+                f"Execution error {str(exec_err)} for plugin {self._id}")
             valid = False
             errors = None
 
@@ -112,7 +113,9 @@ class ValidationPluginSqlAlchemy(Validation):
         return artifacts
 
     def parse_args(self):
-        pass
+        """
+        Parse args.
+        """
 
     @staticmethod
     def get_lib_name() -> str:
@@ -133,6 +136,7 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
     """
     SqlAlchemy validation plugin builder.
     """
+
     def build(self,
               resources: List[DataResource],
               constraints: List[Constraint]
@@ -145,12 +149,14 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
 
         f_constraint = self.filter_constraints(constraints)
         f_resources = self.filter_resources(resources, f_constraint)
-        grouped_constraints = self.regroup_constraint_resources(f_constraint, f_resources)
+        grouped_constraints = self.regroup_constraint_resources(
+            f_constraint, f_resources)
 
         plugins = []
         for const in grouped_constraints:
             plugin = ValidationPluginSqlAlchemy()
-            plugin.setup(const["conn_string"], const["constraint"], self.exec_args)
+            plugin.setup(const["conn_string"],
+                         const["constraint"], self.exec_args)
             plugins.append(plugin)
 
         return plugins
@@ -160,17 +166,24 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         Filter builder store to keep only SQLStores and set file format.
         """
         self.file_format = "sql"
-        self.stores = [store for store in self.stores if isinstance(store, SQLArtifactStore)]
+        self.stores = [store for store in self.stores if isinstance(
+            store, SQLArtifactStore)]
         if not self.stores:
-            raise ValidationError("There must be at least a SQLStore to use sqlalchemy validator.")
+            raise ValidationError(
+                "There must be at least a SQLStore to use sqlalchemy validator.")
 
     def check_args(self) -> None:
-        pass
+        """
+        Check arguments.
+        """
 
     @staticmethod
     def filter_constraints(constraints: List[Constraint]
                            ) -> List[ConstraintSqlAlchemy]:
-        return [const for const in constraints if const.type==SQLALCHEMY]
+        """
+        Filter out ConstraintSqlAlchemy.
+        """
+        return [const for const in constraints if const.type == SQLALCHEMY]
 
     def filter_resources(self,
                          resources: List[DataResource],
@@ -179,7 +192,8 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         """
         Filter resources used by validator.
         """
-        res_names = set(flatten_list([deepcopy(const.resources) for const in constraints]))
+        res_names = set(flatten_list(
+            [deepcopy(const.resources) for const in constraints]))
         res_to_validate = [res for res in resources if res.name in res_names]
         st_names = [store.name for store in self.stores]
         res_in_db = [res for res in res_to_validate if res.store in st_names]
@@ -203,7 +217,8 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
                     resource = self.fetch_resource(res)
                     conn_strings.append(resource.tmp_pth)
             if len(set(conn_strings)) > 1:
-                raise ValidationError("Resources must be in the same database.")
+                raise ValidationError(
+                    "Resources must be in the same database.")
 
             try:
                 constraint_connection.append({
@@ -211,7 +226,8 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
                     "conn_string": conn_strings[0]
                 })
             except IndexError:
-                raise ValidationError("At least one resource must be in a database.")
+                raise ValidationError(
+                    "At least one resource must be in a database.")
 
         return constraint_connection
 

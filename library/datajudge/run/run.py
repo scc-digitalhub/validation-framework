@@ -117,10 +117,10 @@ class Run:
         Log generic metadata.
         """
         self._run_handler.log_metadata(
-                           metadata,
-                           self.run_info.run_metadata_uri,
-                           src_type,
-                           self._overwrite)
+            metadata,
+            self.run_info.run_metadata_uri,
+            src_type,
+            self._overwrite)
 
     def _get_artifact_metadata(self,
                                uri: str,
@@ -163,10 +163,10 @@ class Run:
         return f"{fnm}_{self._filenames[filename]}{ext}"
 
     def _persist_artifact(self,
-                         src: Any,
-                         src_name: Optional[str] = None,
-                         metadata: Optional[dict] = None,
-                         ) -> None:
+                          src: Any,
+                          src_name: Optional[str] = None,
+                          metadata: Optional[dict] = None,
+                          ) -> None:
         """
         Persist artifacts in the artifact store.
 
@@ -610,7 +610,7 @@ class Run:
         self._get_libraries()
         self.run_info.finished = get_time()
         self._log_run()
-        LOGGER.info(f"Run finished. Clean up of temp resources.")
+        LOGGER.info("Run finished. Clean up of temp resources.")
 
         self._run_handler.clean_all()
 

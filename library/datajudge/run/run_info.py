@@ -2,7 +2,7 @@
 RunInfo module.
 Implementation of the basic Run's metadata.
 """
-# pylint: disable=too-many-instance-attributes,too-many-arguments
+
 from __future__ import annotations
 
 import typing

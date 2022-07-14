@@ -1,7 +1,7 @@
 from datajudge.run.plugin.profiling.pandas_profiling import \
-                                        ProfileBuilderPandasProfiling
+    ProfileBuilderPandasProfiling
 from datajudge.run.plugin.profiling.frictionless import \
-                                        ProfileBuilderFrictionless
+    ProfileBuilderFrictionless
 from datajudge.run.plugin.profiling.dummy import ProfileBuilderDummy
 from datajudge.run.plugin.profiling.great_expectation import ProfileBuilderGreatExpectation
 

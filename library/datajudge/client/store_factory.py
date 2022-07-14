@@ -1,7 +1,7 @@
 """
 StoreFactory module.
 """
-# pylint: disable=raise-missing-from
+
 from pathlib import Path
 from typing import Union
 
