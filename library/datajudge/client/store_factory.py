@@ -19,7 +19,7 @@ from datajudge.utils.commons import (API_BASE, AZURE, AZURE_SCHEME, DUMMY,
                                      SQL_SCHEME)
 from datajudge.utils.config import DUMMY_STORE, StoreConfig
 from datajudge.utils.file_utils import get_absolute_path
-from datajudge.utils.uri_utils import check_url, get_uri_scheme, rebuild_uri
+from datajudge.utils.uri_utils import check_url, get_uri_netloc, get_uri_path, get_uri_scheme, rebuild_uri
 from datajudge.utils.utils import get_uiid
 
 # Registries
@@ -85,7 +85,9 @@ class StoreBuilder:
         Resolve metadata URI location.
         """
         if scheme in [*LOCAL_SCHEME]:
-            return get_absolute_path(uri, "metadata")
+            return get_absolute_path(get_uri_netloc(uri),
+                                     get_uri_path(uri),
+                                     "metadata")
         if scheme in [*HTTP_SCHEME]:
             url = uri + API_BASE + project_name
             return check_url(url)
@@ -115,12 +117,13 @@ class StoreBuilder:
         Resolve artifact URI location.
         """
         if scheme in [*LOCAL_SCHEME]:
-            return get_absolute_path(uri, "artifact")
-        if scheme in [*AZURE_SCHEME, *S3_SCHEME,
-                      *HTTP_SCHEME, *FTP_SCHEME,
-                      *SQL_SCHEME, *ODBC_SCHEME]:
+            return get_absolute_path(get_uri_netloc(uri),
+                                     get_uri_path(uri),
+                                     "artifact")
+        if scheme in [*AZURE_SCHEME, *S3_SCHEME, *FTP_SCHEME]:
             return rebuild_uri(uri, "artifact")
-        if scheme in [*DUMMY_SCHEME]:
+        if scheme in [*DUMMY_SCHEME, *HTTP_SCHEME,
+                      *SQL_SCHEME, *ODBC_SCHEME]:
             return uri
         raise NotImplementedError
 
