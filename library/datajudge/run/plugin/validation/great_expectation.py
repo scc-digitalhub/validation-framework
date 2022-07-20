@@ -78,7 +78,10 @@ class ValidationPluginGreatExpectation(Validation):
         if exec_err is None:
             res = deepcopy(result.artifact).to_json_dict()
             valid = res.get("success")
-            errors = listify(res.get("result"))
+            if not valid:
+                errors = listify(res.get("result"))
+            else:
+                errors = None
         else:
             self.logger.error(
                 f"Execution error {str(exec_err)} for plugin {self._id}")

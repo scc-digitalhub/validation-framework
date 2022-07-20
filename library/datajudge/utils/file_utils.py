@@ -19,16 +19,6 @@ def check_dir(path: str) -> bool:
         return False
 
 
-def check_abs_path(path: str) -> bool:
-    """
-    Check if a path is absolute.
-    """
-    try:
-        return Path(path).is_absolute()
-    except OSError:
-        return False
-
-
 def make_dir(*args):
     """
     Dirs builder function.
@@ -63,16 +53,6 @@ def check_make_dir(uri: str) -> None:
 
 # Files
 
-def check_file(path: str) -> bool:
-    """
-    Check if the resource is a file.
-    """
-    try:
-        return Path(path).is_file()
-    except OSError:
-        return False
-
-
 def check_path(path: str) -> bool:
     """
     Check if the resource exists.
@@ -83,27 +63,11 @@ def check_path(path: str) -> bool:
         return False
 
 
-def check_file_dimension(file_uri: str) -> int:
-    """
-    Return the file dimension in bytes.
-    """
-    return Path(file_uri).stat().st_size
-
-
 def copy_file(src: str, dst: str) -> None:
     """
     Copy local file to destination.
     """
     shutil.copy(src, dst)
-
-
-def get_file_name(src: str) -> None:
-    """
-    Get file name of a resource.
-    """
-    if check_file(src):
-        return Path(src).name
-    return "Unnamed-file"
 
 
 def remove_files(path: str) -> None:

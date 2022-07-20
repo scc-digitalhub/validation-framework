@@ -35,7 +35,7 @@ class DataFrameReader:
         resource = self._infer_resource()
 
         path = resource.get("path")
-        file_format = resource.get("format", "csv")
+        file_format = resource.get("format")
 
         # Check if path is a list of paths
         path = listify(path)
