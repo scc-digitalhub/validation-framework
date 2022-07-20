@@ -5,7 +5,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Any, Optional
 
 from datajudge.utils.uri_utils import rebuild_uri
-from datajudge.utils.utils import LOGGER
+from datajudge.utils.logger import LOGGER
 
 
 class ResourceRegistry:

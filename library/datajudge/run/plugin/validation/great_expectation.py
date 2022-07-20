@@ -18,7 +18,7 @@ from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import GREAT_EXPECTATION
-from datajudge.run.plugin.utils.dataframe_reader import DataFrameReader
+from datajudge.reader.dataframe_reader import DataFrameReader
 from datajudge.run.plugin.utils.great_expectation_utils import get_great_expectation_validator
 from datajudge.utils.file_utils import clean_all
 from datajudge.utils.utils import listify

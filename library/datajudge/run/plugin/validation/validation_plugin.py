@@ -27,10 +27,10 @@ class Validation(Plugin, metaclass=ABCMeta):
         """
         Method that call specific execution.
         """
-        self.logger.info(
+        self.logger.log(9,
             f"Execute validation: plugin {self.lib_name} {self._id}, constraint {self.constraint.name}, resources {self.constraint.resources}")
         lib_result = self.validate()
-        self.logger.info(
+        self.logger.log(9,
             f"Render datajudge result: plugin {self.lib_name} {self._id}")
         dj_result = self.render_datajudge(lib_result)
         self.logger.info(f"Render artifact: plugin {self.lib_name} {self._id}")

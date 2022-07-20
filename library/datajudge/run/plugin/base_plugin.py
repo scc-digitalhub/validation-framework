@@ -12,7 +12,8 @@ from typing import Any, List
 from datajudge.data import DataResource
 from datajudge.run.plugin.utils.plugin_utils import RenderTuple
 from datajudge.utils.exceptions import StoreError
-from datajudge.utils.utils import LOGGER, get_uiid
+from datajudge.utils.logger import LOGGER
+from datajudge.utils.utils import get_uiid
 
 if typing.TYPE_CHECKING:
     from datajudge.run.plugin.utils.plugin_utils import Result

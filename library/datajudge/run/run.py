@@ -14,7 +14,8 @@ from datajudge.utils.commons import (DATAJUDGE_VERSION, DUMMY_SCHEME, MT_ARTIFAC
                                      STATUS_FINISHED, STATUS_INIT,
                                      STATUS_INTERRUPTED)
 from datajudge.utils.exceptions import StoreError
-from datajudge.utils.utils import LOGGER, get_time
+from datajudge.utils.logger import LOGGER
+from datajudge.utils.utils import get_time
 
 if typing.TYPE_CHECKING:
     from datajudge.data import (DatajudgeProfile, DatajudgeSchema,

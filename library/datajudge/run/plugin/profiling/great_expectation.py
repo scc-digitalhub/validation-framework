@@ -18,7 +18,7 @@ from great_expectations.profile.user_configurable_profiler import \
 from datajudge.data import DatajudgeProfile
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
-from datajudge.run.plugin.utils.dataframe_reader import DataFrameReader
+from datajudge.reader.dataframe_reader import DataFrameReader
 from datajudge.run.plugin.utils.great_expectation_utils import \
     get_great_expectation_validator
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator
