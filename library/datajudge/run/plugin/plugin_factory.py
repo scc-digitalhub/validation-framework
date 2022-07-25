@@ -10,37 +10,41 @@ from datajudge.run.plugin import (InferenceBuilderDummy,
                                   InferenceBuilderFrictionless,
                                   ProfileBuilderDummy,
                                   ProfileBuilderFrictionless,
-                                  ProfileBuilderPandasProfiling,
                                   ProfileBuilderGreatExpectation,
+                                  ProfileBuilderPandasProfiling,
                                   ValidationBuilderDuckDB,
                                   ValidationBuilderDummy,
                                   ValidationBuilderFrictionless,
-                                  ValidationBuilderSqlAlchemy,
-                                  ValidationBuilderGreatExpectation)
-from datajudge.utils.commons import (DUCKDB, DUMMY, FRICTIONLESS, GREAT_EXPECTATION, INFERENCE,
-                                     PROFILING, SQLALCHEMY, VALIDATION, PANDAS_PROFILING)
+                                  ValidationBuilderGreatExpectation,
+                                  ValidationBuilderSqlAlchemy)
+from datajudge.utils.commons import (LIBRARY_DUCKDB, LIBRARY_DUMMY,
+                                     LIBRARY_FRICTIONLESS,
+                                     LIBRARY_GREAT_EXPECTATION,
+                                     LIBRARY_PANDAS_PROFILING,
+                                     LIBRARY_SQLALCHEMY, OPERATION_INFERENCE,
+                                     OPERATION_PROFILING, OPERATION_VALIDATION)
 
 if typing.TYPE_CHECKING:
     from datajudge.utils.config import ExecConfig
 
 
 REGISTRY = {
-    INFERENCE: {
-        DUMMY: InferenceBuilderDummy,
-        FRICTIONLESS: InferenceBuilderFrictionless,
+    OPERATION_INFERENCE: {
+        LIBRARY_DUMMY: InferenceBuilderDummy,
+        LIBRARY_FRICTIONLESS: InferenceBuilderFrictionless,
     },
-    VALIDATION: {
-        DUMMY: ValidationBuilderDummy,
-        DUCKDB: ValidationBuilderDuckDB,
-        FRICTIONLESS: ValidationBuilderFrictionless,
-        SQLALCHEMY: ValidationBuilderSqlAlchemy,
-        GREAT_EXPECTATION: ValidationBuilderGreatExpectation,
+    OPERATION_VALIDATION: {
+        LIBRARY_DUMMY: ValidationBuilderDummy,
+        LIBRARY_DUCKDB: ValidationBuilderDuckDB,
+        LIBRARY_FRICTIONLESS: ValidationBuilderFrictionless,
+        LIBRARY_SQLALCHEMY: ValidationBuilderSqlAlchemy,
+        LIBRARY_GREAT_EXPECTATION: ValidationBuilderGreatExpectation,
     },
-    PROFILING: {
-        DUMMY: ProfileBuilderDummy,
-        FRICTIONLESS: ProfileBuilderFrictionless,
-        PANDAS_PROFILING: ProfileBuilderPandasProfiling,
-        GREAT_EXPECTATION: ProfileBuilderGreatExpectation,
+    OPERATION_PROFILING: {
+        LIBRARY_DUMMY: ProfileBuilderDummy,
+        LIBRARY_FRICTIONLESS: ProfileBuilderFrictionless,
+        LIBRARY_PANDAS_PROFILING: ProfileBuilderPandasProfiling,
+        LIBRARY_GREAT_EXPECTATION: ProfileBuilderGreatExpectation,
     }
 }
 
@@ -55,9 +59,10 @@ def builder_factory(config: List[ExecConfig],
     builders = []
     for cfg in config:
         try:
-            builders.append(REGISTRY[typology][cfg.library](cfg.execArgs,
-                                                            cfg.tmpFormat,
-                                                            stores))
+            builders.append(REGISTRY[typology][cfg.library](stores,
+                                                            cfg.fetchMode,
+                                                            cfg.readerArgs,
+                                                            cfg.execArgs))
         except KeyError:
             raise NotImplementedError
     return builders

@@ -7,15 +7,15 @@ from __future__ import annotations
 import typing
 from typing import List
 
-from datajudge.data import DatajudgeProfile
-from datajudge.run.plugin.profiling.profiling_plugin import Profiling
+from datajudge.metadata import DatajudgeProfile
 from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.utils.commons import DUMMY
+from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator
+from datajudge.utils.commons import GENERIC_DUMMY, LIBRARY_DUMMY
 from datajudge.utils.config import DUMMY_RES
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import DataResource
+    from datajudge.metadata import DataResource
     from datajudge.run.plugin.base_plugin import Result
 
 
@@ -66,7 +66,7 @@ class ProfilePluginDummy(Profiling):
             _object = {"errors": result.errors}
         else:
             _object = dict(result.artifact)
-        filename = self._fn_profile.format(f"{DUMMY}.json")
+        filename = self._fn_profile.format(f"{GENERIC_DUMMY}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
@@ -75,14 +75,14 @@ class ProfilePluginDummy(Profiling):
         """
         Get library name.
         """
-        return DUMMY
+        return LIBRARY_DUMMY
 
     @staticmethod
     def get_lib_version() -> str:
         """
         Get library version.
         """
-        return DUMMY
+        return LIBRARY_DUMMY
 
 
 class ProfileBuilderDummy(PluginBuilder):

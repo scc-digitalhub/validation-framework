@@ -8,12 +8,34 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
 
-from datajudge.data import DataResource
-from datajudge.utils.commons import (AZURE, CHECK_ROWS, CHECK_VALUE, DUCKDB,
-                                     DUMMY, EMPTY, EXACT, FRICTIONLESS,
-                                     FRICTIONLESS_SCHEMA, FTP, GREAT_EXPECTATION, HTTP, LOCAL,
-                                     MAXIMUM, MINIMUM, NON_EMPTY, ODBC, RANGE,
-                                     S3, SQL, SQLALCHEMY)
+from datajudge.metadata import DataResource
+from datajudge.utils.commons import (CONSTRAINT_FRICTIONLESS_SCHEMA,
+                                     CONSTRAINT_SQL_CHECK_ROWS,
+                                     CONSTRAINT_SQL_CHECK_VALUE,
+                                     CONSTRAINT_SQL_EMPTY,
+                                     CONSTRAINT_SQL_EXACT,
+                                     CONSTRAINT_SQL_MAXIMUM,
+                                     CONSTRAINT_SQL_MINIMUM,
+                                     CONSTRAINT_SQL_NON_EMPTY,
+                                     CONSTRAINT_SQL_RANGE,
+                                     DATAREADER_BUFFER,
+                                     DATAREADER_FILE,
+                                     DATAREADER_NATIVE,
+                                     GENERIC_DUMMY,
+                                     LIBRARY_DUCKDB,
+                                     LIBRARY_DUMMY,
+                                     LIBRARY_FRICTIONLESS,
+                                     LIBRARY_GREAT_EXPECTATION,
+                                     LIBRARY_SQLALCHEMY,
+                                     SCHEME_DUMMY,
+                                     STORE_AZURE,
+                                     STORE_DUMMY,
+                                     STORE_FTP,
+                                     STORE_HTTP,
+                                     STORE_LOCAL,
+                                     STORE_ODBC,
+                                     STORE_S3,
+                                     STORE_SQL)
 
 
 class StoreConfig(BaseModel):
@@ -26,7 +48,14 @@ class StoreConfig(BaseModel):
     name: str
     """Store id."""
 
-    type: Literal[LOCAL, HTTP, FTP, S3, AZURE, SQL, ODBC, DUMMY]
+    type: Literal[STORE_LOCAL,
+                  STORE_HTTP,
+                  STORE_FTP,
+                  STORE_S3,
+                  STORE_AZURE,
+                  STORE_SQL,
+                  STORE_ODBC,
+                  STORE_DUMMY]
     """Store type to instantiate."""
 
     uri: str
@@ -47,6 +76,8 @@ class Constraint(BaseModel):
     Base model for constraint.
     """
     _id: str = Field(default_factory=uuid4)
+    """UUID of constraint."""
+
     name: str
     """Constraint id."""
 
@@ -64,7 +95,7 @@ class ConstraintFrictionless(Constraint):
     """
     Frictionless constraint.
     """
-    type: str = Field(FRICTIONLESS, const=True)
+    type: str = Field(LIBRARY_FRICTIONLESS, const=True)
     """Constraint type ("frictionless")."""
 
     field: str
@@ -84,7 +115,7 @@ class ConstraintFullFrictionless(Constraint):
     """
     Frictionless full schema constraint.
     """
-    type: str = Field(FRICTIONLESS_SCHEMA, const=True)
+    type: str = Field(CONSTRAINT_FRICTIONLESS_SCHEMA, const=True)
     """Constraint type ("frictionless_schema")."""
 
     table_schema: dict
@@ -95,19 +126,25 @@ class ConstraintDuckDB(Constraint):
     """
     DuckDB constraint.
     """
-    type: str = Field(DUCKDB, const=True)
+    type: str = Field(LIBRARY_DUCKDB, const=True)
     """Constraint type ("duckdb")."""
 
     query: str
     """SQL query to execute over resources."""
 
-    expect: Literal[EMPTY, NON_EMPTY, EXACT, RANGE, MINIMUM, MAXIMUM]
+    expect: Literal[CONSTRAINT_SQL_EMPTY,
+                    CONSTRAINT_SQL_NON_EMPTY,
+                    CONSTRAINT_SQL_EXACT,
+                    CONSTRAINT_SQL_RANGE,
+                    CONSTRAINT_SQL_MINIMUM,
+                    CONSTRAINT_SQL_MAXIMUM]
     """SQL constraint type to check."""
 
     value: Optional[Any] = None
     """Value of the constraint."""
 
-    check: Literal[CHECK_VALUE, CHECK_ROWS] = CHECK_ROWS
+    check: Literal[CONSTRAINT_SQL_CHECK_VALUE,
+                   CONSTRAINT_SQL_CHECK_ROWS] = CONSTRAINT_SQL_CHECK_ROWS
     """Modality of constraint checking (On rows or single value)."""
 
 
@@ -115,19 +152,25 @@ class ConstraintSqlAlchemy(Constraint):
     """
     SqlAlchemy constraint.
     """
-    type: str = Field(SQLALCHEMY, const=True)
+    type: str = Field(LIBRARY_SQLALCHEMY, const=True)
     """Constraint type ("sqlalchemy")."""
 
     query: str
     """SQL query to execute over resources."""
 
-    expect: Literal[EMPTY, NON_EMPTY, EXACT, RANGE, MINIMUM, MAXIMUM]
+    expect: Literal[CONSTRAINT_SQL_EMPTY,
+                    CONSTRAINT_SQL_NON_EMPTY,
+                    CONSTRAINT_SQL_EXACT,
+                    CONSTRAINT_SQL_RANGE,
+                    CONSTRAINT_SQL_MINIMUM,
+                    CONSTRAINT_SQL_MAXIMUM]
     """SQL constraint type to check."""
 
     value: Optional[Any] = None
     """Value of the constraint."""
 
-    check: Literal[CHECK_VALUE, CHECK_ROWS] = CHECK_ROWS
+    check: Literal[CONSTRAINT_SQL_CHECK_VALUE,
+                   CONSTRAINT_SQL_CHECK_ROWS] = CONSTRAINT_SQL_CHECK_ROWS
     """Modality of constraint checking (On rows or single value)."""
 
 
@@ -135,7 +178,7 @@ class ConstraintGreatExpectation(Constraint):
     """
     Great Expectation constraint.
     """
-    type: str = Field(GREAT_EXPECTATION, const=True)
+    type: str = Field(LIBRARY_GREAT_EXPECTATION, const=True)
     """Constraint type ("great_expectation")."""
 
     expectation: str
@@ -150,14 +193,21 @@ class ExecConfig(BaseModel):
     Generic configuration for run operation.
     """
     _id: str = Field(default_factory=uuid4)
-    library: Optional[str] = DUMMY
+    """UUID of operation."""
+
+    library: Optional[str] = LIBRARY_DUMMY
     """Library to use for performing an operation."""
+
+    fetchMode: Optional[Literal[DATAREADER_FILE,
+                                DATAREADER_NATIVE,
+                                DATAREADER_BUFFER]] = DATAREADER_FILE
+    """Specific mode to fetch data from backend."""
+
+    readerArgs: Optional[dict] = {}
+    """Data reading arguments to pass to DataReader."""
 
     execArgs: Optional[dict] = {}
     """Execution arguments to pass to plugins."""
-
-    tmpFormat: Optional[str] = "csv"
-    """Specific format to fetch data from backend."""
 
 
 class RunConfig(BaseModel):
@@ -175,6 +225,13 @@ class RunConfig(BaseModel):
 
 
 # Dummy generic configs
-DUMMY_STORE = StoreConfig(name=DUMMY, type=DUMMY, uri=f"{DUMMY}://")
-DUMMY_RES = DataResource(path=f"{DUMMY}://", name=DUMMY, store=DUMMY)
-DUMMY_CONST = Constraint(name=DUMMY, title=DUMMY, resources=[DUMMY], weight=0)
+DUMMY_STORE = StoreConfig(name=GENERIC_DUMMY,
+                          type=STORE_DUMMY,
+                          uri=f"{SCHEME_DUMMY}://")
+DUMMY_RES = DataResource(path=f"{SCHEME_DUMMY}://",
+                         name=GENERIC_DUMMY,
+                         store=GENERIC_DUMMY)
+DUMMY_CONST = Constraint(name=GENERIC_DUMMY,
+                         title=GENERIC_DUMMY,
+                         resources=[GENERIC_DUMMY],
+                         weight=0)

@@ -40,7 +40,7 @@ class HTTPArtifactStore(ArtifactStore):
 
     def _get_and_register_artifact(self,
                                    src: str,
-                                   file_format: str) -> str:
+                                   fetch_mode: str) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
@@ -48,16 +48,21 @@ class HTTPArtifactStore(ArtifactStore):
         self._check_access_to_storage(self.artifact_uri)
         key = rebuild_uri(src)
 
-        # Get file from remote
-        obj = self._get_data(key)
+        self.logger.info(f"Fetching resource {src} from store {self.name}")
 
-        # Store locally
-        filepath = self._store_data(obj, key)
+        # Return a presigned URL
+        if fetch_mode == self.NATIVE:
+            raise key
 
-        # Register resource on store
-        self._register_resource(f"{src}_{file_format}", filepath)
-        return filepath
+        # Get file from remote and store locally
+        if fetch_mode == self.FILE:
+            obj = self._get_data(key)
+            filepath = self._store_data(obj, key)
+            self._register_resource(f"{src}_{fetch_mode}", filepath)
+            return filepath
 
+        if fetch_mode == self.BUFFER:
+            raise NotImplementedError
 
     def _check_access_to_storage(self, dst: str) -> None:
         """

@@ -10,16 +10,18 @@ from typing import List
 import pandas_profiling
 from pandas_profiling import ProfileReport
 
-from datajudge.data import DatajudgeProfile
+
+from datajudge.data_reader.base_reader import DataReader
+from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
+from datajudge.metadata import DatajudgeProfile
 from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
-from datajudge.utils.commons import PANDAS_PROFILING
-from datajudge.reader.dataframe_reader import DataFrameReader
+from datajudge.run.plugin.utils.plugin_utils import exec_decorator
+from datajudge.utils.commons import LIBRARY_PANDAS_PROFILING
 from datajudge.utils.io_utils import write_bytesio
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import DataResource
+    from datajudge.metadata import DataResource
     from datajudge.run.plugin.base_plugin import Result
 
 
@@ -43,6 +45,7 @@ class ProfilePluginPandasProfiling(Profiling):
         self.exec_multiprocess = True
 
     def setup(self,
+              data_reader: DataReader,
               resource: DataResource,
               exec_args: dict) -> None:
         """
@@ -50,16 +53,15 @@ class ProfilePluginPandasProfiling(Profiling):
         """
         self.resource = resource
         self.exec_args = exec_args
+        self.df = data_reader.fetch_resource(self.resource.path)
 
     @exec_decorator
     def profile(self) -> ProfileReport:
         """
         Generate pandas_profiling profile.
         """
-        df = DataFrameReader(self.resource.tmp_pth).read_df()
-        profile = ProfileReport(df, lazy=False, **self.exec_args)
-        profile = ProfileReport().loads(profile.dumps())
-        return profile
+        profile = ProfileReport(self.df, lazy=False, **self.exec_args)
+        return ProfileReport().loads(profile.dumps())
 
     @exec_decorator
     def render_datajudge(self, result: Result) -> DatajudgeProfile:
@@ -111,18 +113,18 @@ class ProfilePluginPandasProfiling(Profiling):
 
         if result.artifact is None:
             _object = {"errors": result.errors}
-            filename = self._fn_profile.format(f"{PANDAS_PROFILING}.json")
+            filename = self._fn_profile.format(f"{LIBRARY_PANDAS_PROFILING}.json")
             artifacts.append(self.get_render_tuple(_object, filename))
         else:
             string_html = result.artifact.to_html()
             strio_html = write_bytesio(string_html)
-            html_filename = self._fn_profile.format(f"{PANDAS_PROFILING}.html")
+            html_filename = self._fn_profile.format(f"{LIBRARY_PANDAS_PROFILING}.html")
             artifacts.append(self.get_render_tuple(strio_html, html_filename))
 
             string_json = result.artifact.to_json()
             string_json = string_json.replace("NaN", "null")
             strio_json = write_bytesio(string_json)
-            json_filename = self._fn_profile.format(f"{PANDAS_PROFILING}.json")
+            json_filename = self._fn_profile.format(f"{LIBRARY_PANDAS_PROFILING}.json")
             artifacts.append(self.get_render_tuple(strio_json, json_filename))
 
         return artifacts
@@ -155,9 +157,11 @@ class ProfileBuilderPandasProfiling(PluginBuilder):
         """
         plugins = []
         for res in resources:
-            resource = self.fetch_resource(res)
+            resource = self._get_resource_deepcopy(res)
+            store = self._get_resource_store(resource)
+            data_reader = PandasDataFrameReader(store, self.fetch_mode, self.reader_args)
             plugin = ProfilePluginPandasProfiling()
-            plugin.setup(resource, self.exec_args)
+            plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)
         return plugins
 

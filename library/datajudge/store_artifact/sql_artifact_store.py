@@ -1,7 +1,6 @@
 """
 Implementation of SQL artifact store.
 """
-import csv
 from typing import Any, Optional
 
 import pyarrow as pa
@@ -37,36 +36,38 @@ class SQLArtifactStore(ArtifactStore):
 
     def _get_and_register_artifact(self,
                                    src: str,
-                                   file_format: str) -> str:
+                                   fetch_mode: str) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
         """
-        if file_format == "sql":
-            return self.config.get("connection_string")
-
         engine = self._get_engine()
         self._check_access_to_storage(engine)
         table_name = self._get_table_name(src)
         schema = self._get_schema(src)
-        key = f"{schema}.{table_name}.{file_format}"
+        key = f"{schema}.{table_name}.{fetch_mode}.parquet"
 
-        # Query table
-        obj = self._get_data(engine, table_name, schema)
+        self.logger.info(f"Fetching resource {src} from store {self.name}")
 
-        # Store locally
-        filepath = self._store_data(obj, key, file_format)
+        # Return a presigned URL
+        if fetch_mode == self.NATIVE:
+            conn_str =  self.config.get("connection_string")
+            engine.dispose()
+            return conn_str
 
-        # Dispose engine
-        engine.dispose()
+        # Get file from remote and store locally
+        if fetch_mode == self.FILE:
+            obj = self._get_data(engine, table_name, schema)
+            filepath = self._store_data(obj, key)
+            self._register_resource(f"{src}_{fetch_mode}", filepath)
+            engine.dispose()
+            return filepath
 
-        # Register resource on store
-        self._register_resource(f"{src}_{file_format}", filepath)
-        return filepath
+        if fetch_mode == self.BUFFER:
+            engine.dispose()
+            raise NotImplementedError
 
-    def _check_access_to_storage(self,
-                                 engine: Engine
-                                 ) -> None:
+    def _check_access_to_storage(self, engine: Engine) -> None:
         """
         Check if there is access to the storage.
         """
@@ -118,45 +119,27 @@ class SQLArtifactStore(ArtifactStore):
 
     def _store_data(self,
                     obj: CursorResult,
-                    key: str,
-                    file_format: str) -> str:
+                    key: str) -> str:
         """
         Store data locally in temporary folder and return tmp path.
         """
         check_make_dir(self.temp_dir)
         filepath = get_path(self.temp_dir, key)
-        self._write_table(obj, filepath, file_format)
+        self._write_table(obj, filepath)
         return filepath
 
     @staticmethod
     def _write_table(query_result: CursorResult,
-                     filepath: str,
-                     file_format: str) -> None:
+                     filepath: str) -> None:
         """
         Write a query result as file.
         """
-        if file_format == "csv":
-            with open(filepath, "w") as csvfile:
-                outcsv = csv.writer(csvfile,
-                                    delimiter=',',
-                                    quotechar='"',
-                                    quoting=csv.QUOTE_MINIMAL)
-                header = list(query_result.keys())
-                outcsv.writerow(header)
-                while True:
-                    res = query_result.fetchmany(1028)
-                    if res:
-                        outcsv.writerows(res)
-                    else:
-                        break
-
-        else:
-            arrays = []
-            while True:
-                res = query_result.fetchmany(1024)
-                if res:
-                    arrays.extend(list(map(dict(), res)))
-                else:
-                    tab = pa.Table.from_pylist(arrays)
-                    pq.write_table(tab, filepath)
-                    break
+        arrays = []
+        while True:
+            res = query_result.fetchmany(1024)
+            if res:
+                arrays.extend(list(map(dict, res)))
+            else:
+                tab = pa.Table.from_pylist(arrays)
+                pq.write_table(tab, filepath)
+                break

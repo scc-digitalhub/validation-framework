@@ -6,8 +6,9 @@ from __future__ import annotations
 import typing
 from typing import List, Optional, Union
 
-from datajudge.data import DataResource
-from datajudge.run import Run, RunHandler, RunInfo
+from datajudge.metadata import DataResource, RunInfo
+from datajudge.run import Run, RunHandler
+from datajudge.utils.commons import DEFAULT_EXPERIMENT
 from datajudge.utils.config import RunConfig
 from datajudge.utils.exceptions import RunError
 from datajudge.utils.utils import get_uiid, listify
@@ -68,7 +69,7 @@ class RunBuilder:
     def create_run(self,
                    resources: Union[List[DataResource], DataResource],
                    run_config: RunConfig,
-                   experiment: Optional[str] = "experiment",
+                   experiment: Optional[str] = DEFAULT_EXPERIMENT,
                    run_id: Optional[str] = None,
                    overwrite: Optional[bool] = False) -> Run:
         """

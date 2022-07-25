@@ -8,21 +8,21 @@ import typing
 from copy import deepcopy
 from typing import List
 
-import pandas as pd
-from sqlalchemy import create_engine
 import sqlalchemy
 
-from datajudge.data import DatajudgeReport
+from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
+from datajudge.metadata import DatajudgeReport
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator
-from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
-from datajudge.store_artifact.sql_artifact_store import SQLArtifactStore
-from datajudge.utils.commons import SQLALCHEMY
-from datajudge.utils.exceptions import ValidationError
 from datajudge.run.plugin.utils.sql_checks import evaluate_validity
+from datajudge.run.plugin.validation.validation_plugin import (
+    Validation, ValidationPluginBuilder)
+from datajudge.store_artifact.sql_artifact_store import SQLArtifactStore
+from datajudge.utils.commons import DATAREADER_NATIVE, LIBRARY_SQLALCHEMY
+from datajudge.utils.exceptions import ValidationError
 from datajudge.utils.utils import flatten_list, listify
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import DataResource
+    from datajudge.metadata import DataResource
     from datajudge.run.plugin.base_plugin import Result
     from datajudge.utils.config import Constraint, ConstraintSqlAlchemy
 
@@ -40,16 +40,16 @@ class ValidationPluginSqlAlchemy(Validation):
         self.exec_multiprocess = True
 
     def setup(self,
-              conn_str: str,
-              constraint: str,
+              data_reader: str,
+              constraint: ConstraintSqlAlchemy,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
-        self.conn_str = conn_str
         self.constraint = constraint
         self.exec_args = exec_args
-        self.parse_args()
+        self.df = data_reader.fetch_resource("sql://resource",
+                                             query=constraint.query)
 
     @exec_decorator
     def validate(self) -> dict:
@@ -57,21 +57,17 @@ class ValidationPluginSqlAlchemy(Validation):
         Validate a Data Resource.
         """
         try:
-            engine = create_engine(self.conn_str)
-            result = pd.read_sql(self.constraint.query, engine)
-            valid, errors = evaluate_validity(result,
+            valid, errors = evaluate_validity(self.df,
                                               self.constraint.check,
                                               self.constraint.expect,
                                               self.constraint.value)
             return {
-                "result": result.to_dict(),
+                "result": self.df.to_dict(),
                 "valid": valid,
                 "errors": listify(errors)
             }
         except Exception as ex:
             raise ex
-        finally:
-            engine.dispose()
 
     @exec_decorator
     def render_datajudge(self, result: Result) -> DatajudgeReport:
@@ -108,14 +104,9 @@ class ValidationPluginSqlAlchemy(Validation):
             _object = {"errors": result.errors}
         else:
             _object = dict(result.artifact)
-        filename = self._fn_report.format(f"{SQLALCHEMY}.json")
+        filename = self._fn_report.format(f"{LIBRARY_SQLALCHEMY}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
-
-    def parse_args(self):
-        """
-        Parse args.
-        """
 
     @staticmethod
     def get_lib_name() -> str:
@@ -144,51 +135,49 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         """
         Build a plugin for every resource and every constraint.
         """
-        self.setup()
-        self.check_args()
+        self._setup()
 
-        f_constraint = self.filter_constraints(constraints)
-        f_resources = self.filter_resources(resources, f_constraint)
-        grouped_constraints = self.regroup_constraint_resources(
+        f_constraint = self._filter_constraints(constraints)
+        f_resources = self._filter_resources(resources, f_constraint)
+        grouped_constraints = self._regroup_constraint_resources(
             f_constraint, f_resources)
 
         plugins = []
-        for const in grouped_constraints:
+        for pack in grouped_constraints:
+            store = pack["store"]
+            constraint = pack["constraint"]
+            data_reader = PandasDataFrameReader(store, self.fetch_mode, self.reader_args)
             plugin = ValidationPluginSqlAlchemy()
-            plugin.setup(const["conn_string"],
-                         const["constraint"], self.exec_args)
+            plugin.setup(data_reader, constraint, self.exec_args)
             plugins.append(plugin)
 
         return plugins
 
-    def setup(self) -> None:
+    def _setup(self) -> None:
         """
-        Filter builder store to keep only SQLStores and set file format.
+        Filter builder store to keep only SQLStores and set `native` mode for
+        reading data to return a connection string to a db.
         """
-        self.file_format = "sql"
+        #
+        self.fetch_mode = DATAREADER_NATIVE
         self.stores = [store for store in self.stores if isinstance(
             store, SQLArtifactStore)]
         if not self.stores:
             raise ValidationError(
                 "There must be at least a SQLStore to use sqlalchemy validator.")
 
-    def check_args(self) -> None:
-        """
-        Check arguments.
-        """
-
     @staticmethod
-    def filter_constraints(constraints: List[Constraint]
-                           ) -> List[ConstraintSqlAlchemy]:
+    def _filter_constraints(constraints: List[Constraint]
+                            ) -> List[ConstraintSqlAlchemy]:
         """
         Filter out ConstraintSqlAlchemy.
         """
-        return [const for const in constraints if const.type == SQLALCHEMY]
+        return [const for const in constraints if const.type == LIBRARY_SQLALCHEMY]
 
-    def filter_resources(self,
-                         resources: List[DataResource],
-                         constraints: List[Constraint]
-                         ) -> List[DataResource]:
+    def _filter_resources(self,
+                          resources: List[DataResource],
+                          constraints: List[Constraint]
+                          ) -> List[DataResource]:
         """
         Filter resources used by validator.
         """
@@ -199,35 +188,33 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         res_in_db = [res for res in res_to_validate if res.store in st_names]
         return res_in_db
 
-    def regroup_constraint_resources(self,
-                                     constraints: List[Constraint],
-                                     resources: List[DataResource]
-                                     ) -> list:
+    def _regroup_constraint_resources(self,
+                                      constraints: List[Constraint],
+                                      resources: List[DataResource]
+                                      ) -> list:
         """
         Check univocity of resources location and return connection
         string for db access.
         """
         constraint_connection = []
+        res_stores = []
 
         for const in constraints:
-
-            conn_strings = []
             for res in resources:
-                if res.name in const.resources:
-                    resource = self.fetch_resource(res)
-                    conn_strings.append(resource.tmp_pth)
-            if len(set(conn_strings)) > 1:
-                raise ValidationError(
-                    "Resources must be in the same database.")
+                res_stores.append(res.store)
 
-            try:
-                constraint_connection.append({
-                    "constraint": const,
-                    "conn_string": conn_strings[0]
-                })
-            except IndexError:
+            store_num = len(set(res_stores))
+            if store_num > 1:
                 raise ValidationError(
-                    "At least one resource must be in a database.")
+                    f"Resources for constraint `{const.name}` are not in the same database.")
+            if store_num == 0:
+                raise ValidationError(
+                    f"No resources for constraint `{const.name}` are in a configured store.")
+
+            constraint_connection.append({
+                "constraint": const,
+                "store": self._get_resource_store(res)
+            })
 
         return constraint_connection
 

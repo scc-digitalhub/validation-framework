@@ -10,15 +10,17 @@ from typing import List
 import frictionless
 from frictionless import Resource
 
-from datajudge.data import DatajudgeProfile
-from datajudge.run.plugin.profiling.profiling_plugin import Profiling
+from datajudge.data_reader.file_reader import FileReader
+from datajudge.metadata import DatajudgeProfile
 from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.utils.commons import FRICTIONLESS
-from datajudge.utils.io_utils import write_bytesio
+from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator
+from datajudge.utils.commons import LIBRARY_FRICTIONLESS
+from datajudge.utils.io_utils import write_bytesio
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import DataResource
+    from datajudge.data_reader.base_reader import DataReader
+    from datajudge.metadata import DataResource
     from datajudge.run.plugin.base_plugin import Result
 
 
@@ -34,6 +36,7 @@ class ProfilePluginFrictionless(Profiling):
         self.exec_multiprocess = True
 
     def setup(self,
+              data_reader: DataReader,
               resource: DataResource,
               exec_args: dict) -> None:
         """
@@ -41,13 +44,14 @@ class ProfilePluginFrictionless(Profiling):
         """
         self.resource = resource
         self.exec_args = exec_args
+        self.data_path = data_reader.fetch_resource(self.resource.path)
 
     @exec_decorator
     def profile(self) -> Resource:
         """
-        Do nothing.
+        Profile
         """
-        profile = Resource().describe(self.resource.tmp_pth,
+        profile = Resource().describe(self.data_path,
                                       expand=True,
                                       stats=True,
                                       **self.exec_args)
@@ -87,7 +91,7 @@ class ProfilePluginFrictionless(Profiling):
             _object = {"errors": result.errors}
         else:
             _object = write_bytesio(result.artifact.to_json())
-        filename = self._fn_profile.format(f"{FRICTIONLESS}.json")
+        filename = self._fn_profile.format(f"{LIBRARY_FRICTIONLESS}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
@@ -119,9 +123,11 @@ class ProfileBuilderFrictionless(PluginBuilder):
         """
         plugins = []
         for res in resources:
-            resource = self.fetch_resource(res)
+            resource = self._get_resource_deepcopy(res)
+            store = self._get_resource_store(resource)
+            data_reader = FileReader(store, self.fetch_mode, self.reader_args)
             plugin = ProfilePluginFrictionless()
-            plugin.setup(resource, self.exec_args)
+            plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)
         return plugins
 

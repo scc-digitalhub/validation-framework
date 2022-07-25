@@ -5,24 +5,27 @@ Frictionless implementation of validation plugin.
 from __future__ import annotations
 
 import typing
-from copy import deepcopy
 from typing import List, Union
 
 import frictionless
 from frictionless import Report, Resource, Schema
 from frictionless.exception import FrictionlessException
 
-from datajudge.data import DatajudgeReport
+from datajudge.data_reader.file_reader import FileReader
+from datajudge.metadata import DatajudgeReport
+from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
-from datajudge.utils.commons import FRICTIONLESS, FRICTIONLESS_SCHEMA
-from datajudge.run.plugin.utils.plugin_utils import exec_decorator
-from datajudge.utils.config import ConstraintFrictionless, ConstraintFullFrictionless
+from datajudge.utils.commons import (CONSTRAINT_FRICTIONLESS_SCHEMA,
+                                     LIBRARY_FRICTIONLESS)
+from datajudge.utils.config import (ConstraintFrictionless,
+                                    ConstraintFullFrictionless)
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import DataResource
-    from datajudge.utils.config import Constraint
+    from datajudge.data_reader.base_reader import DataReader
+    from datajudge.metadata import DataResource
     from datajudge.run.plugin.base_plugin import Result
+    from datajudge.utils.config import Constraint
 
 
 class ValidationPluginFrictionless(Validation):
@@ -38,6 +41,7 @@ class ValidationPluginFrictionless(Validation):
         self.exec_multiprocess = True
 
     def setup(self,
+              data_reader: DataReader,
               resource: DataResource,
               constraint: ConstraintFrictionless,
               exec_args: dict) -> None:
@@ -47,20 +51,19 @@ class ValidationPluginFrictionless(Validation):
         self.resource = resource
         self.constraint = constraint
         self.exec_args = exec_args
+        self.data_path = data_reader.fetch_resource(self.resource.path)
+        self.schema = self._rebuild_constraints()
 
     @exec_decorator
     def validate(self) -> Report:
         """
         Validate a Data Resource.
         """
-        schema = self.rebuild_constraints()
-        res = Resource(path=self.resource.tmp_pth,
-                       schema=schema).validate(**self.exec_args)
-        # Workaround: when using multiprocessing, we need to convert
-        # the report in a dict.
+        res = Resource(path=self.data_path,
+                       schema=self.schema).validate(**self.exec_args)
         return Report(res.to_dict())
 
-    def rebuild_constraints(self) -> Schema:
+    def _rebuild_constraints(self) -> Schema:
         """
         Rebuild constraints.
         """
@@ -71,7 +74,7 @@ class ValidationPluginFrictionless(Validation):
             con_type = self.constraint.constraint
             weight = self.constraint.weight
 
-            schema = deepcopy(self.resource.schema)
+            schema = self._get_schema()
 
             for field in schema["fields"]:
                 if field["name"] == field_name:
@@ -89,6 +92,20 @@ class ValidationPluginFrictionless(Validation):
 
         # Otherwise return the full table schema
         return Schema(self.constraint.table_schema)
+
+    def _get_schema(self) -> dict:
+        """
+        Infer simple schema of a resource if not present.
+        """
+        try:
+            schema = Schema(self.resource.schema)
+            if not schema:
+                schema = Schema.describe(path=self.data_path)
+                if not schema:
+                    return {"fields": []}
+            return {"fields": [{"name": field["name"]} for field in schema["fields"]]}
+        except FrictionlessException as fex:
+            raise fex
 
     @exec_decorator
     def render_datajudge(self, result: Result) -> DatajudgeReport:
@@ -129,7 +146,7 @@ class ValidationPluginFrictionless(Validation):
             _object = {"errors": result.errors}
         else:
             _object = dict(result.artifact)
-        filename = self._fn_report.format(f"{FRICTIONLESS}.json")
+        filename = self._fn_report.format(f"{LIBRARY_FRICTIONLESS}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
@@ -160,42 +177,28 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
         """
         Build a plugin for every resource and every constraint.
         """
-        f_constraints = self.filter_constraints(constraints)
+        f_constraints = self._filter_constraints(constraints)
         plugins = []
         for res in resources:
-            resource = self.fetch_resource(res)
-            resource.schema = self.get_schema(resource)
+            resource = self._get_resource_deepcopy(res)
             for const in f_constraints:
                 if resource.name in const.resources:
+                    store = self._get_resource_store(resource)
+                    data_reader = FileReader(store, self.fetch_mode, self.reader_args)
                     plugin = ValidationPluginFrictionless()
-                    plugin.setup(resource, const, self.exec_args)
+                    plugin.setup(data_reader, resource, const, self.exec_args)
                     plugins.append(plugin)
 
         return plugins
 
     @staticmethod
-    def get_schema(resource: DataResource) -> dict:
-        """
-        Infer simple schema of a resource if not present.
-        """
-        try:
-            schema = Schema(resource.schema)
-            if not schema:
-                schema = Schema.describe(path=resource.tmp_pth)
-                if not schema:
-                    return {"fields": []}
-            return {"fields": [{"name": field["name"]} for field in schema["fields"]]}
-        except FrictionlessException as fex:
-            raise fex
-
-    @staticmethod
-    def filter_constraints(constraints: List[Constraint]
-                           ) -> List[Union[ConstraintFrictionless, ConstraintFullFrictionless]]:
+    def _filter_constraints(constraints: List[Constraint]
+                            ) -> List[Union[ConstraintFrictionless, ConstraintFullFrictionless]]:
         """
         Filter out ConstraintFrictionless and ConstraintFullFrictionless
         """
         return [const for const in constraints
-                if const.type in (FRICTIONLESS, FRICTIONLESS_SCHEMA)]
+                if const.type in (LIBRARY_FRICTIONLESS, CONSTRAINT_FRICTIONLESS_SCHEMA)]
 
     def destroy(self) -> None:
         """

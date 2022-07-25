@@ -64,7 +64,7 @@ Frictionless
        # This arguments is related more to the stores than the run plugins,
        # but in general, to perform a better validation with frictionless,
        # a csv format is better
-       "tmpFormat": "csv"
+       "fetchMode": "csv"
    }
 
 
@@ -82,7 +82,7 @@ DuckDB
        "execArgs": {},
 
        # This arguments is related more to the stores than the run plugins
-       "tmpFormat": "csv" or "parquet"
+       "fetchMode": "csv" or "parquet"
    }
 
 
@@ -113,5 +113,5 @@ The ``great_expectation`` validator executes an expectation specified in a *cons
        "execArgs": {},
 
        # This arguments is related more to the stores than the run plugins
-       "tmpFormat": "csv" or "parquet"
+       "fetchMode": "csv" or "parquet"
    }

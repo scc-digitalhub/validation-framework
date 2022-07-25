@@ -61,7 +61,7 @@ Frictionless
        # This arguments is related more to the stores than the run plugins,
        # but in general, to perform a better profilation with frictionless,
        # a csv format is better.
-       "tmpFormat": "csv"
+       "fetchMode": "csv"
    }
 
 
@@ -79,7 +79,7 @@ Pandas Profiling
        "execArgs": {"minimal": True},
 
        # This arguments is related more to the stores than the run plugins.
-       "tmpFormat": "csv" or "parquet"
+       "fetchMode": "csv" or "parquet"
    }
 
 
@@ -97,5 +97,5 @@ The ``great_expectation`` validator executes an expectation specified in a *cons
        "execArgs": {},
 
        # This arguments is related more to the stores than the run plugins
-       "tmpFormat": "csv" or "parquet"
+       "fetchMode": "csv" or "parquet"
    }

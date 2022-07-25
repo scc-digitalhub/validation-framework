@@ -1,7 +1,6 @@
 """
 DataResource module.
 """
-
 from typing import Optional, Union
 
 

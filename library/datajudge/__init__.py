@@ -1,7 +1,7 @@
 """
 Wrapper library for the data validation process.
 """
-from datajudge.data import DataResource
+from datajudge.metadata import DataResource
 from datajudge.client import Client
 from datajudge.utils.config import (RunConfig, StoreConfig,
                                     ConstraintDuckDB, ConstraintFrictionless,

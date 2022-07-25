@@ -49,15 +49,25 @@ class LocalArtifactStore(ArtifactStore):
 
     def _get_and_register_artifact(self,
                                    src: str,
-                                   file_format: str) -> str:
+                                   fetch_mode: str) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
         """
-        # For the local stor, simply return actual file position.
-        self._register_resource(f"{src}_{file_format}", src)
-        return src
+        self.logger.info(f"Fetching resource {src} from store {self.name}")
 
+        # Return file location
+        if fetch_mode == self.NATIVE:
+            self._register_resource(f"{src}_{fetch_mode}", src)
+            return src
+
+        # Return file location
+        if fetch_mode == self.FILE:
+            self._register_resource(f"{src}_{fetch_mode}", src)
+            return src
+
+        if fetch_mode == self.BUFFER:
+            raise NotImplementedError
 
     def _check_access_to_storage(self,
                                  dst: str,

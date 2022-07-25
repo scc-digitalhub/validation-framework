@@ -15,18 +15,19 @@ from great_expectations.core.expectation_suite import ExpectationSuite
 from great_expectations.profile.user_configurable_profiler import \
     UserConfigurableProfiler
 
-from datajudge.data import DatajudgeProfile
+from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
+from datajudge.metadata import DatajudgeProfile
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
-from datajudge.reader.dataframe_reader import DataFrameReader
 from datajudge.run.plugin.utils.great_expectation_utils import \
     get_great_expectation_validator
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator
-from datajudge.utils.commons import GREAT_EXPECTATION
+from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATION
 from datajudge.utils.file_utils import clean_all
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import DataResource
+    from datajudge.data_reader.base_reader import DataReader
+    from datajudge.metadata import DataResource
     from datajudge.run.plugin.base_plugin import Result
 
 
@@ -42,6 +43,7 @@ class ProfilePluginGreatExpectation(Profiling):
         self.exec_multiprocess = True
 
     def setup(self,
+              data_reader: DataReader,
               resource: DataResource,
               exec_args: dict) -> None:
         """
@@ -49,14 +51,14 @@ class ProfilePluginGreatExpectation(Profiling):
         """
         self.resource = resource
         self.exec_args = exec_args
+        self.df = data_reader.fetch_resource(self.resource.path)
 
     @exec_decorator
     def profile(self) -> dict:
         """
         Profile a Data Resource.
         """
-        data = DataFrameReader(self.resource.tmp_pth).read_df()
-        validator = get_great_expectation_validator(data,
+        validator = get_great_expectation_validator(self.df,
                                                     str(self.resource.name),
                                                     str(self.resource.title))
         profiler = UserConfigurableProfiler(profile_dataset=validator)
@@ -97,7 +99,7 @@ class ProfilePluginGreatExpectation(Profiling):
             _object = {"errors": result.errors}
         else:
             _object = result.artifact.to_json_dict()
-        filename = self._fn_profile.format(f"{GREAT_EXPECTATION}.json")
+        filename = self._fn_profile.format(f"{LIBRARY_GREAT_EXPECTATION}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
@@ -129,9 +131,11 @@ class ProfileBuilderGreatExpectation(PluginBuilder):
         """
         plugins = []
         for res in resources:
-            resource = self.fetch_resource(res)
+            resource = self._get_resource_deepcopy(res)
+            store = self._get_resource_store(resource)
+            data_reader = PandasDataFrameReader(store, self.fetch_mode, self.reader_args)
             plugin = ProfilePluginGreatExpectation()
-            plugin.setup(resource, self.exec_args)
+            plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)
         return plugins
 

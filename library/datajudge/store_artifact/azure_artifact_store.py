@@ -60,7 +60,7 @@ class AzureArtifactStore(ArtifactStore):
 
     def _get_and_register_artifact(self,
                                    src: str,
-                                   file_format: str) -> str:
+                                   fetch_mode: str) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
@@ -70,19 +70,23 @@ class AzureArtifactStore(ArtifactStore):
         self._check_access_to_storage(client)
         key = get_uri_path(src)
 
-        # Eventually return a presigned URL
-        if file_format == "azure":
-            return self._get_presigned_url(client, key)
+        self.logger.info(f"Fetching resource {src} from store {self.name}")
 
-        # Get file from remote
-        obj = self._get_data(client, key)
+        # Return a presigned URL
+        if fetch_mode == self.NATIVE:
+            url = self._get_presigned_url(client, key)
+            self._register_resource(f"{src}_{fetch_mode}", url)
+            return url
 
-        # Store locally
-        filepath = self._store_data(obj, key)
+        # Get file from remote and store locally
+        if fetch_mode == self.FILE:
+            obj = self._get_data(client, key)
+            filepath = self._store_data(obj, key)
+            self._register_resource(f"{src}_{fetch_mode}", filepath)
+            return filepath
 
-        # Register resource on store
-        self._register_resource(f"{src}_{file_format}", filepath)
-        return filepath
+        if fetch_mode == self.BUFFER:
+            raise NotImplementedError
 
     def _get_client(self) -> ContainerClient:
         """

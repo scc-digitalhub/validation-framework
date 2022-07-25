@@ -11,20 +11,23 @@ from pathlib import Path
 from typing import List
 
 import great_expectations as ge
-from great_expectations.core.expectation_validation_result import ExpectationValidationResult
+from great_expectations.core.expectation_validation_result import \
+    ExpectationValidationResult
 
-from datajudge.data import DatajudgeReport
+from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
+from datajudge.metadata import DatajudgeReport
+from datajudge.run.plugin.utils.great_expectation_utils import \
+    get_great_expectation_validator
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
-from datajudge.utils.commons import GREAT_EXPECTATION
-from datajudge.reader.dataframe_reader import DataFrameReader
-from datajudge.run.plugin.utils.great_expectation_utils import get_great_expectation_validator
+from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATION
 from datajudge.utils.file_utils import clean_all
 from datajudge.utils.utils import listify
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import DataResource
+    from datajudge.data_reader.base_reader import DataReader
+    from datajudge.metadata import DataResource
     from datajudge.run.plugin.base_plugin import Result
     from datajudge.utils.config import Constraint, ConstraintGreatExpectation
 
@@ -42,6 +45,7 @@ class ValidationPluginGreatExpectation(Validation):
         self.exec_multiprocess = True
 
     def setup(self,
+              data_reader: DataReader,
               resource: DataResource,
               constraint: ConstraintGreatExpectation,
               exec_args: dict) -> None:
@@ -51,14 +55,14 @@ class ValidationPluginGreatExpectation(Validation):
         self.resource = resource
         self.constraint = constraint
         self.exec_args = exec_args
+        self.df = data_reader.fetch_resource(self.resource.path)
 
     @exec_decorator
     def validate(self) -> dict:
         """
         Validate a Data Resource.
         """
-        data = DataFrameReader(self.resource.tmp_pth).read_df()
-        validator = get_great_expectation_validator(data,
+        validator = get_great_expectation_validator(self.df,
                                                     str(self.resource.name),
                                                     str(self.resource.title))
         validation_func = validator.validate_expectation(
@@ -105,7 +109,7 @@ class ValidationPluginGreatExpectation(Validation):
             _object = {"errors": result.errors}
         else:
             _object = result.artifact.to_json_dict()
-        filename = self._fn_report.format(f"{GREAT_EXPECTATION}.json")
+        filename = self._fn_report.format(f"{LIBRARY_GREAT_EXPECTATION}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
@@ -136,24 +140,26 @@ class ValidationBuilderGreatExpectation(ValidationPluginBuilder):
         """
         Build a plugin for every resource and every constraint.
         """
-        f_constraints = self.filter_constraints(constraints)
+        f_constraints = self._filter_constraints(constraints)
         plugins = []
         for res in resources:
-            resource = self.fetch_resource(res)
+            resource = self._get_resource_deepcopy(res)
             for const in f_constraints:
                 if resource.name in const.resources:
+                    store = self._get_resource_store(resource)
+                    data_reader = PandasDataFrameReader(store, self.fetch_mode, self.reader_args)
                     plugin = ValidationPluginGreatExpectation()
-                    plugin.setup(resource, const, self.exec_args)
+                    plugin.setup(data_reader, resource, const, self.exec_args)
                     plugins.append(plugin)
         return plugins
 
     @staticmethod
-    def filter_constraints(constraints: List[Constraint]
-                           ) -> List[ConstraintGreatExpectation]:
+    def _filter_constraints(constraints: List[Constraint]
+                            ) -> List[ConstraintGreatExpectation]:
         """
         Filter out ConstraintGreatExpectation.
         """
-        return [const for const in constraints if const.type == GREAT_EXPECTATION]
+        return [const for const in constraints if const.type == LIBRARY_GREAT_EXPECTATION]
 
     def destroy(self) -> None:
         """

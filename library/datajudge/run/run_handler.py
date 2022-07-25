@@ -5,20 +5,22 @@ from __future__ import annotations
 
 import concurrent.futures
 import typing
-from copy import deepcopy
 from typing import Any, List
 
+from datajudge.data_reader.file_reader import FileReader
 from datajudge.run.plugin.plugin_factory import builder_factory
-from datajudge.utils.commons import (INFERENCE, PROFILING, VALIDATION,
-                                     RES_WRAP, RES_DJ, RES_RENDER, RES_LIB)
+from datajudge.utils.commons import (DATAREADER_FILE, OPERATION_INFERENCE,
+                                     OPERATION_PROFILING, OPERATION_VALIDATION,
+                                     RESULT_DATAJUDGE, RESULT_LIBRARY,
+                                     RESULT_RENDERED, RESULT_WRAPPED)
 from datajudge.utils.uri_utils import get_name_from_uri
 from datajudge.utils.utils import flatten_list, listify
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import (DataResource, DatajudgeProfile,
-                                DatajudgeSchema, DatajudgeReport)
-    from datajudge.run.plugin.base_plugin import Plugin, PluginBuilder
     from datajudge.client.store_handler import StoreHandler
+    from datajudge.metadata import (DatajudgeProfile, DatajudgeReport,
+                                    DatajudgeSchema, DataResource)
+    from datajudge.run.plugin.base_plugin import Plugin, PluginBuilder
     from datajudge.utils.config import Constraint, RunConfig
 
 
@@ -36,9 +38,9 @@ class RunHandlerRegistry:
         """
         Setup the run handler registry.
         """
-        for ops in [INFERENCE, VALIDATION, PROFILING]:
+        for ops in [OPERATION_INFERENCE, OPERATION_VALIDATION, OPERATION_PROFILING]:
             self.registry[ops] = {}
-            for res in [RES_WRAP, RES_DJ, RES_RENDER, RES_LIB]:
+            for res in [RESULT_WRAPPED, RESULT_DATAJUDGE, RESULT_RENDERED, RESULT_LIBRARY]:
                 self.registry[ops][res] = []
 
     def register(self,
@@ -93,10 +95,10 @@ class RunHandler:
         Wrapper for plugins infer methods.
         """
         builders = builder_factory(self._config.inference,
-                                   INFERENCE,
+                                   OPERATION_INFERENCE,
                                    self._store_handler.get_all_art_stores())
         plugins = self.create_plugins(builders, resources)
-        self.scheduler(plugins, INFERENCE, parallel, num_worker)
+        self.scheduler(plugins, OPERATION_INFERENCE, parallel, num_worker)
         self.destroy_builders(builders)
 
     def validate(self,
@@ -110,10 +112,10 @@ class RunHandler:
         """
         constraints = listify(constraints)
         builders = builder_factory(self._config.validation,
-                                   VALIDATION,
+                                   OPERATION_VALIDATION,
                                    self._store_handler.get_all_art_stores())
         plugins = self.create_plugins(builders, resources, constraints)
-        self.scheduler(plugins, VALIDATION, parallel, num_worker)
+        self.scheduler(plugins, OPERATION_VALIDATION, parallel, num_worker)
         self.destroy_builders(builders)
 
     def profile(self,
@@ -125,10 +127,10 @@ class RunHandler:
         Wrapper for plugins profile methods.
         """
         builders = builder_factory(self._config.profiling,
-                                   PROFILING,
+                                   OPERATION_PROFILING,
                                    self._store_handler.get_all_art_stores())
         plugins = self.create_plugins(builders, resources)
-        self.scheduler(plugins, PROFILING, parallel, num_worker)
+        self.scheduler(plugins, OPERATION_PROFILING, parallel, num_worker)
         self.destroy_builders(builders)
 
     @staticmethod
@@ -240,64 +242,64 @@ class RunHandler:
         """
         Get a list of schemas produced by inference libraries.
         """
-        return [obj.artifact for obj in self.get_item(INFERENCE, RES_WRAP)]
+        return [obj.artifact for obj in self.get_item(OPERATION_INFERENCE, RESULT_WRAPPED)]
 
     def get_artifact_report(self) -> List[Any]:
         """
         Get a list of reports produced by validation libraries.
         """
-        return [obj.artifact for obj in self.get_item(VALIDATION, RES_WRAP)]
+        return [obj.artifact for obj in self.get_item(OPERATION_VALIDATION, RESULT_WRAPPED)]
 
     def get_artifact_profile(self) -> List[Any]:
         """
         Get a list of profiles produced by profiling libraries.
         """
-        return [obj.artifact for obj in self.get_item(PROFILING, RES_WRAP)]
+        return [obj.artifact for obj in self.get_item(OPERATION_PROFILING, RESULT_WRAPPED)]
 
     def get_datajudge_schema(self) -> List[DatajudgeSchema]:
         """
         Wrapper for plugins parsing methods.
         """
-        return [obj.artifact for obj in self.get_item(INFERENCE, RES_DJ)]
+        return [obj.artifact for obj in self.get_item(OPERATION_INFERENCE, RESULT_DATAJUDGE)]
 
     def get_datajudge_report(self) -> List[DatajudgeReport]:
         """
         Wrapper for plugins parsing methods.
         """
-        return [obj.artifact for obj in self.get_item(VALIDATION, RES_DJ)]
+        return [obj.artifact for obj in self.get_item(OPERATION_VALIDATION, RESULT_DATAJUDGE)]
 
     def get_datajudge_profile(self) -> List[DatajudgeProfile]:
         """
         Wrapper for plugins parsing methods.
         """
-        return [obj.artifact for obj in self.get_item(PROFILING, RES_DJ)]
+        return [obj.artifact for obj in self.get_item(OPERATION_PROFILING, RESULT_DATAJUDGE)]
 
     def get_rendered_schema(self) -> List[Any]:
         """
         Get a list of schemas ready to be persisted.
         """
-        return flatten_list([obj.artifact for obj in self.get_item(INFERENCE, RES_RENDER)])
+        return flatten_list([obj.artifact for obj in self.get_item(OPERATION_INFERENCE, RESULT_RENDERED)])
 
     def get_rendered_report(self) -> List[Any]:
         """
         Get a list of reports ready to be persisted.
         """
-        return flatten_list([obj.artifact for obj in self.get_item(VALIDATION, RES_RENDER)])
+        return flatten_list([obj.artifact for obj in self.get_item(OPERATION_VALIDATION, RESULT_RENDERED)])
 
     def get_rendered_profile(self) -> List[Any]:
         """
         Get a list of profiles ready to be persisted.
         """
-        return flatten_list([obj.artifact for obj in self.get_item(PROFILING, RES_RENDER)])
+        return flatten_list([obj.artifact for obj in self.get_item(OPERATION_PROFILING, RESULT_RENDERED)])
 
     def get_libraries(self) -> List[dict]:
         """
         Return libraries used by run.
         """
         libs = {}
-        for ops in [INFERENCE, PROFILING, VALIDATION]:
+        for ops in [OPERATION_INFERENCE, OPERATION_PROFILING, OPERATION_VALIDATION]:
             libs[ops] = []
-            for i in self.get_item(ops, RES_LIB):
+            for i in self.get_item(ops, RESULT_LIBRARY):
                 if dict(**i) not in libs[ops]:
                     libs[ops].append(i)
         return libs
@@ -326,21 +328,17 @@ class RunHandler:
 
     def persist_data(self,
                      resources: List[DataResource],
-                     file_format: str,
                      dst: str) -> None:
         """
         Persist input data as artifact.
         """
         for res in resources:
-            resource = deepcopy(res)
-            for store in self._store_handler.get_all_art_stores():
-                if store.name == resource.store:
-                    resource.tmp_pth = store.fetch_artifact(resource.path,
-                                                            file_format)
-
-            for path in listify(resource.tmp_pth):
-                filename = get_name_from_uri(path)
-                self.persist_artifact(path, dst, filename, {})
+            store = self._store_handler.get_art_store(res.store)
+            data_reader = FileReader(store, DATAREADER_FILE)
+            for path in listify(res.path):
+                tmp_pth = data_reader.fetch_resource(path)
+                filename = get_name_from_uri(tmp_pth)
+                self.persist_artifact(tmp_pth, dst, filename, {})
 
     def clean_all(self) -> None:
         """

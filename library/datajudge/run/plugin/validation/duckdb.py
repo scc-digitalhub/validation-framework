@@ -11,18 +11,20 @@ from typing import List
 
 import duckdb
 
-from datajudge.data import DatajudgeReport
+from datajudge.data_reader.file_reader import FileReader
+from datajudge.metadata import DatajudgeReport
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator
-from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
-from datajudge.utils.commons import DUCKDB
 from datajudge.run.plugin.utils.sql_checks import evaluate_validity
-from datajudge.utils.utils import flatten_list, listify
+from datajudge.run.plugin.validation.validation_plugin import (
+    Validation, ValidationPluginBuilder)
+from datajudge.utils.commons import (DATAREADER_FILE, DEFAULT_DIRECTORY,
+                                     LIBRARY_DUCKDB)
+from datajudge.utils.utils import flatten_list, get_uiid, listify
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import DataResource
+    from datajudge.metadata import DataResource
     from datajudge.run.plugin.base_plugin import Result
     from datajudge.utils.config import Constraint, ConstraintDuckDB
-    from datajudge.store_artifact.artifact_store import ArtifactStore
 
 
 class ValidationPluginDuckDB(Validation):
@@ -47,7 +49,6 @@ class ValidationPluginDuckDB(Validation):
         self.db = db
         self.constraint = constraint
         self.exec_args = exec_args
-        self.parse_args()
 
     @exec_decorator
     def validate(self) -> dict:
@@ -107,14 +108,9 @@ class ValidationPluginDuckDB(Validation):
             _object = {"errors": result.errors}
         else:
             _object = dict(result.artifact)
-        filename = self._fn_report.format(f"{DUCKDB}.json")
+        filename = self._fn_report.format(f"{LIBRARY_DUCKDB}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
-
-    def parse_args(self):
-        """
-        Argument parsing.
-        """
 
     @staticmethod
     def get_lib_name() -> str:
@@ -143,39 +139,32 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         Build a plugin for every resource and every constraint.
         """
-        self.check_args()
-
-        self.setup_connection()
-        f_constraint = self.filter_constraints(constraints)
-        f_resources = self.filter_resources(resources, f_constraint)
-        self.register_resources(f_resources)
-        self.tear_down_connection()
+        self._setup_connection()
+        f_constraint = self._filter_constraints(constraints)
+        f_resources = self._filter_resources(resources, f_constraint)
+        self._register_resources(f_resources)
+        self._tear_down_connection()
 
         plugins = []
         for const in f_constraint:
             plugin = ValidationPluginDuckDB()
-            plugin.setup(self.tmp_db, const, self.exec_args)
+            plugin.setup(self.tmp_db.as_posix(), const, self.exec_args)
             plugins.append(plugin)
 
         return plugins
 
-    def check_args(self) -> None:
-        """
-        Arguments check.
-        """
-
-    def setup_connection(self) -> None:
+    def _setup_connection(self) -> None:
         """
         Setup db connection.
         """
-        self.tmp_db = "./tmp/tmp.duckdb"
-        Path(self.tmp_db).parent.mkdir(parents=True, exist_ok=True)
-        self.con = duckdb.connect(database=self.tmp_db, read_only=False)
+        self.tmp_db = Path(DEFAULT_DIRECTORY, get_uiid(), "tmp.duckdb")
+        self.tmp_db.parent.mkdir(parents=True, exist_ok=True)
+        self.con = duckdb.connect(database=self.tmp_db.as_posix(), read_only=False)
 
     @staticmethod
-    def filter_resources(resources: List[DataResource],
-                         constraints: List[Constraint]
-                         ) -> List[DataResource]:
+    def _filter_resources(resources: List[DataResource],
+                          constraints: List[Constraint]
+                          ) -> List[DataResource]:
         """
         Filter resources used by validator.
         """
@@ -183,14 +172,17 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
             [deepcopy(const.resources) for const in constraints]))
         return [res for res in resources if res.name in res_names]
 
-    def register_resources(self,
-                           resources: List[DataResource]
-                           ) -> None:
+    def _register_resources(self,
+                            resources: List[DataResource]
+                            ) -> None:
         """
         Register resources in db.
         """
-        for res in resources:
-            resource = self.fetch_resource(res)
+        for resource in resources:
+
+            store = self._get_resource_store(resource)
+            data_reader = FileReader(store, DATAREADER_FILE)
+            tmp_pth = data_reader.fetch_resource(resource.path)
 
             # If resource is already registered, continue
             try:
@@ -200,35 +192,29 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
                 pass
 
             # Handle multiple paths
-            if isinstance(resource.path, list):
-                for idx, pth in enumerate(resource.tmp_pth):
-                    if idx == 0:
-                        sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{pth}';"
-                    else:
-                        sql = f"COPY {resource.name} FROM '{pth}' (AUTO_DETECT TRUE);"
-                    self.con.execute(sql)
-
-            # Handle single path
-            else:
-                sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{resource.tmp_pth}';"
+            for idx, pth in enumerate(listify(tmp_pth)):
+                if idx == 0:
+                    sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{pth}';"
+                else:
+                    sql = f"COPY {resource.name} FROM '{pth}' (AUTO_DETECT TRUE);"
                 self.con.execute(sql)
 
-    def tear_down_connection(self) -> None:
+    def _tear_down_connection(self) -> None:
         """
         Close connection.
         """
         self.con.close()
 
     @staticmethod
-    def filter_constraints(constraints: List[Constraint]
-                           ) -> List[ConstraintDuckDB]:
+    def _filter_constraints(constraints: List[Constraint]
+                            ) -> List[ConstraintDuckDB]:
         """
         Filter out ConstraintDuckDB.
         """
-        return [const for const in constraints if const.type == DUCKDB]
+        return [const for const in constraints if const.type == LIBRARY_DUCKDB]
 
     def destroy(self) -> None:
         """
         Destory db.
         """
-        shutil.rmtree(Path(self.tmp_db).parent)
+        shutil.rmtree(self.tmp_db.parent)

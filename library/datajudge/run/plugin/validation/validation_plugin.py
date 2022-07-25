@@ -9,8 +9,8 @@ from abc import ABCMeta, abstractmethod
 from typing import Any, List
 
 from datajudge.run.plugin.base_plugin import Plugin, PluginBuilder
-from datajudge.utils.commons import (RES_WRAP, RES_DJ,
-                                     RES_RENDER, RES_LIB)
+from datajudge.utils.commons import (RESULT_DATAJUDGE, RESULT_LIBRARY,
+                                     RESULT_RENDERED, RESULT_WRAPPED)
 
 if typing.TYPE_CHECKING:
     from datajudge.utils.config import Constraint
@@ -27,19 +27,19 @@ class Validation(Plugin, metaclass=ABCMeta):
         """
         Method that call specific execution.
         """
-        self.logger.log(9,
+        self.logger.info(
             f"Execute validation: plugin {self.lib_name} {self._id}, constraint {self.constraint.name}, resources {self.constraint.resources}")
         lib_result = self.validate()
-        self.logger.log(9,
+        self.logger.info(
             f"Render datajudge result: plugin {self.lib_name} {self._id}")
         dj_result = self.render_datajudge(lib_result)
         self.logger.info(f"Render artifact: plugin {self.lib_name} {self._id}")
         render_result = self.render_artifact(lib_result)
         return {
-            RES_WRAP: lib_result,
-            RES_DJ: dj_result,
-            RES_RENDER: render_result,
-            RES_LIB: self.get_library()
+            RESULT_WRAPPED: lib_result,
+            RESULT_DATAJUDGE: dj_result,
+            RESULT_RENDERED: render_result,
+            RESULT_LIBRARY: self.get_library()
         }
 
     @abstractmethod
@@ -56,8 +56,8 @@ class ValidationPluginBuilder(PluginBuilder):
 
     @staticmethod
     @abstractmethod
-    def filter_constraints(constraints: List[Constraint]
-                           ) -> List[Constraint]:
+    def _filter_constraints(constraints: List[Constraint]
+                            ) -> List[Constraint]:
         """
         Filter constraints by library.
         """

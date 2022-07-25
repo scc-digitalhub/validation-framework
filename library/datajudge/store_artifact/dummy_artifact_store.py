@@ -25,9 +25,24 @@ class DummyArtifactStore(ArtifactStore):
 
     def _get_and_register_artifact(self,
                                    src: str,
-                                   file_format: str) -> str:
+                                   fetch_mode: str) -> str:
         """
         Return none.
+        """
+
+    def fetch_file(self, src: str) -> str:
+        """
+        Do nothing.
+        """
+
+    def fetch_native(self, src: str) -> str:
+        """
+        Do nothing.
+        """
+
+    def fetch_buffer(self, src: str) -> None:
+        """
+        Do nothing.
         """
 
     def _check_access_to_storage(self) -> None:

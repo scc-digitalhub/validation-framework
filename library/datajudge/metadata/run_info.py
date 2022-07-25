@@ -2,7 +2,6 @@
 RunInfo module.
 Implementation of the basic Run's metadata.
 """
-
 from __future__ import annotations
 
 import typing
@@ -11,7 +10,7 @@ from typing import List, Optional
 from datajudge.utils.utils import get_time
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import DataResource
+    from datajudge.metadata import DataResource
     from datajudge.utils.config import RunConfig
 
 
@@ -36,7 +35,7 @@ class RunInfo:
 
     Methods
     -------
-    dict :
+    to_dict :
         Transform the object in a dictionary.
 
     """

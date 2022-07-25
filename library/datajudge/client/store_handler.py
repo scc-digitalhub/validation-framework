@@ -8,6 +8,7 @@ import typing
 from typing import Any, List, Optional, Union
 
 from datajudge.client.store_factory import StoreBuilder
+from datajudge.utils.commons import DEFAULT_DIRECTORY, DEFAULT_PROJECT
 from datajudge.utils.config import StoreConfig
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.file_utils import clean_all
@@ -92,9 +93,8 @@ class StoreHandler:
     def __init__(self,
                  metadata_store: Optional[StoreConfig] = None,
                  store: Optional[List[StoreConfig]] = None,
-                 project: Optional[str] = "project",
-                 tmp_dir: Optional[str] = "./djruns/tmp") -> None:
-
+                 project: Optional[str] = DEFAULT_PROJECT,
+                 tmp_dir: Optional[str] = DEFAULT_DIRECTORY) -> None:
         self._store_registry = StoreRegistry()
         self._store_builder = StoreBuilder(project, tmp_dir)
         self._setup(metadata_store, store)

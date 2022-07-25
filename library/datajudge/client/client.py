@@ -9,11 +9,13 @@ from __future__ import annotations
 import typing
 from typing import List, Optional, Union
 
-from datajudge.client.store_handler import StoreHandler
 from datajudge.client.run_builder import RunBuilder
+from datajudge.client.store_handler import StoreHandler
+from datajudge.utils.commons import (DEFAULT_DIRECTORY, DEFAULT_EXPERIMENT,
+                                     DEFAULT_PROJECT)
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import DataResource
+    from datajudge.metadata import DataResource
     from datajudge.run import Run
     from datajudge.utils.config import RunConfig, StoreConfig
 
@@ -52,8 +54,8 @@ class Client:
     def __init__(self,
                  metadata_store: Optional[StoreConfig] = None,
                  store: Optional[Union[StoreConfig, List[StoreConfig]]] = None,
-                 project: Optional[str] = "project",
-                 tmp_dir: Optional[str] = "./djruns/tmp"
+                 project: Optional[str] = DEFAULT_PROJECT,
+                 tmp_dir: Optional[str] = DEFAULT_DIRECTORY
                  ) -> None:
         self._store_handler = StoreHandler(metadata_store,
                                            store,
@@ -76,7 +78,7 @@ class Client:
     def create_run(self,
                    resources: Union[List[DataResource], DataResource],
                    run_config: RunConfig,
-                   experiment: Optional[str] = "experiment",
+                   experiment: Optional[str] = DEFAULT_EXPERIMENT,
                    run_id: Optional[str] = None,
                    overwrite: Optional[bool] = False) -> Run:
         """

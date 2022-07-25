@@ -7,14 +7,15 @@ from __future__ import annotations
 import typing
 from typing import List
 
-from datajudge.data import DatajudgeReport
-from datajudge.run.plugin.validation.validation_plugin import Validation, ValidationPluginBuilder
-from datajudge.utils.commons import DUMMY
-from datajudge.utils.config import DUMMY_CONST, DUMMY_RES, Constraint
+from datajudge.metadata import DatajudgeReport
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator
+from datajudge.run.plugin.validation.validation_plugin import (
+    Validation, ValidationPluginBuilder)
+from datajudge.utils.commons import GENERIC_DUMMY, LIBRARY_DUMMY
+from datajudge.utils.config import DUMMY_CONST, DUMMY_RES, Constraint
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import DataResource
+    from datajudge.metadata import DataResource
     from datajudge.run.plugin.base_plugin import Result
 
 
@@ -69,7 +70,7 @@ class ValidationPluginDummy(Validation):
             _object = {"errors": result.errors}
         else:
             _object = dict(result.artifact)
-        filename = self._fn_report.format(f"{DUMMY}.json")
+        filename = self._fn_report.format(f"{GENERIC_DUMMY}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
@@ -78,14 +79,14 @@ class ValidationPluginDummy(Validation):
         """
         Get library name.
         """
-        return DUMMY
+        return LIBRARY_DUMMY
 
     @staticmethod
     def get_lib_version() -> str:
         """
         Get library version.
         """
-        return DUMMY
+        return LIBRARY_DUMMY
 
 
 class ValidationBuilderDummy(ValidationPluginBuilder):
@@ -107,8 +108,8 @@ class ValidationBuilderDummy(ValidationPluginBuilder):
         return plugins
 
     @staticmethod
-    def filter_constraints(constraints: List[Constraint]
-                           ) -> List[Constraint]:
+    def _filter_constraints(constraints: List[Constraint]
+                            ) -> List[Constraint]:
         """
         Do nothing.
         """

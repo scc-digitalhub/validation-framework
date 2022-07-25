@@ -3,12 +3,10 @@ Plugin utils module.
 """
 
 import time
-
 from collections import namedtuple
 from typing import Any, Callable
 
-from datajudge.utils.commons import STATUS_INIT, STATUS_ERROR, STATUS_FINISHED
-
+from datajudge.utils.commons import STATUS_ERROR, STATUS_FINISHED, STATUS_INIT
 
 RenderTuple = namedtuple("RenderTuple", ("object", "filename"))
 

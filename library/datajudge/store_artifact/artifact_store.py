@@ -2,10 +2,12 @@
 Abstract class for artifact store.
 """
 from abc import ABCMeta, abstractmethod
-from typing import Any, Optional
+from typing import IO, Any, Optional, Union
 
-from datajudge.utils.uri_utils import rebuild_uri
+from datajudge.utils.commons import (DATAREADER_BUFFER, DATAREADER_FILE,
+                                     DATAREADER_NATIVE)
 from datajudge.utils.logger import LOGGER
+from datajudge.utils.uri_utils import rebuild_uri
 
 
 class ResourceRegistry:
@@ -41,7 +43,7 @@ class ResourceRegistry:
         self.registry = {}
 
 
-class ArtifactStore:
+class ArtifactStore(metaclass=ABCMeta):
     """
     Abstract artifact class that defines methods to persist/fetch
     artifacts into/from different storage backends.
@@ -69,7 +71,9 @@ class ArtifactStore:
 
     """
 
-    __metaclass__ = ABCMeta
+    FILE = DATAREADER_FILE
+    NATIVE = DATAREADER_NATIVE
+    BUFFER = DATAREADER_BUFFER
 
     def __init__(self,
                  name: str,
@@ -84,6 +88,7 @@ class ArtifactStore:
         self.config = config
         self.is_default = is_default
         self.resource_paths = ResourceRegistry()
+        self.logger = LOGGER
 
     @abstractmethod
     def persist_artifact(self,
@@ -98,21 +103,42 @@ class ArtifactStore:
 
     def fetch_artifact(self,
                        src: str,
-                       file_format: str) -> str:
+                       fetch_mode: str) -> str:
         """
         Method to fetch an artifact and return the temporary
         path where it is stored.
         """
-        tmp_path = self.get_resource(f"{src}_{file_format}")
+        tmp_path = self._get_resource(f"{src}_{fetch_mode}")
         if tmp_path is not None:
             return tmp_path
         LOGGER.info(f"Fetching resource {src} from store {self.name}")
-        return self._get_and_register_artifact(src, file_format)
+        return self._get_and_register_artifact(src, fetch_mode)
+
+    def fetch_file(self, src: str) -> str:
+        """
+        Return the temporary path where a resource it is stored.
+        """
+        return (self._get_resource(f"{src}_{self.FILE}") or
+                self._get_and_register_artifact(src, self.FILE))
+
+    def fetch_native(self, src: str) -> str:
+        """
+        Return a native format path for a resource.
+        """
+        return (self._get_resource(f"{src}_{self.NATIVE}") or
+                self._get_and_register_artifact(src, self.NATIVE))
+
+    def fetch_buffer(self, src: str) -> IO:
+        """
+        Return a buffered resource.
+        """
+        return (self._get_resource(f"{src}_{self.BUFFER}") or
+                self._get_and_register_artifact(src, self.BUFFER))
 
     @abstractmethod
     def _get_and_register_artifact(self,
                                    src: str,
-                                   file_format: str) -> str:
+                                   fetch_mode: str) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
@@ -144,11 +170,14 @@ class ArtifactStore:
         """
         return rebuild_uri(self.artifact_uri, exp_name, run_id)
 
-    def get_resource(self, key: str) -> str:
+    def _get_resource(self, key: str) -> Union[str, bool]:
         """
         Method to return temporary path of a registered resource.
         """
-        return self.resource_paths.get_resource(key)
+        res = self.resource_paths.get_resource(key)
+        if res is None:
+            return False
+        return res
 
     def _register_resource(self, key: str, path: str) -> None:
         """

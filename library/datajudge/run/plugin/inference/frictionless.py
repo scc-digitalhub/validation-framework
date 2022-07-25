@@ -1,7 +1,6 @@
 """
 Frictionless implementation of inference plugin.
 """
-
 from __future__ import annotations
 
 import typing
@@ -10,14 +9,16 @@ from typing import List
 import frictionless
 from frictionless.schema import Schema
 
-from datajudge.data import DatajudgeSchema
+from datajudge.data_reader.file_reader import FileReader
+from datajudge.metadata import DatajudgeSchema
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.inference.inference_plugin import Inference
-from datajudge.utils.commons import FRICTIONLESS
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator
+from datajudge.utils.commons import LIBRARY_FRICTIONLESS
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import DataResource
+    from datajudge.data_reader.base_reader import DataReader
+    from datajudge.metadata import DataResource
     from datajudge.run.plugin.base_plugin import Result
 
 
@@ -33,6 +34,7 @@ class InferencePluginFrictionless(Inference):
         self.exec_multiprocess = True
 
     def setup(self,
+              data_reader: DataReader,
               resource: DataResource,
               exec_args: dict) -> None:
         """
@@ -40,6 +42,7 @@ class InferencePluginFrictionless(Inference):
         """
         self.resource = resource
         self.exec_args = exec_args
+        self.data_path = data_reader.fetch_resource(self.resource.path)
 
     @exec_decorator
     def infer(self) -> Schema:
@@ -47,7 +50,7 @@ class InferencePluginFrictionless(Inference):
         Method that call infer on a resource and return an
         inferred schema.
         """
-        schema = Schema.describe(path=self.resource.tmp_pth,
+        schema = Schema.describe(path=self.data_path,
                                  name=self.resource.name,
                                  **self.exec_args)
         return Schema(schema.to_dict())
@@ -92,7 +95,7 @@ class InferencePluginFrictionless(Inference):
             _object = {"errors": result.errors}
         else:
             _object = dict(result.artifact)
-        filename = self._fn_schema.format(f"{FRICTIONLESS}.json")
+        filename = self._fn_schema.format(f"{LIBRARY_FRICTIONLESS}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
@@ -124,9 +127,11 @@ class InferenceBuilderFrictionless(PluginBuilder):
         """
         plugins = []
         for res in resources:
-            resource = self.fetch_resource(res)
+            resource = self._get_resource_deepcopy(res)
+            store = self._get_resource_store(resource)
+            data_reader = FileReader(store, self.fetch_mode, self.reader_args)
             plugin = InferencePluginFrictionless()
-            plugin.setup(resource, self.exec_args)
+            plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)
         return plugins
 

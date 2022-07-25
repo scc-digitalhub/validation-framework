@@ -62,5 +62,5 @@ Frictionless
        # This arguments is related more to the stores than the run plugins,
        # but in general, to perform a successful schema inference with frictionless,
        # a csv format is better.
-       "tmpFormat": "csv"
+       "fetchMode": "csv"
    }

@@ -1,7 +1,6 @@
+from datajudge.run.plugin.inference.dummy import InferenceBuilderDummy
 from datajudge.run.plugin.inference.frictionless import \
-                                        InferenceBuilderFrictionless
-from datajudge.run.plugin.inference.dummy import \
-                                        InferenceBuilderDummy
+    InferenceBuilderFrictionless
 
 __all__ = [
     "InferenceBuilderDummy",

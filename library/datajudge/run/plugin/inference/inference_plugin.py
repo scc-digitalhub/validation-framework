@@ -6,8 +6,8 @@ from abc import ABCMeta, abstractmethod
 from typing import Any
 
 from datajudge.run.plugin.base_plugin import Plugin
-from datajudge.utils.commons import (RES_WRAP, RES_DJ,
-                                     RES_RENDER, RES_LIB)
+from datajudge.utils.commons import (RESULT_DATAJUDGE, RESULT_LIBRARY,
+                                     RESULT_RENDERED, RESULT_WRAPPED)
 
 
 class Inference(Plugin, metaclass=ABCMeta):
@@ -21,19 +21,19 @@ class Inference(Plugin, metaclass=ABCMeta):
         """
         Method that call specific execution.
         """
-        self.logger.log(9,
+        self.logger.info(
             f"Execute inference: plugin {self.lib_name} {self._id}, resource {self.resource.name}")
         lib_result = self.infer()
-        self.logger.log(9,
+        self.logger.info(
             f"Render datajudge result: plugin {self.lib_name} {self._id}")
         dj_result = self.render_datajudge(lib_result)
         self.logger.info(f"Render artifact: plugin {self.lib_name} {self._id}")
         render_result = self.render_artifact(lib_result)
         return {
-            RES_WRAP: lib_result,
-            RES_DJ: dj_result,
-            RES_RENDER: render_result,
-            RES_LIB: self.get_library()
+            RESULT_WRAPPED: lib_result,
+            RESULT_DATAJUDGE: dj_result,
+            RESULT_RENDERED: render_result,
+            RESULT_LIBRARY: self.get_library()
         }
 
     @abstractmethod

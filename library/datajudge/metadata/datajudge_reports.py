@@ -1,7 +1,6 @@
 """
 Datajudge base report module.
 """
-
 from abc import ABCMeta
 from dataclasses import dataclass
 

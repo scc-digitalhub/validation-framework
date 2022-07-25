@@ -6,8 +6,14 @@ from __future__ import annotations
 import re
 from typing import Any, Tuple
 
-from datajudge.utils.commons import (CHECK_ROWS, CHECK_VALUE, EMPTY,
-                                     EXACT, MAXIMUM, MINIMUM, NON_EMPTY, RANGE)
+from datajudge.utils.commons import (CONSTRAINT_SQL_CHECK_ROWS,
+                                     CONSTRAINT_SQL_CHECK_VALUE,
+                                     CONSTRAINT_SQL_EMPTY,
+                                     CONSTRAINT_SQL_EXACT,
+                                     CONSTRAINT_SQL_MAXIMUM,
+                                     CONSTRAINT_SQL_MINIMUM,
+                                     CONSTRAINT_SQL_NON_EMPTY,
+                                     CONSTRAINT_SQL_RANGE)
 from datajudge.utils.exceptions import ValidationError
 
 
@@ -20,40 +26,40 @@ def evaluate_validity(query_result: Any,
     """
     try:
 
-        if check == CHECK_VALUE:
+        if check == CONSTRAINT_SQL_CHECK_VALUE:
 
             # Evaluation made on a single value as result of
             # a query.
 
             result = query_result.iloc[0, 0]
 
-            if expect == EXACT:
+            if expect == CONSTRAINT_SQL_EXACT:
                 return evaluate_exact(result, value)
-            if expect == RANGE:
+            if expect == CONSTRAINT_SQL_RANGE:
                 return evaluate_range(result, value)
-            if expect == MINIMUM:
+            if expect == CONSTRAINT_SQL_MINIMUM:
                 return evaluate_min(result, value)
-            if expect == MAXIMUM:
+            if expect == CONSTRAINT_SQL_MAXIMUM:
                 return evaluate_max(result, value)
             raise ValidationError("Invalid expectation.")
 
-        if check == CHECK_ROWS:
+        if check == CONSTRAINT_SQL_CHECK_ROWS:
 
             # Evaluation made on number of rows
 
             result = query_result.shape[0]
 
-            if expect == EMPTY:
+            if expect == CONSTRAINT_SQL_EMPTY:
                 return evaluate_empty(result, empty=True)
-            if expect == NON_EMPTY:
+            if expect == CONSTRAINT_SQL_NON_EMPTY:
                 return evaluate_empty(result, empty=False)
-            if expect == EXACT:
+            if expect == CONSTRAINT_SQL_EXACT:
                 return evaluate_exact(result, value)
-            if expect == RANGE:
+            if expect == CONSTRAINT_SQL_RANGE:
                 return evaluate_range(result, value)
-            if expect == MINIMUM:
+            if expect == CONSTRAINT_SQL_MINIMUM:
                 return evaluate_min(result, value)
-            if expect == MAXIMUM:
+            if expect == CONSTRAINT_SQL_MAXIMUM:
                 return evaluate_max(result, value)
             raise ValidationError("Invalid expectation.")
 

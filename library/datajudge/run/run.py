@@ -7,21 +7,21 @@ import typing
 from pathlib import Path
 from typing import Any, List, Optional
 
-from datajudge.data import BlobLog, EnvLog
-from datajudge.utils.commons import (DATAJUDGE_VERSION, DUMMY_SCHEME, MT_ARTIFACT_METADATA,
+from datajudge.metadata import BlobLog, EnvLog
+from datajudge.utils.commons import (DATAJUDGE_VERSION, MT_ARTIFACT_METADATA,
                                      MT_DJ_PROFILE, MT_DJ_REPORT, MT_DJ_SCHEMA,
-                                     MT_RUN_ENV, MT_RUN_METADATA, STATUS_ERROR,
-                                     STATUS_FINISHED, STATUS_INIT,
-                                     STATUS_INTERRUPTED)
+                                     MT_RUN_ENV, MT_RUN_METADATA, SCHEME_DUMMY,
+                                     STATUS_ERROR, STATUS_FINISHED,
+                                     STATUS_INIT, STATUS_INTERRUPTED)
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.logger import LOGGER
 from datajudge.utils.utils import get_time
 
 if typing.TYPE_CHECKING:
-    from datajudge.data import (DatajudgeProfile, DatajudgeSchema,
-                                DatajudgeReport)
+    from datajudge.metadata import (DatajudgeProfile, DatajudgeReport,
+                                    DatajudgeSchema)
+    from datajudge.metadata.run_info import RunInfo
     from datajudge.run.run_handler import RunHandler
-    from datajudge.run.run_info import RunInfo
     from datajudge.utils.config import Constraint
 
 
@@ -194,14 +194,14 @@ class Run:
         """
         Check metadata uri existence.
         """
-        if self.run_info.run_metadata_uri in DUMMY_SCHEME:
+        if self.run_info.run_metadata_uri in SCHEME_DUMMY:
             raise StoreError("Please configure a metadata store.")
 
     def _check_artifacts_uri(self) -> None:
         """
         Check artifact uri existence.
         """
-        if self.run_info.run_artifacts_uri in DUMMY_SCHEME:
+        if self.run_info.run_artifacts_uri in SCHEME_DUMMY:
             raise StoreError("Please configure a artifact store.")
 
     def _get_libraries(self) -> None:
@@ -552,36 +552,20 @@ class Run:
 
     # Input data persistence
 
-    def persist_data(self,
-                     file_format: Optional[str] = "parquet") -> None:
+    def persist_data(self) -> None:
         """
         Persist input data as artifacts into default store.
 
         Depending on the functioning of the store object on which the
         artifacts are stored, the store will try to download the data
-        locally in the format requested by the user. If the specific
-        format is not managed by the store, the store will persist the
-        data in a default format.
-
+        locally.
         In the case of SQL/ODBC storage, the format will be parquet.
         In the case of remote/REST/local stores, the persistence format
         will be the same as the artifacts present in the storage.
 
-        Finally, note that some stores (S3 and Azure) provide for the
-        possibility of building presigned URLs by specifying a format
-        ('s3' and 'azure' respectively).
-        By selecting this specific type of format, it will not be possible
-        to persist the data.
-
-        Parameters
-        ----------
-        file_format : Optional[str], optional
-            Format with which to persist input data, by default "parquet"
-
         """
         self._check_artifacts_uri()
         self._run_handler.persist_data(self.run_info.resources,
-                                       file_format,
                                        self.run_info.run_artifacts_uri)
 
     # Context manager

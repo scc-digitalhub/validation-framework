@@ -12,33 +12,35 @@ from datajudge.store_artifact.odbc_artifact_store import ODBCArtifactStore
 from datajudge.store_artifact.sql_artifact_store import SQLArtifactStore
 from datajudge.store_metadata import (DigitalHubMetadataStore,
                                       DummyMetadataStore, LocalMetadataStore)
-from datajudge.utils.commons import (API_BASE, AZURE, AZURE_SCHEME, DUMMY,
-                                     DUMMY_SCHEME, FTP, FTP_SCHEME, HTTP,
-                                     HTTP_SCHEME, LOCAL, LOCAL_SCHEME, ODBC,
-                                     ODBC_SCHEME, S3, S3_SCHEME, SQL,
-                                     SQL_SCHEME)
+from datajudge.utils.commons import (API_BASE, SCHEME_AZURE, SCHEME_DUMMY,
+                                     SCHEME_FTP, SCHEME_HTTP, SCHEME_LOCAL,
+                                     SCHEME_ODBC, SCHEME_S3, SCHEME_SQL,
+                                     STORE_AZURE, STORE_DUMMY, STORE_FTP,
+                                     STORE_HTTP, STORE_LOCAL, STORE_ODBC,
+                                     STORE_S3, STORE_SQL)
 from datajudge.utils.config import DUMMY_STORE, StoreConfig
 from datajudge.utils.file_utils import get_absolute_path
-from datajudge.utils.uri_utils import check_url, get_uri_netloc, get_uri_path, get_uri_scheme, rebuild_uri
+from datajudge.utils.uri_utils import (check_url, get_uri_netloc, get_uri_path,
+                                       get_uri_scheme, rebuild_uri)
 from datajudge.utils.utils import get_uiid
 
 # Registries
 
 MD_STORES = {
-    LOCAL: LocalMetadataStore,
-    HTTP: DigitalHubMetadataStore,
-    DUMMY: DummyMetadataStore,
+    STORE_LOCAL: LocalMetadataStore,
+    STORE_HTTP: DigitalHubMetadataStore,
+    STORE_DUMMY: DummyMetadataStore,
 }
 
 ART_STORES = {
-    LOCAL: LocalArtifactStore,
-    HTTP: HTTPArtifactStore,
-    S3: S3ArtifactStore,
-    AZURE: AzureArtifactStore,
-    FTP: FTPArtifactStore,
-    SQL: SQLArtifactStore,
-    ODBC: ODBCArtifactStore,
-    DUMMY: DummyArtifactStore,
+    STORE_LOCAL: LocalArtifactStore,
+    STORE_HTTP: HTTPArtifactStore,
+    STORE_S3: S3ArtifactStore,
+    STORE_AZURE: AzureArtifactStore,
+    STORE_FTP: FTPArtifactStore,
+    STORE_SQL: SQLArtifactStore,
+    STORE_ODBC: ODBCArtifactStore,
+    STORE_DUMMY: DummyArtifactStore,
 }
 
 
@@ -84,14 +86,14 @@ class StoreBuilder:
         """
         Resolve metadata URI location.
         """
-        if scheme in [*LOCAL_SCHEME]:
+        if scheme in [*SCHEME_LOCAL]:
             return get_absolute_path(get_uri_netloc(uri),
                                      get_uri_path(uri),
                                      "metadata")
-        if scheme in [*HTTP_SCHEME]:
+        if scheme in [*SCHEME_HTTP]:
             url = uri + API_BASE + project_name
             return check_url(url)
-        if scheme in [*DUMMY_SCHEME]:
+        if scheme in [*SCHEME_DUMMY]:
             return uri
         raise NotImplementedError
 
@@ -116,14 +118,14 @@ class StoreBuilder:
         """
         Resolve artifact URI location.
         """
-        if scheme in [*LOCAL_SCHEME]:
+        if scheme in [*SCHEME_LOCAL]:
             return get_absolute_path(get_uri_netloc(uri),
                                      get_uri_path(uri),
                                      "artifact")
-        if scheme in [*AZURE_SCHEME, *S3_SCHEME, *FTP_SCHEME]:
+        if scheme in [*SCHEME_AZURE, *SCHEME_S3, *SCHEME_FTP]:
             return rebuild_uri(uri, "artifact")
-        if scheme in [*DUMMY_SCHEME, *HTTP_SCHEME,
-                      *SQL_SCHEME, *ODBC_SCHEME]:
+        if scheme in [*SCHEME_DUMMY, *SCHEME_HTTP,
+                      *SCHEME_SQL, *SCHEME_ODBC]:
             return uri
         raise NotImplementedError
 

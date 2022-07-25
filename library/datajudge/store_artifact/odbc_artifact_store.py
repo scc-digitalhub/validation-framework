@@ -2,12 +2,11 @@
 Implementation of ODBC artifact store.
 """
 
-import csv
 from typing import Any
 
-import pyodbc
 import pyarrow as pa
 import pyarrow.parquet as pq
+import pyodbc
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.exceptions import StoreError
@@ -35,7 +34,7 @@ class ODBCArtifactStore(ArtifactStore):
 
     def _get_and_register_artifact(self,
                                    src: str,
-                                   file_format: str) -> str:
+                                   fetch_mode: str) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
@@ -43,20 +42,26 @@ class ODBCArtifactStore(ArtifactStore):
         connection = self._get_connection()
         self._check_access_to_storage(connection)
         table_name = self._get_table_name(src)
-        key = f"{table_name.lower()}.{file_format}"
+        key = f"{table_name.lower()}.parquet"
 
-        # Query table
-        obj = self._get_data(connection, table_name)
+        self.logger.info(f"Fetching resource {src} from store {self.name}")
 
-        # Store locally
-        filepath = self._store_data(obj, key, file_format)
+        # Return a presigned URL
+        if fetch_mode == self.NATIVE:
+            connection.close()
+            raise NotImplementedError
 
-        # Dispose connection
-        connection.close()
+        # Get file from remote and store locally
+        if fetch_mode == self.FILE:
+            obj = self._get_data(connection, table_name)
+            filepath = self._store_data(obj, key)
+            self._register_resource(f"{src}_{fetch_mode}", filepath)
+            connection.close()
+            return filepath
 
-        # Register resource on store
-        self._register_resource(f"{src}_{file_format}", filepath)
-        return filepath
+        if fetch_mode == self.BUFFER:
+            connection.close()
+            raise NotImplementedError
 
     def _check_access_to_storage(self,
                                  connection: pyodbc.Connection
@@ -108,47 +113,29 @@ class ODBCArtifactStore(ArtifactStore):
 
     def _store_data(self,
                     obj: Any,
-                    key: str,
-                    file_format: str) -> str:
+                    key: str) -> str:
         """
         Store data locally in temporary folder and return tmp path.
         """
         check_make_dir(self.temp_dir)
         filepath = get_path(self.temp_dir, key)
-        self._write_table(obj, filepath, file_format)
+        self._write_table(obj, filepath)
         return filepath
 
     @staticmethod
     def _write_table(query_result: Any,
-                     filepath: str,
-                     file_format: str) -> None:
+                     filepath: str) -> None:
         """
         Write a query result as file.
         """
         header = [col[0] for col in query_result.description]
-
-        if file_format == "csv":
-            with open(filepath, "w") as csvfile:
-                outcsv = csv.writer(csvfile,
-                                    delimiter=',',
-                                    quotechar='"',
-                                    quoting=csv.QUOTE_MINIMAL)
-                outcsv.writerow(header)
-                while True:
-                    res = query_result.fetchmany(1028)
-                    if res:
-                        outcsv.writerows(res)
-                    else:
-                        break
-
-        else:
-            arrays = []
-            while True:
-                res = query_result.fetchmany(1024)
-                if res:
-                    for row in res:
-                        arrays.append(dict(zip(header, row)))
-                else:
-                    tab = pa.Table.from_pylist(arrays)
-                    pq.write_table(tab, filepath)
-                    break
+        arrays = []
+        while True:
+            res = query_result.fetchmany(1024)
+            if res:
+                for row in res:
+                    arrays.append(dict(zip(header, row)))
+            else:
+                tab = pa.Table.from_pylist(arrays)
+                pq.write_table(tab, filepath)
+                break

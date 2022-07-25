@@ -3,13 +3,13 @@ Base abstract Run Plugin module.
 """
 
 from __future__ import annotations
-from copy import deepcopy
 
 import typing
 from abc import ABCMeta, abstractmethod
+from copy import deepcopy
 from typing import Any, List
 
-from datajudge.data import DataResource
+from datajudge.metadata import DataResource
 from datajudge.run.plugin.utils.plugin_utils import RenderTuple
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.logger import LOGGER
@@ -96,12 +96,15 @@ class PluginBuilder:
     """
 
     def __init__(self,
-                 exec_args: dict,
-                 file_format: str,
-                 stores: List[ArtifactStore]) -> None:
-        self.exec_args = exec_args
-        self.file_format = file_format
+                 stores: List[ArtifactStore],
+                 fetch_mode: str,
+                 reader_args: dict,
+                 exec_args: dict
+                 ) -> None:
         self.stores = stores
+        self.fetch_mode = fetch_mode
+        self.reader_args = reader_args
+        self.exec_args = exec_args
 
     @abstractmethod
     def build(self, *args, **kwargs) -> List[Plugin]:
@@ -109,19 +112,22 @@ class PluginBuilder:
         Build a list of plugin.
         """
 
-    def fetch_resource(self,
-                       res: DataResource) -> DataResource:
+    @staticmethod
+    def _get_resource_deepcopy(resource: DataResource) -> DataResource:
         """
-        Fetch resources from storages.
+        Return deepcopy of a resource.
         """
-        resource = deepcopy(res)
-        for store in self.stores:
-            if store.name == resource.store:
-                resource.tmp_pth = store.fetch_artifact(resource.path,
-                                                        self.file_format)
-                return resource
-        raise StoreError(f"No store registered with name '{resource.store}'. " +
-                         f"Impossible to fetch resource '{resource.name}'")
+        return deepcopy(resource)
+
+    def _get_resource_store(self, resource: DataResource) -> ArtifactStore:
+        """
+        Get the resource store.
+        """
+        try:
+            return  [store for store in self.stores if store.name == resource.store][0]
+        except IndexError:
+            raise StoreError(f"No store registered with name '{resource.store}'. " +
+                             f"Impossible to fetch resource '{resource.name}'")
 
     @abstractmethod
     def destroy(self) -> None:
