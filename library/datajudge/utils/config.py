@@ -8,7 +8,6 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
 
-from datajudge.metadata import DataResource
 from datajudge.utils.commons import (CONSTRAINT_FRICTIONLESS_SCHEMA,
                                      CONSTRAINT_SQL_CHECK_ROWS,
                                      CONSTRAINT_SQL_CHECK_VALUE,
@@ -21,13 +20,11 @@ from datajudge.utils.commons import (CONSTRAINT_FRICTIONLESS_SCHEMA,
                                      DATAREADER_BUFFER,
                                      DATAREADER_FILE,
                                      DATAREADER_NATIVE,
-                                     GENERIC_DUMMY,
                                      LIBRARY_DUCKDB,
                                      LIBRARY_DUMMY,
                                      LIBRARY_FRICTIONLESS,
                                      LIBRARY_GREAT_EXPECTATION,
                                      LIBRARY_SQLALCHEMY,
-                                     SCHEME_DUMMY,
                                      STORE_AZURE,
                                      STORE_DUMMY,
                                      STORE_FTP,
@@ -222,16 +219,3 @@ class RunConfig(BaseModel):
 
     profiling: Optional[List[ExecConfig]] = [ExecConfig()]
     """List of profiling configuration."""
-
-
-# Dummy generic configs
-DUMMY_STORE = StoreConfig(name=GENERIC_DUMMY,
-                          type=STORE_DUMMY,
-                          uri=f"{SCHEME_DUMMY}://")
-DUMMY_RES = DataResource(path=f"{SCHEME_DUMMY}://",
-                         name=GENERIC_DUMMY,
-                         store=GENERIC_DUMMY)
-DUMMY_CONST = Constraint(name=GENERIC_DUMMY,
-                         title=GENERIC_DUMMY,
-                         resources=[GENERIC_DUMMY],
-                         weight=0)

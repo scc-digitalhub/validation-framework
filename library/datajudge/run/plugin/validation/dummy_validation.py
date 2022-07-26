@@ -12,10 +12,10 @@ from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import GENERIC_DUMMY, LIBRARY_DUMMY
-from datajudge.utils.config import DUMMY_CONST, DUMMY_RES, Constraint
+from datajudge.utils.config import Constraint
 
 if typing.TYPE_CHECKING:
-    from datajudge.metadata import DataResource
+    from datajudge.metadata.data_resource import DataResource
     from datajudge.run.plugin.base_plugin import Result
 
 
@@ -27,8 +27,6 @@ class ValidationPluginDummy(Validation):
     def __init__(self) -> None:
         super().__init__()
         self.resource = None
-        self.constraint = None
-        self.exec_args = None
 
     def setup(self,
               resource: DataResource,
@@ -101,9 +99,13 @@ class ValidationBuilderDummy(ValidationPluginBuilder):
         """
         Build a plugin.
         """
+        const = Constraint(name="",
+                           title="",
+                           resources=[""],
+                           weight=0)
         plugins = []
         plugin = ValidationPluginDummy()
-        plugin.setup(DUMMY_RES, DUMMY_CONST, self.exec_args)
+        plugin.setup(None, const, self.exec_args)
         plugins.append(plugin)
         return plugins
 

@@ -27,7 +27,7 @@ from datajudge.utils.utils import listify
 
 if typing.TYPE_CHECKING:
     from datajudge.data_reader.base_reader import DataReader
-    from datajudge.metadata import DataResource
+    from datajudge.metadata.data_resource import DataResource
     from datajudge.run.plugin.base_plugin import Result
     from datajudge.utils.config import Constraint, ConstraintGreatExpectation
 
@@ -39,9 +39,8 @@ class ValidationPluginGreatExpectation(Validation):
 
     def __init__(self) -> None:
         super().__init__()
-        self.constraint = None
         self.resource = None
-        self.exec_args = None
+        self.df = None
         self.exec_multiprocess = True
 
     def setup(self,

@@ -91,9 +91,10 @@ class FTPArtifactStore(ArtifactStore):
 
         self.logger.info(f"Fetching resource {src} from store {self.name}")
 
-        # Return a presigned URL
+        # Return path
         if fetch_mode == self.NATIVE:
-            raise NotImplementedError
+            self._register_resource(f"{src}_{fetch_mode}", key)
+            return src
 
         # Get file from remote and store locally
         if fetch_mode == self.FILE:

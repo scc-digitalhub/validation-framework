@@ -9,7 +9,7 @@ from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from typing import Any, List
 
-from datajudge.metadata import DataResource
+from datajudge.metadata.data_resource import DataResource
 from datajudge.run.plugin.utils.plugin_utils import RenderTuple
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.logger import LOGGER
@@ -30,6 +30,7 @@ class Plugin(metaclass=ABCMeta):
         self.lib_name = self.get_lib_name()
         self.lib_version = self.get_lib_version()
         self.logger = LOGGER
+        self.exec_args = None
         self.exec_sequential = True
         self.exec_multiprocess = False
         self.exec_multithread = False

@@ -21,7 +21,7 @@ from datajudge.utils.commons import LIBRARY_PANDAS_PROFILING
 from datajudge.utils.io_utils import write_bytesio
 
 if typing.TYPE_CHECKING:
-    from datajudge.metadata import DataResource
+    from datajudge.metadata.data_resource import DataResource
     from datajudge.run.plugin.base_plugin import Result
 
 
@@ -41,7 +41,7 @@ class ProfilePluginPandasProfiling(Profiling):
     def __init__(self) -> None:
         super().__init__()
         self.resource = None
-        self.exec_args = None
+        self.df = None
         self.exec_multiprocess = True
 
     def setup(self,

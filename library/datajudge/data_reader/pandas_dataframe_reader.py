@@ -43,7 +43,8 @@ class PandasDataFrameReader(DataReader):
 
         raise StoreError("Please select a valid format to read file from backend.")
 
-    def _infer_resource(self, path: str) -> dict:
+    @staticmethod
+    def _infer_resource(path: str) -> dict:
         """
         Infer resource with frictionless.
         """

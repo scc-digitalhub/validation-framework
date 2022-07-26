@@ -1,7 +1,7 @@
 """
 Implementation of ODBC artifact store.
 """
-
+# pylint: disable=import-error
 from typing import Any
 
 import pyarrow as pa
@@ -46,7 +46,6 @@ class ODBCArtifactStore(ArtifactStore):
 
         self.logger.info(f"Fetching resource {src} from store {self.name}")
 
-        # Return a presigned URL
         if fetch_mode == self.NATIVE:
             connection.close()
             raise NotImplementedError

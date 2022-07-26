@@ -23,6 +23,10 @@ class Validation(Plugin, metaclass=ABCMeta):
 
     _fn_report = "report_{}"
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.constraint = None
+
     def execute(self) -> dict:
         """
         Method that call specific execution.

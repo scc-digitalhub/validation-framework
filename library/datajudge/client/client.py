@@ -15,8 +15,8 @@ from datajudge.utils.commons import (DEFAULT_DIRECTORY, DEFAULT_EXPERIMENT,
                                      DEFAULT_PROJECT)
 
 if typing.TYPE_CHECKING:
-    from datajudge.metadata import DataResource
-    from datajudge.run import Run
+    from datajudge.metadata.data_resource import DataResource
+    from datajudge.run.run import Run
     from datajudge.utils.config import RunConfig, StoreConfig
 
 

@@ -23,7 +23,7 @@ from datajudge.utils.config import (ConstraintFrictionless,
 
 if typing.TYPE_CHECKING:
     from datajudge.data_reader.base_reader import DataReader
-    from datajudge.metadata import DataResource
+    from datajudge.metadata.data_resource import DataResource
     from datajudge.run.plugin.base_plugin import Result
     from datajudge.utils.config import Constraint
 
@@ -36,8 +36,8 @@ class ValidationPluginFrictionless(Validation):
     def __init__(self) -> None:
         super().__init__()
         self.resource = None
-        self.constraint = None
-        self.exec_args = None
+        self.data_path = None
+        self.schema = None
         self.exec_multiprocess = True
 
     def setup(self,

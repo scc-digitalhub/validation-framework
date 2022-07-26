@@ -22,7 +22,7 @@ class Inference(Plugin, metaclass=ABCMeta):
         Method that call specific execution.
         """
         self.logger.info(
-            f"Execute inference: plugin {self.lib_name} {self._id}, resource {self.resource.name}")
+            f"Execute inference: plugin {self.lib_name} {self._id}")
         lib_result = self.infer()
         self.logger.info(
             f"Render datajudge result: plugin {self.lib_name} {self._id}")

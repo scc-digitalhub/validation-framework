@@ -1,5 +1,5 @@
 """
-Custom logging module.
+Logger module.
 """
 import logging
 
@@ -10,7 +10,13 @@ LOGGER.setLevel(logging.INFO)
 # create console handler and set level to debug
 
 class LogFilter(logging.Filter):
+    """
+    Logs filter.
+    """
     def filter(self, record):
+        """
+        Filter for datajudge logs.
+        """
         return record.name == "datajudge"
 
 ch = logging.StreamHandler()

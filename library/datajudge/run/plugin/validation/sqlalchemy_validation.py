@@ -22,7 +22,7 @@ from datajudge.utils.exceptions import ValidationError
 from datajudge.utils.utils import flatten_list, listify
 
 if typing.TYPE_CHECKING:
-    from datajudge.metadata import DataResource
+    from datajudge.metadata.data_resource import DataResource
     from datajudge.run.plugin.base_plugin import Result
     from datajudge.utils.config import Constraint, ConstraintSqlAlchemy
 
@@ -34,9 +34,7 @@ class ValidationPluginSqlAlchemy(Validation):
 
     def __init__(self) -> None:
         super().__init__()
-        self.conn_str = None
-        self.constraint = None
-        self.exec_args = None
+        self.df = None
         self.exec_multiprocess = True
 
     def setup(self,
@@ -188,8 +186,8 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         res_in_db = [res for res in res_to_validate if res.store in st_names]
         return res_in_db
 
-    def _regroup_constraint_resources(self,
-                                      constraints: List[Constraint],
+    @staticmethod
+    def _regroup_constraint_resources(constraints: List[Constraint],
                                       resources: List[DataResource]
                                       ) -> list:
         """
@@ -197,11 +195,9 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         string for db access.
         """
         constraint_connection = []
-        res_stores = []
 
         for const in constraints:
-            for res in resources:
-                res_stores.append(res.store)
+            res_stores = [res.store for res in resources]
 
             store_num = len(set(res_stores))
             if store_num > 1:
@@ -213,7 +209,7 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
 
             constraint_connection.append({
                 "constraint": const,
-                "store": self._get_resource_store(res)
+                "store": res_stores[0]
             })
 
         return constraint_connection

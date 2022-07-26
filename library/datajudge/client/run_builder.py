@@ -6,8 +6,10 @@ from __future__ import annotations
 import typing
 from typing import List, Optional, Union
 
-from datajudge.metadata import DataResource, RunInfo
-from datajudge.run import Run, RunHandler
+from datajudge.metadata.data_resource import DataResource
+from datajudge.metadata.run_info import RunInfo
+from datajudge.run.run import Run
+from datajudge.run.run_handler import RunHandler
 from datajudge.utils.commons import DEFAULT_EXPERIMENT
 from datajudge.utils.config import RunConfig
 from datajudge.utils.exceptions import RunError

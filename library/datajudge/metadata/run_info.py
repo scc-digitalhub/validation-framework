@@ -7,10 +7,11 @@ from __future__ import annotations
 import typing
 from typing import List, Optional
 
+
 from datajudge.utils.utils import get_time
 
 if typing.TYPE_CHECKING:
-    from datajudge.metadata import DataResource
+    from datajudge.metadata.data_resource import DataResource
     from datajudge.utils.config import RunConfig
 
 

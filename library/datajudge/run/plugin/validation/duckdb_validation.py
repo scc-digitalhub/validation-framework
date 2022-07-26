@@ -1,6 +1,7 @@
 """
 DuckDB implementation of validation plugin.
 """
+# pylint: disable=import-error
 from __future__ import annotations
 
 import shutil
@@ -22,7 +23,7 @@ from datajudge.utils.commons import (DATAREADER_FILE, DEFAULT_DIRECTORY,
 from datajudge.utils.utils import flatten_list, get_uiid, listify
 
 if typing.TYPE_CHECKING:
-    from datajudge.metadata import DataResource
+    from datajudge.metadata.data_resource import DataResource
     from datajudge.run.plugin.base_plugin import Result
     from datajudge.utils.config import Constraint, ConstraintDuckDB
 
@@ -35,8 +36,6 @@ class ValidationPluginDuckDB(Validation):
     def __init__(self) -> None:
         super().__init__()
         self.db = None
-        self.constraint = None
-        self.exec_args = None
         self.exec_multiprocess = True
 
     def setup(self,

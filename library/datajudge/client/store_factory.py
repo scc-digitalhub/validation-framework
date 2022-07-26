@@ -1,7 +1,6 @@
 """
 StoreFactory module.
 """
-
 from pathlib import Path
 from typing import Union
 
@@ -12,13 +11,13 @@ from datajudge.store_artifact.odbc_artifact_store import ODBCArtifactStore
 from datajudge.store_artifact.sql_artifact_store import SQLArtifactStore
 from datajudge.store_metadata import (DigitalHubMetadataStore,
                                       DummyMetadataStore, LocalMetadataStore)
-from datajudge.utils.commons import (API_BASE, SCHEME_AZURE, SCHEME_DUMMY,
-                                     SCHEME_FTP, SCHEME_HTTP, SCHEME_LOCAL,
-                                     SCHEME_ODBC, SCHEME_S3, SCHEME_SQL,
-                                     STORE_AZURE, STORE_DUMMY, STORE_FTP,
-                                     STORE_HTTP, STORE_LOCAL, STORE_ODBC,
-                                     STORE_S3, STORE_SQL)
-from datajudge.utils.config import DUMMY_STORE, StoreConfig
+from datajudge.utils.commons import (API_BASE, GENERIC_DUMMY, SCHEME_AZURE,
+                                     SCHEME_DUMMY, SCHEME_FTP, SCHEME_HTTP,
+                                     SCHEME_LOCAL, SCHEME_ODBC, SCHEME_S3,
+                                     SCHEME_SQL, STORE_AZURE, STORE_DUMMY,
+                                     STORE_FTP, STORE_HTTP, STORE_LOCAL,
+                                     STORE_ODBC, STORE_S3, STORE_SQL)
+from datajudge.utils.config import StoreConfig
 from datajudge.utils.file_utils import get_absolute_path
 from datajudge.utils.uri_utils import (check_url, get_uri_netloc, get_uri_path,
                                        get_uri_scheme, rebuild_uri)
@@ -42,6 +41,10 @@ ART_STORES = {
     STORE_ODBC: ODBCArtifactStore,
     STORE_DUMMY: DummyArtifactStore,
 }
+
+DUMMY_STORE = StoreConfig(name=GENERIC_DUMMY,
+                          type=STORE_DUMMY,
+                          uri=f"{SCHEME_DUMMY}://")
 
 
 class StoreBuilder:
