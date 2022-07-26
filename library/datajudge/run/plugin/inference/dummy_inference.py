@@ -7,7 +7,7 @@ from __future__ import annotations
 import typing
 from typing import List
 
-from datajudge.metadata import DatajudgeSchema
+from datajudge.metadata.datajudge_reports import DatajudgeSchema
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.inference.inference_plugin import Inference
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator

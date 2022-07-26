@@ -16,7 +16,7 @@ from great_expectations.profile.user_configurable_profiler import \
     UserConfigurableProfiler
 
 from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
-from datajudge.metadata import DatajudgeProfile
+from datajudge.metadata.datajudge_reports import DatajudgeProfile
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.run.plugin.utils.great_expectation_utils import \

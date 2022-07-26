@@ -18,8 +18,10 @@ from datajudge.utils.utils import flatten_list, listify
 
 if typing.TYPE_CHECKING:
     from datajudge.client.store_handler import StoreHandler
-    from datajudge.metadata import (DatajudgeProfile, DatajudgeReport,
-                                    DatajudgeSchema, DataResource)
+    from datajudge.metadata.datajudge_reports import (DatajudgeProfile,
+                                                      DatajudgeReport,
+                                                      DatajudgeSchema)
+    from datajudge.metadata.data_resource import DataResource
     from datajudge.run.plugin.base_plugin import Plugin, PluginBuilder
     from datajudge.utils.config import Constraint, RunConfig
 

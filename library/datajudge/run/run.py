@@ -7,7 +7,8 @@ import typing
 from pathlib import Path
 from typing import Any, List, Optional
 
-from datajudge.metadata import BlobLog, EnvLog
+from datajudge.metadata.blob_log import BlobLog
+from datajudge.metadata.env_log import EnvLog
 from datajudge.utils.commons import (DATAJUDGE_VERSION, MT_ARTIFACT_METADATA,
                                      MT_DJ_PROFILE, MT_DJ_REPORT, MT_DJ_SCHEMA,
                                      MT_RUN_ENV, MT_RUN_METADATA, SCHEME_DUMMY,
@@ -18,8 +19,9 @@ from datajudge.utils.logger import LOGGER
 from datajudge.utils.utils import get_time
 
 if typing.TYPE_CHECKING:
-    from datajudge.metadata import (DatajudgeProfile, DatajudgeReport,
-                                    DatajudgeSchema)
+    from datajudge.metadata.datajudge_reports import (DatajudgeProfile,
+                                                      DatajudgeReport,
+                                                      DatajudgeSchema)
     from datajudge.metadata.run_info import RunInfo
     from datajudge.run.run_handler import RunHandler
     from datajudge.utils.config import Constraint

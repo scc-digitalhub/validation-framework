@@ -11,7 +11,7 @@ import frictionless
 from frictionless import Resource
 
 from datajudge.data_reader.file_reader import FileReader
-from datajudge.metadata import DatajudgeProfile
+from datajudge.metadata.datajudge_reports import DatajudgeProfile
 from datajudge.run.plugin.base_plugin import PluginBuilder
 from datajudge.run.plugin.profiling.profiling_plugin import Profiling
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator

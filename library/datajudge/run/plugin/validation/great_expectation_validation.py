@@ -15,7 +15,7 @@ from great_expectations.core.expectation_validation_result import \
     ExpectationValidationResult
 
 from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
-from datajudge.metadata import DatajudgeReport
+from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.run.plugin.utils.great_expectation_utils import \
     get_great_expectation_validator
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator

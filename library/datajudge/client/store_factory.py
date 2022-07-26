@@ -1,50 +1,27 @@
 """
 StoreFactory module.
 """
+from __future__ import annotations
+
+import typing
 from pathlib import Path
 from typing import Union
 
-from datajudge.store_artifact import (AzureArtifactStore, DummyArtifactStore,
-                                      FTPArtifactStore, HTTPArtifactStore,
-                                      LocalArtifactStore, S3ArtifactStore)
-from datajudge.store_artifact.odbc_artifact_store import ODBCArtifactStore
-from datajudge.store_artifact.sql_artifact_store import SQLArtifactStore
-from datajudge.store_metadata import (DigitalHubMetadataStore,
-                                      DummyMetadataStore, LocalMetadataStore)
+from datajudge.store_artifact.registry import ART_STORES
+from datajudge.store_metadata.registry import MD_STORES
 from datajudge.utils.commons import (API_BASE, GENERIC_DUMMY, SCHEME_AZURE,
                                      SCHEME_DUMMY, SCHEME_FTP, SCHEME_HTTP,
                                      SCHEME_LOCAL, SCHEME_ODBC, SCHEME_S3,
-                                     SCHEME_SQL, STORE_AZURE, STORE_DUMMY,
-                                     STORE_FTP, STORE_HTTP, STORE_LOCAL,
-                                     STORE_ODBC, STORE_S3, STORE_SQL)
+                                     SCHEME_SQL, STORE_DUMMY)
 from datajudge.utils.config import StoreConfig
 from datajudge.utils.file_utils import get_absolute_path
 from datajudge.utils.uri_utils import (check_url, get_uri_netloc, get_uri_path,
                                        get_uri_scheme, rebuild_uri)
 from datajudge.utils.utils import get_uiid
 
-# Registries
-
-MD_STORES = {
-    STORE_LOCAL: LocalMetadataStore,
-    STORE_HTTP: DigitalHubMetadataStore,
-    STORE_DUMMY: DummyMetadataStore,
-}
-
-ART_STORES = {
-    STORE_LOCAL: LocalArtifactStore,
-    STORE_HTTP: HTTPArtifactStore,
-    STORE_S3: S3ArtifactStore,
-    STORE_AZURE: AzureArtifactStore,
-    STORE_FTP: FTPArtifactStore,
-    STORE_SQL: SQLArtifactStore,
-    STORE_ODBC: ODBCArtifactStore,
-    STORE_DUMMY: DummyArtifactStore,
-}
-
-DUMMY_STORE = StoreConfig(name=GENERIC_DUMMY,
-                          type=STORE_DUMMY,
-                          uri=f"{SCHEME_DUMMY}://")
+if typing.TYPE_CHECKING:
+    from datajudge.store_artifact.artifact_store import ArtifactStore
+    from datajudge.store_metadata.metadata_store import MetadataStore
 
 
 class StoreBuilder:
@@ -69,7 +46,8 @@ class StoreBuilder:
             return self.build_metadata_store(cfg)
         return self.build_artifact_store(cfg)
 
-    def build_metadata_store(self, cfg: StoreConfig) -> dict:
+    def build_metadata_store(self,
+                             cfg: StoreConfig) -> MetadataStore:
         """
         Method to create a metadata stores.
         """
@@ -100,7 +78,8 @@ class StoreBuilder:
             return uri
         raise NotImplementedError
 
-    def build_artifact_store(self, cfg: StoreConfig) -> dict:
+    def build_artifact_store(self,
+                             cfg: StoreConfig) -> ArtifactStore:
         """
         Method to create a artifact stores.
         """
@@ -140,7 +119,9 @@ class StoreBuilder:
         config.
         """
         if config is None:
-            return DUMMY_STORE
+            return StoreConfig(name=GENERIC_DUMMY,
+                               type=STORE_DUMMY,
+                               uri=f"{SCHEME_DUMMY}://")
         if not isinstance(config, StoreConfig):
             try:
                 return StoreConfig(**config)

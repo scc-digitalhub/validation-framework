@@ -12,7 +12,7 @@ from frictionless import Report, Resource, Schema
 from frictionless.exception import FrictionlessException
 
 from datajudge.data_reader.file_reader import FileReader
-from datajudge.metadata import DatajudgeReport
+from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)

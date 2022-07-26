@@ -13,7 +13,7 @@ from typing import List
 import duckdb
 
 from datajudge.data_reader.file_reader import FileReader
-from datajudge.metadata import DatajudgeReport
+from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.run.plugin.utils.sql_checks import evaluate_validity
 from datajudge.run.plugin.validation.validation_plugin import (

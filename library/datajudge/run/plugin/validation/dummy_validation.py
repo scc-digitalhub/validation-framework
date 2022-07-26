@@ -7,7 +7,7 @@ from __future__ import annotations
 import typing
 from typing import List
 
-from datajudge.metadata import DatajudgeReport
+from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.run.plugin.utils.plugin_utils import exec_decorator
 from datajudge.run.plugin.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
