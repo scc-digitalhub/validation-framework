@@ -2,7 +2,7 @@
 Module for common terms definition.
 """
 # Datajudge version
-DATAJUDGE_VERSION = "0.2.0"
+DATAJUDGE_VERSION = ""
 
 
 # Libraries

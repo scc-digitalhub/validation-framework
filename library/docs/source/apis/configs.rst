@@ -20,7 +20,7 @@ Data Resource
 datajudge.DataResource
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: datajudge.data.data_resource::DataResource
+.. autoclass:: datajudge.metadata.data_resource::DataResource
 
 Run configuration
 -----------------
@@ -61,5 +61,4 @@ datajudge.ConstraintSqlAlchemy
 datajudge.ConstraintGreatExpectation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autopydantic_model:: datajudge.utils.config::ConstraintGreatExpectation
-
 

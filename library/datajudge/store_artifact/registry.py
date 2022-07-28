@@ -1,3 +1,6 @@
+"""
+ArtifactStore registry.
+"""
 from datajudge.store_artifact.azure_artifact_store import AzureArtifactStore
 from datajudge.store_artifact.dummy_artifact_store import DummyArtifactStore
 from datajudge.store_artifact.ftp_artifact_store import FTPArtifactStore

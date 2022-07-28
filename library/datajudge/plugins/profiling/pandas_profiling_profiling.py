@@ -14,15 +14,15 @@ from pandas_profiling import ProfileReport
 from datajudge.data_reader.base_reader import DataReader
 from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
 from datajudge.metadata.datajudge_reports import DatajudgeProfile
-from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.run.plugin.profiling.profiling_plugin import Profiling
-from datajudge.run.plugin.utils.plugin_utils import exec_decorator
+from datajudge.plugins.base_plugin import PluginBuilder
+from datajudge.plugins.profiling.profiling_plugin import Profiling
+from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.utils.commons import LIBRARY_PANDAS_PROFILING
 from datajudge.utils.io_utils import write_bytesio
 
 if typing.TYPE_CHECKING:
     from datajudge.metadata.data_resource import DataResource
-    from datajudge.run.plugin.base_plugin import Result
+    from datajudge.plugins.base_plugin import Result
 
 
 # Columns/fields to parse from profile

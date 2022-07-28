@@ -14,9 +14,9 @@ import duckdb
 
 from datajudge.data_reader.file_reader import FileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
-from datajudge.run.plugin.utils.plugin_utils import exec_decorator
-from datajudge.run.plugin.utils.sql_checks import evaluate_validity
-from datajudge.run.plugin.validation.validation_plugin import (
+from datajudge.plugins.utils.plugin_utils import exec_decorator
+from datajudge.plugins.utils.sql_checks import evaluate_validity
+from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import (DATAREADER_FILE, DEFAULT_DIRECTORY,
                                      LIBRARY_DUCKDB)
@@ -24,7 +24,7 @@ from datajudge.utils.utils import flatten_list, get_uiid, listify
 
 if typing.TYPE_CHECKING:
     from datajudge.metadata.data_resource import DataResource
-    from datajudge.run.plugin.base_plugin import Result
+    from datajudge.plugins.base_plugin import Result
     from datajudge.utils.config import Constraint, ConstraintDuckDB
 
 
@@ -84,6 +84,8 @@ class ValidationPluginDuckDB(Validation):
         if exec_err is None:
             valid = result.artifact.get("valid")
             errors = result.artifact.get("errors")
+            if errors is not None:
+                errors = [{"sql-check-error": 1}]
         else:
             self.logger.error(
                 f"Execution error {str(exec_err)} for plugin {self._id}")

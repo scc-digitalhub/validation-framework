@@ -1,3 +1,6 @@
+"""
+MetadataStore registry.
+"""
 from datajudge.store_metadata.digitalhub_metadata_store import \
     DigitalHubMetadataStore
 from datajudge.store_metadata.dummy_metadata_store import DummyMetadataStore

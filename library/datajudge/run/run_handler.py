@@ -8,7 +8,7 @@ import typing
 from typing import Any, List
 
 from datajudge.data_reader.file_reader import FileReader
-from datajudge.run.plugin.plugin_factory import builder_factory
+from datajudge.plugins.plugin_factory import builder_factory
 from datajudge.utils.commons import (DATAREADER_FILE, OPERATION_INFERENCE,
                                      OPERATION_PROFILING, OPERATION_VALIDATION,
                                      RESULT_DATAJUDGE, RESULT_LIBRARY,
@@ -22,7 +22,7 @@ if typing.TYPE_CHECKING:
                                                       DatajudgeReport,
                                                       DatajudgeSchema)
     from datajudge.metadata.data_resource import DataResource
-    from datajudge.run.plugin.base_plugin import Plugin, PluginBuilder
+    from datajudge.plugins.base_plugin import Plugin, PluginBuilder
     from datajudge.utils.config import Constraint, RunConfig
 
 

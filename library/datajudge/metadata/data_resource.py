@@ -25,6 +25,11 @@ class DataResource:
     description : Optional[str], optional
         A description of the resource, by default None
 
+    Methods
+    -------
+    to_dict :
+        Return a dictionary version of the object.
+
     """
 
     def __init__(self,

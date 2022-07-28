@@ -5,6 +5,7 @@ Frictionless implementation of validation plugin.
 from __future__ import annotations
 
 import typing
+from collections import Counter
 from typing import List, Union
 
 import frictionless
@@ -13,8 +14,8 @@ from frictionless.exception import FrictionlessException
 
 from datajudge.data_reader.file_reader import FileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
-from datajudge.run.plugin.utils.plugin_utils import exec_decorator
-from datajudge.run.plugin.validation.validation_plugin import (
+from datajudge.plugins.utils.plugin_utils import exec_decorator
+from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import (CONSTRAINT_FRICTIONLESS_SCHEMA,
                                      LIBRARY_FRICTIONLESS)
@@ -24,7 +25,7 @@ from datajudge.utils.config import (ConstraintFrictionless,
 if typing.TYPE_CHECKING:
     from datajudge.data_reader.base_reader import DataReader
     from datajudge.metadata.data_resource import DataResource
-    from datajudge.run.plugin.base_plugin import Result
+    from datajudge.plugins.base_plugin import Result
     from datajudge.utils.config import Constraint
 
 
@@ -120,9 +121,11 @@ class ValidationPluginFrictionless(Validation):
             report = result.artifact
             duration = report.get("time")
             valid = report.get("valid")
-            spec = ["fieldName", "rowNumber", "code", "note", "description"]
+            spec = ["code"]#"fieldName", "rowNumber", "code", "note", "description"]
             flat_report = report.flatten(spec=spec)
             errors = [dict(zip(spec, err)) for err in flat_report]
+            c = Counter(k["code"] for k in errors)
+            errors = list([{k: v} for k,v  in c.items()])
         else:
             self.logger.error(
                 f"Execution error {str(exec_err)} for plugin {self._id}")

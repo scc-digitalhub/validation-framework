@@ -1,24 +1,27 @@
-from datajudge.run.plugin.inference.dummy_inference import \
+"""
+PluginBuilder registry.
+"""
+from datajudge.plugins.inference.dummy_inference import \
     InferenceBuilderDummy
-from datajudge.run.plugin.inference.frictionless_inference import \
+from datajudge.plugins.inference.frictionless_inference import \
     InferenceBuilderFrictionless
-from datajudge.run.plugin.profiling.dummy_profiling import \
+from datajudge.plugins.profiling.dummy_profiling import \
     ProfileBuilderDummy
-from datajudge.run.plugin.profiling.frictionless_profiling import \
+from datajudge.plugins.profiling.frictionless_profiling import \
     ProfileBuilderFrictionless
-from datajudge.run.plugin.profiling.great_expectation_profiling import \
+from datajudge.plugins.profiling.great_expectation_profiling import \
     ProfileBuilderGreatExpectation
-from datajudge.run.plugin.profiling.pandas_profiling_profiling import \
+from datajudge.plugins.profiling.pandas_profiling_profiling import \
     ProfileBuilderPandasProfiling
-from datajudge.run.plugin.validation.duckdb_validation import \
+from datajudge.plugins.validation.duckdb_validation import \
     ValidationBuilderDuckDB
-from datajudge.run.plugin.validation.dummy_validation import \
+from datajudge.plugins.validation.dummy_validation import \
     ValidationBuilderDummy
-from datajudge.run.plugin.validation.frictionless_validation import \
+from datajudge.plugins.validation.frictionless_validation import \
     ValidationBuilderFrictionless
-from datajudge.run.plugin.validation.great_expectation_validation import \
+from datajudge.plugins.validation.great_expectation_validation import \
     ValidationBuilderGreatExpectation
-from datajudge.run.plugin.validation.sqlalchemy_validation import \
+from datajudge.plugins.validation.sqlalchemy_validation import \
     ValidationBuilderSqlAlchemy
 from datajudge.utils.commons import (LIBRARY_DUCKDB, LIBRARY_DUMMY,
                                      LIBRARY_FRICTIONLESS,

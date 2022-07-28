@@ -1,30 +1,32 @@
 """
-Frictionless implementation of inference plugin.
+Frictionless implementation of profiling plugin.
 """
+
 from __future__ import annotations
 
 import typing
 from typing import List
 
 import frictionless
-from frictionless.schema import Schema
+from frictionless import Resource
 
 from datajudge.data_reader.file_reader import FileReader
-from datajudge.metadata.datajudge_reports import DatajudgeSchema
-from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.run.plugin.inference.inference_plugin import Inference
-from datajudge.run.plugin.utils.plugin_utils import exec_decorator
+from datajudge.metadata.datajudge_reports import DatajudgeProfile
+from datajudge.plugins.base_plugin import PluginBuilder
+from datajudge.plugins.profiling.profiling_plugin import Profiling
+from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.utils.commons import LIBRARY_FRICTIONLESS
+from datajudge.utils.io_utils import write_bytesio
 
 if typing.TYPE_CHECKING:
     from datajudge.data_reader.base_reader import DataReader
     from datajudge.metadata.data_resource import DataResource
-    from datajudge.run.plugin.base_plugin import Result
+    from datajudge.plugins.base_plugin import Result
 
 
-class InferencePluginFrictionless(Inference):
+class ProfilePluginFrictionless(Profiling):
     """
-    Frictionless implementation of inference plugin.
+    Frictionless implementation of profiling plugin.
     """
 
     def __init__(self) -> None:
@@ -45,57 +47,51 @@ class InferencePluginFrictionless(Inference):
         self.data_path = data_reader.fetch_resource(self.resource.path)
 
     @exec_decorator
-    def infer(self) -> Schema:
+    def profile(self) -> Resource:
         """
-        Method that call infer on a resource and return an
-        inferred schema.
+        Profile
         """
-        schema = Schema.describe(path=self.data_path,
-                                 name=self.resource.name,
-                                 **self.exec_args)
-        return Schema(schema.to_dict())
+        profile = Resource().describe(self.data_path,
+                                      expand=True,
+                                      stats=True,
+                                      **self.exec_args)
+        return Resource(profile.to_dict())
 
     @exec_decorator
-    def render_datajudge(self, result: Result) -> DatajudgeSchema:
+    def render_datajudge(self, result: Result) -> DatajudgeProfile:
         """
-        Return a DatajudgeSchema.
+        Return a DatajudgeProfile.
         """
-
         exec_err = result.errors
         duration = result.duration
 
         if exec_err is None:
-            field_infer = result.artifact.get("fields", [])
-            dj_schema_fields = []
-            if field_infer:
-                for field in field_infer:
-                    dj_schema_fields.append({
-                        "name": field.get("name", ""),
-                        "type": field.get("type", "")
-                    })
-            else:
-                dj_schema_fields = [{"name": None, "type": None}]
+            rep = result.artifact.to_dict()
+            fields = rep.get("schema", {}).get("fields")
+            stats = {k: v for k, v in rep.items() if k != "schema"}
         else:
             self.logger.error(
                 f"Execution error {str(exec_err)} for plugin {self._id}")
-            dj_schema_fields = None
+            fields = None
+            stats = None
 
-        return DatajudgeSchema(self.get_lib_name(),
-                               self.get_lib_version(),
-                               duration,
-                               dj_schema_fields)
+        return DatajudgeProfile(self.get_lib_name(),
+                                self.get_lib_version(),
+                                duration,
+                                stats,
+                                fields)
 
     @exec_decorator
     def render_artifact(self, result: Result) -> List[tuple]:
         """
-        Return a frictionless schema to be persisted as artifact.
+        Return a rendered profile ready to be persisted as artifact.
         """
         artifacts = []
         if result.artifact is None:
             _object = {"errors": result.errors}
         else:
-            _object = dict(result.artifact)
-        filename = self._fn_schema.format(f"{LIBRARY_FRICTIONLESS}.json")
+            _object = write_bytesio(result.artifact.to_json())
+        filename = self._fn_profile.format(f"{LIBRARY_FRICTIONLESS}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
@@ -114,14 +110,14 @@ class InferencePluginFrictionless(Inference):
         return frictionless.__version__
 
 
-class InferenceBuilderFrictionless(PluginBuilder):
+class ProfileBuilderFrictionless(PluginBuilder):
     """
-    Inference plugin builder.
+    Profile plugin builder.
     """
 
     def build(self,
               resources: List[DataResource]
-              ) -> List[InferencePluginFrictionless]:
+              ) -> List[ProfilePluginFrictionless]:
         """
         Build a plugin.
         """
@@ -130,7 +126,7 @@ class InferenceBuilderFrictionless(PluginBuilder):
             resource = self._get_resource_deepcopy(res)
             store = self._get_resource_store(resource)
             data_reader = FileReader(store, self.fetch_mode, self.reader_args)
-            plugin = InferencePluginFrictionless()
+            plugin = ProfilePluginFrictionless()
             plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)
         return plugins

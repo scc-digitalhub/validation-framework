@@ -7,4 +7,4 @@ Utilities
 datajudge.frictionless_schema_converter
 ---------------------------------------
 
-.. autofunction:: datajudge.utils.utils.frictionless_schema_converter
+.. autofunction:: datajudge.plugins.utils.frictionless_utils.frictionless_schema_converter

@@ -6,7 +6,7 @@ from __future__ import annotations
 import typing
 from typing import List
 
-from datajudge.run.plugin.registry import REGISTRY
+from datajudge.plugins.registry import REGISTRY
 
 if typing.TYPE_CHECKING:
     from datajudge.utils.config import ExecConfig

@@ -3,7 +3,7 @@ Wrapper library for the data validation process.
 """
 from datajudge.client.client import Client
 from datajudge.metadata.data_resource import DataResource
-from datajudge.run.plugin.utils.frictionless_utils import \
+from datajudge.plugins.utils.frictionless_utils import \
     frictionless_schema_converter
 from datajudge.utils.config import (ConstraintDuckDB, ConstraintFrictionless,
                                     ConstraintFullFrictionless,

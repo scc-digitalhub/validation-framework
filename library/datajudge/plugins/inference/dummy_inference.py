@@ -1,5 +1,5 @@
 """
-Dummy implementation of profiling plugin.
+Dummy implementation of inference plugin.
 """
 # pylint: disable=unused-argument
 from __future__ import annotations
@@ -7,20 +7,20 @@ from __future__ import annotations
 import typing
 from typing import List
 
-from datajudge.metadata.datajudge_reports import DatajudgeProfile
-from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.run.plugin.profiling.profiling_plugin import Profiling
-from datajudge.run.plugin.utils.plugin_utils import exec_decorator
+from datajudge.metadata.datajudge_reports import DatajudgeSchema
+from datajudge.plugins.base_plugin import PluginBuilder
+from datajudge.plugins.inference.inference_plugin import Inference
+from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.utils.commons import GENERIC_DUMMY, LIBRARY_DUMMY
 
 if typing.TYPE_CHECKING:
     from datajudge.metadata.data_resource import DataResource
-    from datajudge.run.plugin.base_plugin import Result
+    from datajudge.plugins.base_plugin import Result
 
 
-class ProfilePluginDummy(Profiling):
+class InferencePluginDummy(Inference):
     """
-    Dummy implementation of profiling plugin.
+    Dummy implementation of inference plugin.
     """
 
     def __init__(self) -> None:
@@ -37,22 +37,21 @@ class ProfilePluginDummy(Profiling):
         self.exec_args = exec_args
 
     @exec_decorator
-    def profile(self) -> dict:
+    def infer(self) -> dict:
         """
         Do nothing.
         """
         return {}
 
     @exec_decorator
-    def render_datajudge(self, result: Result) -> DatajudgeProfile:
+    def render_datajudge(self, result: Result) -> DatajudgeSchema:
         """
-        Return a DatajudgeProfile.
+        Return a DatajudgeSchema.
         """
-        return DatajudgeProfile(self.get_lib_name(),
-                                self.get_lib_version(),
-                                None,
-                                None,
-                                None)
+        return DatajudgeSchema(self.get_lib_name(),
+                               self.get_lib_version(),
+                               None,
+                               None)
 
     @exec_decorator
     def render_artifact(self, result: Result) -> List[tuple]:
@@ -64,7 +63,7 @@ class ProfilePluginDummy(Profiling):
             _object = {"errors": result.errors}
         else:
             _object = dict(result.artifact)
-        filename = self._fn_profile.format(f"{GENERIC_DUMMY}.json")
+        filename = self._fn_schema.format(f"{GENERIC_DUMMY}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
@@ -83,18 +82,18 @@ class ProfilePluginDummy(Profiling):
         return LIBRARY_DUMMY
 
 
-class ProfileBuilderDummy(PluginBuilder):
+class InferenceBuilderDummy(PluginBuilder):
     """
-    Profile plugin builder.
+    Inference plugin builder.
     """
     def build(self,
               resources: List[DataResource]
-              ) -> List[ProfilePluginDummy]:
+              ) -> List[InferencePluginDummy]:
         """
         Build a plugin.
         """
         plugins = []
-        plugin = ProfilePluginDummy()
+        plugin = InferencePluginDummy()
         plugin.setup(None, self.exec_args)
         plugins.append(plugin)
         return plugins

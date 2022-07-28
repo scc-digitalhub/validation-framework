@@ -8,15 +8,15 @@ import typing
 from typing import List
 
 from datajudge.metadata.datajudge_reports import DatajudgeReport
-from datajudge.run.plugin.utils.plugin_utils import exec_decorator
-from datajudge.run.plugin.validation.validation_plugin import (
+from datajudge.plugins.utils.plugin_utils import exec_decorator
+from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import GENERIC_DUMMY, LIBRARY_DUMMY
 from datajudge.utils.config import Constraint
 
 if typing.TYPE_CHECKING:
     from datajudge.metadata.data_resource import DataResource
-    from datajudge.run.plugin.base_plugin import Result
+    from datajudge.plugins.base_plugin import Result
 
 
 class ValidationPluginDummy(Validation):

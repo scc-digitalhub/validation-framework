@@ -4,7 +4,7 @@ SQL checks module.
 from __future__ import annotations
 
 import re
-from typing import Any, Tuple
+from typing import Any, Tuple, Union
 
 from datajudge.utils.commons import (CONSTRAINT_SQL_CHECK_ROWS,
                                      CONSTRAINT_SQL_CHECK_VALUE,
@@ -94,7 +94,8 @@ def evaluate_exact(result: Any, value: Any) -> tuple:
     return False, f"Expected value {value}, instead got {result}."
 
 
-def evaluate_min(result: Any, value: Any) -> tuple:
+def evaluate_min(result: Union[int, float],
+                 value: Union[int, float]) -> tuple:
     """
     Check if a value is bigger than a specific value.
     """
@@ -103,7 +104,8 @@ def evaluate_min(result: Any, value: Any) -> tuple:
     return False, f"Minimum value {value}, instead got {result}."
 
 
-def evaluate_max(result: Any, value: Any) -> tuple:
+def evaluate_max(result: Union[int, float],
+                 value: Union[int, float]) -> tuple:
     """
     Check if a value is lesser than a specific value.
     """
@@ -112,7 +114,7 @@ def evaluate_max(result: Any, value: Any) -> tuple:
     return False, f"Maximum value {value}, instead got {result}."
 
 
-def evaluate_range(result: Any, _range: Any) -> tuple:
+def evaluate_range(result: Any, _range: str) -> tuple:
     """
     Check if a value is in desired range.
     """

@@ -8,7 +8,7 @@ import typing
 from abc import ABCMeta, abstractmethod
 from typing import Any, List
 
-from datajudge.run.plugin.base_plugin import Plugin, PluginBuilder
+from datajudge.plugins.base_plugin import Plugin, PluginBuilder
 from datajudge.utils.commons import (RESULT_DATAJUDGE, RESULT_LIBRARY,
                                      RESULT_RENDERED, RESULT_WRAPPED)
 

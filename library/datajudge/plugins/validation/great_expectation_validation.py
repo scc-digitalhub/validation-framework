@@ -16,10 +16,10 @@ from great_expectations.core.expectation_validation_result import \
 
 from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
-from datajudge.run.plugin.utils.great_expectation_utils import \
+from datajudge.plugins.utils.great_expectation_utils import \
     get_great_expectation_validator
-from datajudge.run.plugin.utils.plugin_utils import exec_decorator
-from datajudge.run.plugin.validation.validation_plugin import (
+from datajudge.plugins.utils.plugin_utils import exec_decorator
+from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATION
 from datajudge.utils.file_utils import clean_all
@@ -28,7 +28,7 @@ from datajudge.utils.utils import listify
 if typing.TYPE_CHECKING:
     from datajudge.data_reader.base_reader import DataReader
     from datajudge.metadata.data_resource import DataResource
-    from datajudge.run.plugin.base_plugin import Result
+    from datajudge.plugins.base_plugin import Result
     from datajudge.utils.config import Constraint, ConstraintGreatExpectation
 
 
@@ -81,8 +81,16 @@ class ValidationPluginGreatExpectation(Validation):
         if exec_err is None:
             res = deepcopy(result.artifact).to_json_dict()
             valid = res.get("success")
+            observed = res.get("result", {})
             if not valid:
-                errors = listify(res.get("result"))
+
+                observed_values = observed.get("observed_value")
+                unexpected_count = observed.get("unexpected_count")
+
+                if observed_values is not None:
+                    errors = [{"observed-value-error": 1}]
+                elif unexpected_count is not None:
+                    errors = [{"unexpected-count-error": unexpected_count}]
             else:
                 errors = None
         else:
@@ -165,4 +173,7 @@ class ValidationBuilderGreatExpectation(ValidationPluginBuilder):
         Destory plugins.
         """
         path = Path(os.getcwd(), "ge_ctxt")
-        clean_all(path)
+        try:
+            clean_all(path)
+        except:
+            pass

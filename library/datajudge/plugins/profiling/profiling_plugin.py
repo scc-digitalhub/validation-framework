@@ -1,29 +1,29 @@
 """
-Inference plugin abstract class module.
+Profiling plugin abstract class module.
 """
 
 from abc import ABCMeta, abstractmethod
 from typing import Any
 
-from datajudge.run.plugin.base_plugin import Plugin
-from datajudge.utils.commons import (RESULT_DATAJUDGE, RESULT_LIBRARY,
-                                     RESULT_RENDERED, RESULT_WRAPPED)
+from datajudge.plugins.base_plugin import Plugin
+from datajudge.utils.commons import (RESULT_WRAPPED, RESULT_DATAJUDGE,
+                                     RESULT_RENDERED, RESULT_LIBRARY)
 
 
-class Inference(Plugin, metaclass=ABCMeta):
+class Profiling(Plugin, metaclass=ABCMeta):
     """
-    Run plugin that executes inference over a Resource.
+    Run plugin that executes profiling over a Resource.
     """
 
-    _fn_schema = "schema_{}"
+    _fn_profile = "profile_{}"
 
     def execute(self) -> dict:
         """
         Method that call specific execution.
         """
         self.logger.info(
-            f"Execute inference: plugin {self.lib_name} {self._id}")
-        lib_result = self.infer()
+            f"Execute profiling: plugin {self.lib_name} {self._id}")
+        lib_result = self.profile()
         self.logger.info(
             f"Render datajudge result: plugin {self.lib_name} {self._id}")
         dj_result = self.render_datajudge(lib_result)
@@ -37,7 +37,7 @@ class Inference(Plugin, metaclass=ABCMeta):
         }
 
     @abstractmethod
-    def infer(self) -> Any:
+    def profile(self) -> Any:
         """
-        Inference method for schema.
+        Generate a data profile.
         """

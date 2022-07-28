@@ -12,9 +12,9 @@ import sqlalchemy
 
 from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
-from datajudge.run.plugin.utils.plugin_utils import exec_decorator
-from datajudge.run.plugin.utils.sql_checks import evaluate_validity
-from datajudge.run.plugin.validation.validation_plugin import (
+from datajudge.plugins.utils.plugin_utils import exec_decorator
+from datajudge.plugins.utils.sql_checks import evaluate_validity
+from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.store_artifact.sql_artifact_store import SQLArtifactStore
 from datajudge.utils.commons import DATAREADER_NATIVE, LIBRARY_SQLALCHEMY
@@ -23,7 +23,7 @@ from datajudge.utils.utils import flatten_list, listify
 
 if typing.TYPE_CHECKING:
     from datajudge.metadata.data_resource import DataResource
-    from datajudge.run.plugin.base_plugin import Result
+    from datajudge.plugins.base_plugin import Result
     from datajudge.utils.config import Constraint, ConstraintSqlAlchemy
 
 
@@ -79,6 +79,8 @@ class ValidationPluginSqlAlchemy(Validation):
         if exec_err is None:
             valid = result.artifact.get("valid")
             errors = result.artifact.get("errors")
+            if errors is not None:
+                errors = [{"sql-check-error": 1}]
         else:
             self.logger.error(
                 f"Execution error {str(exec_err)} for plugin {self._id}")
@@ -186,8 +188,8 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         res_in_db = [res for res in res_to_validate if res.store in st_names]
         return res_in_db
 
-    @staticmethod
-    def _regroup_constraint_resources(constraints: List[Constraint],
+    def _regroup_constraint_resources(self,
+                                      constraints: List[Constraint],
                                       resources: List[DataResource]
                                       ) -> list:
         """
@@ -209,7 +211,7 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
 
             constraint_connection.append({
                 "constraint": const,
-                "store": res_stores[0]
+                "store": [s for s in self.stores if s.name == res_stores[0]][0]
             })
 
         return constraint_connection

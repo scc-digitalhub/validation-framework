@@ -22,7 +22,7 @@ if typing.TYPE_CHECKING:
     from datajudge.metadata.datajudge_reports import (DatajudgeProfile,
                                                       DatajudgeReport,
                                                       DatajudgeSchema)
-    from datajudge.metadata.run_info import RunInfo
+    from datajudge.run.run_info import RunInfo
     from datajudge.run.run_handler import RunHandler
     from datajudge.utils.config import Constraint
 

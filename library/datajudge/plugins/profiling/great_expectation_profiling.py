@@ -17,18 +17,18 @@ from great_expectations.profile.user_configurable_profiler import \
 
 from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
 from datajudge.metadata.datajudge_reports import DatajudgeProfile
-from datajudge.run.plugin.base_plugin import PluginBuilder
-from datajudge.run.plugin.profiling.profiling_plugin import Profiling
-from datajudge.run.plugin.utils.great_expectation_utils import \
+from datajudge.plugins.base_plugin import PluginBuilder
+from datajudge.plugins.profiling.profiling_plugin import Profiling
+from datajudge.plugins.utils.great_expectation_utils import \
     get_great_expectation_validator
-from datajudge.run.plugin.utils.plugin_utils import exec_decorator
+from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATION
 from datajudge.utils.file_utils import clean_all
 
 if typing.TYPE_CHECKING:
     from datajudge.data_reader.base_reader import DataReader
     from datajudge.metadata.data_resource import DataResource
-    from datajudge.run.plugin.base_plugin import Result
+    from datajudge.plugins.base_plugin import Result
 
 
 class ProfilePluginGreatExpectation(Profiling):
