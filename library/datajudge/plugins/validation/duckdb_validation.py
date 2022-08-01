@@ -160,7 +160,8 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         self.tmp_db = Path(DEFAULT_DIRECTORY, get_uiid(), "tmp.duckdb")
         self.tmp_db.parent.mkdir(parents=True, exist_ok=True)
-        self.con = duckdb.connect(database=self.tmp_db.as_posix(), read_only=False)
+        self.con = duckdb.connect(
+            database=self.tmp_db.as_posix(), read_only=False)
 
     @staticmethod
     def _filter_resources(resources: List[DataResource],

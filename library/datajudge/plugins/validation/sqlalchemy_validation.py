@@ -146,7 +146,8 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         for pack in grouped_constraints:
             store = pack["store"]
             constraint = pack["constraint"]
-            data_reader = PandasDataFrameReader(store, self.fetch_mode, self.reader_args)
+            data_reader = PandasDataFrameReader(
+                store, self.fetch_mode, self.reader_args)
             plugin = ValidationPluginSqlAlchemy()
             plugin.setup(data_reader, constraint, self.exec_args)
             plugins.append(plugin)

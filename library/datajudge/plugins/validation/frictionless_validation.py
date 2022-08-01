@@ -121,11 +121,12 @@ class ValidationPluginFrictionless(Validation):
             report = result.artifact
             duration = report.get("time")
             valid = report.get("valid")
-            spec = ["code"]#"fieldName", "rowNumber", "code", "note", "description"]
+            # "fieldName", "rowNumber", "code", "note", "description"]
+            spec = ["code"]
             flat_report = report.flatten(spec=spec)
             errors = [dict(zip(spec, err)) for err in flat_report]
             c = Counter(k["code"] for k in errors)
-            errors = list([{k: v} for k,v  in c.items()])
+            errors = list([{k: v} for k, v in c.items()])
         else:
             self.logger.error(
                 f"Execution error {str(exec_err)} for plugin {self._id}")
@@ -187,7 +188,8 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
             for const in f_constraints:
                 if resource.name in const.resources:
                     store = self._get_resource_store(resource)
-                    data_reader = FileReader(store, self.fetch_mode, self.reader_args)
+                    data_reader = FileReader(
+                        store, self.fetch_mode, self.reader_args)
                     plugin = ValidationPluginFrictionless()
                     plugin.setup(data_reader, resource, const, self.exec_args)
                     plugins.append(plugin)

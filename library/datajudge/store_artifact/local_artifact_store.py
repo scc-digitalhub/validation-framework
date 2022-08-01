@@ -18,6 +18,7 @@ class LocalArtifactStore(ArtifactStore):
     Allows the client to interact with local filesystem.
 
     """
+
     def persist_artifact(self,
                          src: Any,
                          dst: str,

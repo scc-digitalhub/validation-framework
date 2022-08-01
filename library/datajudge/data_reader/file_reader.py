@@ -30,4 +30,5 @@ class FileReader(DataReader):
         if self.fetch_mode == self.BUFFER:
             return self.store.fetch_buffer(src)
 
-        raise StoreError("Please select a valid format to read file from backend.")
+        raise StoreError(
+            "Please select a valid format to read file from backend.")

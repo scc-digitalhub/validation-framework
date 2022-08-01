@@ -3,6 +3,7 @@ BlobLog class.
 It represents the metadata logged into the backend.
 """
 
+
 class BlobLog:
     """
     Object logged to backend.

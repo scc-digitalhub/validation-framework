@@ -133,7 +133,8 @@ class ProfileBuilderGreatExpectation(PluginBuilder):
         for res in resources:
             resource = self._get_resource_deepcopy(res)
             store = self._get_resource_store(resource)
-            data_reader = PandasDataFrameReader(store, self.fetch_mode, self.reader_args)
+            data_reader = PandasDataFrameReader(
+                store, self.fetch_mode, self.reader_args)
             plugin = ProfilePluginGreatExpectation()
             plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)

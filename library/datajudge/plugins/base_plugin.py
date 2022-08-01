@@ -125,7 +125,7 @@ class PluginBuilder:
         Get the resource store.
         """
         try:
-            return  [store for store in self.stores if store.name == resource.store][0]
+            return [store for store in self.stores if store.name == resource.store][0]
         except IndexError:
             raise StoreError(f"No store registered with name '{resource.store}'. " +
                              f"Impossible to fetch resource '{resource.name}'")

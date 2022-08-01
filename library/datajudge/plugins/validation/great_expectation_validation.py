@@ -23,7 +23,6 @@ from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATION
 from datajudge.utils.file_utils import clean_all
-from datajudge.utils.utils import listify
 
 if typing.TYPE_CHECKING:
     from datajudge.data_reader.base_reader import DataReader
@@ -154,7 +153,8 @@ class ValidationBuilderGreatExpectation(ValidationPluginBuilder):
             for const in f_constraints:
                 if resource.name in const.resources:
                     store = self._get_resource_store(resource)
-                    data_reader = PandasDataFrameReader(store, self.fetch_mode, self.reader_args)
+                    data_reader = PandasDataFrameReader(
+                        store, self.fetch_mode, self.reader_args)
                     plugin = ValidationPluginGreatExpectation()
                     plugin.setup(data_reader, resource, const, self.exec_args)
                     plugins.append(plugin)

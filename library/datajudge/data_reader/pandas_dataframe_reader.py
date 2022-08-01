@@ -41,7 +41,8 @@ class PandasDataFrameReader(DataReader):
             buffer = self.store.fetch_buffer(src)
             return self._read_df_from_buffer(buffer)
 
-        raise StoreError("Please select a valid format to read file from backend.")
+        raise StoreError(
+            "Please select a valid format to read file from backend.")
 
     @staticmethod
     def _infer_resource(path: str) -> dict:

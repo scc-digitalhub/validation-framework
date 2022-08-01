@@ -1,14 +1,13 @@
 """
 Datajudge base report module.
 """
-from abc import ABCMeta
 from dataclasses import dataclass
 
 
 @dataclass
-class DatajudgeBaseReport(metaclass=ABCMeta):
+class DatajudgeBaseReport:
     """
-    Datajudge base report abstract class.
+    Datajudge base report class.
 
     Attributes
     ----------

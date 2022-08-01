@@ -113,18 +113,21 @@ class ProfilePluginPandasProfiling(Profiling):
 
         if result.artifact is None:
             _object = {"errors": result.errors}
-            filename = self._fn_profile.format(f"{LIBRARY_PANDAS_PROFILING}.json")
+            filename = self._fn_profile.format(
+                f"{LIBRARY_PANDAS_PROFILING}.json")
             artifacts.append(self.get_render_tuple(_object, filename))
         else:
             string_html = result.artifact.to_html()
             strio_html = write_bytesio(string_html)
-            html_filename = self._fn_profile.format(f"{LIBRARY_PANDAS_PROFILING}.html")
+            html_filename = self._fn_profile.format(
+                f"{LIBRARY_PANDAS_PROFILING}.html")
             artifacts.append(self.get_render_tuple(strio_html, html_filename))
 
             string_json = result.artifact.to_json()
             string_json = string_json.replace("NaN", "null")
             strio_json = write_bytesio(string_json)
-            json_filename = self._fn_profile.format(f"{LIBRARY_PANDAS_PROFILING}.json")
+            json_filename = self._fn_profile.format(
+                f"{LIBRARY_PANDAS_PROFILING}.json")
             artifacts.append(self.get_render_tuple(strio_json, json_filename))
 
         return artifacts
@@ -159,7 +162,8 @@ class ProfileBuilderPandasProfiling(PluginBuilder):
         for res in resources:
             resource = self._get_resource_deepcopy(res)
             store = self._get_resource_store(resource)
-            data_reader = PandasDataFrameReader(store, self.fetch_mode, self.reader_args)
+            data_reader = PandasDataFrameReader(
+                store, self.fetch_mode, self.reader_args)
             plugin = ProfilePluginPandasProfiling()
             plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)

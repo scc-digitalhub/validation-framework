@@ -13,6 +13,7 @@ class DummyArtifactStore(ArtifactStore):
     Allows the client to interact store methods.
 
     """
+
     def persist_artifact(self,
                          src: Any,
                          dst: str,

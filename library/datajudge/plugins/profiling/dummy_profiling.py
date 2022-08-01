@@ -87,6 +87,7 @@ class ProfileBuilderDummy(PluginBuilder):
     """
     Profile plugin builder.
     """
+
     def build(self,
               resources: List[DataResource]
               ) -> List[ProfilePluginDummy]:

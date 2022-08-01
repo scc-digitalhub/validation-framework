@@ -23,6 +23,7 @@ class SQLArtifactStore(ArtifactStore):
     Allows the client to interact with SQL based storages.
 
     """
+
     def persist_artifact(self,
                          src: Any,
                          dst: str,
@@ -51,7 +52,7 @@ class SQLArtifactStore(ArtifactStore):
 
         # Return a presigned URL
         if fetch_mode == self.NATIVE:
-            conn_str =  self.config.get("connection_string")
+            conn_str = self.config.get("connection_string")
             self._register_resource(f"{src}_{fetch_mode}", conn_str)
             engine.dispose()
             return conn_str

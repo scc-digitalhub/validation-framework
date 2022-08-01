@@ -21,6 +21,7 @@ class ODBCArtifactStore(ArtifactStore):
     Allows the client to interact with ODBC storages.
 
     """
+
     def persist_artifact(self,
                          src: Any,
                          dst: str,

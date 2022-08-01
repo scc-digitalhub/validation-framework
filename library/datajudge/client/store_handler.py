@@ -5,11 +5,10 @@ StoreHandler module.
 from __future__ import annotations
 
 import typing
-from typing import Any, List, Optional, Union
+from typing import List, Optional, Union
 
 from datajudge.client.store_factory import StoreBuilder
 from datajudge.utils.commons import DEFAULT_DIRECTORY, DEFAULT_PROJECT
-from datajudge.utils.config import StoreConfig
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.file_utils import clean_all
 from datajudge.utils.utils import listify
@@ -17,6 +16,7 @@ from datajudge.utils.utils import listify
 if typing.TYPE_CHECKING:
     from datajudge.store_artifact.artifact_store import ArtifactStore
     from datajudge.store_metadata.metadata_store import MetadataStore
+    from datajudge.utils.config import StoreConfig
 
 
 STORE_TYPE_ARTIFACT = "artifact_store"
@@ -31,9 +31,9 @@ class StoreRegistry:
 
     def __init__(self) -> None:
         self.registry = {}
-        self.setup()
+        self._setup()
 
-    def setup(self) -> None:
+    def _setup(self) -> None:
         """
         Setup basic registry.
         """
@@ -42,7 +42,8 @@ class StoreRegistry:
         self.registry[STORE_TYPE_METADATA] = None
 
     def register(self,
-                 new_store: dict,
+                 new_store: Union[ArtifactStore,
+                                  MetadataStore],
                  store_type: str) -> None:
         """
         Register a new store.
@@ -58,7 +59,10 @@ class StoreRegistry:
 
     def get_store(self,
                   store_type: str,
-                  store_name: Optional[str] = None) -> Any:
+                  store_name: Optional[str] = None
+                  ) -> Union[ArtifactStore,
+                             List[ArtifactStore],
+                             MetadataStore]:
         """
         Return a store from registry.
         """
@@ -75,7 +79,11 @@ class StoreRegistry:
 
         raise StoreError("Invalid store type.")
 
-    def get_all_stores(self, store_type: str) -> List[Any]:
+    def get_all_stores(self,
+                       store_type: str
+                       ) -> Union[ArtifactStore,
+                             List[ArtifactStore],
+                             MetadataStore]:
         """
         Return all stores by type.
         """
@@ -140,9 +148,9 @@ class StoreHandler:
         """
         Select default store in the store registry.
 
-        Raise exception if there are no store to choose from. If only one store is
-        provided, that one is choosed as default. If multiple stores are
-        provided, only one store MUST be configured with an isDefault flag.
+        If only one store is provided, that one is choosed as default.
+        If multiple stores are provided, only one store MUST be configured
+        with an isDefault flag.
 
         When you configure a client without artifact store configuration, the
         default store is a Dummy store. There is no option to update the
@@ -153,9 +161,6 @@ class StoreHandler:
         """
         stores = self.get_all_art_stores()
         default = None
-
-        if not stores:
-            raise StoreError("Configure at least one store.")
 
         if len(stores) == 1:
             default = stores[0]
@@ -194,7 +199,10 @@ class StoreHandler:
         """
         return self._store_registry.get_store(DEFAULT_STORE)
 
-    def get_all_art_stores(self) -> List[dict]:
+    def get_all_art_stores(self
+                           ) -> Union[ArtifactStore,
+                             List[ArtifactStore],
+                             MetadataStore]:
         """
         Get all artifact stores from registry.
         """

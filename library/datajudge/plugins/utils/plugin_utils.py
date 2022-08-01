@@ -15,6 +15,7 @@ class Result:
     """
     Simple class to aggregate result of plugin operation.
     """
+
     def __init__(self,
                  status: str = STATUS_INIT,
                  duration: float = None,
