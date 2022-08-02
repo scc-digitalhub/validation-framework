@@ -15,7 +15,7 @@ from great_expectations.core.expectation_suite import ExpectationSuite
 from great_expectations.profile.user_configurable_profiler import \
     UserConfigurableProfiler
 
-from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
+from datajudge.data_reader.pandas_dataframe_file_reader import PandasDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeProfile
 from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.profiling.profiling_plugin import Profiling
@@ -26,7 +26,6 @@ from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATION
 from datajudge.utils.file_utils import clean_all
 
 if typing.TYPE_CHECKING:
-    from datajudge.data_reader.base_reader import DataReader
     from datajudge.metadata.data_resource import DataResource
     from datajudge.plugins.base_plugin import Result
 
@@ -43,7 +42,7 @@ class ProfilePluginGreatExpectation(Profiling):
         self.exec_multiprocess = True
 
     def setup(self,
-              data_reader: DataReader,
+              data_reader: PandasDataFrameFileReader,
               resource: DataResource,
               exec_args: dict) -> None:
         """
@@ -51,7 +50,7 @@ class ProfilePluginGreatExpectation(Profiling):
         """
         self.resource = resource
         self.exec_args = exec_args
-        self.df = data_reader.fetch_resource(self.resource.path)
+        self.df = data_reader.fetch_data(self.resource.path)
 
     @exec_decorator
     def profile(self) -> dict:
@@ -133,8 +132,7 @@ class ProfileBuilderGreatExpectation(PluginBuilder):
         for res in resources:
             resource = self._get_resource_deepcopy(res)
             store = self._get_resource_store(resource)
-            data_reader = PandasDataFrameReader(
-                store, self.fetch_mode, self.reader_args)
+            data_reader = PandasDataFrameFileReader(store)
             plugin = ProfilePluginGreatExpectation()
             plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)

@@ -5,14 +5,13 @@ Frictionless implementation of validation plugin.
 from __future__ import annotations
 
 import typing
-from collections import Counter
 from typing import List, Union
 
 import frictionless
 from frictionless import Report, Resource, Schema
 from frictionless.exception import FrictionlessException
 
-from datajudge.data_reader.file_reader import FileReader
+from datajudge.data_reader.base_file_reader import FileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.validation.validation_plugin import (
@@ -23,7 +22,6 @@ from datajudge.utils.config import (ConstraintFrictionless,
                                     ConstraintFullFrictionless)
 
 if typing.TYPE_CHECKING:
-    from datajudge.data_reader.base_reader import DataReader
     from datajudge.metadata.data_resource import DataResource
     from datajudge.plugins.base_plugin import Result
     from datajudge.utils.config import Constraint
@@ -42,18 +40,28 @@ class ValidationPluginFrictionless(Validation):
         self.exec_multiprocess = True
 
     def setup(self,
-              data_reader: DataReader,
+              data_reader: FileReader,
               resource: DataResource,
               constraint: ConstraintFrictionless,
+              error_report: str,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
         self.resource = resource
         self.constraint = constraint
+        self.error_report = error_report
         self.exec_args = exec_args
-        self.data_path = data_reader.fetch_resource(self.resource.path)
+        self.data_reader = data_reader
+        self.data_path = data_reader.fetch_data(self.resource.path)
         self.schema = self._rebuild_constraints()
+
+    # @exec_decorator
+    # def fetch_data(self) -> None:
+    #     """
+    #     Get data path.
+    #     """
+    #     self.data_path = self.data_reader.fetch_data(self.resource.path)
 
     @exec_decorator
     def validate(self) -> Report:
@@ -116,22 +124,21 @@ class ValidationPluginFrictionless(Validation):
         exec_err = result.errors
         duration = result.duration
         constraint = self.constraint.dict()
+        errors = self._get_errors()
 
         if exec_err is None:
-            report = result.artifact
-            duration = report.get("time")
-            valid = report.get("valid")
-            # "fieldName", "rowNumber", "code", "note", "description"]
-            spec = ["code"]
-            flat_report = report.flatten(spec=spec)
-            errors = [dict(zip(spec, err)) for err in flat_report]
-            c = Counter(k["code"] for k in errors)
-            errors = list([{k: v} for k, v in c.items()])
+            valid = result.artifact.get("valid")
+            if not valid:
+                errors_list = [self._render_error_type(err[0])
+                               for err in result.artifact.flatten(spec=["code"])]
+                total_count = len(errors_list)
+                parsed_error_list = self._parse_error_report(errors_list)
+                errors = self._get_errors(total_count, parsed_error_list)
+
         else:
             self.logger.error(
                 f"Execution error {str(exec_err)} for plugin {self._id}")
             valid = False
-            errors = None
 
         return DatajudgeReport(self.get_lib_name(),
                                self.get_lib_version(),
@@ -176,7 +183,8 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
 
     def build(self,
               resources: List[DataResource],
-              constraints: List[Constraint]
+              constraints: List[Constraint],
+              error_report: str
               ) -> List[ValidationPluginFrictionless]:
         """
         Build a plugin for every resource and every constraint.
@@ -188,10 +196,10 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
             for const in f_constraints:
                 if resource.name in const.resources:
                     store = self._get_resource_store(resource)
-                    data_reader = FileReader(
-                        store, self.fetch_mode, self.reader_args)
+                    data_reader = FileReader(store)
                     plugin = ValidationPluginFrictionless()
-                    plugin.setup(data_reader, resource, const, self.exec_args)
+                    plugin.setup(data_reader, resource, const,
+                                 error_report, self.exec_args)
                     plugins.append(plugin)
 
         return plugins

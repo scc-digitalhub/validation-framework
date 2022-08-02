@@ -41,3 +41,14 @@ class Inference(Plugin, metaclass=ABCMeta):
         """
         Inference method for schema.
         """
+
+    @staticmethod
+    def _get_fields(name: str = None,
+                    type_: str = None) -> dict:
+        """
+        Return a common field structure.
+        """
+        return {
+            "name": name,
+            "type": type_
+        }

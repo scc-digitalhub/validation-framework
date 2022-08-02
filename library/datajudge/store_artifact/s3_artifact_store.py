@@ -5,7 +5,7 @@ Implementation of S3 artifact store.
 import json
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import IO, Any, Type
+from typing import IO, Any, Optional, Type
 
 import boto3
 import botocore.client

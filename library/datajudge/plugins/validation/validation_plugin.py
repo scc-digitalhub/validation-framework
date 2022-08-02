@@ -26,6 +26,7 @@ class Validation(Plugin, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         self.constraint = None
+        self.error_report = None
 
     def execute(self) -> dict:
         """
@@ -51,6 +52,40 @@ class Validation(Plugin, metaclass=ABCMeta):
         """
         Validate a resource.
         """
+
+    @staticmethod
+    def _render_error_type(code: str) -> dict:
+        """
+        Return standard errors record format.
+        """
+        return {"type": code}
+
+    def _parse_error_report(self,
+                            error_list: list) -> list:
+        """
+        Return a list of record according to user parameter.
+        """
+        if self.error_report == "count":
+            return []
+        if self.error_report == "partial":
+            if len(error_list) <= 100:
+                return error_list
+            return error_list[:100]
+        if self.error_report == "full":
+            return error_list
+
+    @staticmethod
+    def _get_errors(count: int = 0,
+                    records: list = None) -> dict:
+        """
+        Return a common error structure.
+        """
+        if records is None:
+            records = []
+        return {
+            "count": count,
+            "records": records
+        }
 
 
 class ValidationPluginBuilder(PluginBuilder):

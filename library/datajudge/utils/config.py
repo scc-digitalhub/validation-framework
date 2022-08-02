@@ -17,9 +17,6 @@ from datajudge.utils.commons import (CONSTRAINT_FRICTIONLESS_SCHEMA,
                                      CONSTRAINT_SQL_MINIMUM,
                                      CONSTRAINT_SQL_NON_EMPTY,
                                      CONSTRAINT_SQL_RANGE,
-                                     DATAREADER_BUFFER,
-                                     DATAREADER_FILE,
-                                     DATAREADER_NATIVE,
                                      LIBRARY_DUCKDB,
                                      LIBRARY_DUMMY,
                                      LIBRARY_FRICTIONLESS,
@@ -194,14 +191,6 @@ class ExecConfig(BaseModel):
 
     library: Optional[str] = LIBRARY_DUMMY
     """Library to use for performing an operation."""
-
-    fetchMode: Optional[Literal[DATAREADER_FILE,
-                                DATAREADER_NATIVE,
-                                DATAREADER_BUFFER]] = DATAREADER_FILE
-    """Specific mode to fetch data from backend."""
-
-    readerArgs: Optional[dict] = {}
-    """Data reading arguments to pass to DataReader."""
 
     execArgs: Optional[dict] = {}
     """Execution arguments to pass to plugins."""

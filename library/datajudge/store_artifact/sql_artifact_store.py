@@ -84,9 +84,11 @@ class SQLArtifactStore(ArtifactStore):
         Create engine from connection string.
         """
         connection_string = self.config.get("connection_string")
-        if connection_string is not None:
+        try:
             return create_engine(connection_string, future=True)
-        raise StoreError("Something wrong with connection string.")
+        except Exception as ex:
+            raise StoreError(
+                f"Something wrong with connection string. Arguments: {str(ex.args)}")
 
     @staticmethod
     def _get_table_name(uri: str) -> str:

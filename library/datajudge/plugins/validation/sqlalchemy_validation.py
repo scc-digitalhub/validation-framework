@@ -10,16 +10,16 @@ from typing import List
 
 import sqlalchemy
 
-from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
+from datajudge.data_reader.pandas_dataframe_sql_reader import PandasDataFrameSQLReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.utils.sql_checks import evaluate_validity
 from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.store_artifact.sql_artifact_store import SQLArtifactStore
-from datajudge.utils.commons import DATAREADER_NATIVE, LIBRARY_SQLALCHEMY
+from datajudge.utils.commons import LIBRARY_SQLALCHEMY
 from datajudge.utils.exceptions import ValidationError
-from datajudge.utils.utils import flatten_list, listify
+from datajudge.utils.utils import flatten_list
 
 if typing.TYPE_CHECKING:
     from datajudge.metadata.data_resource import DataResource
@@ -38,16 +38,18 @@ class ValidationPluginSqlAlchemy(Validation):
         self.exec_multiprocess = True
 
     def setup(self,
-              data_reader: str,
+              data_reader: PandasDataFrameSQLReader,
               constraint: ConstraintSqlAlchemy,
+              error_report: str,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
         self.constraint = constraint
+        self.error_report = error_report
         self.exec_args = exec_args
-        self.df = data_reader.fetch_resource("sql://resource",
-                                             query=constraint.query)
+        self.df = data_reader.fetch_data(constraint.name,
+                                         constraint.query)
 
     @exec_decorator
     def validate(self) -> dict:
@@ -62,7 +64,7 @@ class ValidationPluginSqlAlchemy(Validation):
             return {
                 "result": self.df.to_dict(),
                 "valid": valid,
-                "errors": listify(errors)
+                "error": errors
             }
         except Exception as ex:
             raise ex
@@ -75,17 +77,21 @@ class ValidationPluginSqlAlchemy(Validation):
         exec_err = result.errors
         duration = result.duration
         constraint = self.constraint.dict()
+        errors = self._get_errors()
 
         if exec_err is None:
             valid = result.artifact.get("valid")
-            errors = result.artifact.get("errors")
-            if errors is not None:
-                errors = [{"sql-check-error": 1}]
+
+            if not valid:
+                total_count = 1
+                errors_list = [self._render_error_type("sql-check-error")]
+                parsed_error_list = self._parse_error_report(errors_list)
+                errors = self._get_errors(total_count, parsed_error_list)
+
         else:
             self.logger.error(
                 f"Execution error {str(exec_err)} for plugin {self._id}")
             valid = False
-            errors = None
 
         return DatajudgeReport(self.get_lib_name(),
                                self.get_lib_version(),
@@ -130,7 +136,8 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
 
     def build(self,
               resources: List[DataResource],
-              constraints: List[Constraint]
+              constraints: List[Constraint],
+              error_report: str
               ) -> List[ValidationPluginSqlAlchemy]:
         """
         Build a plugin for every resource and every constraint.
@@ -145,11 +152,10 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         plugins = []
         for pack in grouped_constraints:
             store = pack["store"]
-            constraint = pack["constraint"]
-            data_reader = PandasDataFrameReader(
-                store, self.fetch_mode, self.reader_args)
+            const = pack["constraint"]
+            data_reader = PandasDataFrameSQLReader(store)
             plugin = ValidationPluginSqlAlchemy()
-            plugin.setup(data_reader, constraint, self.exec_args)
+            plugin.setup(data_reader, const, error_report, self.exec_args)
             plugins.append(plugin)
 
         return plugins
@@ -159,8 +165,6 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         Filter builder store to keep only SQLStores and set `native` mode for
         reading data to return a connection string to a db.
         """
-        #
-        self.fetch_mode = DATAREADER_NATIVE
         self.stores = [store for store in self.stores if isinstance(
             store, SQLArtifactStore)]
         if not self.stores:

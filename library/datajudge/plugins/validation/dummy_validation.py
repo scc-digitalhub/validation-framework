@@ -31,12 +31,14 @@ class ValidationPluginDummy(Validation):
     def setup(self,
               resource: DataResource,
               constraint: dict,
+              error_report: str,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
         self.resource = resource
         self.constraint = constraint
+        self.error_report = error_report
         self.exec_args = exec_args
 
     @exec_decorator
@@ -94,7 +96,8 @@ class ValidationBuilderDummy(ValidationPluginBuilder):
 
     def build(self,
               resources: List[DataResource],
-              constraints: List[Constraint]
+              constraints: List[Constraint],
+              error_report: str
               ) -> List[ValidationPluginDummy]:
         """
         Build a plugin.
@@ -105,7 +108,7 @@ class ValidationBuilderDummy(ValidationPluginBuilder):
                            weight=0)
         plugins = []
         plugin = ValidationPluginDummy()
-        plugin.setup(None, const, self.exec_args)
+        plugin.setup(None, const, None, self.exec_args)
         plugins.append(plugin)
         return plugins
 

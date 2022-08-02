@@ -322,8 +322,9 @@ class Run:
     # Validation
     def validate_wrapper(self,
                          constraints: List[Constraint],
-                         parallel: bool = False,
-                         num_worker: int = 10
+                         error_report: Optional[str] = "partial",
+                         parallel: Optional[bool] = False,
+                         num_worker: Optional[int] = 10,
                          ) -> List[Any]:
         """
         Execute validation on resources with validation frameworks.
@@ -332,6 +333,12 @@ class Run:
         ----------
         constraints : List[Constraint]
             List of constraint to validate resources.
+        error_report : str, optional
+            Flag to render the error output of the datajudge report.
+            Accepts 'count', 'partial' or 'full'.
+            'count' returns the errors count of the validation,
+            'partial' return the errors count and a list of errors (max 100),
+            'full' returns errors count and the list of all encountered errors.
         parallel : bool, optional
             Flag to execute operation in parallel, by default False
         num_worker : int, optional
@@ -349,14 +356,16 @@ class Run:
 
         self._run_handler.validate(self.run_info.resources,
                                    constraints,
+                                   error_report,
                                    parallel,
                                    num_worker)
         return self._run_handler.get_artifact_report()
 
     def validate_datajudge(self,
                            constraints: List[Constraint],
-                           parallel: bool = False,
-                           num_worker: int = 10
+                           error_report: Optional[str] = "partial",
+                           parallel: Optional[bool] = False,
+                           num_worker: Optional[int] = 10,
                            ) -> List[DatajudgeReport]:
         """
         Execute validation on resources with Datajudge.
@@ -365,6 +374,12 @@ class Run:
         ----------
         constraints : List[Constraint]
             List of constraint to validate resources.
+        error_report : str, optional
+            Flag to render the error output of the datajudge report.
+            Accepts 'count', 'partial' or 'full'.
+            'count' returns the errors count of the validation,
+            'partial' return the errors count and a list of errors (max 100),
+            'full' returns errors count and the list of all encountered errors.
         parallel : bool, optional
             Flag to execute operation in parallel, by default False
         num_worker : int, optional
@@ -382,15 +397,17 @@ class Run:
 
         self._run_handler.validate(self.run_info.resources,
                                    constraints,
+                                   error_report,
                                    parallel,
                                    num_worker)
         return self._run_handler.get_datajudge_report()
 
     def validate(self,
                  constraints: List[Constraint],
-                 parallel: bool = False,
-                 num_worker: int = 10,
-                 only_dj: bool = False
+                 error_report: Optional[str] = "partial",
+                 parallel: Optional[bool] = False,
+                 num_worker: Optional[int] = 10,
+                 only_dj: Optional[bool] = False
                  ) -> Any:
         """
         Execute validation on resources.
@@ -399,6 +416,12 @@ class Run:
         ----------
         constraints : List[Constraint]
             List of constraint to validate resources.
+        error_report : str, optional
+            Flag to render the error output of the datajudge report.
+            Accepts 'count', 'partial' or 'full'.
+            'count' returns the errors count of the validation,
+            'partial' return the errors count and a list of errors (max 100),
+            'full' returns errors count and the list of all encountered errors.
         parallel : bool, optional
             Flag to execute operation in parallel, by default False
         num_worker : int, optional
@@ -414,9 +437,11 @@ class Run:
 
         """
         report = self.validate_wrapper(constraints,
+                                       error_report,
                                        parallel,
                                        num_worker)
         report_dj = self.validate_datajudge(constraints,
+                                            error_report,
                                             parallel,
                                             num_worker)
         if only_dj:

@@ -67,7 +67,7 @@ class DatajudgeReport(DatajudgeBaseReport):
     """
     constraint: dict
     valid: bool
-    errors: list
+    errors: dict
 
 
 @dataclass

@@ -107,8 +107,9 @@ class ODBCArtifactStore(ArtifactStore):
         if table_full_name in table_list:
             try:
                 return connection.execute(f"SELECT * FROM {table_full_name}")
-            except Exception:
-                raise StoreError("Something wrong with data fetching.")
+            except Exception as ex:
+                raise StoreError(
+                    f"Something wrong with data fetching. Arguments: {str(ex.args)}")
         raise StoreError("Something wrong with resource name.")
 
     def _store_data(self,

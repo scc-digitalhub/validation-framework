@@ -11,8 +11,7 @@ import pandas_profiling
 from pandas_profiling import ProfileReport
 
 
-from datajudge.data_reader.base_reader import DataReader
-from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
+from datajudge.data_reader.pandas_dataframe_file_reader import PandasDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeProfile
 from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.profiling.profiling_plugin import Profiling
@@ -45,7 +44,7 @@ class ProfilePluginPandasProfiling(Profiling):
         self.exec_multiprocess = True
 
     def setup(self,
-              data_reader: DataReader,
+              data_reader: PandasDataFrameFileReader,
               resource: DataResource,
               exec_args: dict) -> None:
         """
@@ -53,7 +52,7 @@ class ProfilePluginPandasProfiling(Profiling):
         """
         self.resource = resource
         self.exec_args = exec_args
-        self.df = data_reader.fetch_resource(self.resource.path)
+        self.df = data_reader.fetch_data(self.resource.path)
 
     @exec_decorator
     def profile(self) -> ProfileReport:
@@ -162,8 +161,7 @@ class ProfileBuilderPandasProfiling(PluginBuilder):
         for res in resources:
             resource = self._get_resource_deepcopy(res)
             store = self._get_resource_store(resource)
-            data_reader = PandasDataFrameReader(
-                store, self.fetch_mode, self.reader_args)
+            data_reader = PandasDataFrameFileReader(store)
             plugin = ProfilePluginPandasProfiling()
             plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)

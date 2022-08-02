@@ -98,13 +98,9 @@ class PluginBuilder:
 
     def __init__(self,
                  stores: List[ArtifactStore],
-                 fetch_mode: str,
-                 reader_args: dict,
                  exec_args: dict
                  ) -> None:
         self.stores = stores
-        self.fetch_mode = fetch_mode
-        self.reader_args = reader_args
         self.exec_args = exec_args
 
     @abstractmethod

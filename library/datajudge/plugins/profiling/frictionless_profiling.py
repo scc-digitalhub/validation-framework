@@ -10,7 +10,7 @@ from typing import List
 import frictionless
 from frictionless import Resource
 
-from datajudge.data_reader.file_reader import FileReader
+from datajudge.data_reader.base_file_reader import FileReader
 from datajudge.metadata.datajudge_reports import DatajudgeProfile
 from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.profiling.profiling_plugin import Profiling
@@ -19,7 +19,6 @@ from datajudge.utils.commons import LIBRARY_FRICTIONLESS
 from datajudge.utils.io_utils import write_bytesio
 
 if typing.TYPE_CHECKING:
-    from datajudge.data_reader.base_reader import DataReader
     from datajudge.metadata.data_resource import DataResource
     from datajudge.plugins.base_plugin import Result
 
@@ -36,7 +35,7 @@ class ProfilePluginFrictionless(Profiling):
         self.exec_multiprocess = True
 
     def setup(self,
-              data_reader: DataReader,
+              data_reader: FileReader,
               resource: DataResource,
               exec_args: dict) -> None:
         """
@@ -44,7 +43,7 @@ class ProfilePluginFrictionless(Profiling):
         """
         self.resource = resource
         self.exec_args = exec_args
-        self.data_path = data_reader.fetch_resource(self.resource.path)
+        self.data_path = data_reader.fetch_data(self.resource.path)
 
     @exec_decorator
     def profile(self) -> Resource:
@@ -125,7 +124,7 @@ class ProfileBuilderFrictionless(PluginBuilder):
         for res in resources:
             resource = self._get_resource_deepcopy(res)
             store = self._get_resource_store(resource)
-            data_reader = FileReader(store, self.fetch_mode, self.reader_args)
+            data_reader = FileReader(store)
             plugin = ProfilePluginFrictionless()
             plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)

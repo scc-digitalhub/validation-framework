@@ -12,14 +12,13 @@ from typing import List
 
 import duckdb
 
-from datajudge.data_reader.file_reader import FileReader
+from datajudge.data_reader.base_file_reader import FileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.utils.sql_checks import evaluate_validity
 from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
-from datajudge.utils.commons import (DATAREADER_FILE, DEFAULT_DIRECTORY,
-                                     LIBRARY_DUCKDB)
+from datajudge.utils.commons import DEFAULT_DIRECTORY, LIBRARY_DUCKDB
 from datajudge.utils.utils import flatten_list, get_uiid, listify
 
 if typing.TYPE_CHECKING:
@@ -40,13 +39,15 @@ class ValidationPluginDuckDB(Validation):
 
     def setup(self,
               db: str,
-              constraint: str,
+              constraint: ConstraintDuckDB,
+              error_report: str,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
         self.db = db
         self.constraint = constraint
+        self.error_report = error_report
         self.exec_args = exec_args
 
     @exec_decorator
@@ -65,7 +66,7 @@ class ValidationPluginDuckDB(Validation):
             return {
                 "result": result.to_dict(),
                 "valid": valid,
-                "errors": listify(errors)
+                "error": errors
             }
         except Exception as ex:
             raise ex
@@ -80,17 +81,21 @@ class ValidationPluginDuckDB(Validation):
         exec_err = result.errors
         duration = result.duration
         constraint = self.constraint.dict()
+        errors = self._get_errors()
 
         if exec_err is None:
             valid = result.artifact.get("valid")
-            errors = result.artifact.get("errors")
-            if errors is not None:
-                errors = [{"sql-check-error": 1}]
+
+            if not valid:
+                total_count = 1
+                errors_list = [self._render_error_type("sql-check-error")]
+                parsed_error_list = self._parse_error_report(errors_list)
+                errors = self._get_errors(total_count, parsed_error_list)
+
         else:
             self.logger.error(
                 f"Execution error {str(exec_err)} for plugin {self._id}")
             valid = False
-            errors = None
 
         return DatajudgeReport(self.get_lib_name(),
                                self.get_lib_version(),
@@ -135,7 +140,8 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
 
     def build(self,
               resources: List[DataResource],
-              constraints: List[Constraint]
+              constraints: List[Constraint],
+              error_report: str
               ) -> List[ValidationPluginDuckDB]:
         """
         Build a plugin for every resource and every constraint.
@@ -149,7 +155,8 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         plugins = []
         for const in f_constraint:
             plugin = ValidationPluginDuckDB()
-            plugin.setup(self.tmp_db.as_posix(), const, self.exec_args)
+            plugin.setup(self.tmp_db.as_posix(), const,
+                         error_report, self.exec_args)
             plugins.append(plugin)
 
         return plugins
@@ -183,8 +190,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         for resource in resources:
 
             store = self._get_resource_store(resource)
-            data_reader = FileReader(store, DATAREADER_FILE)
-            tmp_pth = data_reader.fetch_resource(resource.path)
+            tmp_pth = FileReader(store).fetch_data(resource.path)
 
             # If resource is already registered, continue
             try:

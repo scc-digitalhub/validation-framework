@@ -14,7 +14,7 @@ import great_expectations as ge
 from great_expectations.core.expectation_validation_result import \
     ExpectationValidationResult
 
-from datajudge.data_reader.pandas_dataframe_reader import PandasDataFrameReader
+from datajudge.data_reader.pandas_dataframe_file_reader import PandasDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.great_expectation_utils import \
     get_great_expectation_validator
@@ -25,7 +25,6 @@ from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATION
 from datajudge.utils.file_utils import clean_all
 
 if typing.TYPE_CHECKING:
-    from datajudge.data_reader.base_reader import DataReader
     from datajudge.metadata.data_resource import DataResource
     from datajudge.plugins.base_plugin import Result
     from datajudge.utils.config import Constraint, ConstraintGreatExpectation
@@ -43,17 +42,19 @@ class ValidationPluginGreatExpectation(Validation):
         self.exec_multiprocess = True
 
     def setup(self,
-              data_reader: DataReader,
+              data_reader: PandasDataFrameFileReader,
               resource: DataResource,
               constraint: ConstraintGreatExpectation,
+              error_report: str,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
         self.resource = resource
         self.constraint = constraint
+        self.error_report = error_report
         self.exec_args = exec_args
-        self.df = data_reader.fetch_resource(self.resource.path)
+        self.df = data_reader.fetch_data(self.resource.path)
 
     @exec_decorator
     def validate(self) -> dict:
@@ -76,27 +77,35 @@ class ValidationPluginGreatExpectation(Validation):
         exec_err = result.errors
         duration = result.duration
         constraint = self.constraint.dict()
+        errors = self._get_errors()
 
         if exec_err is None:
             res = deepcopy(result.artifact).to_json_dict()
             valid = res.get("success")
             observed = res.get("result", {})
+
             if not valid:
 
-                observed_values = observed.get("observed_value")
-                unexpected_count = observed.get("unexpected_count")
+                if observed.get("observed_value") is not None:
+                    total_count = 1
+                    errors_list = [self._render_error_type(
+                        "observed-value-error")]
+                elif observed.get("unexpected_count") is not None:
+                    total_count = observed.get("unexpected_count")
+                    errors_list = [self._render_error_type("unexpected-count-error")
+                                   for _ in range(total_count)]
 
-                if observed_values is not None:
-                    errors = [{"observed-value-error": 1}]
-                elif unexpected_count is not None:
-                    errors = [{"unexpected-count-error": unexpected_count}]
-            else:
-                errors = None
+                # AS debug if other type of errors are encountered
+                else:
+                    total_count = "Unknown"
+                    errors_list = [self._render_error_type("unknown-error")]
+
+                parsed_error_list = self._parse_error_report(errors_list)
+                errors = self._get_errors(total_count, parsed_error_list)
         else:
             self.logger.error(
                 f"Execution error {str(exec_err)} for plugin {self._id}")
             valid = False
-            errors = None
 
         return DatajudgeReport(self.get_lib_name(),
                                self.get_lib_version(),
@@ -141,7 +150,8 @@ class ValidationBuilderGreatExpectation(ValidationPluginBuilder):
 
     def build(self,
               resources: List[DataResource],
-              constraints: List[Constraint]
+              constraints: List[Constraint],
+              error_report: str
               ) -> List[ValidationPluginGreatExpectation]:
         """
         Build a plugin for every resource and every constraint.
@@ -153,10 +163,10 @@ class ValidationBuilderGreatExpectation(ValidationPluginBuilder):
             for const in f_constraints:
                 if resource.name in const.resources:
                     store = self._get_resource_store(resource)
-                    data_reader = PandasDataFrameReader(
-                        store, self.fetch_mode, self.reader_args)
+                    data_reader = PandasDataFrameFileReader(store)
                     plugin = ValidationPluginGreatExpectation()
-                    plugin.setup(data_reader, resource, const, self.exec_args)
+                    plugin.setup(data_reader, resource, const,
+                                 error_report, self.exec_args)
                     plugins.append(plugin)
         return plugins
 

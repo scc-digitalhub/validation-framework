@@ -22,10 +22,8 @@ def builder_factory(config: List[ExecConfig],
     builders = []
     for cfg in config:
         try:
-            builders.append(REGISTRY[typology][cfg.library](stores,
-                                                            cfg.fetchMode,
-                                                            cfg.readerArgs,
-                                                            cfg.execArgs))
+            builders.append(
+                REGISTRY[typology][cfg.library](stores, cfg.execArgs))
         except KeyError:
             raise NotImplementedError
     return builders

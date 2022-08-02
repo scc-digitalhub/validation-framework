@@ -82,8 +82,8 @@ class StoreRegistry:
     def get_all_stores(self,
                        store_type: str
                        ) -> Union[ArtifactStore,
-                             List[ArtifactStore],
-                             MetadataStore]:
+                                  List[ArtifactStore],
+                                  MetadataStore]:
         """
         Return all stores by type.
         """
@@ -201,8 +201,8 @@ class StoreHandler:
 
     def get_all_art_stores(self
                            ) -> Union[ArtifactStore,
-                             List[ArtifactStore],
-                             MetadataStore]:
+                                      List[ArtifactStore],
+                                      MetadataStore]:
         """
         Get all artifact stores from registry.
         """

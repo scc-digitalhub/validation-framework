@@ -5,7 +5,7 @@ import json
 from datetime import datetime, timedelta
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import IO, Any
+from typing import IO, Any, Optional
 
 from azure.storage.blob import (BlobSasPermissions, BlobServiceClient,
                                 ContainerClient, generate_blob_sas)

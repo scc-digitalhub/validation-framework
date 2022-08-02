@@ -7,9 +7,9 @@ import concurrent.futures
 import typing
 from typing import Any, List
 
-from datajudge.data_reader.file_reader import FileReader
+from datajudge.data_reader.base_file_reader import FileReader
 from datajudge.plugins.plugin_factory import builder_factory
-from datajudge.utils.commons import (DATAREADER_FILE, OPERATION_INFERENCE,
+from datajudge.utils.commons import (OPERATION_INFERENCE,
                                      OPERATION_PROFILING, OPERATION_VALIDATION,
                                      RESULT_DATAJUDGE, RESULT_LIBRARY,
                                      RESULT_RENDERED, RESULT_WRAPPED)
@@ -34,15 +34,20 @@ class RunHandlerRegistry:
 
     def __init__(self) -> None:
         self.registry = {}
-        self.setup()
+        self._setup()
 
-    def setup(self):
+    def _setup(self):
         """
         Setup the run handler registry.
         """
-        for ops in [OPERATION_INFERENCE, OPERATION_VALIDATION, OPERATION_PROFILING]:
+        for ops in [OPERATION_INFERENCE,
+                    OPERATION_VALIDATION,
+                    OPERATION_PROFILING]:
             self.registry[ops] = {}
-            for res in [RESULT_WRAPPED, RESULT_DATAJUDGE, RESULT_RENDERED, RESULT_LIBRARY]:
+            for res in [RESULT_WRAPPED,
+                        RESULT_DATAJUDGE,
+                        RESULT_RENDERED,
+                        RESULT_LIBRARY]:
                 self.registry[ops][res] = []
 
     def register(self,
@@ -99,13 +104,14 @@ class RunHandler:
         builders = builder_factory(self._config.inference,
                                    OPERATION_INFERENCE,
                                    self._store_handler.get_all_art_stores())
-        plugins = self.create_plugins(builders, resources)
-        self.scheduler(plugins, OPERATION_INFERENCE, parallel, num_worker)
-        self.destroy_builders(builders)
+        plugins = self._create_plugins(builders, resources)
+        self._scheduler(plugins, OPERATION_INFERENCE, parallel, num_worker)
+        self._destroy_builders(builders)
 
     def validate(self,
                  resources: List[DataResource],
                  constraints: List[Constraint],
+                 error_report: str,
                  parallel: bool = False,
                  num_worker: int = 10
                  ) -> None:
@@ -116,9 +122,10 @@ class RunHandler:
         builders = builder_factory(self._config.validation,
                                    OPERATION_VALIDATION,
                                    self._store_handler.get_all_art_stores())
-        plugins = self.create_plugins(builders, resources, constraints)
-        self.scheduler(plugins, OPERATION_VALIDATION, parallel, num_worker)
-        self.destroy_builders(builders)
+        plugins = self._create_plugins(
+            builders, resources, constraints, error_report)
+        self._scheduler(plugins, OPERATION_VALIDATION, parallel, num_worker)
+        self._destroy_builders(builders)
 
     def profile(self,
                 resources: List[DataResource],
@@ -131,23 +138,23 @@ class RunHandler:
         builders = builder_factory(self._config.profiling,
                                    OPERATION_PROFILING,
                                    self._store_handler.get_all_art_stores())
-        plugins = self.create_plugins(builders, resources)
-        self.scheduler(plugins, OPERATION_PROFILING, parallel, num_worker)
-        self.destroy_builders(builders)
+        plugins = self._create_plugins(builders, resources)
+        self._scheduler(plugins, OPERATION_PROFILING, parallel, num_worker)
+        self._destroy_builders(builders)
 
     @staticmethod
-    def create_plugins(builders: PluginBuilder,
-                       *args) -> List[Plugin]:
+    def _create_plugins(builders: PluginBuilder,
+                        *args) -> List[Plugin]:
         """
         Return a list of plugins.
         """
         return flatten_list([builder.build(*args) for builder in builders])
 
-    def scheduler(self,
-                  plugins: List[Plugin],
-                  ops: str,
-                  parallel: bool,
-                  num_worker: int) -> None:
+    def _scheduler(self,
+                   plugins: List[Plugin],
+                   ops: str,
+                   parallel: bool,
+                   num_worker: int) -> None:
         """
         Schedule execution to avoid multiprocessing issues.
         """
@@ -166,46 +173,46 @@ class RunHandler:
                 sequential.append(plugin)
 
         # Revisite this
-        self.sequential_execute(sequential, ops)
-        self.pool_execute_multithread(multithreading, ops, num_worker)
-        self.pool_execute_multiprocess(multiprocess, ops, num_worker)
+        self._sequential_execute(sequential, ops)
+        self._pool_execute_multithread(multithreading, ops, num_worker)
+        self._pool_execute_multiprocess(multiprocess, ops, num_worker)
 
-    def sequential_execute(self,
-                           plugins: List[Plugin],
-                           ops: str) -> None:
+    def _sequential_execute(self,
+                            plugins: List[Plugin],
+                            ops: str) -> None:
         """
         Execute operations in sequence.
         """
         for plugin in plugins:
-            data = self.execute(plugin)
-            self.register_results(ops, data)
+            data = self._execute(plugin)
+            self._register_results(ops, data)
 
-    def pool_execute_multiprocess(self,
-                                  plugins: List[Plugin],
-                                  ops: str,
-                                  num_worker: int) -> None:
+    def _pool_execute_multiprocess(self,
+                                   plugins: List[Plugin],
+                                   ops: str,
+                                   num_worker: int) -> None:
         """
         Instantiate a concurrent.future.ProcessPoolExecutor pool to
         execute operations in multiprocessing.
         """
         with concurrent.futures.ProcessPoolExecutor(max_workers=num_worker) as pool:
-            for data in pool.map(self.execute, plugins):
-                self.register_results(ops, data)
+            for data in pool.map(self._execute, plugins):
+                self._register_results(ops, data)
 
-    def pool_execute_multithread(self,
-                                 plugins: List[Plugin],
-                                 ops: str,
-                                 num_worker: int) -> None:
+    def _pool_execute_multithread(self,
+                                  plugins: List[Plugin],
+                                  ops: str,
+                                  num_worker: int) -> None:
         """
         Instantiate a concurrent.future.ThreadPoolExecutor pool to
         execute operations in multithreading.
         """
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_worker) as pool:
-            for data in pool.map(self.execute, plugins):
-                self.register_results(ops, data)
+            for data in pool.map(self._execute, plugins):
+                self._register_results(ops, data)
 
     @staticmethod
-    def execute(plugin: Plugin) -> dict:
+    def _execute(plugin: Plugin) -> dict:
         """
         Wrap plugins main execution method. The handler create
         builders to build plugins. Once the plugin are built,
@@ -216,10 +223,10 @@ class RunHandler:
         """
         return plugin.execute()
 
-    def register_results(self,
-                         operation: str,
-                         result: dict,
-                         ) -> None:
+    def _register_results(self,
+                          operation: str,
+                          result: dict,
+                          ) -> None:
         """
         Register results.
         """
@@ -227,7 +234,7 @@ class RunHandler:
             self._registry.register(operation, key, value)
 
     @staticmethod
-    def destroy_builders(builders: List[PluginBuilder]) -> None:
+    def _destroy_builders(builders: List[PluginBuilder]) -> None:
         """
         Destroy builders.
         """
@@ -336,9 +343,9 @@ class RunHandler:
         """
         for res in resources:
             store = self._store_handler.get_art_store(res.store)
-            data_reader = FileReader(store, DATAREADER_FILE)
+            data_reader = FileReader(store)
             for path in listify(res.path):
-                tmp_pth = data_reader.fetch_resource(path)
+                tmp_pth = data_reader.fetch_data(path)
                 filename = get_name_from_uri(tmp_pth)
                 self.persist_artifact(tmp_pth, dst, filename, {})
 

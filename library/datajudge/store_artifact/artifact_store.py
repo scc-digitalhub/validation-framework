@@ -101,20 +101,8 @@ class ArtifactStore(metaclass=ABCMeta):
         Method to persist an artifact.
         """
 
-    def fetch_artifact(self,
-                       src: str,
-                       fetch_mode: str) -> str:
-        """
-        Method to fetch an artifact and return the temporary
-        path where it is stored.
-        """
-        tmp_path = self._get_resource(f"{src}_{fetch_mode}")
-        if tmp_path is not None:
-            return tmp_path
-        LOGGER.info(f"Fetching resource {src} from store {self.name}")
-        return self._get_and_register_artifact(src, fetch_mode)
-
-    def fetch_file(self, src: str) -> str:
+    def fetch_file(self,
+                   src: str) -> str:
         """
         Return the temporary path where a resource it is stored.
         """
@@ -138,7 +126,8 @@ class ArtifactStore(metaclass=ABCMeta):
     @abstractmethod
     def _get_and_register_artifact(self,
                                    src: str,
-                                   fetch_mode: str) -> str:
+                                   fetch_mode: str
+                                   ) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
