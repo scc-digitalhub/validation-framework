@@ -14,20 +14,15 @@ class MetadataStore(metaclass=ABCMeta):
 
     Attributes
     ----------
+    name : str
+        Name of store.
+    type : str
+        Type of store, e.g. http, local.
     metadata_uri : str
         An URI string that points to the storage.
     config : dict, default = None
         A dictionary with the credentials/configurations
         for the backend storage.
-
-    Methods
-    -------
-    init_run :
-        Check run enviroment existence.
-    log_metadata :
-        Log metadata to backend.
-    get_run_metadata_uri :
-        Return the URI of the metadata store for the Run.
 
     """
 
@@ -40,10 +35,12 @@ class MetadataStore(metaclass=ABCMeta):
 
     def __init__(self,
                  name: str,
-                 uri_metadata: str,
+                 type: str,
+                 metadata_uri: str,
                  config:  Optional[dict] = None) -> None:
         self.name = name
-        self.uri_metadata = uri_metadata
+        self.type = type
+        self.metadata_uri = metadata_uri
         self.config = config
 
     @abstractmethod

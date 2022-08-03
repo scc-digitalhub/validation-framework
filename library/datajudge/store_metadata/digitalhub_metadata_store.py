@@ -26,9 +26,11 @@ class DigitalHubMetadataStore(MetadataStore):
     """
 
     def __init__(self,
-                 uri_metadata: str,
+                 name: str,
+                 type: str,
+                 metadata_uri: str,
                  config:  Optional[dict] = None) -> None:
-        super().__init__(uri_metadata, config)
+        super().__init__(name, type, metadata_uri, config)
         # To memorize runs present in the backend
         self._key_vault = {
             self._RUN_METADATA: [],
@@ -150,7 +152,7 @@ class DigitalHubMetadataStore(MetadataStore):
         """
         Return the URL of the metadata store for the Run.
         """
-        return self.uri_metadata
+        return self.metadata_uri
 
     def _parse_auth(self, kwargs: dict) -> dict:
         """

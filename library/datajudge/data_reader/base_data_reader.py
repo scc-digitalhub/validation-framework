@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import typing
 from abc import ABCMeta, abstractmethod
-from typing import Any, Optional
+from typing import Any
 
 from datajudge.utils.logger import LOGGER
 

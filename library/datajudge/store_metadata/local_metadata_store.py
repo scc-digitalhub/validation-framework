@@ -21,9 +21,10 @@ class LocalMetadataStore(MetadataStore):
 
     def __init__(self,
                  name: str,
-                 uri_metadata: str,
+                 type: str,
+                 metadata_uri: str,
                  config:  Optional[dict] = None) -> None:
-        super().__init__(name, uri_metadata, config)
+        super().__init__(name, type, metadata_uri, config)
         self._filenames = {
             self._RUN_METADATA: cfg.FN_RUN_METADATA,
             self._DJ_REPORT: cfg.FN_DJ_REPORT,
@@ -97,4 +98,4 @@ class LocalMetadataStore(MetadataStore):
         """
         Return the path of the metadata folder for the Run.
         """
-        return get_path(self.uri_metadata, exp_name, run_id)
+        return get_path(self.metadata_uri, exp_name, run_id)

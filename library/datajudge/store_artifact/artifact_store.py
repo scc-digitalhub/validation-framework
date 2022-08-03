@@ -52,6 +52,8 @@ class ArtifactStore(metaclass=ABCMeta):
     ----------
     name : str
         Name of store.
+    type : str
+        Type of store, e.g. s3, sql, local.
     artifact_uri : str
         An URI string that points to the storage.
     temp_dir : str
@@ -59,15 +61,6 @@ class ArtifactStore(metaclass=ABCMeta):
     config : dict, default = None
         A dictionary with the credentials/configurations
         for the backend storage.
-
-    Methods
-    -------
-    persist_artifact :
-        Method to persist an artifact.
-    fetch_artifact :
-        Method to fetch an artifact.
-    get_run_artifacts_uri :
-        Return the URI of the artifact store for the Run.
 
     """
 
@@ -77,12 +70,14 @@ class ArtifactStore(metaclass=ABCMeta):
 
     def __init__(self,
                  name: str,
+                 type: str,
                  artifact_uri: str,
                  temp_dir: str,
                  config: Optional[dict] = None,
                  is_default=False
                  ) -> None:
         self.name = name
+        self.type = type
         self.artifact_uri = artifact_uri
         self.temp_dir = temp_dir
         self.config = config

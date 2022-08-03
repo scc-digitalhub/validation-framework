@@ -25,11 +25,13 @@ class FTPArtifactStore(ArtifactStore):
     """
 
     def __init__(self,
+                 name: str,
+                 type: str,
                  artifact_uri: str,
                  temp_dir: str,
                  config: Optional[dict] = None
                  ) -> None:
-        super().__init__(artifact_uri, temp_dir, config)
+        super().__init__(name, type, artifact_uri, temp_dir, config)
         if self.config is None:
             parsed = parse_uri(self.artifact_uri)
             self.config = {

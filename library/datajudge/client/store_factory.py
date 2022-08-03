@@ -56,7 +56,10 @@ class StoreBuilder:
                                             scheme,
                                             self.project_id)
         try:
-            return MD_STORES[cfg.type](cfg.name, new_uri, cfg.config)
+            return MD_STORES[cfg.type](cfg.name,
+                                       cfg.type,
+                                       new_uri,
+                                       cfg.config)
         except KeyError:
             raise NotImplementedError
 
@@ -88,6 +91,7 @@ class StoreBuilder:
         tmp = str(Path(self.tmp_dir, get_uiid()))
         try:
             return ART_STORES[cfg.type](cfg.name,
+                                        cfg.type,
                                         new_uri,
                                         tmp,
                                         cfg.config,

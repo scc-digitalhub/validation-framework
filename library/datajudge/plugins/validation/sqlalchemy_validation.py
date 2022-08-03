@@ -16,8 +16,7 @@ from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.utils.sql_checks import evaluate_validity
 from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
-from datajudge.store_artifact.sql_artifact_store import SQLArtifactStore
-from datajudge.utils.commons import LIBRARY_SQLALCHEMY
+from datajudge.utils.commons import LIBRARY_SQLALCHEMY, STORE_SQL
 from datajudge.utils.exceptions import ValidationError
 from datajudge.utils.utils import flatten_list
 
@@ -165,8 +164,8 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         Filter builder store to keep only SQLStores and set `native` mode for
         reading data to return a connection string to a db.
         """
-        self.stores = [store for store in self.stores if isinstance(
-            store, SQLArtifactStore)]
+        self.stores = [store for store in self.stores
+                       if store.type == STORE_SQL]
         if not self.stores:
             raise ValidationError(
                 "There must be at least a SQLStore to use sqlalchemy validator.")

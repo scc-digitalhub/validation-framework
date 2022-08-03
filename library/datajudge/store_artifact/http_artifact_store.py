@@ -20,13 +20,6 @@ class HTTPArtifactStore(ArtifactStore):
 
     """
 
-    def __init__(self,
-                 artifact_uri: str,
-                 temp_dir: str,
-                 config: Optional[dict] = None
-                 ) -> None:
-        super().__init__(artifact_uri, temp_dir, config)
-
     def persist_artifact(self,
                          src: Any,
                          dst: str,
