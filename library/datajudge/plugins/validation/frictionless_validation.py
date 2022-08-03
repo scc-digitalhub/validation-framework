@@ -52,7 +52,6 @@ class ValidationPluginFrictionless(Validation):
         self.constraint = constraint
         self.error_report = error_report
         self.exec_args = exec_args
-        self.data_reader = data_reader
         self.data_path = data_reader.fetch_data(self.resource.path)
         self.schema = self._rebuild_constraints()
 
@@ -211,7 +210,8 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
         Filter out ConstraintFrictionless and ConstraintFullFrictionless
         """
         return [const for const in constraints
-                if const.type in (LIBRARY_FRICTIONLESS, CONSTRAINT_FRICTIONLESS_SCHEMA)]
+                if const.type in (LIBRARY_FRICTIONLESS,
+                                  CONSTRAINT_FRICTIONLESS_SCHEMA)]
 
     def destroy(self) -> None:
         """

@@ -3,7 +3,7 @@ Implementation of local artifact store.
 """
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import (check_dir, check_path, copy_file,

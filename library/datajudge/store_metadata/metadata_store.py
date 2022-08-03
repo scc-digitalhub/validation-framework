@@ -35,11 +35,11 @@ class MetadataStore(metaclass=ABCMeta):
 
     def __init__(self,
                  name: str,
-                 type: str,
+                 store_type: str,
                  metadata_uri: str,
                  config:  Optional[dict] = None) -> None:
         self.name = name
-        self.type = type
+        self.store_type = store_type
         self.metadata_uri = metadata_uri
         self.config = config
 

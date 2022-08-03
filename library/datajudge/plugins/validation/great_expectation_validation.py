@@ -176,7 +176,8 @@ class ValidationBuilderGreatExpectation(ValidationPluginBuilder):
         """
         Filter out ConstraintGreatExpectation.
         """
-        return [const for const in constraints if const.type == LIBRARY_GREAT_EXPECTATION]
+        return [const for const in constraints
+                if const.type == LIBRARY_GREAT_EXPECTATION]
 
     def destroy(self) -> None:
         """
@@ -185,5 +186,5 @@ class ValidationBuilderGreatExpectation(ValidationPluginBuilder):
         path = Path(os.getcwd(), "ge_ctxt")
         try:
             clean_all(path)
-        except:
+        except Exception:
             pass

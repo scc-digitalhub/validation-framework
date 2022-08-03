@@ -1,7 +1,7 @@
 """
 Implementation of REST artifact store.
 """
-from typing import Any, Optional, Tuple
+from typing import Any
 
 import requests
 from requests.models import HTTPError
@@ -25,7 +25,7 @@ class HTTPArtifactStore(ArtifactStore):
                          dst: str,
                          src_name: str,
                          metadata: dict
-                         ) -> Tuple[str, str]:
+                         ) -> None:
         """
         Persist an artifact.
         """

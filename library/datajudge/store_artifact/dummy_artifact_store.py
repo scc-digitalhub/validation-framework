@@ -1,7 +1,7 @@
 """
 Dummy artifact store module.
 """
-from typing import Any, Optional
+from typing import Any
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 

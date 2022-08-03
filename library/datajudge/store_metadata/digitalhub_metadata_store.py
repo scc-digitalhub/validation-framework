@@ -27,10 +27,10 @@ class DigitalHubMetadataStore(MetadataStore):
 
     def __init__(self,
                  name: str,
-                 type: str,
+                 store_type: str,
                  metadata_uri: str,
                  config:  Optional[dict] = None) -> None:
-        super().__init__(name, type, metadata_uri, config)
+        super().__init__(name, store_type, metadata_uri, config)
         # To memorize runs present in the backend
         self._key_vault = {
             self._RUN_METADATA: [],

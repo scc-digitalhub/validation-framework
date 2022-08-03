@@ -70,14 +70,14 @@ class ArtifactStore(metaclass=ABCMeta):
 
     def __init__(self,
                  name: str,
-                 type: str,
+                 store_type: str,
                  artifact_uri: str,
                  temp_dir: str,
                  config: Optional[dict] = None,
                  is_default=False
                  ) -> None:
         self.name = name
-        self.type = type
+        self.store_type = store_type
         self.artifact_uri = artifact_uri
         self.temp_dir = temp_dir
         self.config = config

@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from ftplib import FTP
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import check_make_dir, check_path, get_path
@@ -26,12 +26,12 @@ class FTPArtifactStore(ArtifactStore):
 
     def __init__(self,
                  name: str,
-                 type: str,
+                 store_type: str,
                  artifact_uri: str,
                  temp_dir: str,
                  config: Optional[dict] = None
                  ) -> None:
-        super().__init__(name, type, artifact_uri, temp_dir, config)
+        super().__init__(name, store_type, artifact_uri, temp_dir, config)
         if self.config is None:
             parsed = parse_uri(self.artifact_uri)
             self.config = {
@@ -50,7 +50,7 @@ class FTPArtifactStore(ArtifactStore):
                          dst: str,
                          src_name: str,
                          metadata: Optional[dict] = None
-                         ) -> Tuple[str, str]:
+                         ) -> None:
         """
         Persist an artifact.
         """

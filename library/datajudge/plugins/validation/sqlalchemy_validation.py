@@ -165,7 +165,7 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         reading data to return a connection string to a db.
         """
         self.stores = [store for store in self.stores
-                       if store.type == STORE_SQL]
+                       if store.store_type == STORE_SQL]
         if not self.stores:
             raise ValidationError(
                 "There must be at least a SQLStore to use sqlalchemy validator.")

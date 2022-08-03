@@ -1,7 +1,6 @@
 """
 PandasDataFrameReader module.
 """
-from typing import Optional
 import pandas as pd
 from frictionless import Resource
 
