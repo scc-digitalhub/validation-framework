@@ -2,9 +2,6 @@
 Dummy implementation of validation plugin.
 """
 # pylint: disable=unused-argument
-from __future__ import annotations
-
-import typing
 from typing import List
 
 from datajudge.metadata.datajudge_reports import DatajudgeReport
@@ -13,10 +10,6 @@ from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import GENERIC_DUMMY, LIBRARY_DUMMY
 from datajudge.utils.config import Constraint
-
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.plugins.base_plugin import Result
 
 
 class ValidationPluginDummy(Validation):
@@ -29,7 +22,7 @@ class ValidationPluginDummy(Validation):
         self.resource = None
 
     def setup(self,
-              resource: DataResource,
+              resource: "DataResource",
               constraint: dict,
               error_report: str,
               exec_args: dict) -> None:
@@ -49,7 +42,7 @@ class ValidationPluginDummy(Validation):
         return {}
 
     @exec_decorator
-    def render_datajudge(self, result: Result) -> DatajudgeReport:
+    def render_datajudge(self, result: "Result") -> DatajudgeReport:
         """
         Return a DatajudgeReport.
         """
@@ -61,7 +54,7 @@ class ValidationPluginDummy(Validation):
                                None)
 
     @exec_decorator
-    def render_artifact(self, result: Result) -> List[tuple]:
+    def render_artifact(self, result: "Result") -> List[tuple]:
         """
         Return a dummy report to be persisted as artifact.
         """
@@ -95,7 +88,7 @@ class ValidationBuilderDummy(ValidationPluginBuilder):
     """
 
     def build(self,
-              resources: List[DataResource],
+              resources: List["DataResource"],
               constraints: List[Constraint],
               error_report: str
               ) -> List[ValidationPluginDummy]:

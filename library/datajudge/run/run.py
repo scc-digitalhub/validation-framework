@@ -1,9 +1,6 @@
 """
 Run module.
 """
-from __future__ import annotations
-
-import typing
 from pathlib import Path
 from typing import Any, List, Optional
 
@@ -17,14 +14,6 @@ from datajudge.utils.commons import (DATAJUDGE_VERSION, MT_ARTIFACT_METADATA,
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.logger import LOGGER
 from datajudge.utils.utils import get_time
-
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.datajudge_reports import (DatajudgeProfile,
-                                                      DatajudgeReport,
-                                                      DatajudgeSchema)
-    from datajudge.run.run_info import RunInfo
-    from datajudge.run.run_handler import RunHandler
-    from datajudge.utils.config import Constraint
 
 
 class Run:
@@ -74,8 +63,8 @@ class Run:
     # Constructor
 
     def __init__(self,
-                 run_info: RunInfo,
-                 run_handler: RunHandler,
+                 run_info: "RunInfo",
+                 run_handler: "RunHandler",
                  overwrite: bool) -> None:
 
         self.run_info = run_info
@@ -244,7 +233,7 @@ class Run:
 
     def infer_datajudge(self,
                         parallel: bool = False,
-                        num_worker: int = 10) -> List[DatajudgeSchema]:
+                        num_worker: int = 10) -> List["DatajudgeSchema"]:
         """
         Execute schema inference on resources with Datajudge.
 
@@ -321,7 +310,7 @@ class Run:
 
     # Validation
     def validate_wrapper(self,
-                         constraints: List[Constraint],
+                         constraints: List["Constraint"],
                          error_report: Optional[str] = "partial",
                          parallel: Optional[bool] = False,
                          num_worker: Optional[int] = 10,
@@ -331,7 +320,7 @@ class Run:
 
         Parameters
         ----------
-        constraints : List[Constraint]
+        constraints : List["Constraint"]
             List of constraint to validate resources.
         error_report : str, optional
             Flag to render the error output of the datajudge report.
@@ -362,17 +351,17 @@ class Run:
         return self._run_handler.get_artifact_report()
 
     def validate_datajudge(self,
-                           constraints: List[Constraint],
+                           constraints: List["Constraint"],
                            error_report: Optional[str] = "partial",
                            parallel: Optional[bool] = False,
                            num_worker: Optional[int] = 10,
-                           ) -> List[DatajudgeReport]:
+                           ) -> List["DatajudgeReport"]:
         """
         Execute validation on resources with Datajudge.
 
         Parameters
         ----------
-        constraints : List[Constraint]
+        constraints : List["Constraint"]
             List of constraint to validate resources.
         error_report : str, optional
             Flag to render the error output of the datajudge report.
@@ -388,7 +377,7 @@ class Run:
         Returns
         -------
         List[DatajudgeReport]
-            Return a list of DatajudgeReport.
+            Return a list of "DatajudgeReport".
 
         """
         reports = self._run_handler.get_datajudge_report()
@@ -403,7 +392,7 @@ class Run:
         return self._run_handler.get_datajudge_report()
 
     def validate(self,
-                 constraints: List[Constraint],
+                 constraints: List["Constraint"],
                  error_report: Optional[str] = "partial",
                  parallel: Optional[bool] = False,
                  num_worker: Optional[int] = 10,
@@ -414,7 +403,7 @@ class Run:
 
         Parameters
         ----------
-        constraints : List[Constraint]
+        constraints : List["Constraint"]
             List of constraint to validate resources.
         error_report : str, optional
             Flag to render the error output of the datajudge report.
@@ -432,7 +421,7 @@ class Run:
         Returns
         -------
         Any
-            Return a list of DatajudgeReport and the
+            Return a list of "DatajudgeReport" and the
             corresponding list of framework results.
 
         """
@@ -499,7 +488,7 @@ class Run:
 
     def profile_datajudge(self,
                           parallel: bool = False,
-                          num_worker: int = 10) -> List[DatajudgeProfile]:
+                          num_worker: int = 10) -> List["DatajudgeProfile"]:
         """
         Execute profiling on resources with Datajudge.
 
@@ -513,7 +502,7 @@ class Run:
         Returns
         -------
         List[DatajudgeProfile]
-            Return a list of DatajudgeProfile.
+            Return a list of "DatajudgeProfile".
 
         """
         profiles = self._run_handler.get_datajudge_profile()
@@ -545,7 +534,7 @@ class Run:
         Returns
         -------
         Any
-            Return a list of DatajudgeProfile and the
+            Return a list of "DatajudgeProfile" and the
             corresponding list of framework results.
 
         """
@@ -597,7 +586,7 @@ class Run:
 
     # Context manager
 
-    def __enter__(self) -> Run:
+    def __enter__(self) -> "Run":
         # Set run status
         LOGGER.info(f"Starting run {self.run_info.run_id}")
         self.run_info.begin_status = STATUS_INIT

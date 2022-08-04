@@ -1,10 +1,6 @@
 """
 Base abstract Run Plugin module.
 """
-
-from __future__ import annotations
-
-import typing
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from typing import Any, List
@@ -14,10 +10,6 @@ from datajudge.plugins.utils.plugin_utils import RenderTuple
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.logger import LOGGER
 from datajudge.utils.utils import get_uiid
-
-if typing.TYPE_CHECKING:
-    from datajudge.plugins.utils.plugin_utils import Result
-    from datajudge.store_artifact.artifact_store import ArtifactStore
 
 
 class Plugin(metaclass=ABCMeta):
@@ -30,6 +22,7 @@ class Plugin(metaclass=ABCMeta):
         self.lib_name = self.get_lib_name()
         self.lib_version = self.get_lib_version()
         self.logger = LOGGER
+        self.data_reader = None
         self.exec_args = None
         self.exec_sequential = True
         self.exec_multiprocess = False
@@ -49,13 +42,13 @@ class Plugin(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def render_datajudge(self, obj: Result) -> Result:
+    def render_datajudge(self, obj: "Result") -> "Result":
         """
         Produce datajudge output.
         """
 
     @abstractmethod
-    def render_artifact(self, obj: Result) -> Result:
+    def render_artifact(self, obj: "Result") -> "Result":
         """
         Render an artifact to be persisted.
         """
@@ -97,7 +90,7 @@ class PluginBuilder:
     """
 
     def __init__(self,
-                 stores: List[ArtifactStore],
+                 stores: List["ArtifactStore"],
                  exec_args: dict
                  ) -> None:
         self.stores = stores
@@ -116,7 +109,7 @@ class PluginBuilder:
         """
         return deepcopy(resource)
 
-    def _get_resource_store(self, resource: DataResource) -> ArtifactStore:
+    def _get_resource_store(self, resource: DataResource) -> "ArtifactStore":
         """
         Get the resource store.
         """

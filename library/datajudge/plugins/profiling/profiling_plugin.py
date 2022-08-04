@@ -1,7 +1,6 @@
 """
 Profiling plugin abstract class module.
 """
-
 from abc import ABCMeta, abstractmethod
 from typing import Any
 

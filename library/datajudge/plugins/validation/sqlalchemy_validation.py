@@ -1,10 +1,6 @@
 """
 SQLAlchemy implementation of validation plugin.
 """
-
-from __future__ import annotations
-
-import typing
 from copy import deepcopy
 from typing import List
 
@@ -20,11 +16,6 @@ from datajudge.utils.commons import LIBRARY_SQLALCHEMY, STORE_SQL
 from datajudge.utils.exceptions import ValidationError
 from datajudge.utils.utils import flatten_list
 
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.plugins.base_plugin import Result
-    from datajudge.utils.config import Constraint, ConstraintSqlAlchemy
-
 
 class ValidationPluginSqlAlchemy(Validation):
     """
@@ -33,22 +24,20 @@ class ValidationPluginSqlAlchemy(Validation):
 
     def __init__(self) -> None:
         super().__init__()
-        self.df = None
         self.exec_multiprocess = True
 
     def setup(self,
               data_reader: PandasDataFrameSQLReader,
-              constraint: ConstraintSqlAlchemy,
+              constraint: "ConstraintSqlAlchemy",
               error_report: str,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
+        self.data_reader = data_reader
         self.constraint = constraint
         self.error_report = error_report
         self.exec_args = exec_args
-        self.df = data_reader.fetch_data(constraint.name,
-                                         constraint.query)
 
     @exec_decorator
     def validate(self) -> dict:
@@ -56,12 +45,14 @@ class ValidationPluginSqlAlchemy(Validation):
         Validate a Data Resource.
         """
         try:
-            valid, errors = evaluate_validity(self.df,
+            data = self.data_reader.fetch_data(self.constraint.name,
+                                               self.constraint.query)
+            valid, errors = evaluate_validity(data,
                                               self.constraint.check,
                                               self.constraint.expect,
                                               self.constraint.value)
             return {
-                "result": self.df.to_dict(),
+                "result": data.to_dict(),
                 "valid": valid,
                 "error": errors
             }
@@ -69,7 +60,7 @@ class ValidationPluginSqlAlchemy(Validation):
             raise ex
 
     @exec_decorator
-    def render_datajudge(self, result: Result) -> DatajudgeReport:
+    def render_datajudge(self, result: "Result") -> DatajudgeReport:
         """
         Return a DatajudgeReport.
         """
@@ -100,7 +91,7 @@ class ValidationPluginSqlAlchemy(Validation):
                                errors)
 
     @exec_decorator
-    def render_artifact(self, result: Result) -> List[tuple]:
+    def render_artifact(self, result: "Result") -> List[tuple]:
         """
         Return a rendered report ready to be persisted as artifact.
         """
@@ -134,8 +125,8 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
     """
 
     def build(self,
-              resources: List[DataResource],
-              constraints: List[Constraint],
+              resources: List["DataResource"],
+              constraints: List["Constraint"],
               error_report: str
               ) -> List[ValidationPluginSqlAlchemy]:
         """
@@ -171,17 +162,17 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
                 "There must be at least a SQLStore to use sqlalchemy validator.")
 
     @staticmethod
-    def _filter_constraints(constraints: List[Constraint]
-                            ) -> List[ConstraintSqlAlchemy]:
+    def _filter_constraints(constraints: List["Constraint"]
+                            ) -> List["ConstraintSqlAlchemy"]:
         """
         Filter out ConstraintSqlAlchemy.
         """
         return [const for const in constraints if const.type == LIBRARY_SQLALCHEMY]
 
     def _filter_resources(self,
-                          resources: List[DataResource],
-                          constraints: List[Constraint]
-                          ) -> List[DataResource]:
+                          resources: List["DataResource"],
+                          constraints: List["Constraint"]
+                          ) -> List["DataResource"]:
         """
         Filter resources used by validator.
         """
@@ -193,8 +184,8 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         return res_in_db
 
     def _regroup_constraint_resources(self,
-                                      constraints: List[Constraint],
-                                      resources: List[DataResource]
+                                      constraints: List["Constraint"],
+                                      resources: List["DataResource"]
                                       ) -> list:
         """
         Check univocity of resources location and return connection

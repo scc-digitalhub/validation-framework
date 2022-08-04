@@ -1,16 +1,10 @@
 """
 DataReader module.
 """
-from __future__ import annotations
-
-import typing
 from abc import ABCMeta, abstractmethod
 from typing import Any
 
 from datajudge.utils.logger import LOGGER
-
-if typing.TYPE_CHECKING:
-    from datajudge.store_artifact.artifact_store import ArtifactStore
 
 
 class DataReader(metaclass=ABCMeta):
@@ -22,7 +16,7 @@ class DataReader(metaclass=ABCMeta):
     """
 
     def __init__(self,
-                 store: ArtifactStore
+                 store: "ArtifactStore"
                  ) -> None:
         self.store = store
         self.logger = LOGGER

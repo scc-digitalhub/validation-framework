@@ -1,11 +1,7 @@
 """
 GreatExpectation implementation of profiling plugin.
 """
-
-from __future__ import annotations
-
 import os
-import typing
 from copy import deepcopy
 from pathlib import Path
 from typing import List
@@ -25,10 +21,6 @@ from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATION
 from datajudge.utils.file_utils import clean_all
 
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.plugins.base_plugin import Result
-
 
 class ProfilePluginGreatExpectation(Profiling):
     """
@@ -38,26 +30,26 @@ class ProfilePluginGreatExpectation(Profiling):
     def __init__(self) -> None:
         super().__init__()
         self.resource = None
-        self.df = None
         self.exec_multiprocess = True
 
     def setup(self,
               data_reader: PandasDataFrameFileReader,
-              resource: DataResource,
+              resource: "DataResource",
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
+        self.data_reader = data_reader
         self.resource = resource
         self.exec_args = exec_args
-        self.df = data_reader.fetch_data(self.resource.path)
 
     @exec_decorator
     def profile(self) -> dict:
         """
         Profile a Data Resource.
         """
-        validator = get_great_expectation_validator(self.df,
+        data = self.data_reader.fetch_data(self.resource.path)
+        validator = get_great_expectation_validator(data,
                                                     str(self.resource.name),
                                                     str(self.resource.title))
         profiler = UserConfigurableProfiler(profile_dataset=validator)
@@ -65,7 +57,7 @@ class ProfilePluginGreatExpectation(Profiling):
         return ExpectationSuite(**result.to_json_dict())
 
     @exec_decorator
-    def render_datajudge(self, result: Result) -> DatajudgeProfile:
+    def render_datajudge(self, result: "Result") -> DatajudgeProfile:
         """
         Return a DatajudgeProfile.
         """
@@ -89,7 +81,7 @@ class ProfilePluginGreatExpectation(Profiling):
                                 fields)
 
     @exec_decorator
-    def render_artifact(self, result: Result) -> List[tuple]:
+    def render_artifact(self, result: "Result") -> List[tuple]:
         """
         Return a rendered report ready to be persisted as artifact.
         """
@@ -123,7 +115,7 @@ class ProfileBuilderGreatExpectation(PluginBuilder):
     """
 
     def build(self,
-              resources: List[DataResource]
+              resources: List["DataResource"]
               ) -> List[ProfilePluginGreatExpectation]:
         """
         Build a plugin.

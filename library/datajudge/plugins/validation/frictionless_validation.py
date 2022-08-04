@@ -1,10 +1,6 @@
 """
 Frictionless implementation of validation plugin.
 """
-
-from __future__ import annotations
-
-import typing
 from typing import List, Union
 
 import frictionless
@@ -18,13 +14,6 @@ from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import (CONSTRAINT_FRICTIONLESS_SCHEMA,
                                      LIBRARY_FRICTIONLESS)
-from datajudge.utils.config import (ConstraintFrictionless,
-                                    ConstraintFullFrictionless)
-
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.plugins.base_plugin import Result
-    from datajudge.utils.config import Constraint
 
 
 class ValidationPluginFrictionless(Validation):
@@ -35,14 +24,13 @@ class ValidationPluginFrictionless(Validation):
     def __init__(self) -> None:
         super().__init__()
         self.resource = None
-        self.data_path = None
         self.schema = None
         self.exec_multiprocess = True
 
     def setup(self,
               data_reader: FileReader,
-              resource: DataResource,
-              constraint: ConstraintFrictionless,
+              resource: "DataResource",
+              constraint: "ConstraintFrictionless",
               error_report: str,
               exec_args: dict) -> None:
         """
@@ -52,37 +40,31 @@ class ValidationPluginFrictionless(Validation):
         self.constraint = constraint
         self.error_report = error_report
         self.exec_args = exec_args
-        self.data_path = data_reader.fetch_data(self.resource.path)
-        self.schema = self._rebuild_constraints()
-
-    # @exec_decorator
-    # def fetch_data(self) -> None:
-    #     """
-    #     Get data path.
-    #     """
-    #     self.data_path = self.data_reader.fetch_data(self.resource.path)
+        self.data_reader = data_reader
 
     @exec_decorator
     def validate(self) -> Report:
         """
         Validate a Data Resource.
         """
-        res = Resource(path=self.data_path,
-                       schema=self.schema).validate(**self.exec_args)
+        data = self.data_reader.fetch_data(self.resource.path)
+        schema = self._rebuild_constraints(data)
+        res = Resource(path=data,
+                       schema=schema).validate(**self.exec_args)
         return Report(res.to_dict())
 
-    def _rebuild_constraints(self) -> Schema:
+    def _rebuild_constraints(self, data_path: str) -> Schema:
         """
         Rebuild constraints.
         """
-        if isinstance(self.constraint, ConstraintFrictionless):
+        if self.constraint.type == LIBRARY_FRICTIONLESS:
             field_name = self.constraint.field
             field_type = self.constraint.fieldType
             val = self.constraint.value
             con_type = self.constraint.constraint
             weight = self.constraint.weight
 
-            schema = self._get_schema()
+            schema = self._get_schema(data_path)
 
             for field in schema["fields"]:
                 if field["name"] == field_name:
@@ -101,14 +83,14 @@ class ValidationPluginFrictionless(Validation):
         # Otherwise return the full table schema
         return Schema(self.constraint.table_schema)
 
-    def _get_schema(self) -> dict:
+    def _get_schema(self, data_path: str) -> dict:
         """
         Infer simple schema of a resource if not present.
         """
         try:
             schema = Schema(self.resource.schema)
             if not schema:
-                schema = Schema.describe(path=self.data_path)
+                schema = Schema.describe(path=data_path)
                 if not schema:
                     return {"fields": []}
             return {"fields": [{"name": field["name"]} for field in schema["fields"]]}
@@ -116,7 +98,7 @@ class ValidationPluginFrictionless(Validation):
             raise fex
 
     @exec_decorator
-    def render_datajudge(self, result: Result) -> DatajudgeReport:
+    def render_datajudge(self, result: "Result") -> DatajudgeReport:
         """
         Return a DatajudgeReport.
         """
@@ -147,7 +129,7 @@ class ValidationPluginFrictionless(Validation):
                                errors)
 
     @exec_decorator
-    def render_artifact(self, result: Result) -> List[tuple]:
+    def render_artifact(self, result: "Result") -> List[tuple]:
         """
         Return a rendered report ready to be persisted as artifact.
         """
@@ -181,8 +163,8 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
     """
 
     def build(self,
-              resources: List[DataResource],
-              constraints: List[Constraint],
+              resources: List["DataResource"],
+              constraints: List["Constraint"],
               error_report: str
               ) -> List[ValidationPluginFrictionless]:
         """
@@ -204,10 +186,10 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
         return plugins
 
     @staticmethod
-    def _filter_constraints(constraints: List[Constraint]
-                            ) -> List[Union[ConstraintFrictionless, ConstraintFullFrictionless]]:
+    def _filter_constraints(constraints: List["Constraint"]
+                            ) -> List[Union["ConstraintFrictionless", "ConstraintFullFrictionless"]]:
         """
-        Filter out ConstraintFrictionless and ConstraintFullFrictionless
+        Filter out ConstraintFrictionless and ConstraintFullFrictionless.
         """
         return [const for const in constraints
                 if const.type in (LIBRARY_FRICTIONLESS,

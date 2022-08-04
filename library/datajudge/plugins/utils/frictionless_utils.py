@@ -3,12 +3,10 @@ Frictionless utils module.
 """
 from typing import List, Union
 
-from frictionless import Schema
-
 from datajudge.utils.config import ConstraintFrictionless
 
 
-def frictionless_schema_converter(schema: Union[dict, Schema],
+def frictionless_schema_converter(schema: Union[dict, "Schema"],
                                   resource_name: str) -> List[ConstraintFrictionless]:
     """
     Convert a frictionless schema in a list of ConstraintFrictionless.
@@ -25,7 +23,6 @@ def frictionless_schema_converter(schema: Union[dict, Schema],
     List[ConstraintFrictionless]
         A list of ConstraintFrictionless.
     """
-
     constraints = []
     for field in schema.get("fields", []):
 

@@ -1,10 +1,7 @@
 """
 Run handler module.
 """
-from __future__ import annotations
-
 import concurrent.futures
-import typing
 from typing import Any, List
 
 from datajudge.data_reader.base_file_reader import FileReader
@@ -15,15 +12,6 @@ from datajudge.utils.commons import (OPERATION_INFERENCE,
                                      RESULT_RENDERED, RESULT_WRAPPED)
 from datajudge.utils.uri_utils import get_name_from_uri
 from datajudge.utils.utils import flatten_list, listify
-
-if typing.TYPE_CHECKING:
-    from datajudge.client.store_handler import StoreHandler
-    from datajudge.metadata.datajudge_reports import (DatajudgeProfile,
-                                                      DatajudgeReport,
-                                                      DatajudgeSchema)
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.plugins.base_plugin import Plugin, PluginBuilder
-    from datajudge.utils.config import Constraint, RunConfig
 
 
 class RunHandlerRegistry:
@@ -86,15 +74,15 @@ class RunHandler:
     """
 
     def __init__(self,
-                 config: RunConfig,
-                 store_handler: StoreHandler) -> None:
+                 config: "RunConfig",
+                 store_handler: "StoreHandler") -> None:
 
         self._config = config
         self._store_handler = store_handler
         self._registry = RunHandlerRegistry()
 
     def infer(self,
-              resources: List[DataResource],
+              resources: List["DataResource"],
               parallel: bool = False,
               num_worker: int = 10
               ) -> None:
@@ -109,8 +97,8 @@ class RunHandler:
         self._destroy_builders(builders)
 
     def validate(self,
-                 resources: List[DataResource],
-                 constraints: List[Constraint],
+                 resources: List["DataResource"],
+                 constraints: List["Constraint"],
                  error_report: str,
                  parallel: bool = False,
                  num_worker: int = 10
@@ -128,7 +116,7 @@ class RunHandler:
         self._destroy_builders(builders)
 
     def profile(self,
-                resources: List[DataResource],
+                resources: List["DataResource"],
                 parallel: bool = False,
                 num_worker: int = 10
                 ) -> None:
@@ -143,15 +131,15 @@ class RunHandler:
         self._destroy_builders(builders)
 
     @staticmethod
-    def _create_plugins(builders: PluginBuilder,
-                        *args) -> List[Plugin]:
+    def _create_plugins(builders: "PluginBuilder",
+                        *args) -> List["Plugin"]:
         """
         Return a list of plugins.
         """
         return flatten_list([builder.build(*args) for builder in builders])
 
     def _scheduler(self,
-                   plugins: List[Plugin],
+                   plugins: List["Plugin"],
                    ops: str,
                    parallel: bool,
                    num_worker: int) -> None:
@@ -178,7 +166,7 @@ class RunHandler:
         self._pool_execute_multiprocess(multiprocess, ops, num_worker)
 
     def _sequential_execute(self,
-                            plugins: List[Plugin],
+                            plugins: List["Plugin"],
                             ops: str) -> None:
         """
         Execute operations in sequence.
@@ -188,7 +176,7 @@ class RunHandler:
             self._register_results(ops, data)
 
     def _pool_execute_multiprocess(self,
-                                   plugins: List[Plugin],
+                                   plugins: List["Plugin"],
                                    ops: str,
                                    num_worker: int) -> None:
         """
@@ -200,7 +188,7 @@ class RunHandler:
                 self._register_results(ops, data)
 
     def _pool_execute_multithread(self,
-                                  plugins: List[Plugin],
+                                  plugins: List["Plugin"],
                                   ops: str,
                                   num_worker: int) -> None:
         """
@@ -212,7 +200,7 @@ class RunHandler:
                 self._register_results(ops, data)
 
     @staticmethod
-    def _execute(plugin: Plugin) -> dict:
+    def _execute(plugin: "Plugin") -> dict:
         """
         Wrap plugins main execution method. The handler create
         builders to build plugins. Once the plugin are built,
@@ -234,7 +222,7 @@ class RunHandler:
             self._registry.register(operation, key, value)
 
     @staticmethod
-    def _destroy_builders(builders: List[PluginBuilder]) -> None:
+    def _destroy_builders(builders: List["PluginBuilder"]) -> None:
         """
         Destroy builders.
         """
@@ -265,19 +253,19 @@ class RunHandler:
         """
         return [obj.artifact for obj in self.get_item(OPERATION_PROFILING, RESULT_WRAPPED)]
 
-    def get_datajudge_schema(self) -> List[DatajudgeSchema]:
+    def get_datajudge_schema(self) -> List["DatajudgeSchema"]:
         """
         Wrapper for plugins parsing methods.
         """
         return [obj.artifact for obj in self.get_item(OPERATION_INFERENCE, RESULT_DATAJUDGE)]
 
-    def get_datajudge_report(self) -> List[DatajudgeReport]:
+    def get_datajudge_report(self) -> List["DatajudgeReport"]:
         """
         Wrapper for plugins parsing methods.
         """
         return [obj.artifact for obj in self.get_item(OPERATION_VALIDATION, RESULT_DATAJUDGE)]
 
-    def get_datajudge_profile(self) -> List[DatajudgeProfile]:
+    def get_datajudge_profile(self) -> List["DatajudgeProfile"]:
         """
         Wrapper for plugins parsing methods.
         """
@@ -336,7 +324,7 @@ class RunHandler:
         store.persist_artifact(src, dst, src_name, metadata)
 
     def persist_data(self,
-                     resources: List[DataResource],
+                     resources: List["DataResource"],
                      dst: str) -> None:
         """
         Persist input data as artifact.

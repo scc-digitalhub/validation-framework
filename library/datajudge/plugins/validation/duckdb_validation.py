@@ -2,10 +2,7 @@
 DuckDB implementation of validation plugin.
 """
 # pylint: disable=import-error
-from __future__ import annotations
-
 import shutil
-import typing
 from copy import deepcopy
 from pathlib import Path
 from typing import List
@@ -13,6 +10,7 @@ from typing import List
 import duckdb
 
 from datajudge.data_reader.base_file_reader import FileReader
+from datajudge.data_reader.pandas_dataframe_duckdb_reader import PandasDataFrameDuckDBReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.utils.sql_checks import evaluate_validity
@@ -20,11 +18,6 @@ from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import DEFAULT_DIRECTORY, LIBRARY_DUCKDB
 from datajudge.utils.utils import flatten_list, get_uiid, listify
-
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.plugins.base_plugin import Result
-    from datajudge.utils.config import Constraint, ConstraintDuckDB
 
 
 class ValidationPluginDuckDB(Validation):
@@ -38,13 +31,15 @@ class ValidationPluginDuckDB(Validation):
         self.exec_multiprocess = True
 
     def setup(self,
+              data_reader: PandasDataFrameDuckDBReader,
               db: str,
-              constraint: ConstraintDuckDB,
+              constraint: "ConstraintDuckDB",
               error_report: str,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
+        self.data_reader = data_reader
         self.db = db
         self.constraint = constraint
         self.error_report = error_report
@@ -56,25 +51,22 @@ class ValidationPluginDuckDB(Validation):
         Validate a Data Resource.
         """
         try:
-            conn = duckdb.connect(database=self.db, read_only=True)
-            conn.execute(self.constraint.query)
-            result = conn.fetchdf()
-            valid, errors = evaluate_validity(result,
+            data = self.data_reader.fetch_data(self.db,
+                                               self.constraint.query)
+            valid, errors = evaluate_validity(data,
                                               self.constraint.check,
                                               self.constraint.expect,
                                               self.constraint.value)
             return {
-                "result": result.to_dict(),
+                "result": data.to_dict(),
                 "valid": valid,
                 "error": errors
             }
         except Exception as ex:
             raise ex
-        finally:
-            conn.close()
 
     @exec_decorator
-    def render_datajudge(self, result: Result) -> DatajudgeReport:
+    def render_datajudge(self, result: "Result") -> DatajudgeReport:
         """
         Return a DatajudgeReport.
         """
@@ -105,7 +97,7 @@ class ValidationPluginDuckDB(Validation):
                                errors)
 
     @exec_decorator
-    def render_artifact(self, result: Result) -> List[tuple]:
+    def render_artifact(self, result: "Result") -> List[tuple]:
         """
         Return a rendered report ready to be persisted as artifact.
         """
@@ -139,8 +131,8 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
     """
 
     def build(self,
-              resources: List[DataResource],
-              constraints: List[Constraint],
+              resources: List["DataResource"],
+              constraints: List["Constraint"],
               error_report: str
               ) -> List[ValidationPluginDuckDB]:
         """
@@ -154,9 +146,13 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
 
         plugins = []
         for const in f_constraint:
+            data_reader = PandasDataFrameDuckDBReader(None)
             plugin = ValidationPluginDuckDB()
-            plugin.setup(self.tmp_db.as_posix(), const,
-                         error_report, self.exec_args)
+            plugin.setup(data_reader,
+                         self.tmp_db.as_posix(),
+                         const,
+                         error_report,
+                         self.exec_args)
             plugins.append(plugin)
 
         return plugins
@@ -171,9 +167,9 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
             database=self.tmp_db.as_posix(), read_only=False)
 
     @staticmethod
-    def _filter_resources(resources: List[DataResource],
-                          constraints: List[Constraint]
-                          ) -> List[DataResource]:
+    def _filter_resources(resources: List["DataResource"],
+                          constraints: List["Constraint"]
+                          ) -> List["DataResource"]:
         """
         Filter resources used by validator.
         """
@@ -182,7 +178,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         return [res for res in resources if res.name in res_names]
 
     def _register_resources(self,
-                            resources: List[DataResource]
+                            resources: List["DataResource"]
                             ) -> None:
         """
         Register resources in db.
@@ -214,10 +210,10 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         self.con.close()
 
     @staticmethod
-    def _filter_constraints(constraints: List[Constraint]
-                            ) -> List[ConstraintDuckDB]:
+    def _filter_constraints(constraints: List["Constraint"]
+                            ) -> List["ConstraintDuckDB"]:
         """
-        Filter out ConstraintDuckDB.
+        Filter out "ConstraintDuckDB".
         """
         return [const for const in constraints if const.type == LIBRARY_DUCKDB]
 

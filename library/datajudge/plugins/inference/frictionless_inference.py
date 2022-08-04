@@ -1,9 +1,6 @@
 """
 Frictionless implementation of inference plugin.
 """
-from __future__ import annotations
-
-import typing
 from typing import List
 
 import frictionless
@@ -16,10 +13,6 @@ from datajudge.plugins.inference.inference_plugin import Inference
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.utils.commons import LIBRARY_FRICTIONLESS
 
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.plugins.base_plugin import Result
-
 
 class InferencePluginFrictionless(Inference):
     """
@@ -29,19 +22,18 @@ class InferencePluginFrictionless(Inference):
     def __init__(self) -> None:
         super().__init__()
         self.resource = None
-        self.data_path = None
         self.exec_multiprocess = True
 
     def setup(self,
               data_reader: FileReader,
-              resource: DataResource,
+              resource: "DataResource",
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
         self.resource = resource
         self.exec_args = exec_args
-        self.data_path = data_reader.fetch_data(self.resource.path)
+        self.data_reader = data_reader
 
     @exec_decorator
     def infer(self) -> Schema:
@@ -49,13 +41,14 @@ class InferencePluginFrictionless(Inference):
         Method that call infer on a resource and return an
         inferred schema.
         """
-        schema = Schema.describe(path=self.data_path,
+        data = self.data_reader.fetch_data(self.resource.path)
+        schema = Schema.describe(path=data,
                                  name=self.resource.name,
                                  **self.exec_args)
         return Schema(schema.to_dict())
 
     @exec_decorator
-    def render_datajudge(self, result: Result) -> DatajudgeSchema:
+    def render_datajudge(self, result: "Result") -> DatajudgeSchema:
         """
         Return a DatajudgeSchema.
         """
@@ -80,7 +73,7 @@ class InferencePluginFrictionless(Inference):
                                fields)
 
     @exec_decorator
-    def render_artifact(self, result: Result) -> List[tuple]:
+    def render_artifact(self, result: "Result") -> List[tuple]:
         """
         Return a frictionless schema to be persisted as artifact.
         """
@@ -114,7 +107,7 @@ class InferenceBuilderFrictionless(PluginBuilder):
     """
 
     def build(self,
-              resources: List[DataResource]
+              resources: List["DataResource"]
               ) -> List[InferencePluginFrictionless]:
         """
         Build a plugin.

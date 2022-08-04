@@ -1,11 +1,7 @@
 """
 GreatExpectation implementation of validation plugin.
 """
-
-from __future__ import annotations
-
 import os
-import typing
 from copy import deepcopy
 from pathlib import Path
 from typing import List
@@ -24,11 +20,6 @@ from datajudge.plugins.validation.validation_plugin import (
 from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATION
 from datajudge.utils.file_utils import clean_all
 
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.plugins.base_plugin import Result
-    from datajudge.utils.config import Constraint, ConstraintGreatExpectation
-
 
 class ValidationPluginGreatExpectation(Validation):
     """
@@ -38,30 +29,31 @@ class ValidationPluginGreatExpectation(Validation):
     def __init__(self) -> None:
         super().__init__()
         self.resource = None
-        self.df = None
         self.exec_multiprocess = True
 
     def setup(self,
               data_reader: PandasDataFrameFileReader,
-              resource: DataResource,
-              constraint: ConstraintGreatExpectation,
+              resource: "DataResource",
+              constraint: "ConstraintGreatExpectation",
               error_report: str,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
+
+        self.data_reader = data_reader
         self.resource = resource
         self.constraint = constraint
         self.error_report = error_report
         self.exec_args = exec_args
-        self.df = data_reader.fetch_data(self.resource.path)
 
     @exec_decorator
     def validate(self) -> dict:
         """
         Validate a Data Resource.
         """
-        validator = get_great_expectation_validator(self.df,
+        data = self.data_reader.fetch_data(self.resource.path)
+        validator = get_great_expectation_validator(data,
                                                     str(self.resource.name),
                                                     str(self.resource.title))
         validation_func = validator.validate_expectation(
@@ -70,7 +62,7 @@ class ValidationPluginGreatExpectation(Validation):
         return ExpectationValidationResult(**result.to_json_dict())
 
     @exec_decorator
-    def render_datajudge(self, result: Result) -> DatajudgeReport:
+    def render_datajudge(self, result: "Result") -> DatajudgeReport:
         """
         Return a DatajudgeReport.
         """
@@ -115,7 +107,7 @@ class ValidationPluginGreatExpectation(Validation):
                                errors)
 
     @exec_decorator
-    def render_artifact(self, result: Result) -> List[tuple]:
+    def render_artifact(self, result: "Result") -> List[tuple]:
         """
         Return a rendered report ready to be persisted as artifact.
         """
@@ -149,8 +141,8 @@ class ValidationBuilderGreatExpectation(ValidationPluginBuilder):
     """
 
     def build(self,
-              resources: List[DataResource],
-              constraints: List[Constraint],
+              resources: List["DataResource"],
+              constraints: List["Constraint"],
               error_report: str
               ) -> List[ValidationPluginGreatExpectation]:
         """
@@ -171,8 +163,8 @@ class ValidationBuilderGreatExpectation(ValidationPluginBuilder):
         return plugins
 
     @staticmethod
-    def _filter_constraints(constraints: List[Constraint]
-                            ) -> List[ConstraintGreatExpectation]:
+    def _filter_constraints(constraints: List["Constraint"]
+                            ) -> List["ConstraintGreatExpectation"]:
         """
         Filter out ConstraintGreatExpectation.
         """

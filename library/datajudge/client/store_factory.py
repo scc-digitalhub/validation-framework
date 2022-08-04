@@ -1,9 +1,6 @@
 """
 StoreFactory module.
 """
-from __future__ import annotations
-
-import typing
 from pathlib import Path
 from typing import Union
 
@@ -18,10 +15,6 @@ from datajudge.utils.file_utils import get_absolute_path
 from datajudge.utils.uri_utils import (check_url, get_uri_netloc, get_uri_path,
                                        get_uri_scheme, rebuild_uri)
 from datajudge.utils.utils import get_uiid
-
-if typing.TYPE_CHECKING:
-    from datajudge.store_artifact.artifact_store import ArtifactStore
-    from datajudge.store_metadata.metadata_store import MetadataStore
 
 
 class StoreBuilder:
@@ -47,7 +40,7 @@ class StoreBuilder:
         return self.build_artifact_store(cfg)
 
     def build_metadata_store(self,
-                             cfg: StoreConfig) -> MetadataStore:
+                             cfg: StoreConfig) -> "MetadataStore":
         """
         Method to create a metadata stores.
         """
@@ -82,7 +75,7 @@ class StoreBuilder:
         raise NotImplementedError
 
     def build_artifact_store(self,
-                             cfg: StoreConfig) -> ArtifactStore:
+                             cfg: StoreConfig) -> "ArtifactStore":
         """
         Method to create a artifact stores.
         """

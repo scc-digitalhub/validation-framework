@@ -2,9 +2,6 @@
 Dummy implementation of profiling plugin.
 """
 # pylint: disable=unused-argument
-from __future__ import annotations
-
-import typing
 from typing import List
 
 from datajudge.metadata.datajudge_reports import DatajudgeProfile
@@ -12,10 +9,6 @@ from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.profiling.profiling_plugin import Profiling
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.utils.commons import GENERIC_DUMMY, LIBRARY_DUMMY
-
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.plugins.base_plugin import Result
 
 
 class ProfilePluginDummy(Profiling):
@@ -28,7 +21,7 @@ class ProfilePluginDummy(Profiling):
         self.resource = None
 
     def setup(self,
-              resource: DataResource,
+              resource: "DataResource",
               exec_args: dict) -> None:
         """
         Set plugin resource.
@@ -44,7 +37,7 @@ class ProfilePluginDummy(Profiling):
         return {}
 
     @exec_decorator
-    def render_datajudge(self, result: Result) -> DatajudgeProfile:
+    def render_datajudge(self, result: "Result") -> DatajudgeProfile:
         """
         Return a DatajudgeProfile.
         """
@@ -55,7 +48,7 @@ class ProfilePluginDummy(Profiling):
                                 None)
 
     @exec_decorator
-    def render_artifact(self, result: Result) -> List[tuple]:
+    def render_artifact(self, result: "Result") -> List[tuple]:
         """
         Return a dummy schema to be persisted as artifact.
         """
@@ -89,7 +82,7 @@ class ProfileBuilderDummy(PluginBuilder):
     """
 
     def build(self,
-              resources: List[DataResource]
+              resources: List["DataResource"]
               ) -> List[ProfilePluginDummy]:
         """
         Build a plugin.

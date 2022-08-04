@@ -3,21 +3,12 @@ Client module.
 Implementation of a Client object to interact with storages
 and create runs.
 """
-
-from __future__ import annotations
-
-import typing
 from typing import List, Optional, Union
 
 from datajudge.client.run_builder import RunBuilder
 from datajudge.client.store_handler import StoreHandler
 from datajudge.utils.commons import (DEFAULT_DIRECTORY, DEFAULT_EXPERIMENT,
                                      DEFAULT_PROJECT)
-
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.run.run import Run
-    from datajudge.utils.config import RunConfig, StoreConfig
 
 
 class Client:
@@ -52,8 +43,8 @@ class Client:
     """
 
     def __init__(self,
-                 metadata_store: Optional[StoreConfig] = None,
-                 store: Optional[Union[StoreConfig, List[StoreConfig]]] = None,
+                 metadata_store: Optional["StoreConfig"] = None,
+                 store: Optional[Union["StoreConfig", List["StoreConfig"]]] = None,
                  project: Optional[str] = DEFAULT_PROJECT,
                  tmp_dir: Optional[str] = DEFAULT_DIRECTORY
                  ) -> None:
@@ -63,7 +54,7 @@ class Client:
                                            tmp_dir)
         self._run_builder = RunBuilder(self._store_handler)
 
-    def add_store(self, store: StoreConfig) -> None:
+    def add_store(self, store: "StoreConfig") -> None:
         """
         Add a new store to the client internal registry.
 
@@ -76,11 +67,11 @@ class Client:
         self._store_handler.add_artifact_store(store)
 
     def create_run(self,
-                   resources: Union[List[DataResource], DataResource],
-                   run_config: RunConfig,
+                   resources: Union[List["DataResource"], "DataResource"],
+                   run_config: "RunConfig",
                    experiment: Optional[str] = DEFAULT_EXPERIMENT,
                    run_id: Optional[str] = None,
-                   overwrite: Optional[bool] = False) -> Run:
+                   overwrite: Optional[bool] = False) -> "Run":
         """
         Create a new run.
 

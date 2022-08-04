@@ -2,17 +2,9 @@
 RunInfo module.
 Implementation of the basic Run's metadata.
 """
-from __future__ import annotations
-
-import typing
 from typing import List, Optional
 
-
 from datajudge.utils.utils import get_time
-
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.utils.config import RunConfig
 
 
 class RunInfo:
@@ -43,9 +35,9 @@ class RunInfo:
 
     def __init__(self,
                  experiment_name: str,
-                 resources: List[DataResource],
+                 resources: List["DataResource"],
                  run_id: str,
-                 run_config: RunConfig,
+                 run_config: "RunConfig",
                  run_metadata_uri: Optional[str] = None,
                  run_artifacts_uri: Optional[str] = None
                  ) -> None:

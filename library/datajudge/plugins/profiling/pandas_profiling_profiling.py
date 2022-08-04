@@ -1,10 +1,7 @@
 """
 Pandas profiling implementation of profiling plugin.
 """
-from __future__ import annotations
-
 import json
-import typing
 from typing import List
 
 import pandas_profiling
@@ -18,10 +15,6 @@ from datajudge.plugins.profiling.profiling_plugin import Profiling
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.utils.commons import LIBRARY_PANDAS_PROFILING
 from datajudge.utils.io_utils import write_bytesio
-
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.plugins.base_plugin import Result
 
 
 # Columns/fields to parse from profile
@@ -40,30 +33,30 @@ class ProfilePluginPandasProfiling(Profiling):
     def __init__(self) -> None:
         super().__init__()
         self.resource = None
-        self.df = None
         self.exec_multiprocess = True
 
     def setup(self,
               data_reader: PandasDataFrameFileReader,
-              resource: DataResource,
+              resource: "DataResource",
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
+        self.data_reader = data_reader
         self.resource = resource
         self.exec_args = exec_args
-        self.df = data_reader.fetch_data(self.resource.path)
 
     @exec_decorator
     def profile(self) -> ProfileReport:
         """
         Generate pandas_profiling profile.
         """
-        profile = ProfileReport(self.df, lazy=False, **self.exec_args)
+        data = self.data_reader.fetch_data(self.resource.path)
+        profile = ProfileReport(data, lazy=False, **self.exec_args)
         return ProfileReport().loads(profile.dumps())
 
     @exec_decorator
-    def render_datajudge(self, result: Result) -> DatajudgeProfile:
+    def render_datajudge(self, result: "Result") -> DatajudgeProfile:
         """
         Return a DatajudgeProfile.
         """
@@ -104,7 +97,7 @@ class ProfilePluginPandasProfiling(Profiling):
                                 fields)
 
     @exec_decorator
-    def render_artifact(self, result: Result) -> List[tuple]:
+    def render_artifact(self, result: "Result") -> List[tuple]:
         """
         Return a rendered profile ready to be persisted as artifact.
         """
@@ -152,7 +145,7 @@ class ProfileBuilderPandasProfiling(PluginBuilder):
     """
 
     def build(self,
-              resources: List[DataResource]
+              resources: List["DataResource"]
               ) -> List[ProfilePluginPandasProfiling]:
         """
         Build a plugin.

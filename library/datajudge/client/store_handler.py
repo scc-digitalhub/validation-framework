@@ -1,10 +1,6 @@
 """
 StoreHandler module.
 """
-
-from __future__ import annotations
-
-import typing
 from typing import List, Optional, Union
 
 from datajudge.client.store_factory import StoreBuilder
@@ -12,11 +8,6 @@ from datajudge.utils.commons import DEFAULT_DIRECTORY, DEFAULT_PROJECT
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.file_utils import clean_all
 from datajudge.utils.utils import listify
-
-if typing.TYPE_CHECKING:
-    from datajudge.store_artifact.artifact_store import ArtifactStore
-    from datajudge.store_metadata.metadata_store import MetadataStore
-    from datajudge.utils.config import StoreConfig
 
 
 STORE_TYPE_ARTIFACT = "artifact_store"
@@ -42,8 +33,8 @@ class StoreRegistry:
         self.registry[STORE_TYPE_METADATA] = None
 
     def register(self,
-                 new_store: Union[ArtifactStore,
-                                  MetadataStore],
+                 new_store: Union["ArtifactStore",
+                                  "MetadataStore"],
                  store_type: str) -> None:
         """
         Register a new store.
@@ -60,9 +51,9 @@ class StoreRegistry:
     def get_store(self,
                   store_type: str,
                   store_name: Optional[str] = None
-                  ) -> Union[ArtifactStore,
-                             List[ArtifactStore],
-                             MetadataStore]:
+                  ) -> Union["ArtifactStore",
+                             List["ArtifactStore"],
+                             "MetadataStore"]:
         """
         Return a store from registry.
         """
@@ -81,9 +72,9 @@ class StoreRegistry:
 
     def get_all_stores(self,
                        store_type: str
-                       ) -> Union[ArtifactStore,
-                                  List[ArtifactStore],
-                                  MetadataStore]:
+                       ) -> Union["ArtifactStore",
+                                  List["ArtifactStore"],
+                                  "MetadataStore"]:
         """
         Return all stores by type.
         """
@@ -99,8 +90,8 @@ class StoreHandler:
     """
 
     def __init__(self,
-                 metadata_store: Optional[StoreConfig] = None,
-                 store: Optional[List[StoreConfig]] = None,
+                 metadata_store: Optional["StoreConfig"] = None,
+                 store: Optional[List["StoreConfig"]] = None,
                  project: Optional[str] = DEFAULT_PROJECT,
                  tmp_dir: Optional[str] = DEFAULT_DIRECTORY) -> None:
         self._store_registry = StoreRegistry()
@@ -110,8 +101,8 @@ class StoreHandler:
         self._tmp_dir = tmp_dir
 
     def _setup(self,
-               metadata_store: Optional[StoreConfig] = None,
-               store: Optional[List[StoreConfig]] = None
+               metadata_store: Optional["StoreConfig"] = None,
+               store: Optional[List["StoreConfig"]] = None
                ) -> None:
         """
         Build stores according to configurations provided by user
@@ -129,7 +120,7 @@ class StoreHandler:
         self._update_default_store()
 
     def _add_metadata_store(self,
-                            config: Union[StoreConfig, dict]) -> None:
+                            config: Union["StoreConfig", dict]) -> None:
         """
         Add a metadata store to the registry.
         """
@@ -137,7 +128,7 @@ class StoreHandler:
         self._store_registry.register(md_store, STORE_TYPE_METADATA)
 
     def add_artifact_store(self,
-                           config: Union[StoreConfig, dict]) -> None:
+                           config: Union["StoreConfig", dict]) -> None:
         """
         Add an artifact store to the registry.
         """
@@ -181,28 +172,28 @@ class StoreHandler:
         except (AssertionError, TypeError, AttributeError):
             raise StoreError("Please configure one store as default.")
 
-    def get_md_store(self) -> MetadataStore:
+    def get_md_store(self) -> "MetadataStore":
         """
         Get metadata store from registry.
         """
         return self._store_registry.get_store(STORE_TYPE_METADATA)
 
-    def get_art_store(self, name: str) -> ArtifactStore:
+    def get_art_store(self, name: str) -> "ArtifactStore":
         """
         Get artifact store from registry by name.
         """
         return self._store_registry.get_store(STORE_TYPE_ARTIFACT, name)
 
-    def get_def_store(self) -> ArtifactStore:
+    def get_def_store(self) -> "ArtifactStore":
         """
         Get default artifact store from registry.
         """
         return self._store_registry.get_store(DEFAULT_STORE)
 
     def get_all_art_stores(self
-                           ) -> Union[ArtifactStore,
-                                      List[ArtifactStore],
-                                      MetadataStore]:
+                           ) -> Union["ArtifactStore",
+                                      List["ArtifactStore"],
+                                      "MetadataStore"]:
         """
         Get all artifact stores from registry.
         """

@@ -1,10 +1,6 @@
 """
 Frictionless implementation of profiling plugin.
 """
-
-from __future__ import annotations
-
-import typing
 from typing import List
 
 import frictionless
@@ -18,10 +14,6 @@ from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.utils.commons import LIBRARY_FRICTIONLESS
 from datajudge.utils.io_utils import write_bytesio
 
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.plugins.base_plugin import Result
-
 
 class ProfilePluginFrictionless(Profiling):
     """
@@ -31,33 +23,33 @@ class ProfilePluginFrictionless(Profiling):
     def __init__(self) -> None:
         super().__init__()
         self.resource = None
-        self.data_path = None
         self.exec_multiprocess = True
 
     def setup(self,
               data_reader: FileReader,
-              resource: DataResource,
+              resource: "DataResource",
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
         self.resource = resource
         self.exec_args = exec_args
-        self.data_path = data_reader.fetch_data(self.resource.path)
+        self.data_reader = data_reader
 
     @exec_decorator
     def profile(self) -> Resource:
         """
         Profile
         """
-        profile = Resource().describe(self.data_path,
+        data = self.data_reader.fetch_data(self.resource.path)
+        profile = Resource().describe(data,
                                       expand=True,
                                       stats=True,
                                       **self.exec_args)
         return Resource(profile.to_dict())
 
     @exec_decorator
-    def render_datajudge(self, result: Result) -> DatajudgeProfile:
+    def render_datajudge(self, result: "Result") -> DatajudgeProfile:
         """
         Return a DatajudgeProfile.
         """
@@ -81,7 +73,7 @@ class ProfilePluginFrictionless(Profiling):
                                 fields)
 
     @exec_decorator
-    def render_artifact(self, result: Result) -> List[tuple]:
+    def render_artifact(self, result: "Result") -> List[tuple]:
         """
         Return a rendered profile ready to be persisted as artifact.
         """
@@ -115,7 +107,7 @@ class ProfileBuilderFrictionless(PluginBuilder):
     """
 
     def build(self,
-              resources: List[DataResource]
+              resources: List["DataResource"]
               ) -> List[ProfilePluginFrictionless]:
         """
         Build a plugin.

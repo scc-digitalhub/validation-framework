@@ -1,9 +1,6 @@
 """
 RunBuilder module.
 """
-from __future__ import annotations
-
-import typing
 from typing import List, Optional, Union
 
 from datajudge.metadata.data_resource import DataResource
@@ -15,9 +12,6 @@ from datajudge.utils.config import RunConfig
 from datajudge.utils.exceptions import RunError
 from datajudge.utils.utils import get_uiid, listify
 
-if typing.TYPE_CHECKING:
-    from datajudge.client.store_handler import StoreHandler
-
 
 class RunBuilder:
     """
@@ -26,7 +20,7 @@ class RunBuilder:
     """
 
     def __init__(self,
-                 store_handler: StoreHandler) -> None:
+                 store_handler: "StoreHandler") -> None:
         """
         The RunBuilder recieves a store handler to get stores.
         """

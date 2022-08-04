@@ -2,9 +2,6 @@
 Dummy implementation of inference plugin.
 """
 # pylint: disable=unused-argument
-from __future__ import annotations
-
-import typing
 from typing import List
 
 from datajudge.metadata.datajudge_reports import DatajudgeSchema
@@ -12,10 +9,6 @@ from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.inference.inference_plugin import Inference
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.utils.commons import GENERIC_DUMMY, LIBRARY_DUMMY
-
-if typing.TYPE_CHECKING:
-    from datajudge.metadata.data_resource import DataResource
-    from datajudge.plugins.base_plugin import Result
 
 
 class InferencePluginDummy(Inference):
@@ -28,7 +21,7 @@ class InferencePluginDummy(Inference):
         self.resource = None
 
     def setup(self,
-              resource: DataResource,
+              resource: "DataResource",
               exec_args: dict) -> None:
         """
         Set plugin resource.
@@ -44,7 +37,7 @@ class InferencePluginDummy(Inference):
         return {}
 
     @exec_decorator
-    def render_datajudge(self, result: Result) -> DatajudgeSchema:
+    def render_datajudge(self, result: "Result") -> DatajudgeSchema:
         """
         Return a DatajudgeSchema.
         """
@@ -54,7 +47,7 @@ class InferencePluginDummy(Inference):
                                None)
 
     @exec_decorator
-    def render_artifact(self, result: Result) -> List[tuple]:
+    def render_artifact(self, result: "Result") -> List[tuple]:
         """
         Return a dummy schema to be persisted as artifact.
         """
@@ -88,7 +81,7 @@ class InferenceBuilderDummy(PluginBuilder):
     """
 
     def build(self,
-              resources: List[DataResource]
+              resources: List["DataResource"]
               ) -> List[InferencePluginDummy]:
         """
         Build a plugin.
