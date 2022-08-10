@@ -51,9 +51,9 @@ If you configure more than one ``ArtifactStore``, at least one must be set as ``
 
 
 * *local*
-* *http* (Doesn't support artifact persistence)
-* *ftp*
 * *s3*
 * *azure*
+* *ftp*
+* *http* (Doesn't support artifact persistence)
 * *sql* (Doesn't support artifact persistence)
 * *odbc* (Doesn't support artifact persistence)

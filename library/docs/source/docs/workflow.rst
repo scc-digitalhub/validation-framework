@@ -30,20 +30,20 @@ An user initially configures Reosurces, Stores and Run operations:
 
     # Data Resource
     RES_LOCAL_01 = dj.DataResource(path="path-to-data",
-                                name="example-resource",
-                                store="local")
+                                   name="example-resource",
+                                   store="local")
 
 
     # Example constraint
     CONSTRAINT_01 = dj.ConstraintFrictionless(type="frictionless",
-                                            title="Example frictionless constraint",
-                                            name="example-const",
-                                            resources=["example-resource"],
-                                            field="field-to-validate",
-                                            fieldType="string",
-                                            constraint="maxLength",
-                                            value=11,
-                                            weight=5)
+                                              title="Example frictionless constraint",
+                                              name="example-const",
+                                              resources=["example-resource"],
+                                              field="field-to-validate",
+                                              fieldType="string",
+                                              constraint="maxLength",
+                                              value=11,
+                                              weight=5)
 
 
     RUN_CFG = dj.RunConfig(
@@ -59,8 +59,7 @@ An user initially configures Reosurces, Stores and Run operations:
             ],
             profiling=[
                 {
-                    "library": "pandas_profiling",
-                    "execArgs": {"minimal":True, "progress_bar":False}
+                    "library": "frictionless"
                 }
             ]
     )

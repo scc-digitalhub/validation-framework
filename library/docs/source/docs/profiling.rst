@@ -56,12 +56,8 @@ Frictionless
        "library": "frictionless",
 
        # execArgs accepted are the ones passed to the constructor of Resource().
-       "execArgs": {},
+       "execArgs": {}
 
-       # This arguments is related more to the stores than the run plugins,
-       # but in general, to perform a better profilation with frictionless,
-       # a csv format is better.
-       "fetchMode": "csv"
    }
 
 
@@ -75,27 +71,23 @@ Pandas Profiling
        # The only parameter accepted is "pandas_profiling"
        "library": "pandas_profiling",
 
-       # execArgs accepted are the ones passed to the method ProfileReport().
-       "execArgs": {"minimal": True},
+       # execArgs accepted are the ones passed to the method ProfileReport(). E.g.:
+       "execArgs": {"minimal": True}
 
-       # This arguments is related more to the stores than the run plugins.
-       "fetchMode": "csv" or "parquet"
    }
 
 
 Great Expectation
 -----------------
 
-The ``great_expectation`` validator executes an expectation specified in a *constraint* on a ``DataResource``.
+The ``great_expectations`` validator executes an expectation specified in a *constraint* on a ``DataResource``.
 
 .. code-block:: python
 
    run_config = {
-       "library": "great_expectation",
+       "library": "great_expectations",
 
-       # There are no suitable execution arguments for the great_expectation validator
-       "execArgs": {},
+       # There are no suitable execution arguments for the great_expectations validator
+       "execArgs": {}
 
-       # This arguments is related more to the stores than the run plugins
-       "fetchMode": "csv" or "parquet"
    }

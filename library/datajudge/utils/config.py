@@ -20,7 +20,7 @@ from datajudge.utils.commons import (CONSTRAINT_FRICTIONLESS_SCHEMA,
                                      LIBRARY_DUCKDB,
                                      LIBRARY_DUMMY,
                                      LIBRARY_FRICTIONLESS,
-                                     LIBRARY_GREAT_EXPECTATION,
+                                     LIBRARY_GREAT_EXPECTATIONS,
                                      LIBRARY_SQLALCHEMY,
                                      STORE_AZURE,
                                      STORE_DUMMY,
@@ -168,12 +168,12 @@ class ConstraintSqlAlchemy(Constraint):
     """Modality of constraint checking (On rows or single value)."""
 
 
-class ConstraintGreatExpectation(Constraint):
+class ConstraintGreatExpectations(Constraint):
     """
     Great Expectation constraint.
     """
-    type: str = Field(LIBRARY_GREAT_EXPECTATION, const=True)
-    """Constraint type ("great_expectation")."""
+    type: str = Field(LIBRARY_GREAT_EXPECTATIONS, const=True)
+    """Constraint type ("great_expectations")."""
 
     expectation: str
     """Name of the expectation to apply to data."""

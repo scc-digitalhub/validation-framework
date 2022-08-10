@@ -15,6 +15,7 @@ Overview
    :maxdepth: 1
 
    docs/overview
+   docs/scenarios
    docs/workflow
 
 Getting started

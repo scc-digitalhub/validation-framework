@@ -10,7 +10,7 @@ LIBRARY_FRICTIONLESS = "frictionless"
 LIBRARY_PANDAS_PROFILING = "pandas_profiling"
 LIBRARY_DUCKDB = "duckdb"
 LIBRARY_SQLALCHEMY = "sqlalchemy"
-LIBRARY_GREAT_EXPECTATION = "great_expectation"
+LIBRARY_GREAT_EXPECTATIONS = "great_expectations"
 LIBRARY_DUMMY = "_dummy"
 
 

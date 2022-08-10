@@ -7,7 +7,7 @@ from datajudge.plugins.utils.frictionless_utils import \
     frictionless_schema_converter
 from datajudge.utils.config import (ConstraintDuckDB, ConstraintFrictionless,
                                     ConstraintFullFrictionless,
-                                    ConstraintGreatExpectation,
+                                    ConstraintGreatExpectations,
                                     ConstraintSqlAlchemy, RunConfig,
                                     StoreConfig)
 
@@ -16,7 +16,7 @@ __all__ = [
     "ConstraintDuckDB",
     "ConstraintFrictionless",
     "ConstraintFullFrictionless",
-    "ConstraintGreatExpectation",
+    "ConstraintGreatExpectations",
     "ConstraintSqlAlchemy",
     "DataResource",
     "frictionless_schema_converter",

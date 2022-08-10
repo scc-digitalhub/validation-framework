@@ -23,7 +23,7 @@ def get_data_context() -> DataContext:
     return DataContext.create(project_root_dir=tmp_path)
 
 
-def get_great_expectation_validator(data: pd.DataFrame,
+def get_great_expectations_validator(data: pd.DataFrame,
                                     data_source_name: str,
                                     data_asset_name: str) -> Any:
     """

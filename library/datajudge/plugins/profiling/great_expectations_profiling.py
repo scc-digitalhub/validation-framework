@@ -1,5 +1,5 @@
 """
-GreatExpectation implementation of profiling plugin.
+GreatExpectations implementation of profiling plugin.
 """
 import os
 from copy import deepcopy
@@ -15,16 +15,16 @@ from datajudge.data_reader.pandas_dataframe_file_reader import PandasDataFrameFi
 from datajudge.metadata.datajudge_reports import DatajudgeProfile
 from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.profiling.profiling_plugin import Profiling
-from datajudge.plugins.utils.great_expectation_utils import \
-    get_great_expectation_validator
+from datajudge.plugins.utils.great_expectations_utils import \
+    get_great_expectations_validator
 from datajudge.plugins.utils.plugin_utils import exec_decorator
-from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATION
+from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATIONS
 from datajudge.utils.file_utils import clean_all
 
 
-class ProfilePluginGreatExpectation(Profiling):
+class ProfilePluginGreatExpectations(Profiling):
     """
-    SQLAlchemy with GreatExpectation implementation of validation plugin.
+    SQLAlchemy with GreatExpectations implementation of validation plugin.
     """
 
     def __init__(self) -> None:
@@ -49,7 +49,7 @@ class ProfilePluginGreatExpectation(Profiling):
         Profile a Data Resource.
         """
         data = self.data_reader.fetch_data(self.resource.path)
-        validator = get_great_expectation_validator(data,
+        validator = get_great_expectations_validator(data,
                                                     str(self.resource.name),
                                                     str(self.resource.title))
         profiler = UserConfigurableProfiler(profile_dataset=validator)
@@ -90,7 +90,7 @@ class ProfilePluginGreatExpectation(Profiling):
             _object = {"errors": result.errors}
         else:
             _object = result.artifact.to_json_dict()
-        filename = self._fn_profile.format(f"{LIBRARY_GREAT_EXPECTATION}.json")
+        filename = self._fn_profile.format(f"{LIBRARY_GREAT_EXPECTATIONS}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
@@ -109,14 +109,14 @@ class ProfilePluginGreatExpectation(Profiling):
         return ge.__version__
 
 
-class ProfileBuilderGreatExpectation(PluginBuilder):
+class ProfileBuilderGreatExpectations(PluginBuilder):
     """
     Profile plugin builder.
     """
 
     def build(self,
               resources: List["DataResource"]
-              ) -> List[ProfilePluginGreatExpectation]:
+              ) -> List[ProfilePluginGreatExpectations]:
         """
         Build a plugin.
         """
@@ -125,7 +125,7 @@ class ProfileBuilderGreatExpectation(PluginBuilder):
             resource = self._get_resource_deepcopy(res)
             store = self._get_resource_store(resource)
             data_reader = PandasDataFrameFileReader(store)
-            plugin = ProfilePluginGreatExpectation()
+            plugin = ProfilePluginGreatExpectations()
             plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)
         return plugins

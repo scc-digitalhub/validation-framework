@@ -10,6 +10,7 @@ from datajudge.utils.commons import (OPERATION_INFERENCE,
                                      OPERATION_PROFILING, OPERATION_VALIDATION,
                                      RESULT_DATAJUDGE, RESULT_LIBRARY,
                                      RESULT_RENDERED, RESULT_WRAPPED)
+from datajudge.utils.exceptions import RunError
 from datajudge.utils.uri_utils import get_name_from_uri
 from datajudge.utils.utils import flatten_list, listify
 
@@ -106,6 +107,11 @@ class RunHandler:
         """
         Wrapper for plugins validate methods.
         """
+        if error_report not in ("count",
+                                "partial",
+                                "full"):
+            raise RunError("Available options for error_report are 'count', 'partial', 'full'.")
+
         constraints = listify(constraints)
         builders = builder_factory(self._config.validation,
                                    OPERATION_VALIDATION,

@@ -44,8 +44,7 @@ Supported libraries
 * `Frictionless`_
 * `DuckDB`_
 * `SQLAlchemy`_
-* `Great Expectation`_
-
+* `Great Expectations`_
 
 
 Frictionless
@@ -59,12 +58,7 @@ Frictionless
        "library": "frictionless",
 
        # execArgs accepted are the ones passed to the method validate()
-       "execArgs": {},
-
-       # This arguments is related more to the stores than the run plugins,
-       # but in general, to perform a better validation with frictionless,
-       # a csv format is better
-       "fetchMode": "csv"
+       "execArgs": {}
    }
 
 
@@ -79,10 +73,8 @@ DuckDB
        "library": "duckdb",
 
        # There are no suitable execution arguments for the duckdb validator
-       "execArgs": {},
+       "execArgs": {}
 
-       # This arguments is related more to the stores than the run plugins
-       "fetchMode": "csv" or "parquet"
    }
 
 
@@ -95,23 +87,24 @@ The ``sqlalchemy`` validator executes query defined in a *constraints* on the da
 
    run_config = {
        # The only parameter accepted is "sqlalchemy"
-       "library": "sqlalchemy"
+       "library": "sqlalchemy",
+
+       # There are no suitable execution arguments for the duckdb validator
+       "execArgs": {}
    }
 
 
-Great Expectation
-^^^^^^^^^^^^^^^^^
+Great Expectations
+^^^^^^^^^^^^^^^^^^
 
-The ``great_expectation`` validator executes an expectation specified in a *constraint* on a ``DataResource``.
+The ``great_expectations`` validator executes an expectation specified in a *constraint* on a ``DataResource``.
 
 .. code-block:: python
 
    run_config = {
-       "library": "great_expectation",
+       "library": "great_expectations",
 
-       # There are no suitable execution arguments for the great_expectation validator
-       "execArgs": {},
+       # There are no suitable execution arguments for the great_expectations validator
+       "execArgs": {}
 
-       # This arguments is related more to the stores than the run plugins
-       "fetchMode": "csv" or "parquet"
    }

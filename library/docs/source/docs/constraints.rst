@@ -19,7 +19,7 @@ Constraint types
 * `Frictionless schema`_
 * `DuckDB`_
 * `SQLAlchemy`_
-* `Great Expectation`_
+* `Great Expectations`_
 
 
 Frictionless
@@ -28,7 +28,6 @@ Frictionless
 The parameters to define a ``ConstraintFrictionless`` are the following:
 
 
-* *type*, MUST be "frictionless"
 * *field*, specified targeted field
 * *fieldType*, specified targeted field type
 * *constraint*, frictionless constraint
@@ -67,15 +66,14 @@ Example:
 
    # Example constraint. We expect that the values of the
    #  specified field have a maximum lenght of 11 characters.
-   CONSTRAINT_01 = dj.ConstraintFrictionless(type="frictionless",
-                                              title="Example frictionless constraint",
-                                              name="example-const",
-                                              resources=["example-resource"],
-                                              field="field-to-validate",
-                                              fieldType="string",
-                                              constraint="maxLength",
-                                              value=11,
-                                              weight=5)
+   CONSTRAINT_01 = dj.ConstraintFrictionless(title="Example frictionless constraint",
+                                             name="example-const",
+                                             resources=["example-resource"],
+                                             field="field-to-validate",
+                                             fieldType="string",
+                                             constraint="maxLength",
+                                             value=11,
+                                             weight=5)
 
 Frictionless schema
 -------------------
@@ -83,7 +81,6 @@ Frictionless schema
 The parameters to define a ``ConstraintFullFrictionless`` are the following:
 
 
-* *type*, MUST be "frictionless_schema"
 * *schema*, a dictionary (or a frictionless ``Schema``), formatted as ``frictionless Schema``.
 
 Example:
@@ -113,12 +110,11 @@ Example:
    }
 
    # Example constraint. We will pass to a validator a full frictionless schema.
-   CONSTRAINT_01 = dj.ConstraintFrictionless(type="frictionless_schema",
-                                              title="Example frictionless_schema constraint",
-                                              name="example-const",
-                                              resources=["example-resource"],
-                                              schema=SCHEMA_01,
-                                              weight=5)
+   CONSTRAINT_01 = dj.ConstraintFrictionless(title="Example frictionless_schema constraint",
+                                             name="example-const",
+                                             resources=["example-resource"],
+                                             schema=SCHEMA_01,
+                                             weight=5)
 
 DuckDB
 ------
@@ -126,7 +122,6 @@ DuckDB
 The parameters to define a ``ConstraintDuckDB`` are the following:
 
 
-* *type*, MUST be "duckdb"
 * *query*, an SQL query that will be executed on the resources
 
   * Please note that the query require some precautions
@@ -181,96 +176,88 @@ The parameters to define a ``ConstraintDuckDB`` are the following:
    # Empty/non-empty table. The evaluation is allowed when check is "rows"
 
    # Expecting empty table as result of the validation query
-   CONSTRAINT_01 = dj.ConstraintDuckDB(type="duckdb",
-                                        title="Example duckdb constraint",
-                                        name="example-const",
-                                        resources=["example_resource"],
-                                        query="select * from example_resource",
-                                        expect="empty",
-                                        check="rows",
-                                        weight=5)
+   CONSTRAINT_01 = dj.ConstraintDuckDB(title="Example duckdb constraint",
+                                       name="example-const",
+                                       resources=["example_resource"],
+                                       query="select * from example_resource",
+                                       expect="empty",
+                                       check="rows",
+                                       weight=5)
 
    # Expecting non-empty table as result of the validation query
-   CONSTRAINT_02 = dj.ConstraintDuckDB(type="duckdb",
-                                        title="Example duckdb constraint",
-                                        name="example-const",
-                                        resources=["example_resource"],
-                                        query="select * from example_resource",
-                                        expect="non-empty",
-                                        check="rows",
-                                        weight=5)
+   CONSTRAINT_02 = dj.ConstraintDuckDB(title="Example duckdb constraint",
+                                       name="example-const",
+                                       resources=["example_resource"],
+                                       query="select * from example_resource",
+                                       expect="non-empty",
+                                       check="rows",
+                                       weight=5)
 
    # Exact value
 
    # Expecting a table with 10 rows
-   CONSTRAINT_03 = dj.ConstraintDuckDB(type="duckdb",
-                                        title="Example duckdb constraint",
-                                        name="example-const",
-                                        resources=["example_resource"],
-                                        query="select field from example_resource",
-                                        expect="exact",
-                                        check="rows",
-                                        value=10,
-                                        weight=5)
+   CONSTRAINT_03 = dj.ConstraintDuckDB(title="Example duckdb constraint",
+                                       name="example-const",
+                                       resources=["example_resource"],
+                                       query="select field from example_resource",
+                                       expect="exact",
+                                       check="rows",
+                                       value=10,
+                                       weight=5)
 
    # Expecting a table with 10 as result of the count
-   CONSTRAINT_04 = dj.ConstraintDuckDB(type="duckdb",
-                                        title="Example duckdb constraint",
-                                        name="example-const",
-                                        resources=["example_resource"],
-                                        query="select count(field) from example_resource",
-                                        expect="exact",
-                                        check="value",
-                                        value=10,
-                                        weight=5)
+   CONSTRAINT_04 = dj.ConstraintDuckDB(title="Example duckdb constraint",
+                                       name="example-const",
+                                       resources=["example_resource"],
+                                       query="select count(field) from example_resource",
+                                       expect="exact",
+                                       check="value",
+                                       value=10,
+                                       weight=5)
 
    # Minimum/maximum (both check are inclusive of the value)
 
    # Expecting a table with number of rows >= 10
-   CONSTRAINT_05 = dj.ConstraintDuckDB(type="duckdb",
-                                        title="Example duckdb constraint",
-                                        name="example-const",
-                                        resources=["example_resource"],
-                                        query="select field from example_resource",
-                                        expect="minimum",
-                                        check="rows",
-                                        value=10,
-                                        weight=5)
+   CONSTRAINT_05 = dj.ConstraintDuckDB(title="Example duckdb constraint",
+                                       name="example-const",
+                                       resources=["example_resource"],
+                                       query="select field from example_resource",
+                                       expect="minimum",
+                                       check="rows",
+                                       value=10,
+                                       weight=5)
 
    # Expecting a table with result of count <= 10
-   CONSTRAINT_06 = dj.ConstraintDuckDB(type="duckdb",
-                                        title="Example duckdb constraint",
-                                        name="example-const",
-                                        resources=["example_resource"],
-                                        query="select count(field) from example_resource",
-                                        expect="maximum",
-                                        check="value",
-                                        value=10,
-                                        weight=5)
+   CONSTRAINT_06 = dj.ConstraintDuckDB(title="Example duckdb constraint",
+                                       name="example-const",
+                                       resources=["example_resource"],
+                                       query="select count(field) from example_resource",
+                                       expect="maximum",
+                                       check="value",
+                                       value=10,
+                                       weight=5)
 
    # Range (value expect a string of parentheses and number)
 
    # Expecting a table with number of rows > 10 and <= 15
-   CONSTRAINT_07 = dj.ConstraintDuckDB(type="duckdb",
-                                        title="Example duckdb constraint",
-                                        name="example-const",
-                                        resources=["example_resource"],
-                                        query="select field from example_resource",
-                                        expect="range",
-                                        check="rows",
-                                        value="(10,15]",
-                                        weight=5)
+   CONSTRAINT_07 = dj.ConstraintDuckDB(title="Example duckdb constraint",
+                                       name="example-const",
+                                       resources=["example_resource"],
+                                       query="select field from example_resource",
+                                       expect="range",
+                                       check="rows",
+                                       value="(10,15]",
+                                       weight=5)
 
    # Expecting a table with resulting value >= 10.87 and < 15.63
-   CONSTRAINT_08 = dj.ConstraintDuckDB(type="duckdb",
-                                        title="Example duckdb constraint",
-                                        name="example-const",
-                                        resources=["example_resource"],
-                                        query="select mean(field) from example_resource",
-                                        expect="rows",
-                                        check="value",
-                                        value="[10.87,15.63)",
-                                        weight=5)
+   CONSTRAINT_08 = dj.ConstraintDuckDB(title="Example duckdb constraint",
+                                       name="example-const",
+                                       resources=["example_resource"],
+                                       query="select mean(field) from example_resource",
+                                       expect="rows",
+                                       check="value",
+                                       value="[10.87,15.63)",
+                                       weight=5)
 
 SQLAlchemy
 ----------
@@ -278,7 +265,6 @@ SQLAlchemy
 The parameters to define a ``ConstraintSqlAlchemy`` are the following:
 
 
-* *type*, MUST be "sqlalchemy"
 * *query*, an SQL query that will be executed on the database
 * *expect*, expected tipology of result
 
@@ -327,21 +313,19 @@ The parameters to define a ``ConstraintSqlAlchemy`` are the following:
    # The sqlalchemy constraints are basically the same as duckdb ones
 
    # Expecting empty table as result of the validation query
-   CONSTRAINT_01 = dj.ConstraintDuckDB(type="sqlalchemy",
-                                        title="Example sqlalchemy constraint",
-                                        name="example-const",
-                                        resources=["example_resource"],
-                                        query="select * from example_resource",
-                                        expect="empty",
-                                        check="rows",
-                                        weight=5)
+   CONSTRAINT_01 = dj.ConstraintDuckDB(title="Example sqlalchemy constraint",
+                                       name="example-const",
+                                       resources=["example_resource"],
+                                       query="select * from example_resource",
+                                       expect="empty",
+                                       check="rows",
+                                       weight=5)
 
-Great Expectation
------------------
+Great Expectations
+------------------
 
-The parameters to define a ``ConstraintGreatExpectation`` are the following:
+The parameters to define a ``ConstraintGreatExpectations`` are the following:
 
-* *type*, MUST be "great_expectation"
 * *expectation*, expectation to apply on a resource
 * *expectation_args*, arguments for the expectation
 
@@ -365,10 +349,9 @@ Note that for the moment the execution plugins require the presence of a user in
    # EXAMPLE CONSTRAINTS
 
    # Expecting maximum column value to be between 10 and 50
-   CONSTRAINT_01 = dj.ConstraintGreatExpectation(type="great_expectation",
-                                                 title="Example great expectation constraint",
-                                                 name="example-const",
-                                                 resources=["example_resource"],
-                                                 expectation="expect_column_max_to_be_between",
-                                                 expectation_args={"min_value": 10, "max_value": 50, "column": "target-column"},
-                                                 weight=5)
+   CONSTRAINT_01 = dj.ConstraintGreatExpectations(title="Example great expectations constraint",
+                                                  name="example-const",
+                                                  resources=["example_resource"],
+                                                  expectation="expect_column_max_to_be_between",
+                                                  expectation_args={"min_value": 10, "max_value": 50, "column": "target-column"},
+                                                  weight=5)

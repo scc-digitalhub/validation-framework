@@ -58,7 +58,7 @@ datajudge.ConstraintSqlAlchemy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autopydantic_model:: datajudge.utils.config::ConstraintSqlAlchemy
 
-datajudge.ConstraintGreatExpectation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autopydantic_model:: datajudge.utils.config::ConstraintGreatExpectation
+datajudge.ConstraintGreatExpectations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autopydantic_model:: datajudge.utils.config::ConstraintGreatExpectations
 

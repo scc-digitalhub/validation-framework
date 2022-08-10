@@ -57,10 +57,6 @@ Frictionless
 
        # execArgs accepted are the ones passed to the method Schema.describe().
        # Note that arguments `path` and `name` are already taken.
-       "execArgs": {},
+       "execArgs": {}
 
-       # This arguments is related more to the stores than the run plugins,
-       # but in general, to perform a successful schema inference with frictionless,
-       # a csv format is better.
-       "fetchMode": "csv"
    }
