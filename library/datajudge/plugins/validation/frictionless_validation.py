@@ -81,14 +81,14 @@ class ValidationPluginFrictionless(Validation):
             return Schema(schema)
 
         # Otherwise return the full table schema
-        return Schema(self.constraint.table_schema)
+        return Schema(self.constraint.tableSchema)
 
     def _get_schema(self, data_path: str) -> dict:
         """
         Infer simple schema of a resource if not present.
         """
         try:
-            schema = Schema(self.resource.schema)
+            schema = Schema(self.resource.tableSchema)
             if not schema:
                 schema = Schema.describe(path=data_path)
                 if not schema:

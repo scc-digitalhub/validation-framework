@@ -28,7 +28,7 @@ The other parameters are optional, but it's recommended to add them to enrich yo
    RESOURCE = dj.DataResource(path="path-to-data",
                               name="res-name",
                               store="store-name",
-                              schema="path to a data schema or an embedded schema",
+                              tableSchema="path to a data schema or an embedded schema",
                               package="name of the package to which the resource belongs",
                               title="human readable name",
                               description="description of the resource")

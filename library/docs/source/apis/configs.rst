@@ -20,7 +20,7 @@ Data Resource
 datajudge.DataResource
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: datajudge.metadata.data_resource::DataResource
+.. autopydantic_model:: datajudge.utils.config::DataResource
 
 Run configuration
 -----------------

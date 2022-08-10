@@ -5,8 +5,8 @@ from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from typing import Any, List
 
-from datajudge.metadata.data_resource import DataResource
 from datajudge.plugins.utils.plugin_utils import RenderTuple
+from datajudge.utils.config import DataResource
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.logger import LOGGER
 from datajudge.utils.utils import get_uiid

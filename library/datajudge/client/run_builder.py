@@ -3,12 +3,11 @@ RunBuilder module.
 """
 from typing import List, Optional, Union
 
-from datajudge.metadata.data_resource import DataResource
 from datajudge.run.run import Run
 from datajudge.run.run_handler import RunHandler
 from datajudge.run.run_info import RunInfo
 from datajudge.utils.commons import DEFAULT_EXPERIMENT
-from datajudge.utils.config import RunConfig
+from datajudge.utils.config import DataResource, RunConfig
 from datajudge.utils.exceptions import RunError
 from datajudge.utils.utils import get_uiid, listify
 

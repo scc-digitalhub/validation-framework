@@ -64,12 +64,12 @@ class RunInfo:
         run_dict = {
             "experimentName": self.experiment_name,
             "runId": self.run_id,
-            "runConfig": self.run_config.dict(exclude_none=True,
-                                              by_alias=True),
+            "runConfig": self.run_config.dict(exclude_none=True),
             "runLibraries": self.run_libraries,
             "runMetadataUri": self.run_metadata_uri,
             "runArtifactsUri": self.run_artifacts_uri,
-            "resources": [i.to_dict() for i in self.resources],
+            "resources": [i.dict(exclude_none=True)
+                          for i in self.resources],
             "created": self.created,
             "beginStatus": self.begin_status,
             "started": self.started,

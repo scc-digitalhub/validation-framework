@@ -110,11 +110,11 @@ Example:
    }
 
    # Example constraint. We will pass to a validator a full frictionless schema.
-   CONSTRAINT_01 = dj.ConstraintFrictionless(title="Example frictionless_schema constraint",
-                                             name="example-const",
-                                             resources=["example-resource"],
-                                             schema=SCHEMA_01,
-                                             weight=5)
+   CONSTRAINT_01 = dj.ConstraintFullFrictionless(title="Example frictionless_schema constraint",
+                                                 name="example-const",
+                                                 resources=["example-resource"],
+                                                 tableSchema=SCHEMA_01,
+                                                 weight=5)
 
 DuckDB
 ------
