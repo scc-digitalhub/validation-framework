@@ -41,7 +41,11 @@ class PandasDataFrameFileReader(FileReader):
         file_format = resource.get("format")
 
         if file_format == "csv":
-            list_df = [pd.read_csv(i) for i in paths]
+            csv_args = {
+            "sep": resource.get("dialect", {}).get("delimiter", ","),
+            "encoding": resource.get("encoding", "utf-8")
+            }
+            list_df = [pd.read_csv(i, **csv_args) for i in paths]
         elif file_format in ["xls", "xlsx", "ods", "odf"]:
             list_df = [pd.read_excel(i) for i in paths]
         elif file_format == "parquet":
