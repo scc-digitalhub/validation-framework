@@ -33,14 +33,14 @@ def get_absolute_path(*args) -> str:
     """
     Return absolute path.
     """
-    return str(Path(*args).absolute())
+    return Path(*args).absolute().as_posix()
 
 
 def get_path(*args) -> str:
     """
     Return path.
     """
-    return str(Path(*args))
+    return Path(*args).as_posix()
 
 
 def check_make_dir(uri: str) -> None:

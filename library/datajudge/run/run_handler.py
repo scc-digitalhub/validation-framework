@@ -11,6 +11,7 @@ from datajudge.utils.commons import (OPERATION_INFERENCE,
                                      RESULT_DATAJUDGE, RESULT_LIBRARY,
                                      RESULT_RENDERED, RESULT_WRAPPED)
 from datajudge.utils.exceptions import RunError
+from datajudge.utils.file_utils import get_absolute_path
 from datajudge.utils.uri_utils import get_name_from_uri
 from datajudge.utils.utils import flatten_list, listify
 
@@ -107,11 +108,7 @@ class RunHandler:
         """
         Wrapper for plugins validate methods.
         """
-        if error_report not in ("count",
-                                "partial",
-                                "full"):
-            raise RunError("Available options for error_report are 'count', 'partial', 'full'.")
-
+        self._parse_report_arg(error_report)
         constraints = listify(constraints)
         builders = builder_factory(self._config.validation,
                                    OPERATION_VALIDATION,
@@ -120,6 +117,17 @@ class RunHandler:
             builders, resources, constraints, error_report)
         self._scheduler(plugins, OPERATION_VALIDATION, parallel, num_worker)
         self._destroy_builders(builders)
+
+    @staticmethod
+    def _parse_report_arg(error_report: str) -> None:
+        """
+        Check error_report argument and raise
+        if differs from options.
+        """
+        if error_report not in ("count",
+                                "partial",
+                                "full"):
+            raise RunError("Available options for error_report are 'count', 'partial', 'full'.")
 
     def profile(self,
                 resources: List["DataResource"],
@@ -281,19 +289,19 @@ class RunHandler:
         """
         Get a list of schemas ready to be persisted.
         """
-        return flatten_list([obj.artifact for obj in self.get_item(OPERATION_INFERENCE, RESULT_RENDERED)])
+        return listify(flatten_list([obj.artifact for obj in self.get_item(OPERATION_INFERENCE, RESULT_RENDERED)]))
 
     def get_rendered_report(self) -> List[Any]:
         """
         Get a list of reports ready to be persisted.
         """
-        return flatten_list([obj.artifact for obj in self.get_item(OPERATION_VALIDATION, RESULT_RENDERED)])
+        return listify(flatten_list([obj.artifact for obj in self.get_item(OPERATION_VALIDATION, RESULT_RENDERED)]))
 
     def get_rendered_profile(self) -> List[Any]:
         """
         Get a list of profiles ready to be persisted.
         """
-        return flatten_list([obj.artifact for obj in self.get_item(OPERATION_PROFILING, RESULT_RENDERED)])
+        return listify(flatten_list([obj.artifact for obj in self.get_item(OPERATION_PROFILING, RESULT_RENDERED)]))
 
     def get_libraries(self) -> List[dict]:
         """
@@ -340,6 +348,7 @@ class RunHandler:
             data_reader = FileReader(store)
             for path in listify(res.path):
                 tmp_pth = data_reader.fetch_data(path)
+                tmp_pth = get_absolute_path(tmp_pth)
                 filename = get_name_from_uri(tmp_pth)
                 self.persist_artifact(tmp_pth, dst, filename, {})
 
