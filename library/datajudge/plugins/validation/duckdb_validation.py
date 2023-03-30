@@ -11,6 +11,7 @@ import duckdb
 
 from datajudge.data_reader.base_file_reader import FileReader
 from datajudge.data_reader.pandas_dataframe_duckdb_reader import PandasDataFrameDuckDBReader
+from datajudge.data_reader.pandas_dataframe_file_reader import PandasDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.utils.sql_checks import evaluate_validity
@@ -198,10 +199,21 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
             # Handle multiple paths
             for idx, pth in enumerate(listify(tmp_pth)):
                 if idx == 0:
-                    sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{pth}';"
+                    try:
+                        sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{pth}';"
+                        self.con.execute(sql)
+                    except:
+                        df = PandasDataFrameFileReader(None).fetch_data(pth)
+                        sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{df}';"
+                        self.con.execute(sql)
                 else:
-                    sql = f"COPY {resource.name} FROM '{pth}' (AUTO_DETECT TRUE);"
-                self.con.execute(sql)
+                    try:
+                        sql = f"COPY {resource.name} FROM '{pth}' (AUTO_DETECT TRUE);"
+                        self.con.execute(sql)
+                    except:
+                        df = PandasDataFrameFileReader(None).fetch_data(pth)
+                        sql = f"INSERT INTO {resource.name} SELECT * FROM '{df}';"
+                        self.con.execute(sql)
 
     def _tear_down_connection(self) -> None:
         """

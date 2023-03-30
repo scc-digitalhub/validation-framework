@@ -43,7 +43,7 @@ class PandasDataFrameFileReader(FileReader):
         if file_format == "csv":
             csv_args = {
             "sep": resource.get("dialect", {}).get("delimiter", ","),
-            "encoding": resource.get("encoding", "utf-8")
+            "encoding": resource.get("encoding")
             }
             list_df = [pd.read_csv(i, **csv_args) for i in paths]
         elif file_format in ["xls", "xlsx", "ods", "odf"]:
