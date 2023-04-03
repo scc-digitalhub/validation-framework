@@ -2,7 +2,7 @@
 PandasDataFrameReader module.
 """
 import pandas as pd
-from frictionless import Resource
+from frictionless import Resource, Detector
 
 from datajudge.data_reader.base_file_reader import FileReader
 from datajudge.utils.utils import listify
@@ -28,7 +28,10 @@ class PandasDataFrameFileReader(FileReader):
         """
         Infer resource with frictionless.
         """
-        resource = Resource().describe(path, expand=True)
+        resource = Resource.describe(path,
+                                     expand=True,
+                                     detector=Detector(buffer_size=20000,
+                                                       sample_size=1000))
         return resource.to_dict()
 
     def _read_df_from_path(self, tmp_path: str) -> pd.DataFrame:
