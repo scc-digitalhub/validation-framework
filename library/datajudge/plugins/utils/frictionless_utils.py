@@ -3,6 +3,8 @@ Frictionless utils module.
 """
 from typing import List, Union
 
+from frictionless import Resource, Detector
+
 from datajudge.utils.config import ConstraintFrictionless
 
 
@@ -75,3 +77,17 @@ def frictionless_schema_converter(schema: Union[dict, "Schema"],
                 cnt += 1
 
     return constraints
+
+
+def describe_resource(pth: str) -> dict:
+    """
+    Describe a resource using frictionless.
+    """
+    # With bigger buffer/sample we should avoid
+    # error encoding detection
+    detector = Detector(buffer_size=25000,
+                        sample_size=1250)
+    desc = Resource.describe(source=pth,
+                             expand=True,
+                             detector=detector)
+    return desc.to_dict()

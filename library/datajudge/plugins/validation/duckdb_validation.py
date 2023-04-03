@@ -8,11 +8,11 @@ from pathlib import Path
 from typing import List
 
 import duckdb
-from frictionless import Resource
 
 from datajudge.data_reader.base_file_reader import FileReader
 from datajudge.data_reader.pandas_dataframe_duckdb_reader import PandasDataFrameDuckDBReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
+from datajudge.plugins.utils.frictionless_utils import describe_resource
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.utils.sql_checks import evaluate_validity
 from datajudge.plugins.validation.validation_plugin import (
@@ -199,7 +199,8 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
             except RuntimeError:
                 pass
 
-            # Handle multiple paths
+            # Handle multiple paths: crate a table for
+            # first file, then append
             for idx, pth in enumerate(listify(tmp_pth)):
                 if idx == 0:
                     sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{pth}';"
@@ -226,10 +227,9 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         Check if encoding is UTF-8.
         """
-        encoding = (Resource().describe(pth, expand=True)
-                              .get("encoding"))
+        encoding = describe_resource(pth).get("encoding")
         if encoding != "utf-8":
-            msg = "DuckDB does not support encoding different than UTF-8"
+            msg = "DuckDB only support encoding utf-8."
             raise ValidationError(msg)
 
     def destroy(self) -> None:
