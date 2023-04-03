@@ -8,16 +8,17 @@ from pathlib import Path
 from typing import List
 
 import duckdb
+from frictionless import Resource
 
 from datajudge.data_reader.base_file_reader import FileReader
 from datajudge.data_reader.pandas_dataframe_duckdb_reader import PandasDataFrameDuckDBReader
-from datajudge.data_reader.pandas_dataframe_file_reader import PandasDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.utils.sql_checks import evaluate_validity
 from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import DEFAULT_DIRECTORY, LIBRARY_DUCKDB
+from datajudge.utils.exceptions import ValidationError
 from datajudge.utils.utils import flatten_list, get_uiid, listify
 
 
@@ -189,6 +190,8 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
             store = self._get_resource_store(resource)
             tmp_pth = FileReader(store).fetch_data(resource.path)
 
+            self.check_encoding(tmp_pth)
+
             # If resource is already registered, continue
             try:
                 if bool(self.con.table(f"{resource.name}")):
@@ -199,21 +202,10 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
             # Handle multiple paths
             for idx, pth in enumerate(listify(tmp_pth)):
                 if idx == 0:
-                    try:
-                        sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{pth}';"
-                        self.con.execute(sql)
-                    except:
-                        df = PandasDataFrameFileReader(None).fetch_data(pth)
-                        sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{df}';"
-                        self.con.execute(sql)
+                    sql = f"CREATE TABLE {resource.name} AS SELECT * FROM '{pth}';"
                 else:
-                    try:
-                        sql = f"COPY {resource.name} FROM '{pth}' (AUTO_DETECT TRUE);"
-                        self.con.execute(sql)
-                    except:
-                        df = PandasDataFrameFileReader(None).fetch_data(pth)
-                        sql = f"INSERT INTO {resource.name} SELECT * FROM '{df}';"
-                        self.con.execute(sql)
+                    sql = f"COPY {resource.name} FROM '{pth}' (AUTO_DETECT TRUE);"
+                self.con.execute(sql)
 
     def _tear_down_connection(self) -> None:
         """
@@ -228,6 +220,17 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         Filter out "ConstraintDuckDB".
         """
         return [const for const in constraints if const.type == LIBRARY_DUCKDB]
+
+    @staticmethod
+    def check_encoding(pth: str) -> None:
+        """
+        Check if encoding is UTF-8.
+        """
+        encoding = (Resource().describe(pth, expand=True)
+                              .get("encoding"))
+        if encoding != "utf-8":
+            msg = "DuckDB does not support encoding different than UTF-8"
+            raise ValidationError(msg)
 
     def destroy(self) -> None:
         """
