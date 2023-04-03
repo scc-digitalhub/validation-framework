@@ -4,9 +4,11 @@ Implementation of local metadata store.
 from typing import Optional
 
 from datajudge.store_metadata.metadata_store import MetadataStore
-from datajudge.utils import config as cfg
+from datajudge.utils import commons as cfg
+from datajudge.utils.exceptions import RunError
 from datajudge.utils.file_utils import (check_dir, get_path, make_dir,
-                                        remove_files, write_json)
+                                        remove_files)
+from datajudge.utils.io_utils import write_json
 
 
 class LocalMetadataStore(MetadataStore):
@@ -18,21 +20,28 @@ class LocalMetadataStore(MetadataStore):
     """
 
     def __init__(self,
-                 uri_metadata: str,
+                 name: str,
+                 store_type: str,
+                 metadata_uri: str,
                  config:  Optional[dict] = None) -> None:
-        super().__init__(uri_metadata, config)
+        super().__init__(name, store_type, metadata_uri, config)
         self._filenames = {
             self._RUN_METADATA: cfg.FN_RUN_METADATA,
-            self._DATA_RESOURCE: cfg.FN_DATA_RESOURCE,
-            self._SHORT_REPORT: cfg.FN_SHORT_REPORT,
-            self._SHORT_SCHEMA: cfg.FN_SHORT_SCHEMA,
-            self._DATA_PROFILE: cfg.FN_DATA_PROFILE,
+            self._DJ_REPORT: cfg.FN_DJ_REPORT,
+            self._DJ_SCHEMA: cfg.FN_DJ_SCHEMA,
+            self._DJ_PROFILE: cfg.FN_DJ_PROFILE,
             self._ARTIFACT_METADATA: cfg.FN_ARTIFACT_METADATA,
             self._RUN_ENV: cfg.FN_RUN_ENV,
         }
-        self._artifact_count = 0
+        self._cnt = {
+            self._DJ_REPORT: 0,
+            self._DJ_SCHEMA: 0,
+            self._DJ_PROFILE: 0,
+            self._ARTIFACT_METADATA: 0,
+        }
 
     def init_run(self,
+                 exp_name: str,
                  run_id: str,
                  overwrite: bool) -> None:
         """
@@ -40,7 +49,7 @@ class LocalMetadataStore(MetadataStore):
         If folder doesn't exist, create it.
         If overwrite is True, it delete all the run's folder contents.
         """
-        uri = self.get_run_metadata_uri(run_id)
+        uri = self.get_run_metadata_uri(exp_name, run_id)
         self._check_dst_folder(uri, overwrite, init=True)
 
     def log_metadata(self,
@@ -55,8 +64,8 @@ class LocalMetadataStore(MetadataStore):
         dst = self._build_source_destination(dst, src_type)
         write_json(metadata, dst)
 
-    def _check_dst_folder(self,
-                          dst: str,
+    @staticmethod
+    def _check_dst_folder(dst: str,
                           overwrite: bool,
                           init: Optional[bool] = False) -> None:
         """
@@ -64,9 +73,8 @@ class LocalMetadataStore(MetadataStore):
         """
         if check_dir(dst):
             if init and not overwrite:
-                raise OSError("Run already exists, please use another id")
+                raise RunError("Run already exists, please use another id.")
             if init and overwrite:
-                self._artifact_count = 0
                 remove_files(dst)
         else:
             make_dir(dst)
@@ -79,22 +87,15 @@ class LocalMetadataStore(MetadataStore):
         Return source path based on input source type.
         """
         filename = self._filenames[src_type]
-        if src_type == self._ARTIFACT_METADATA:
-            filename = filename.format(self._artifact_count)
-            self._artifact_count += 1
+        if src_type in self._cnt:
+            filename = filename.format(self._cnt[src_type])
+            self._cnt[src_type] += 1
         return get_path(dst, filename)
 
-    def get_run_metadata_uri(self, run_id: str) -> str:
+    def get_run_metadata_uri(self,
+                             exp_name: str,
+                             run_id: str) -> str:
         """
         Return the path of the metadata folder for the Run.
         """
-        return get_path(self.uri_metadata, run_id)
-
-    def get_data_resource_uri(self, run_id: str) -> str:
-        """
-        Return the path of the data resource for the Run.
-        """
-        filename = self._filenames[self._DATA_RESOURCE]
-        return get_path(self.uri_metadata,
-                        run_id,
-                        filename)
+        return get_path(self.metadata_uri, exp_name, run_id)

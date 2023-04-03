@@ -26,6 +26,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+tests/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -69,7 +70,8 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+docs/build/
+docs/source/_build/
 
 # PyBuilder
 target/
@@ -131,3 +133,6 @@ dmypy.json
 # VScode
 \.vscode/*
 *.code-workspace
+
+# pylint
+.pylintrc

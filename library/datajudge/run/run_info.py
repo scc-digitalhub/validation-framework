@@ -2,10 +2,10 @@
 RunInfo module.
 Implementation of the basic Run's metadata.
 """
+from typing import List, Optional
+
 from datajudge.utils.utils import get_time
 
-
-# pylint: disable=too-many-instance-attributes,too-many-arguments
 
 class RunInfo:
     """
@@ -13,17 +13,17 @@ class RunInfo:
 
     Attributes
     ----------
-    experiment_id : str
-        Id of the experiment.
     experiment_name : str
-        Name of the experiment.
+        Id of the experiment.
     run_id : str
         Run id.
+    run_type: str
+        Run typology.
     run_metadata_uri : str
         URI that point to the metadata store.
     run_artifacts_uri : str
         URI that point to the artifact store.
-    data_resource_uri : str
+    resources_uri : str
         URI that point to the resource.
 
     Methods
@@ -35,25 +35,21 @@ class RunInfo:
 
     def __init__(self,
                  experiment_name: str,
-                 experiment_id: str,
+                 resources: List["DataResource"],
                  run_id: str,
-                 run_metadata_uri: str,
-                 run_artifacts_uri: str) -> None:
+                 run_config: "RunConfig",
+                 run_metadata_uri: Optional[str] = None,
+                 run_artifacts_uri: Optional[str] = None
+                 ) -> None:
 
         self.experiment_name = experiment_name
-        self.experiment_id = experiment_id
-
         self.run_id = run_id
+        self.run_config = run_config
+        self.run_libraries = None
         self.run_metadata_uri = run_metadata_uri
         self.run_artifacts_uri = run_artifacts_uri
 
-        self.data_resource_uri = None
-
-        self.validation_library_name = None
-        self.validation_library_version = None
-
-        self.profiling_library_name = None
-        self.profiling_library_version = None
+        self.resources = resources
 
         self.created = get_time()
         self.begin_status = None
@@ -67,15 +63,13 @@ class RunInfo:
         """
         run_dict = {
             "experimentName": self.experiment_name,
-            "experimentId": self.experiment_id,
             "runId": self.run_id,
+            "runConfig": self.run_config.dict(exclude_none=True),
+            "runLibraries": self.run_libraries,
             "runMetadataUri": self.run_metadata_uri,
             "runArtifactsUri": self.run_artifacts_uri,
-            "dataResourceUri": self.data_resource_uri,
-            "validationLibraryName": self.validation_library_name,
-            "validationLibraryVersion": self.validation_library_version,
-            "profilingLibraryName": self.profiling_library_name,
-            "profilingLibraryVersion": self.profiling_library_version,
+            "resources": [i.dict(exclude_none=True)
+                          for i in self.resources],
             "created": self.created,
             "beginStatus": self.begin_status,
             "started": self.started,

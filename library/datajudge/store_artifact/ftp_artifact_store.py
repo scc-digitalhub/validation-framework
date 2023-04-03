@@ -7,11 +7,11 @@ from contextlib import contextmanager
 from ftplib import FTP
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
-from datajudge.utils.file_utils import check_path, get_path
-from datajudge.utils.io_utils import wrap_string, write_bytesio
+from datajudge.utils.file_utils import check_make_dir, check_path, get_path
+from datajudge.utils.io_utils import wrap_string, write_bytes, write_bytesio
 from datajudge.utils.uri_utils import (build_key, get_name_from_uri,
                                        get_uri_path, parse_uri)
 
@@ -25,10 +25,13 @@ class FTPArtifactStore(ArtifactStore):
     """
 
     def __init__(self,
+                 name: str,
+                 store_type: str,
                  artifact_uri: str,
-                 config: Optional[dict] = None,
-                 data: bool = False) -> None:
-        super().__init__(artifact_uri, config, data)
+                 temp_dir: str,
+                 config: Optional[dict] = None
+                 ) -> None:
+        super().__init__(name, store_type, artifact_uri, temp_dir, config)
         if self.config is None:
             parsed = parse_uri(self.artifact_uri)
             self.config = {
@@ -41,19 +44,18 @@ class FTPArtifactStore(ArtifactStore):
             }
 
         self.path = parsed.path
-        self._check_access_to_storage(self.path)
 
     def persist_artifact(self,
                          src: Any,
                          dst: str,
                          src_name: str,
-                         metadata: dict
-                         ) -> Tuple[str, str]:
+                         metadata: Optional[dict] = None
+                         ) -> None:
         """
         Persist an artifact.
         """
         path = build_key(dst)
-        self._check_access_to_storage(path)
+        self._check_access_to_storage(path, write=True)
 
         with self._get_client() as ftp:
 
@@ -79,27 +81,36 @@ class FTPArtifactStore(ArtifactStore):
             else:
                 raise NotImplementedError
 
-    def fetch_artifact(self, src: str, dst: str) -> str:
+    def _get_and_register_artifact(self,
+                                   src: str,
+                                   fetch_mode: str) -> str:
         """
-        Method to fetch an artifact.
+        Method to fetch an artifact from the backend an to register
+        it on the paths registry.
         """
-        # Get file from remote (write on BytesIO)
+        self._check_access_to_storage(self.path)
         key = get_uri_path(src)
-        bytesio = BytesIO()
-        with self._get_client() as ftp:
-            ftp.retrbinary("RETR " + key, bytesio.write)
-            bytesio.seek(0)
-        obj = bytesio.read()
 
-        # Store locally
-        self._check_temp_dir(dst)
-        name = get_name_from_uri(key)
-        filepath = get_path(dst, name)
-        self._store_fetched_artifact(obj, filepath)
-        return filepath
+        self.logger.info(f"Fetching resource {src} from store {self.name}")
 
-    # pylint: disable=arguments-differ
-    def _check_access_to_storage(self, dst: str) -> None:
+        # Return path
+        if fetch_mode == self.NATIVE:
+            self._register_resource(f"{src}_{fetch_mode}", key)
+            return src
+
+        # Get file from remote and store locally
+        if fetch_mode == self.FILE:
+            obj = self._get_data(key)
+            filepath = self._store_data(obj, key)
+            self._register_resource(f"{src}_{fetch_mode}", filepath)
+            return filepath
+
+        if fetch_mode == self.BUFFER:
+            raise NotImplementedError
+
+    def _check_access_to_storage(self,
+                                 dst: str,
+                                 write: bool = False) -> None:
         """
         Check if there is access to the storage.
         """
@@ -107,7 +118,7 @@ class FTPArtifactStore(ArtifactStore):
             try:
                 ftp.cwd(dst)
             except ftplib.error_perm as ex:
-                if not self.data:
+                if write:
                     self._mkdir(dst)
                 else:
                     raise ex
@@ -123,6 +134,7 @@ class FTPArtifactStore(ArtifactStore):
         ftp.login(self.config["user"], self.config["password"])
         yield ftp
         ftp.close()
+        del ftp
 
     def _mkdir(self, path):
         """
@@ -136,3 +148,25 @@ class FTPArtifactStore(ArtifactStore):
                 parent = str(Path(path).parent)
                 self._mkdir(parent)
                 self._mkdir(path)
+
+    def _get_data(self, key: str) -> bytes:
+        """
+        Return bytes fetched from storage.
+        """
+        bytesio = BytesIO()
+        with self._get_client() as ftp:
+            ftp.retrbinary("RETR " + key, bytesio.write)
+            bytesio.seek(0)
+        return bytesio.read()
+
+    def _store_data(self,
+                    obj: bytes,
+                    key: str) -> str:
+        """
+        Store data locally in temporary folder and return tmp path.
+        """
+        check_make_dir(self.temp_dir)
+        name = get_name_from_uri(key)
+        filepath = get_path(self.temp_dir, name)
+        write_bytes(obj, filepath)
+        return filepath

@@ -1,12 +1,39 @@
 """
 Common generic utils.
 """
-import warnings
+import functools
+import operator
 from datetime import datetime
-from mimetypes import guess_type
-from typing import Any, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Union
+from uuid import uuid4
 
-import dateutil.parser as parser
+
+def get_uiid(_id: Optional[str] = None) -> str:
+    """
+    Return an UUID if not provided.
+    """
+    if _id:
+        return _id
+    return uuid4().hex
+
+
+def flatten_list(list_of_list: List[List[Any]]) -> List[Any]:
+    """
+    Flatten a list of list.
+    """
+    try:
+        return functools.reduce(operator.iconcat, list_of_list)
+    except TypeError:
+        return []
+
+
+def listify(obj: Union[List, Tuple, Any]) -> List[Any]:
+    """
+    Check if an object is a list or a tuple and return a list.
+    """
+    if not isinstance(obj, (list, tuple)):
+        obj = [obj]
+    return obj
 
 
 def get_time() -> str:
@@ -14,51 +41,3 @@ def get_time() -> str:
     Return ISO 8601 time with timezone info.
     """
     return datetime.now().astimezone().isoformat(timespec="milliseconds")
-
-
-def time_to_sec(timestr: Optional[str] = None) -> float:
-    """
-    Convert a time string to a float.
-    """
-    if timestr is not None:
-        parsed = parser.parse(timestr)
-        total_time = (parsed.hour*60*60 +
-                      parsed.minute*60 +
-                      parsed.second +
-                      parsed.microsecond/1000000)
-        return round(total_time, 4)
-    return
-
-
-def data_listify(data: Any,
-                 data_name: Any) -> Tuple[list, list]:
-    """
-    Check if the source is composed by multiple files.
-    Return list of sources and sources names.
-    """
-    if not isinstance(data, list):
-        data = [data]
-    if data_name is None:
-        data_name = [None for _ in data]
-    elif isinstance(data_name, list):
-        if not len(data) == len(data_name):
-            raise IndexError("Data filename list must have " +
-                             "same lenght of data source list")
-    return data, data_name
-
-
-def guess_mediatype(path: str) -> str:
-    """
-    Guess mediatype of resource.
-    """
-    if isinstance(path, list):
-        path = path[0]
-    mtype, _ = guess_type(path)
-    return mtype
-
-
-def warn(msg: str):
-    """
-    Raise message warn.
-    """
-    warnings.warn(msg)

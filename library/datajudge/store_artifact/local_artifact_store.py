@@ -3,12 +3,12 @@ Implementation of local artifact store.
 """
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import (check_dir, check_path, copy_file,
-                                        get_path, make_dir, write_json,
-                                        write_object)
+                                        get_path, make_dir)
+from datajudge.utils.io_utils import write_json, write_object
 
 
 class LocalArtifactStore(ArtifactStore):
@@ -19,13 +19,6 @@ class LocalArtifactStore(ArtifactStore):
 
     """
 
-    def __init__(self,
-                 artifact_uri: str,
-                 config: Optional[dict] = None,
-                 data: bool = False) -> None:
-        super().__init__(artifact_uri, config, data)
-        self._check_access_to_storage(self.artifact_uri)
-
     def persist_artifact(self,
                          src: Any,
                          dst: str,
@@ -35,7 +28,7 @@ class LocalArtifactStore(ArtifactStore):
         """
         Persist an artifact.
         """
-        self._check_access_to_storage(dst)
+        self._check_access_to_storage(dst, write=True)
 
         if src_name is not None:
             dst = get_path(dst, src_name)
@@ -55,19 +48,45 @@ class LocalArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    def fetch_artifact(self, src: str, dst: str) -> str:
+    def _get_and_register_artifact(self,
+                                   src: str,
+                                   fetch_mode: str) -> str:
         """
-        Method to fetch an artifact.
-        For this store, simply returns original file
-        positions.
+        Method to fetch an artifact from the backend an to register
+        it on the paths registry.
         """
-        self._check_temp_dir(dst)
-        return src
+        self.logger.info(f"Fetching resource {src} from store {self.name}")
 
-    # pylint: disable=arguments-differ
-    def _check_access_to_storage(self, dst: str) -> None:
+        # Return file location
+        if fetch_mode == self.NATIVE:
+            self._register_resource(f"{src}_{fetch_mode}", src)
+            return src
+
+        # Return file location
+        if fetch_mode == self.FILE:
+            self._register_resource(f"{src}_{fetch_mode}", src)
+            return src
+
+        if fetch_mode == self.BUFFER:
+            raise NotImplementedError
+
+    def _check_access_to_storage(self,
+                                 dst: str,
+                                 write: bool = False) -> None:
         """
         Check if there is access to the storage.
         """
-        if not self.data and not check_dir(dst):
+        if write and not check_dir(dst):
             make_dir(dst)
+
+    def _get_data(self, key: str) -> None:
+        """
+        Do nothing.
+        """
+
+    def _store_data(self,
+                    obj: bytes,
+                    key: str) -> str:
+        """
+        Do nothing.
+        """

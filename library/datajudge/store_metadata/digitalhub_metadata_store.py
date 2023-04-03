@@ -5,12 +5,13 @@ from collections import namedtuple
 from json.decoder import JSONDecodeError
 from typing import Optional
 
-from requests.models import Response  # pylint: disable=import-error
+import requests
+from requests.models import Response
 
 from datajudge.store_metadata.metadata_store import MetadataStore
-from datajudge.utils import config as cfg
-from datajudge.utils.rest_utils import api_post_call, api_put_call
-from datajudge.utils.uri_utils import check_url, rebuild_uri
+from datajudge.utils import commons as cfg
+from datajudge.utils.exceptions import RunError
+from datajudge.utils.uri_utils import check_url
 
 
 KeyPairs = namedtuple("KeyPairs", ("run_id", "key"))
@@ -25,31 +26,32 @@ class DigitalHubMetadataStore(MetadataStore):
     """
 
     def __init__(self,
-                 uri_metadata: str,
+                 name: str,
+                 store_type: str,
+                 metadata_uri: str,
                  config:  Optional[dict] = None) -> None:
-        super().__init__(uri_metadata, config)
+        super().__init__(name, store_type, metadata_uri, config)
         # To memorize runs present in the backend
         self._key_vault = {
             self._RUN_METADATA: [],
-            self._DATA_RESOURCE: [],
-            self._SHORT_REPORT: [],
-            self._SHORT_SCHEMA: [],
-            self._DATA_PROFILE: [],
+            self._DJ_REPORT: [],
+            self._DJ_SCHEMA: [],
+            self._DJ_PROFILE: [],
             self._ARTIFACT_METADATA: [],
             self._RUN_ENV: []
         }
         # API endpoints
         self._endpoints = {
             self._RUN_METADATA: cfg.API_RUN_METADATA,
-            self._DATA_RESOURCE: cfg.API_DATA_RESOURCE,
-            self._SHORT_REPORT: cfg.API_SHORT_REPORT,
-            self._SHORT_SCHEMA: cfg.API_SHORT_SCHEMA,
-            self._DATA_PROFILE: cfg.API_DATA_PROFILE,
+            self._DJ_REPORT: cfg.API_DJ_REPORT,
+            self._DJ_SCHEMA: cfg.API_DJ_SCHEMA,
+            self._DJ_PROFILE: cfg.API_DJ_PROFILE,
             self._ARTIFACT_METADATA: cfg.API_ARTIFACT_METADATA,
             self._RUN_ENV: cfg.API_RUN_ENV
         }
 
     def init_run(self,
+                 exp_name: str,
                  run_id: str,
                  overwrite: bool) -> None:
         """
@@ -68,9 +70,10 @@ class DigitalHubMetadataStore(MetadataStore):
                 self._key_vault[i] = [
                     elm for elm in self._key_vault[i] if elm.run_id != run_id]
             return
+
         if not overwrite and exist:
-            raise RuntimeError("Id already present, please change " +
-                               "it or enable overwrite.")
+            raise RunError("Id already present, please change " +
+                           "it or enable overwrite.")
 
     def log_metadata(self,
                      metadata: dict,
@@ -97,10 +100,10 @@ class DigitalHubMetadataStore(MetadataStore):
                 kwargs["params"] = {
                     "overwrite": "true" if overwrite else "false"
                 }
-            response = api_post_call(dst, **kwargs)
+            response = requests.post(dst, **kwargs)
             self._parse_response(response, src_type)
         else:
-            response = api_put_call(dst, **kwargs)
+            response = requests.put(dst, **kwargs)
             self._parse_response(response, src_type)
 
     def _build_source_destination(self,
@@ -144,19 +147,12 @@ class DigitalHubMetadataStore(MetadataStore):
         raise Exception("Something wrong with JSON response!")
 
     def get_run_metadata_uri(self,
-                             run_id: Optional[str] = None) -> str:
+                             exp_name: str,
+                             run_id: str) -> str:
         """
         Return the URL of the metadata store for the Run.
         """
-        return self.uri_metadata
-
-    def get_data_resource_uri(self,
-                              run_id: Optional[str] = None) -> str:
-        """
-        Return the URL of the data resource for the Run.
-        """
-        url = self.uri_metadata + self._endpoints[self._DATA_RESOURCE]
-        return rebuild_uri(url)
+        return self.metadata_uri
 
     def _parse_auth(self, kwargs: dict) -> dict:
         """

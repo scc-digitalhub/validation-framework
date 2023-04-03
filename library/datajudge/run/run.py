@@ -1,505 +1,106 @@
 """
-Base class for Run objects.
+Run module.
 """
-# pylint: disable=import-error,invalid-name
-from __future__ import annotations
+from pathlib import Path
+from typing import Any, List, Optional
 
-import json
-import os
-import platform
-import time
-import typing
-from abc import ABCMeta, abstractmethod
-from collections import namedtuple
-from typing import Any, List, Optional, Tuple, Union
-
-import pandas as pd
-import pandas_profiling
-from pandas_profiling import ProfileReport
-from psutil import virtual_memory
-
-from datajudge.data import (ReportTuple, SchemaTuple, ShortProfile,
-                            ShortReport, ShortSchema)
-from datajudge.utils import config as cfg
-from datajudge.utils.file_utils import clean_all
-from datajudge.utils.io_utils import write_bytesio
-from datajudge.utils.uri_utils import get_name_from_uri
-from datajudge.utils.utils import data_listify, get_time, time_to_sec, warn
-
-if typing.TYPE_CHECKING:
-    from datajudge.client import Client
-    from datajudge.data import DataResource
-    from datajudge.run import RunInfo
-
-# pylint: disable=too-many-instance-attributes
+from datajudge.metadata.blob_log import BlobLog
+from datajudge.metadata.env_log import EnvLog
+from datajudge.utils.commons import (DATAJUDGE_VERSION, MT_ARTIFACT_METADATA,
+                                     MT_DJ_PROFILE, MT_DJ_REPORT, MT_DJ_SCHEMA,
+                                     MT_RUN_ENV, MT_RUN_METADATA, SCHEME_DUMMY,
+                                     STATUS_ERROR, STATUS_FINISHED,
+                                     STATUS_INIT, STATUS_INTERRUPTED)
+from datajudge.utils.exceptions import StoreError
+from datajudge.utils.logger import LOGGER
+from datajudge.utils.utils import get_time
 
 
 class Run:
     """
     Run object.
-    The Run is the main interface to interact with data and metadata.
-    It interacts both with the Client and the Data Resource/Package.
+    The Run is the main interface to interact with data, metadata and
+    operational framework. With the Run, you can infer, validate and
+    profile resources, log and persist data and metadata.
 
     Methods
     -------
-    log_data_resource :
-        Log data resource.
-    log_short_report :
-        Log short report.
-    log_short_schema :
-        Log short schema.
-    log_profile :
-        Log short version of pandas_profiling profile.
-    persist_artifact :
-        Persist an artifact in the artifact store.
-    persist_data :
-        Persist input data and validation schema.
-    persist_full_report :
-        Persist a full report produced by the validation
-        framework as artifact.
-    persist_inferred_schema :
-        Persist an inferred schema produced by the
-        validation framework as artifact.
-    persist_profile :
-        Persist pandas_profiling JSON and HTML profile.
-    fetch_artifact :
-        Fetch an artifact from data store.
-    fetch_input_data :
-        Fetch input data from data store.
-    fetch_validation_schema :
-        Fetch validation schema from data store.
-    infer_profile :
-        Generate a pandas_profiling profile.
-    infer_schema :
-        Infer schema from resource
-    infer_resource :
-        Do some inference on the input resource.
-    validate_resource :
-        Validate a resource based on validaton framework.
-    get_run :
-        Get run info.
+    infer_wrapper
+        Execute schema inference on resources with inference frameworks.
+    infer_datajudge
+        Execute schema inference on resources with Datajudge.
+    infer
+        Execute schema inference on resources.
+    log_schema
+        Log DatajudgeSchemas.
+    persist_schema
+        Persist frameworks schemas.
+    validate_wrapper
+        Execute validation on resources with validation frameworks.
+    validate_datajudge
+        Execute validation on resources with Datajudge.
+    validate
+        Execute validation on resources.
+    log_report
+        Log DatajudgeReports.
+    persist_report
+        Persist frameworks reports.
+    profile_wrapper
+        Execute profiling on resources with profiling frameworks.
+    profile_datajudge
+        Execute profiling on resources with Datajudge.
+    profile
+        Execute profiling on resources.
+    log_profile
+        Log DatajudgeProfiles.
+    persist_profile
+        Persist frameworks profiles.
+    persist_data
+        Persist input data as artifacts into default store.
 
     """
 
-    __metaclass__ = ABCMeta
-
-    _RUN_METADATA = cfg.MT_RUN_METADATA
-    _DATA_RESOURCE = cfg.MT_DATA_RESOURCE
-    _SHORT_REPORT = cfg.MT_SHORT_REPORT
-    _SHORT_SCHEMA = cfg.MT_SHORT_SCHEMA
-    _DATA_PROFILE = cfg.MT_DATA_PROFILE
-    _ARTIFACT_METADATA = cfg.MT_ARTIFACT_METADATA
-    _RUN_ENV = cfg.MT_RUN_ENV
-
-    _VALID_SCHEMA = cfg.FN_VALID_SCHEMA
-    _FULL_REPORT = cfg.FN_FULL_REPORT
-    _SCHEMA_INFERRED = cfg.FN_INFERRED_SCHEMA
-    _FULL_PROFILE_HTML = cfg.FN_FULL_PROFILE_HTML
-    _FULL_PROFILE_JSON = cfg.FN_FULL_PROFILE_JSON
+    # Constructor
 
     def __init__(self,
-                 run_info: RunInfo,
-                 data_resource: DataResource,
-                 client: Client,
+                 run_info: "RunInfo",
+                 run_handler: "RunHandler",
                  overwrite: bool) -> None:
 
-        self.data_resource = data_resource
-        self._client = client
         self.run_info = run_info
+        self._run_handler = run_handler
         self._overwrite = overwrite
 
-        # Local temp paths
-        self._data = None
-        self._val_schema = None
+        self._filenames = {}
 
-        # Cahcing results of inference/validation/profiling
-        self.inferred = None
-        self.inf_schema = None
-        self._inf_schema_duration = None
-        self.report = None
-        self.profile = None
-
-        self._update_library_info()
-        self._update_profiler_info()
-        self._log_run()
-
-    # Run
-
-    @abstractmethod
-    def _update_library_info(self) -> None:
-        """
-        Update run's info about the validation framework used.
-        """
-
-    def _update_profiler_info(self) -> None:
-        """
-        Update run's info about the profiling framework used.
-        """
-        # Maybe to remove in the future? Multiple profiling libraries support?
-        self.run_info.profiling_library_name = pandas_profiling.__name__
-        self.run_info.profiling_library_version = pandas_profiling.__version__
+    # Run methods
 
     def _log_run(self) -> None:
         """
         Log run's metadata.
         """
-        metadata = self._get_content(self.run_info.to_dict())
-        self._log_metadata(metadata, self._RUN_METADATA)
+        metadata = self._get_blob(self.run_info.to_dict())
+        self._log_metadata(metadata, MT_RUN_METADATA)
 
     def _log_env(self) -> None:
         """
         Log run's enviroment details.
         """
-        env_data = {
-            "platform": platform.platform(),
-            "pythonVersion": platform.python_version(),
-            "cpuModel": platform.processor(),
-            "cpuCore": os.cpu_count(),
-            "ram": str(round(virtual_memory().total / (1024.0 ** 3)))+" GB"
-        }
-        metadata = self._get_content(env_data)
-        self._log_metadata(metadata, self._RUN_ENV)
+        env_data = EnvLog().to_dict()
+        metadata = self._get_blob(env_data)
+        self._log_metadata(metadata, MT_RUN_ENV)
 
-    # Data Resource
-
-    @abstractmethod
-    def _update_data_resource(self) -> None:
-        """
-        Update resource with inferred information.
-        """
-
-    def log_data_resource(self,
-                          infer: bool = True) -> None:
-        """
-        Log data resource.
-
-        Parameters
-        ----------
-        infer : bool, default = True
-            If True, make inference on resource.
-
-        """
-        if infer:
-            self._update_data_resource()
-        metadata = self._get_content(self.data_resource.to_dict())
-        self._log_metadata(metadata, self._DATA_RESOURCE)
-
-        # Update run info
-        if self.run_info.data_resource_uri is None:
-            uri_resource = self._client.get_data_resource_uri(
-                                                self.run_info.run_id)
-            self.run_info.data_resource_uri = uri_resource
-
-    # Short Report
-
-    @abstractmethod
-    def _parse_report(self,
-                      nmtp: namedtuple) -> namedtuple:
-        """
-        Parse the report produced by the validation framework.
-        """
-
-    def _set_report(self,
-                    report: Optional[Any] = None,
-                    infer: bool = True) -> None:
-        """
-        Set private attribute 'report'.
-        """
-        if self.report is None:
-            if report is None and infer:
-                self.report = self.validate_resource()
-            else:
-                self.report = report
-
-    @abstractmethod
-    def _check_report(self,
-                      report: Any) -> None:
-        """
-        Check a report before log/persist it.
-        """
-
-    def log_short_report(self,
-                         report: Optional[dict] = None,
-                         infer: bool = True) -> None:
-        """
-        Log short report.
-
-        Parameters
-        ----------
-        report : Any
-            A report object to be logged. If it is not
-            provided, the run will check its own report attribute.
-        infer : bool, default = True
-            If True, try to validate the resource.
-
-        """
-        self._check_report(report)
-        self._set_report(report, infer)
-
-        if self.report is None:
-            warn("No report provided! Skipped log.")
-            return
-
-        args = self._parse_report(ReportTuple)
-        report_args = {
-            "val_lib_name": args.val_lib_name,
-            "val_lib_version": args.val_lib_version,
-            "data_resource_uri": self.run_info.data_resource_uri,
-            "duration": args.time,
-            "valid": args.valid,
-            "errors": args.errors,
-        }
-
-        short_report = ShortReport(**report_args)
-        metadata = self._get_content(short_report.to_dict())
-        self._log_metadata(metadata, self._SHORT_REPORT)
-
-    # Short Schema
-
-    @abstractmethod
-    def _parse_schema(self,
-                      nmtp: namedtuple) -> namedtuple:
-        """
-        Parse the inferred schema produced by the validation
-        framework.
-        """
-
-    def _set_schema(self,
-                    schema: Optional[Any] = None,
-                    infer: bool = True) -> None:
-        """
-        Set private attribute 'inf_schema'.
-        """
-        if self.inf_schema is None:
-            if schema is None and infer:
-                start = time.perf_counter()
-                self.inf_schema = self.infer_schema()
-                self._inf_schema_duration = round(
-                            time.perf_counter() - start, 4)
-            else:
-                self.inf_schema = schema
-
-    @abstractmethod
-    def _check_schema(self,
-                      schema: Any) -> None:
-        """
-        Check a schema before log/persist it.
-        """
-
-    def log_short_schema(self,
-                         schema: Optional[dict] = None,
-                         infer: bool = True) -> dict:
-        """
-        Log short schema.
-
-        Parameters
-        ----------
-        schema : Schema, default = None
-            An inferred schema to be logged. If it is not
-            provided, the run will check its own schema attribute.
-        infer : bool, default = True
-            If True, try to infer schema from resource.
-
-        """
-        self._check_schema(schema)
-        self._set_schema(schema, infer)
-
-        if self.inf_schema is None:
-            warn("No schema provided! Skipped log.")
-            return
-
-        parsed_fields, lib_name, lib_vrs = self._parse_schema(SchemaTuple)
-        schema_args = {
-            "val_lib_name": lib_name,
-            "val_lib_version": lib_vrs,
-            "data_resource_uri": self.run_info.data_resource_uri,
-            "fields": parsed_fields,
-            "duration": self._inf_schema_duration,
-        }
-
-        short_schema = ShortSchema(**schema_args)
-        metadata = self._get_content(short_schema.to_dict())
-        self._log_metadata(metadata, self._SHORT_SCHEMA)
-
-    # Short Profile
-
-    @staticmethod
-    def _read_df(path: Union[str, List[str]],
-                 file_format: str,
-                 **kwargs: dict) -> pd.DataFrame:
-        """
-        Read a file into a pandas DataFrame.
-        """
-
-        # Check if path is a list of paths
-        is_list = isinstance(path, list)
-
-        if file_format == "csv":
-            if is_list:
-                list_df = [pd.read_csv(i, **kwargs) for i in path]
-                df = pd.concat(list_df)
-            else:
-                df = pd.read_csv(path, **kwargs)
-            return df
-
-        if file_format in ["xls", "xlsx", "ods", "odf"]:
-            if is_list:
-                list_df = [pd.read_excel(i, **kwargs) for i in path]
-                df = pd.concat(list_df)
-            else:
-                df = pd.read_excel(path, **kwargs)
-            return df
-
-        raise ValueError("Invalid extension.",
-                         " Only CSV and XLS supported!")
-
-    def infer_profile(self,
-                      pp_kwargs: dict = None) -> ProfileReport:
-        """
-        Generate pandas_profiling profile.
-
-        Parameters
-        ----------
-        **kwargs : dict
-            Parameters for pandas_profiling.ProfileReport.
-
-        """
-        file_format, pandas_kwargs = self._parse_inference()
-        df = self._read_df(self.fetch_input_data(),
-                           file_format,
-                           **pandas_kwargs)
-        profile = ProfileReport(df, **pp_kwargs)
-        return profile
-
-    def _parse_profile(self) -> dict:
-        """
-        Parse the profile generated by pandas profiling.
-        """
-
-        # Profile preparation
-        json_str = self.profile.to_json()
-        json_str = json_str.replace("NaN", "null")
-        full_profile = json.loads(json_str)
-
-        # Short profile args
-        args = {
-            k: full_profile.get(k, {}) for k in cfg.PROFILE_COLUMNS
-        }
-
-        # Variables overwriting by filtering
-        var = args.get("variables")
-        for key in var:
-            args["variables"][key] = {
-                k: var[key][k] for k in cfg.PROFILE_FIELDS
-            }
-
-        # "Rename" variables with fields and tables with stats
-        args["fields"] = args.pop("variables")
-        args["stats"] = args.pop("table")
-
-        # Extract duration from analysis and set as key
-        # and pop analysis
-        duration = args.get("analysis", {}).get("duration")
-        args["duration"] = time_to_sec(duration)
-        args.pop("analysis")
-
-        return args
-
-    def _set_profile(self,
-                     profile: Optional[ProfileReport] = None,
-                     infer: bool = True,
-                     pp_kwargs: dict = None) -> None:
-        """
-        Set private attribute 'profile'.
-        """
-        if self.profile is None:
-            if profile is None and infer:
-                self.profile = self.infer_profile(pp_kwargs)
-            else:
-                self.profile = profile
-
-    @staticmethod
-    def _check_profile(profile: Optional[ProfileReport] = None
-                       ) -> None:
-        """
-        Check validity of profile.
-        """
-        if profile is not None and not isinstance(profile, ProfileReport):
-            raise TypeError("Expected pandas_profiling Profile!")
-
-    def log_profile(self,
-                    profile: Optional[ProfileReport] = None,
-                    infer: bool = True,
-                    pp_kwargs: dict = None
-                    ) -> None:
-        """
-        Log a pandas_profiling profile.
-
-        Parameters
-        ----------
-        profile : ProfileReport, default = None
-            A pandas_profiling report to be logged. If it is not
-            provided, the run will check its own profile attribute.
-        infer : bool, default = True
-            If True, profile the resource.
-        pp_kwargs : dict, default = None
-            Kwargs passed to ProfileReport.
-
-        """
-        self._check_profile(profile)
-        self._set_profile(profile, infer, pp_kwargs)
-
-        if self.profile is None:
-            warn("No profile provided! Skipped log.")
-            return
-
-        parsed = self._parse_profile()
-        parsed["data_resource_uri"] = self.run_info.data_resource_uri
-        parsed["pro_lib_name"] = pandas_profiling.__name__
-        parsed["pro_lib_version"] = pandas_profiling.__version__
-        short_profile = ShortProfile(**parsed)
-        metadata = self._get_content(short_profile.to_dict())
-        self._log_metadata(metadata, self._DATA_PROFILE)
-
-    # Artifact metadata
-
-    def _get_artifact_metadata(self,
-                               uri: str,
-                               name: str) -> dict:
-        """
-        Build artifact metadata.
-        """
-        metadata = self._get_content()
-        metadata.pop("contents")
-        metadata["uri"] = uri
-        metadata["name"] = name
-        return metadata
-
-    def _log_artifact(self,
-                      src_name: Optional[str] = None
-                      ) -> None:
-        """
-        Log artifact metadata.
-        """
-        uri = self.run_info.run_artifacts_uri
-        metadata = self._get_artifact_metadata(uri, src_name)
-        self._log_metadata(metadata, self._ARTIFACT_METADATA)
-
-    # Metadata
-
-    def _get_content(self,
-                     content: Optional[dict] = None) -> dict:
+    def _get_blob(self,
+                  content: Optional[dict] = None) -> dict:
         """
         Return structured content to log.
         """
-        metadata = {
-            "runId": self.run_info.run_id,
-            "experimentId": self.run_info.experiment_id,
-            "experimentName": self.run_info.experiment_name,
-            "datajudgeVersion": cfg.DATAJUDGE_VERSION,
-            "contents": content
-        }
-        return metadata
+        if content is None:
+            content = {}
+        return BlobLog(self.run_info.run_id,
+                       self.run_info.experiment_name,
+                       DATAJUDGE_VERSION,
+                       content).to_dict()
 
     def _log_metadata(self,
                       metadata: dict,
@@ -507,153 +108,57 @@ class Run:
         """
         Log generic metadata.
         """
-        self._client.log_metadata(
-                           metadata,
-                           self.run_info.run_metadata_uri,
-                           src_type,
-                           self._overwrite)
+        self._run_handler.log_metadata(
+            metadata,
+            self.run_info.run_metadata_uri,
+            src_type,
+            self._overwrite)
 
-    # Input data
-
-    def fetch_validation_schema(self) -> str:
+    def _get_artifact_metadata(self,
+                               uri: str,
+                               name: str) -> dict:
         """
-        Fetch validation schema from backend and return temp file path.
+        Build artifact metadata.
         """
-        if self.data_resource.schema is None:
-            return None
-        if self._val_schema is None:
-            self._val_schema = self.fetch_artifact(self.data_resource.schema)
-        return self._val_schema
+        metadata = {
+            "uri": uri,
+            "name": name
+        }
+        return self._get_blob(metadata)
 
-    def fetch_input_data(self) -> str:
+    def _log_artifact(self,
+                      src_name: Optional[str] = None
+                      ) -> None:
         """
-        Fetch data from backend and return temp file path.
+        Log artifact metadata.
         """
-        if self._data is None:
-            path = self.data_resource.path
-            if isinstance(path, list):
-                self._data = [self.fetch_artifact(i) for i in path]
-            else:
-                self._data = self.fetch_artifact(path)
-        return self._data
-
-    def fetch_artifact(self,
-                       uri: str) -> str:
-        """
-        Fetch artifact from backend.
-
-        Parameters
-        ----------
-        uri : str
-            URI of artifact to fetch.
-        """
-        return self._client.fetch_artifact(uri)
-
-    # Output data
-
-    def persist_data(self,
-                     data_name: Optional[Union[str, list]] = None,
-                     schema_name: Optional[str] = None) -> None:
-        """
-        Persist data and validation schema.
-
-        Parameters
-        ----------
-        data_name : str or list, default = None
-            Filename(s) for input data.
-        schema_name : str, default = None
-            Filename for input schema.
-
-        """
-        metadata = self.data_resource.get_metadata()
-
-        # Data
-        data = self.fetch_input_data()
-        data, data_name = data_listify(data, data_name)
-        for idx, path in enumerate(data):
-            # try to infer source name if no name is passed
-            src_name = data_name[idx] if data_name[idx] is not None \
-                                      else get_name_from_uri(path)
-            self.persist_artifact(data[idx], src_name, metadata)
-
-        # Schema
-        schema = self.fetch_validation_schema()
-        if schema is not None:
-            src_name = schema_name if schema_name is not None \
-                                   else get_name_from_uri(schema)
-            self.persist_artifact(schema, src_name)
+        if self.run_info.run_metadata_uri is None:
             return
-        warn("No validation schema is provided!")
+        uri = self.run_info.run_artifacts_uri
+        metadata = self._get_artifact_metadata(uri, src_name)
+        self._log_metadata(metadata, MT_ARTIFACT_METADATA)
 
-    def persist_full_report(self,
-                            report: Optional[Any] = None) -> None:
+    def _render_artifact_name(self,
+                              filename: str) -> str:
         """
-        Persist a report produced by a validation framework.
-
-        Parameters
-        ----------
-        report : Any, default = None
-            An report object produced by a validation library.
-
+        Return a modified filename to avoid overwriting
+        in persistence.
         """
-        if report is None and self.report is None:
-            warn("No report provided, skipping!")
-            return
-        if report is None:
-            report = self.report
-        self.persist_artifact(dict(report),
-                              src_name=self._FULL_REPORT)
-
-    def persist_inferred_schema(self,
-                                schema: Optional[Any] = None) -> None:
-        """
-        Persist an inferred schema produced by a validation framework.
-
-        Parameters
-        ----------
-        schema : Any, default = None
-            An inferred schema object produced by a validation library.
-
-        """
-        if schema is None and self.inf_schema is None:
-            warn("No schema provided, skipping!")
-            return
-        if schema is None:
-            schema = self.inf_schema
-        self.persist_artifact(dict(schema),
-                              src_name=self._SCHEMA_INFERRED)
-
-    def persist_profile(self,
-                        profile: Optional[ProfileReport] = None
-                        ) -> None:
-        """
-        Persist the profile made with pandas_profiling,
-        both in JSON and HTML format.
-        """
-        if self.profile is None and profile is None:
-            warn("No profile provided, skipping!")
-            return
-        if profile is None:
-            string_html = self.profile.to_html()
-            string_json = self.profile.to_json()
+        if filename not in self._filenames:
+            self._filenames[filename] = 0
         else:
-            if not isinstance(profile, ProfileReport):
-                raise TypeError("Invalid ProfileReport object!")
-            string_html = profile.to_html()
-            string_json = profile.to_json()
+            self._filenames[filename] += 1
 
-        string_json = string_json.replace("NaN", "null")
+        fnm = Path(filename).stem
+        ext = Path(filename).suffix
 
-        strio_html = write_bytesio(string_html)
-        strio_json = write_bytesio(string_json)
-        self.persist_artifact(strio_html, self._FULL_PROFILE_HTML)
-        self.persist_artifact(strio_json, self._FULL_PROFILE_JSON)
+        return f"{fnm}_{self._filenames[filename]}{ext}"
 
-    def persist_artifact(self,
-                         src: Any,
-                         src_name: Optional[str] = None,
-                         metadata: Optional[dict] = None,
-                         ) -> None:
+    def _persist_artifact(self,
+                          src: Any,
+                          src_name: Optional[str] = None,
+                          metadata: Optional[dict] = None,
+                          ) -> None:
         """
         Persist artifacts in the artifact store.
 
@@ -667,47 +172,424 @@ class Run:
             Optional metadata to attach on artifact.
 
         """
+        self._check_artifacts_uri()
         if metadata is None:
             metadata = {}
-        self._client.persist_artifact(src,
-                                      self.run_info.run_artifacts_uri,
-                                      src_name=src_name,
-                                      metadata=metadata)
+        self._run_handler.persist_artifact(src,
+                                           self.run_info.run_artifacts_uri,
+                                           src_name=src_name,
+                                           metadata=metadata)
         self._log_artifact(src_name)
 
-    # Frameworks wrapper methods
+    def _check_metadata_uri(self) -> None:
+        """
+        Check metadata uri existence.
+        """
+        if self.run_info.run_metadata_uri in SCHEME_DUMMY:
+            raise StoreError("Please configure a metadata store.")
 
-    @abstractmethod
-    def infer_schema(self) -> Any:
+    def _check_artifacts_uri(self) -> None:
         """
-        Parse the inferred schema produced by the validation
-        framework.
+        Check artifact uri existence.
         """
+        if self.run_info.run_artifacts_uri in SCHEME_DUMMY:
+            raise StoreError("Please configure a artifact store.")
 
-    @abstractmethod
-    def infer_resource(self) -> Any:
+    def _get_libraries(self) -> None:
         """
-        Resource inference method.
+        Return the list of libraries used by the run.
         """
+        self.run_info.run_libraries = self._run_handler.get_libraries()
 
-    @abstractmethod
-    def validate_resource(self) -> Any:
-        """
-        Resource validation method.
-        """
+    # Inference
 
-    @abstractmethod
-    def _parse_inference(self) -> Tuple[str, dict]:
+    def infer_wrapper(self,
+                      parallel: bool = False,
+                      num_worker: int = 10) -> List[Any]:
         """
-        Parse inference from specific validation framework.
-        Used by profiling.
+        Execute schema inference on resources with inference frameworks.
+
+        Parameters
+        ----------
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+
+        Returns
+        -------
+        List[Any]
+            Return a list of framework results.
+
         """
+        schemas = self._run_handler.get_artifact_schema()
+        if schemas:
+            return schemas
+
+        self._run_handler.infer(self.run_info.resources,
+                                parallel,
+                                num_worker)
+        return self._run_handler.get_artifact_schema()
+
+    def infer_datajudge(self,
+                        parallel: bool = False,
+                        num_worker: int = 10) -> List["DatajudgeSchema"]:
+        """
+        Execute schema inference on resources with Datajudge.
+
+        Parameters
+        ----------
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+
+        Returns
+        -------
+        List[DatajudgeSchema]
+            Return a list of DatajudgeSchemas.
+
+        """
+        schemas = self._run_handler.get_datajudge_schema()
+        if schemas:
+            return schemas
+
+        self._run_handler.infer(self.run_info.resources,
+                                parallel,
+                                num_worker)
+        return self._run_handler.get_datajudge_schema()
+
+    def infer(self,
+              parallel: bool = False,
+              num_worker: int = 10,
+              only_dj: bool = False) -> Any:
+        """
+        Execute schema inference on resources.
+
+        Parameters
+        ----------
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+        only_dj : bool, optional
+            Flag to return only the Datajudge report, by default False
+
+        Returns
+        -------
+        Any
+            Return a list of DatajudgeSchemas and the
+            corresponding list of framework results.
+        """
+        schema = self.infer_wrapper(parallel,
+                                    num_worker)
+        schema_dj = self.infer_datajudge(parallel,
+                                         num_worker)
+        if only_dj:
+            return None, schema_dj
+        return schema, schema_dj
+
+    def log_schema(self) -> None:
+        """
+        Log DatajudgeSchemas.
+        """
+        self._check_metadata_uri()
+        objects = self._run_handler.get_datajudge_schema()
+        for obj in objects:
+            metadata = self._get_blob(obj.to_dict())
+            self._log_metadata(metadata, MT_DJ_SCHEMA)
+
+    def persist_schema(self) -> None:
+        """
+        Persist frameworks schemas.
+        """
+        objects = self._run_handler.get_rendered_schema()
+        for obj in objects:
+            self._persist_artifact(obj.object,
+                                   self._render_artifact_name(obj.filename))
+
+    # Validation
+    def validate_wrapper(self,
+                         constraints: List["Constraint"],
+                         error_report: Optional[str] = "partial",
+                         parallel: Optional[bool] = False,
+                         num_worker: Optional[int] = 10,
+                         ) -> List[Any]:
+        """
+        Execute validation on resources with validation frameworks.
+
+        Parameters
+        ----------
+        constraints : List["Constraint"]
+            List of constraint to validate resources.
+        error_report : str, optional
+            Flag to render the error output of the datajudge report.
+            Accepts 'count', 'partial' or 'full'.
+            'count' returns the errors count of the validation,
+            'partial' return the errors count and a list of errors (max 100),
+            'full' returns errors count and the list of all encountered errors.
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+
+        Returns
+        -------
+        List[Any]
+            Return a list of framework results.
+
+        """
+        reports = self._run_handler.get_artifact_report()
+        if reports:
+            return reports
+
+        self._run_handler.validate(self.run_info.resources,
+                                   constraints,
+                                   error_report,
+                                   parallel,
+                                   num_worker)
+        return self._run_handler.get_artifact_report()
+
+    def validate_datajudge(self,
+                           constraints: List["Constraint"],
+                           error_report: Optional[str] = "partial",
+                           parallel: Optional[bool] = False,
+                           num_worker: Optional[int] = 10,
+                           ) -> List["DatajudgeReport"]:
+        """
+        Execute validation on resources with Datajudge.
+
+        Parameters
+        ----------
+        constraints : List["Constraint"]
+            List of constraint to validate resources.
+        error_report : str, optional
+            Flag to render the error output of the datajudge report.
+            Accepts 'count', 'partial' or 'full'.
+            'count' returns the errors count of the validation,
+            'partial' return the errors count and a list of errors (max 100),
+            'full' returns errors count and the list of all encountered errors.
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+
+        Returns
+        -------
+        List[DatajudgeReport]
+            Return a list of "DatajudgeReport".
+
+        """
+        reports = self._run_handler.get_datajudge_report()
+        if reports:
+            return reports
+
+        self._run_handler.validate(self.run_info.resources,
+                                   constraints,
+                                   error_report,
+                                   parallel,
+                                   num_worker)
+        return self._run_handler.get_datajudge_report()
+
+    def validate(self,
+                 constraints: List["Constraint"],
+                 error_report: Optional[str] = "partial",
+                 parallel: Optional[bool] = False,
+                 num_worker: Optional[int] = 10,
+                 only_dj: Optional[bool] = False
+                 ) -> Any:
+        """
+        Execute validation on resources.
+
+        Parameters
+        ----------
+        constraints : List["Constraint"]
+            List of constraint to validate resources.
+        error_report : str, optional
+            Flag to render the error output of the datajudge report.
+            Accepts 'count', 'partial' or 'full'.
+            'count' returns the errors count of the validation,
+            'partial' return the errors count and a list of errors (max 100),
+            'full' returns errors count and the list of all encountered errors.
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+        only_dj : bool, optional
+            Flag to return only the Datajudge report, by default False
+
+        Returns
+        -------
+        Any
+            Return a list of "DatajudgeReport" and the
+            corresponding list of framework results.
+
+        """
+        report = self.validate_wrapper(constraints,
+                                       error_report,
+                                       parallel,
+                                       num_worker)
+        report_dj = self.validate_datajudge(constraints,
+                                            error_report,
+                                            parallel,
+                                            num_worker)
+        if only_dj:
+            return None, report_dj
+        return report, report_dj
+
+    def log_report(self) -> None:
+        """
+        Log DatajudgeReports.
+        """
+        self._check_metadata_uri()
+        objects = self._run_handler.get_datajudge_report()
+        for obj in objects:
+            metadata = self._get_blob(obj.to_dict())
+            self._log_metadata(metadata, MT_DJ_REPORT)
+
+    def persist_report(self) -> None:
+        """
+        Persist frameworks reports.
+        """
+        objects = self._run_handler.get_rendered_report()
+        for obj in objects:
+            self._persist_artifact(obj.object,
+                                   self._render_artifact_name(obj.filename))
+
+    # Profiling
+
+    def profile_wrapper(self,
+                        parallel: bool = False,
+                        num_worker: int = 10) -> List[Any]:
+        """
+        Execute profiling on resources with profiling frameworks.
+
+        Parameters
+        ----------
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+
+        Returns
+        -------
+        List[Any]
+            Return a list of framework results.
+
+        """
+        profiles = self._run_handler.get_artifact_profile()
+        if profiles:
+            return profiles
+
+        self._run_handler.profile(self.run_info.resources,
+                                  parallel,
+                                  num_worker)
+        return self._run_handler.get_artifact_profile()
+
+    def profile_datajudge(self,
+                          parallel: bool = False,
+                          num_worker: int = 10) -> List["DatajudgeProfile"]:
+        """
+        Execute profiling on resources with Datajudge.
+
+        Parameters
+        ----------
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+
+        Returns
+        -------
+        List[DatajudgeProfile]
+            Return a list of "DatajudgeProfile".
+
+        """
+        profiles = self._run_handler.get_datajudge_profile()
+        if profiles:
+            return profiles
+
+        self._run_handler.profile(self.run_info.resources,
+                                  parallel,
+                                  num_worker)
+        return self._run_handler.get_datajudge_profile()
+
+    def profile(self,
+                parallel: bool = False,
+                num_worker: int = 10,
+                only_dj: bool = False
+                ) -> Any:
+        """
+        Execute profiling on resources.
+
+        Parameters
+        ----------
+        parallel : bool, optional
+            Flag to execute operation in parallel, by default False
+        num_worker : int, optional
+            Number of workers to execute operation in parallel, by default 10
+        only_dj : bool, optional
+            Flag to return only the Datajudge report, by default False
+
+        Returns
+        -------
+        Any
+            Return a list of "DatajudgeProfile" and the
+            corresponding list of framework results.
+
+        """
+        profile = self.profile_wrapper(parallel,
+                                       num_worker)
+        profile_dj = self.profile_datajudge(parallel,
+                                            num_worker)
+        if only_dj:
+            return None, profile_dj
+        return profile, profile_dj
+
+    def log_profile(self) -> None:
+        """
+        Log DatajudgeProfiles.
+        """
+        self._check_metadata_uri()
+        objects = self._run_handler.get_datajudge_profile()
+        for obj in objects:
+
+            metadata = self._get_blob(obj.to_dict())
+            self._log_metadata(metadata, MT_DJ_PROFILE)
+
+    def persist_profile(self) -> None:
+        """
+        Persist frameworks profiles.
+        """
+        objects = self._run_handler.get_rendered_profile()
+        for obj in objects:
+            self._persist_artifact(obj.object,
+                                   self._render_artifact_name(obj.filename))
+
+    # Input data persistence
+
+    def persist_data(self) -> None:
+        """
+        Persist input data as artifacts into default store.
+
+        Depending on the functioning of the store object on which the
+        artifacts are stored, the store will try to download the data
+        locally.
+        In the case of SQL/ODBC storage, the format will be parquet.
+        In the case of remote/REST/local stores, the persistence format
+        will be the same as the artifacts present in the storage.
+
+        """
+        self._check_artifacts_uri()
+        self._run_handler.persist_data(self.run_info.resources,
+                                       self.run_info.run_artifacts_uri)
 
     # Context manager
 
-    def __enter__(self) -> Run:
+    def __enter__(self) -> "Run":
         # Set run status
-        self.run_info.begin_status = "active"
+        LOGGER.info(f"Starting run {self.run_info.run_id}")
+        self.run_info.begin_status = STATUS_INIT
         self.run_info.started = get_time()
         self._log_run()
         self._log_env()
@@ -718,23 +600,20 @@ class Run:
                  exc_value,
                  traceback) -> None:
         if exc_type is None:
-            self.run_info.end_status = "finished"
+            self.run_info.end_status = STATUS_FINISHED
         elif exc_type in (InterruptedError, KeyboardInterrupt):
-            self.run_info.end_status = "interrupted"
-        elif self.run_info.data_resource_uri is None:
-            self.run_info.end_status = "invalid"
+            self.run_info.end_status = STATUS_INTERRUPTED
+        elif exc_type in (AttributeError, ):
+            self.run_info.end_status = STATUS_ERROR
         else:
-            self.run_info.end_status = "failed"
+            self.run_info.end_status = STATUS_ERROR
+
+        self._get_libraries()
         self.run_info.finished = get_time()
         self._log_run()
+        LOGGER.info("Run finished. Clean up of temp resources.")
 
-        # Cleanup tmp files
-        self._data = None
-        self._val_schema = None
-        try:
-            clean_all(self._client.tmp_dir)
-        except FileNotFoundError:
-            pass
+        self._run_handler.clean_all()
 
     # Dunders
 
