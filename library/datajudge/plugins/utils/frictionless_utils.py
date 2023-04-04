@@ -8,6 +8,11 @@ from frictionless import Resource, Detector
 from datajudge.utils.config import ConstraintFrictionless
 
 
+# With bigger buffer/sample we should avoid error encoding detection
+custom_frictionless_detector = Detector(buffer_size=20000,
+                                        sample_size=1250)
+
+
 def frictionless_schema_converter(schema: Union[dict, "Schema"],
                                   resource_name: str) -> List[ConstraintFrictionless]:
     """
@@ -83,11 +88,7 @@ def describe_resource(pth: str) -> dict:
     """
     Describe a resource using frictionless.
     """
-    # With bigger buffer/sample we should avoid
-    # error encoding detection
-    detector = Detector(buffer_size=25000,
-                        sample_size=1250)
     desc = Resource.describe(source=pth,
                              expand=True,
-                             detector=detector)
+                             detector=custom_frictionless_detector)
     return desc.to_dict()

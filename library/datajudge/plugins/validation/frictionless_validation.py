@@ -12,6 +12,7 @@ from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
+from datajudge.plugins.utils.frictionless_utils import custom_frictionless_detector
 from datajudge.utils.commons import (CONSTRAINT_FRICTIONLESS_SCHEMA,
                                      LIBRARY_FRICTIONLESS)
 
@@ -50,7 +51,8 @@ class ValidationPluginFrictionless(Validation):
         data = self.data_reader.fetch_data(self.resource.path)
         schema = self._rebuild_constraints(data)
         res = Resource(path=data,
-                       schema=schema).validate(**self.exec_args)
+                       schema=schema,
+                       detector=custom_frictionless_detector).validate(**self.exec_args)
         return Report(res.to_dict())
 
     def _rebuild_constraints(self, data_path: str) -> Schema:
