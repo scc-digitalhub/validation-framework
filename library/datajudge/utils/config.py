@@ -5,7 +5,7 @@ Configurations module for runs, stores and constraints.
 from typing import Any, List, Optional, Union
 from uuid import uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 from typing_extensions import Literal
 
 from datajudge.utils.commons import (CONSTRAINT_FRICTIONLESS_SCHEMA,
@@ -148,56 +148,63 @@ class ConstraintFullFrictionless(Constraint):
     """Table schema to validate a resource."""
 
 
-class ConstraintDuckDB(Constraint):
+class ConstraintBaseSQL(Constraint):
+
+    query: str
+    """SQL query to execute over resources."""
+
+    expect: Literal[CONSTRAINT_SQL_EMPTY,
+                    CONSTRAINT_SQL_NON_EMPTY,
+                    CONSTRAINT_SQL_EXACT,
+                    CONSTRAINT_SQL_RANGE,
+                    CONSTRAINT_SQL_MINIMUM,
+                    CONSTRAINT_SQL_MAXIMUM]
+    """SQL constraint type to check."""
+
+    value: Optional[Any] = None
+    """Value of the constraint."""
+
+    check: Literal[CONSTRAINT_SQL_CHECK_VALUE,
+                   CONSTRAINT_SQL_CHECK_ROWS] = CONSTRAINT_SQL_CHECK_ROWS
+    """Modality of constraint checking (On rows or single value)."""
+
+    @root_validator
+    def check_for_emptiness(cls, values):
+        """
+        Check that evaluation of emptiness is performed
+        only at rows level.
+        """
+        check = values.get("check")
+        expect = values.get("expect")
+        if (expect in (CONSTRAINT_SQL_EMPTY,
+                       CONSTRAINT_SQL_NON_EMPTY) and
+            check != CONSTRAINT_SQL_CHECK_ROWS):
+            raise ValueError("Invalid, check emptiness only on 'rows'.")
+        return values
+
+
+class ConstraintDuckDB(ConstraintBaseSQL):
     """
     DuckDB constraint.
     """
     type: str = Field(LIBRARY_DUCKDB, const=True)
     """Constraint type ("duckdb")."""
 
-    query: str
-    """SQL query to execute over resources."""
 
-    expect: Literal[CONSTRAINT_SQL_EMPTY,
-                    CONSTRAINT_SQL_NON_EMPTY,
-                    CONSTRAINT_SQL_EXACT,
-                    CONSTRAINT_SQL_RANGE,
-                    CONSTRAINT_SQL_MINIMUM,
-                    CONSTRAINT_SQL_MAXIMUM]
-    """SQL constraint type to check."""
-
-    value: Optional[Any] = None
-    """Value of the constraint."""
-
-    check: Literal[CONSTRAINT_SQL_CHECK_VALUE,
-                   CONSTRAINT_SQL_CHECK_ROWS] = CONSTRAINT_SQL_CHECK_ROWS
-    """Modality of constraint checking (On rows or single value)."""
-
-
-class ConstraintSqlAlchemy(Constraint):
+class ConstraintSqlAlchemy(ConstraintBaseSQL):
     """
     SqlAlchemy constraint.
     """
     type: str = Field(LIBRARY_SQLALCHEMY, const=True)
     """Constraint type ("sqlalchemy")."""
 
-    query: str
-    """SQL query to execute over resources."""
 
-    expect: Literal[CONSTRAINT_SQL_EMPTY,
-                    CONSTRAINT_SQL_NON_EMPTY,
-                    CONSTRAINT_SQL_EXACT,
-                    CONSTRAINT_SQL_RANGE,
-                    CONSTRAINT_SQL_MINIMUM,
-                    CONSTRAINT_SQL_MAXIMUM]
-    """SQL constraint type to check."""
-
-    value: Optional[Any] = None
-    """Value of the constraint."""
-
-    check: Literal[CONSTRAINT_SQL_CHECK_VALUE,
-                   CONSTRAINT_SQL_CHECK_ROWS] = CONSTRAINT_SQL_CHECK_ROWS
-    """Modality of constraint checking (On rows or single value)."""
+class ConstraintSQLGeneric(ConstraintBaseSQL):
+    """
+    Generic SQL constraint.
+    """
+    type: str = Field("sql", const=True)
+    """Constraint type ("sql")."""
 
 
 class ConstraintGreatExpectations(Constraint):

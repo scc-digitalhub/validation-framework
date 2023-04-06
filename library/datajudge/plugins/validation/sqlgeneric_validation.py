@@ -1,50 +1,42 @@
 """
-DuckDB implementation of validation plugin.
+SQLAlchemy implementation of validation plugin.
 """
-# pylint: disable=import-error
-import shutil
 from copy import deepcopy
-from pathlib import Path
 from typing import List
 
-import duckdb
-from duckdb import CatalogException
+import sqlalchemy
 
-from datajudge.data_reader.polars_dataframe_duckdb_reader import PolarsDataFrameDuckDBReader
-from datajudge.data_reader.polars_dataframe_file_reader import PolarsDataFrameFileReader
+from datajudge.data_reader.polars_dataframe_sql_reader import PolarsDataFrameSQLReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
-from datajudge.plugins.utils.frictionless_utils import describe_resource
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.utils.sql_checks import (evaluate_validity,
                                                 filter_result,
                                                 render_result)
 from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
-from datajudge.utils.commons import DEFAULT_DIRECTORY, LIBRARY_DUCKDB
-from datajudge.utils.utils import flatten_list, get_uiid, listify
+from datajudge.utils.commons import LIBRARY_SQLALCHEMY, STORE_SQL
+from datajudge.utils.exceptions import ValidationError
+from datajudge.utils.utils import flatten_list
 
 
-class ValidationPluginDuckDB(Validation):
+class ValidationPluginSqlAlchemy(Validation):
     """
-    DuckDB implementation of validation plugin.
+    SQLAlchemy implementation of validation plugin.
     """
 
     def __init__(self) -> None:
         super().__init__()
-        self.db = None
-        self.exec_multithread = True
+        self.exec_multiprocess = True
 
     def setup(self,
-              data_reader: PolarsDataFrameDuckDBReader,
-              db: str,
-              constraint: "ConstraintDuckDB",
+              data_reader: PolarsDataFrameSQLReader,
+              constraint: "ConstraintSqlAlchemy",
               error_report: str,
               exec_args: dict) -> None:
         """
         Set plugin resource.
         """
         self.data_reader = data_reader
-        self.db = db
         self.constraint = constraint
         self.error_report = error_report
         self.exec_args = exec_args
@@ -55,7 +47,7 @@ class ValidationPluginDuckDB(Validation):
         Validate a Data Resource.
         """
         try:
-            data = self.data_reader.fetch_data(self.db,
+            data = self.data_reader.fetch_data(self.constraint.name,
                                                self.constraint.query)
             value = filter_result(data, self.constraint.check)
             valid, errors = evaluate_validity(value,
@@ -111,7 +103,7 @@ class ValidationPluginDuckDB(Validation):
             _object = {"errors": result.errors}
         else:
             _object = dict(result.artifact)
-        filename = self._fn_report.format(f"{LIBRARY_DUCKDB}.json")
+        filename = self._fn_report.format(f"{LIBRARY_SQLALCHEMY}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
 
@@ -120,59 +112,68 @@ class ValidationPluginDuckDB(Validation):
         """
         Get library name.
         """
-        return duckdb.__name__
+        return sqlalchemy.__name__
 
     @staticmethod
     def get_lib_version() -> str:
         """
         Get library version.
         """
-        return duckdb.__version__
+        return sqlalchemy.__version__
 
 
-class ValidationBuilderDuckDB(ValidationPluginBuilder):
+class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
     """
-    DuckDB validation plugin builder.
+    SqlAlchemy validation plugin builder.
     """
 
     def build(self,
               resources: List["DataResource"],
               constraints: List["Constraint"],
               error_report: str
-              ) -> List[ValidationPluginDuckDB]:
+              ) -> List[ValidationPluginSqlAlchemy]:
         """
         Build a plugin for every resource and every constraint.
         """
-        self._setup_connection()
+        self._setup()
+
         f_constraint = self._filter_constraints(constraints)
         f_resources = self._filter_resources(resources, f_constraint)
-        self._register_resources(f_resources)
-        self._tear_down_connection()
+        grouped_constraints = self._regroup_constraint_resources(
+            f_constraint, f_resources)
 
         plugins = []
-        for const in f_constraint:
-            data_reader = PolarsDataFrameDuckDBReader(None)
-            plugin = ValidationPluginDuckDB()
-            plugin.setup(data_reader,
-                         self.tmp_db.as_posix(),
-                         const,
-                         error_report,
-                         self.exec_args)
+        for pack in grouped_constraints:
+            store = pack["store"]
+            const = pack["constraint"]
+            data_reader = PolarsDataFrameSQLReader(store)
+            plugin = ValidationPluginSqlAlchemy()
+            plugin.setup(data_reader, const, error_report, self.exec_args)
             plugins.append(plugin)
 
         return plugins
 
-    def _setup_connection(self) -> None:
+    def _setup(self) -> None:
         """
-        Setup db connection.
+        Filter builder store to keep only SQLStores and set `native` mode for
+        reading data to return a connection string to a db.
         """
-        self.tmp_db = Path(DEFAULT_DIRECTORY, get_uiid(), "tmp.duckdb")
-        self.tmp_db.parent.mkdir(parents=True, exist_ok=True)
-        self.con = duckdb.connect(
-            database=self.tmp_db.as_posix(), read_only=False)
+        self.stores = [store for store in self.stores
+                       if store.store_type == STORE_SQL]
+        if not self.stores:
+            raise ValidationError(
+                "There must be at least a SQLStore to use sqlalchemy validator.")
 
     @staticmethod
-    def _filter_resources(resources: List["DataResource"],
+    def _filter_constraints(constraints: List["Constraint"]
+                            ) -> List["ConstraintSqlAlchemy"]:
+        """
+        Filter out ConstraintSqlAlchemy.
+        """
+        return [const for const in constraints if const.type == LIBRARY_SQLALCHEMY]
+
+    def _filter_resources(self,
+                          resources: List["DataResource"],
                           constraints: List["Constraint"]
                           ) -> List["DataResource"]:
         """
@@ -180,51 +181,40 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         res_names = set(flatten_list(
             [deepcopy(const.resources) for const in constraints]))
-        return [res for res in resources if res.name in res_names]
+        res_to_validate = [res for res in resources if res.name in res_names]
+        st_names = [store.name for store in self.stores]
+        res_in_db = [res for res in res_to_validate if res.store in st_names]
+        return res_in_db
 
-    def _register_resources(self,
-                            resources: List["DataResource"]
-                            ) -> None:
+    def _regroup_constraint_resources(self,
+                                      constraints: List["Constraint"],
+                                      resources: List["DataResource"]
+                                      ) -> list:
         """
-        Register resources in db.
+        Check univocity of resources location and return connection
+        string for db access.
         """
-        for resource in resources:
+        constraint_connection = []
 
-            store = self._get_resource_store(resource)
+        for const in constraints:
+            res_stores = [res.store for res in resources]
 
-            # If resource is already registered, continue
-            try:
-                if bool(self.con.table(f"{resource.name}")):
-                    continue
-            except CatalogException:
-                pass
+            store_num = len(set(res_stores))
+            if store_num > 1:
+                raise ValidationError(
+                    f"Resources for constraint `{const.name}` are not in the same database.")
+            if store_num == 0:
+                raise ValidationError(
+                    f"No resources for constraint `{const.name}` are in a configured store.")
 
-            # Handle multiple paths: crate a table for
-            # first file, then append. Load data from Polars DF
-            for idx, pth in enumerate(listify(resource.path)):
-                df = PolarsDataFrameFileReader(store).fetch_data(pth)
-                if idx == 0:
-                    sql = f"CREATE TABLE {resource.name} AS SELECT * FROM df;"
-                else:
-                    sql = f"INSERT INTO {resource.name} SELECT * FROM df;"
-                self.con.execute(sql)
+            constraint_connection.append({
+                "constraint": const,
+                "store": [s for s in self.stores if s.name == res_stores[0]][0]
+            })
 
-    def _tear_down_connection(self) -> None:
-        """
-        Close connection.
-        """
-        self.con.close()
-
-    @staticmethod
-    def _filter_constraints(constraints: List["Constraint"]
-                            ) -> List["ConstraintDuckDB"]:
-        """
-        Filter out "ConstraintDuckDB".
-        """
-        return [const for const in constraints if const.type == LIBRARY_DUCKDB]
+        return constraint_connection
 
     def destroy(self) -> None:
         """
-        Destory db.
+        Destory plugins.
         """
-        shutil.rmtree(self.tmp_db.parent)

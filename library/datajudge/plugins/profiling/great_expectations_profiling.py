@@ -135,4 +135,7 @@ class ProfileBuilderGreatExpectations(PluginBuilder):
         Destory plugins.
         """
         path = Path(os.getcwd(), "ge_ctxt")
-        clean_all(path)
+        try:
+            clean_all(path)
+        except Exception:
+            pass

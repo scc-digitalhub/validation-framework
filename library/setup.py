@@ -7,8 +7,8 @@ install_requires = [
     "botocore==1.25.8",
     "frictionless==4.40.5",
     "psycopg2-binary==2.9.3",
-    "pyarrow==7.0.0",
-    "pydantic==1.9.1",
+    "pyarrow==11.0.0",
+    "pydantic==1.10.7",
     "pyodbc==4.0.32",
     "requests==2.27.1",
     "SQLAlchemy==1.4.36",
@@ -28,9 +28,11 @@ setup(
     install_requires=install_requires,
     extras_require={
         "all": [
-            "duckdb==0.4.0",
+            "duckdb==0.7.1",
             "pandas-profiling==3.2.0",
-            "great-expectations==0.15.14",
+            "great-expectations==0.16.5",
+            "polars==0.16.18",
+            "connectorx==0.3.1"
             ],
     },
     packages=find_packages()

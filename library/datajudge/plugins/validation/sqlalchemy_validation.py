@@ -9,7 +9,9 @@ import sqlalchemy
 from datajudge.data_reader.pandas_dataframe_sql_reader import PandasDataFrameSQLReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
-from datajudge.plugins.utils.sql_checks import evaluate_validity
+from datajudge.plugins.utils.sql_checks import (evaluate_validity,
+                                                filter_result,
+                                                render_result)
 from datajudge.plugins.validation.validation_plugin import (
     Validation, ValidationPluginBuilder)
 from datajudge.utils.commons import LIBRARY_SQLALCHEMY, STORE_SQL
@@ -47,12 +49,13 @@ class ValidationPluginSqlAlchemy(Validation):
         try:
             data = self.data_reader.fetch_data(self.constraint.name,
                                                self.constraint.query)
-            valid, errors = evaluate_validity(data,
-                                              self.constraint.check,
+            value = filter_result(data, self.constraint.check)
+            valid, errors = evaluate_validity(value,
                                               self.constraint.expect,
                                               self.constraint.value)
+            result = render_result(data)
             return {
-                "result": data.to_dict(),
+                "result": result,
                 "valid": valid,
                 "error": errors
             }
