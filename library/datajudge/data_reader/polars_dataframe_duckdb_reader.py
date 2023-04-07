@@ -30,10 +30,9 @@ class PolarsDataFrameDuckDBReader(NativeReader):
         Use the pandas to read data from db.
         """
         try:
+            # Not thread safe apparently
             conn = duckdb.connect(database=src, read_only=True)
-            cursor = conn.cursor()
-            return cursor.execute(query).pl()
-
+            return conn.sql(query).pl()
         except Exception as ex:
             raise StoreError(
                 f"Unable to read data from query: {query}. Arguments: {str(ex.args)}")

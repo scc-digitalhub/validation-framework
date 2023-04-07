@@ -10,10 +10,9 @@ from typing import List
 import duckdb
 from duckdb import CatalogException
 
-from datajudge.data_reader.polars_dataframe_duckdb_reader import PolarsDataFrameDuckDBReader
+from datajudge.data_reader.pandas_dataframe_duckdb_reader import PandasDataFrameDuckDBReader
 from datajudge.data_reader.polars_dataframe_file_reader import PolarsDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
-from datajudge.plugins.utils.frictionless_utils import describe_resource
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.utils.sql_checks import (evaluate_validity,
                                                 filter_result,
@@ -32,10 +31,10 @@ class ValidationPluginDuckDB(Validation):
     def __init__(self) -> None:
         super().__init__()
         self.db = None
-        self.exec_multithread = True
+        self.exec_multiprocess = True
 
     def setup(self,
-              data_reader: PolarsDataFrameDuckDBReader,
+              data_reader: PandasDataFrameDuckDBReader,
               db: str,
               constraint: "ConstraintDuckDB",
               error_report: str,
@@ -151,7 +150,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
 
         plugins = []
         for const in f_constraint:
-            data_reader = PolarsDataFrameDuckDBReader(None)
+            data_reader = PandasDataFrameDuckDBReader(None)
             plugin = ValidationPluginDuckDB()
             plugin.setup(data_reader,
                          self.tmp_db.as_posix(),
@@ -227,4 +226,4 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         Destory db.
         """
-        shutil.rmtree(self.tmp_db.parent)
+        shutil.rmtree(self.tmp_db.parent, ignore_errors=True)
