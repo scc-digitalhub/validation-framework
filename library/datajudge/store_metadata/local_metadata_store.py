@@ -7,7 +7,7 @@ from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils import commons as cfg
 from datajudge.utils.exceptions import RunError
 from datajudge.utils.file_utils import (check_dir, get_path, make_dir,
-                                        remove_files)
+                                        clean_all)
 from datajudge.utils.io_utils import write_json
 
 
@@ -75,7 +75,8 @@ class LocalMetadataStore(MetadataStore):
             if init and not overwrite:
                 raise RunError("Run already exists, please use another id.")
             if init and overwrite:
-                remove_files(dst)
+                clean_all(dst)
+                make_dir(dst)
         else:
             make_dir(dst)
 

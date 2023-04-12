@@ -1,7 +1,6 @@
 """
 Common filesystem utils.
 """
-import glob
 import os
 import shutil
 from pathlib import Path
@@ -68,17 +67,6 @@ def copy_file(src: str, dst: str) -> None:
     Copy local file to destination.
     """
     shutil.copy(src, dst)
-
-
-def remove_files(path: str) -> None:
-    """
-    Remove files from a folder.
-    """
-    if not path.endswith("*"):
-        path = get_path(path, "*")
-    files = glob.glob(path)
-    for file in files:
-        os.remove(file)
 
 
 def clean_all(path: str) -> None:

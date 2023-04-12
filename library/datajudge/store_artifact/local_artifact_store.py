@@ -79,14 +79,6 @@ class LocalArtifactStore(ArtifactStore):
         if write and not check_dir(dst):
             make_dir(dst)
 
-    def _get_data(self, key: str) -> None:
-        """
-        Do nothing.
-        """
+    def _get_data(self, *args) -> None: ...
 
-    def _store_data(self,
-                    obj: bytes,
-                    key: str) -> str:
-        """
-        Do nothing.
-        """
+    def _store_data(self, *args) -> None: ...

@@ -36,5 +36,3 @@ class PandasDataFrameDuckDBReader(NativeReader):
         except Exception as ex:
             raise StoreError(
                 f"Unable to read data from query: {query}. Arguments: {str(ex.args)}")
-        finally:
-            conn.close()
