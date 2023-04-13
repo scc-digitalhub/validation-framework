@@ -2,23 +2,24 @@
 SQLAlchemy implementation of validation plugin.
 """
 from copy import deepcopy
-from typing import List
+from typing import List, Any
 
 import sqlalchemy
 
 from datajudge.data_reader.pandas_dataframe_sql_reader import PandasDataFrameSQLReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
-from datajudge.plugins.utils.sql_checks import (
-    evaluate_validity,
-    filter_result,
-    render_result,
-)
+from datajudge.plugins.utils.sql_checks import evaluate_validity
 from datajudge.plugins.validation.validation_plugin import (
     Validation,
     ValidationPluginBuilder,
 )
-from datajudge.utils.commons import LIBRARY_SQLALCHEMY, STORE_SQL
+from datajudge.utils.commons import (
+    LIBRARY_SQLALCHEMY,
+    STORE_SQL,
+    CONSTRAINT_SQL_CHECK_ROWS,
+    CONSTRAINT_SQL_CHECK_VALUE,
+)
 from datajudge.utils.exceptions import ValidationError
 from datajudge.utils.utils import flatten_list
 
@@ -34,7 +35,7 @@ class ValidationPluginSqlAlchemy(Validation):
 
     def setup(
         self,
-        data_reader: PandasDataFrameSQLReader,
+        data_reader: "NativeReader",
         constraint: "ConstraintSqlAlchemy",
         error_report: str,
         exec_args: dict,
@@ -56,14 +57,29 @@ class ValidationPluginSqlAlchemy(Validation):
             data = self.data_reader.fetch_data(
                 self.constraint.name, self.constraint.query
             )
-            value = filter_result(data, self.constraint.check)
+            value = self._filter_result(data)
             valid, errors = evaluate_validity(
                 value, self.constraint.expect, self.constraint.value
             )
-            result = render_result(data)
+            result = self._shorten_data(data)
             return {"result": result, "valid": valid, "error": errors}
         except Exception as ex:
             raise ex
+
+    def _filter_result(self, data: Any) -> Any:
+        """
+        Return value or size of DataFrame for SQL checks.
+        """
+        if self.constraint.check == CONSTRAINT_SQL_CHECK_VALUE:
+            return self.data_reader.return_first_value(data)
+        elif self.constraint.check == CONSTRAINT_SQL_CHECK_ROWS:
+            return self.data_reader.return_length(data)
+
+    def _shorten_data(self, data: Any) -> Any:
+        """
+        Return a short version of data.
+        """
+        return self.data_reader.return_head(data)
 
     @exec_decorator
     def render_datajudge(self, result: "Result") -> DatajudgeReport:

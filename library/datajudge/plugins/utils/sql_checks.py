@@ -2,15 +2,9 @@
 SQL checks module.
 """
 import re
-from collections import defaultdict
 from typing import Any, Tuple, Union
 
-from pandas import DataFrame as PdDataFrame
-from polars import DataFrame as PlDataFrame
-
 from datajudge.utils.commons import (
-    CONSTRAINT_SQL_CHECK_ROWS,
-    CONSTRAINT_SQL_CHECK_VALUE,
     CONSTRAINT_SQL_EMPTY,
     CONSTRAINT_SQL_EXACT,
     CONSTRAINT_SQL_MAXIMUM,
@@ -18,20 +12,6 @@ from datajudge.utils.commons import (
     CONSTRAINT_SQL_NON_EMPTY,
     CONSTRAINT_SQL_RANGE,
 )
-
-
-def filter_result(data: Union[PdDataFrame, PlDataFrame], check: str) -> Any:
-    """
-    Return value or size of DataFrame for SQL checks.
-    """
-    if check == CONSTRAINT_SQL_CHECK_VALUE:
-        if isinstance(data, PlDataFrame):
-            return data[0, 0]
-        if isinstance(data, PdDataFrame):
-            return data.iloc[0, 0]
-
-    if check == CONSTRAINT_SQL_CHECK_ROWS:
-        return data.shape[0]
 
 
 def evaluate_validity(result: Any, expect: str, value: Any) -> Tuple[bool, list]:
@@ -135,27 +115,3 @@ def evaluate_range(result: Any, _range: str) -> tuple:
                         {mtc.group(3)}{ul}.",
         )
     return False, "Invalid range format."
-
-
-def render_result(data: Union[PdDataFrame, PlDataFrame] = None) -> dict:
-    """
-    Parse a dataframe and return a dict.
-    """
-    if data is None:
-        return {}
-
-    # Set max result numbers to 100,
-    # possibly extract logic from here
-
-    # Parse polars dataframe
-    if isinstance(data, PlDataFrame):
-        part_data = data.head(100).to_dicts()
-        _dict = defaultdict(list)
-        for elm in part_data:
-            for k, v in elm.items():
-                _dict[k].append(v)
-        return _dict
-
-    # Parse pandas dataframe
-    if isinstance(data, PdDataFrame):
-        return data.head(100).to_dict()

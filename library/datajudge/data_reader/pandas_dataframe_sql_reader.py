@@ -1,6 +1,8 @@
 """
 PandasDataFrameReader module.
 """
+from typing import Any
+
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
@@ -48,3 +50,24 @@ class PandasDataFrameSQLReader(NativeReader):
             )
         finally:
             engine.dispose()
+
+    @staticmethod
+    def return_head(df: pd.DataFrame) -> dict:
+        """
+        Return head(100) of DataFrame as dict.
+        """
+        return df.head(100).to_dict()
+
+    @staticmethod
+    def return_first_value(df: pd.DataFrame) -> Any:
+        """
+        Return first value of DataFrame.
+        """
+        return df.iloc[0, 0]
+
+    @staticmethod
+    def return_length(df: pd.DataFrame) -> int:
+        """
+        Return length of DataFrame.
+        """
+        return df.shape[0]

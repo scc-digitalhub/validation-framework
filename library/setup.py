@@ -29,11 +29,11 @@ setup(
     extras_require={
         "all": [
             "duckdb==0.7.1",
-            "pandas-profiling==3.2.0",
+            "pandas-profiling==3.6.6",
             "great-expectations==0.16.5",
             "polars==0.16.18",
-            "connectorx==0.3.1"
-            ],
+            "connectorx==0.3.1",
+        ],
     },
-    packages=find_packages()
+    packages=find_packages(),
 )

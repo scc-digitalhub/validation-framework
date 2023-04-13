@@ -23,6 +23,7 @@ from datajudge.utils.commons import (
     LIBRARY_FRICTIONLESS,
     LIBRARY_GREAT_EXPECTATIONS,
     LIBRARY_SQLALCHEMY,
+    LIBRARY_SQL_GENERIC,
     STORE_AZURE,
     STORE_DUMMY,
     STORE_FTP,
@@ -219,7 +220,7 @@ class ConstraintSQLGeneric(ConstraintBaseSQL):
     Generic SQL constraint.
     """
 
-    type: str = Field("sql", const=True)
+    type: str = Field(LIBRARY_SQL_GENERIC, const=True)
     """Constraint type ("sql")."""
 
 

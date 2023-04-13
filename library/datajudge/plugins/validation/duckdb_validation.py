@@ -5,7 +5,7 @@ DuckDB implementation of validation plugin.
 import shutil
 from copy import deepcopy
 from pathlib import Path
-from typing import List
+from typing import List, Any
 
 import duckdb
 from duckdb import CatalogException
@@ -16,16 +16,17 @@ from datajudge.data_reader.pandas_dataframe_duckdb_reader import (
 from datajudge.data_reader.polars_dataframe_file_reader import PolarsDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
-from datajudge.plugins.utils.sql_checks import (
-    evaluate_validity,
-    filter_result,
-    render_result,
-)
+from datajudge.plugins.utils.sql_checks import evaluate_validity
 from datajudge.plugins.validation.validation_plugin import (
     Validation,
     ValidationPluginBuilder,
 )
-from datajudge.utils.commons import DEFAULT_DIRECTORY, LIBRARY_DUCKDB
+from datajudge.utils.commons import (
+    DEFAULT_DIRECTORY,
+    LIBRARY_DUCKDB,
+    CONSTRAINT_SQL_CHECK_ROWS,
+    CONSTRAINT_SQL_CHECK_VALUE,
+)
 from datajudge.utils.utils import flatten_list, get_uiid, listify
 
 
@@ -41,7 +42,7 @@ class ValidationPluginDuckDB(Validation):
 
     def setup(
         self,
-        data_reader: PandasDataFrameDuckDBReader,
+        data_reader: "NativeReader",
         db: str,
         constraint: "ConstraintDuckDB",
         error_report: str,
@@ -63,14 +64,29 @@ class ValidationPluginDuckDB(Validation):
         """
         try:
             data = self.data_reader.fetch_data(self.db, self.constraint.query)
-            value = filter_result(data, self.constraint.check)
+            value = self._filter_result(data)
             valid, errors = evaluate_validity(
                 value, self.constraint.expect, self.constraint.value
             )
-            result = render_result(data)
+            result = self._shorten_data(data)
             return {"result": result, "valid": valid, "error": errors}
         except Exception as ex:
             raise ex
+
+    def _filter_result(self, data: Any) -> Any:
+        """
+        Return value or size of DataFrame for SQL checks.
+        """
+        if self.constraint.check == CONSTRAINT_SQL_CHECK_VALUE:
+            return self.data_reader.return_first_value(data)
+        elif self.constraint.check == CONSTRAINT_SQL_CHECK_ROWS:
+            return self.data_reader.return_length(data)
+
+    def _shorten_data(self, data: Any) -> Any:
+        """
+        Return a short version of data.
+        """
+        return self.data_reader.return_head(data)
 
     @exec_decorator
     def render_datajudge(self, result: "Result") -> DatajudgeReport:

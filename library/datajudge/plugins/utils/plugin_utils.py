@@ -1,7 +1,6 @@
 """
 Plugin utils module.
 """
-
 import time
 from collections import namedtuple
 from typing import Any, Callable

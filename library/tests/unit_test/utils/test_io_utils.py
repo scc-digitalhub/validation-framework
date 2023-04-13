@@ -1,9 +1,6 @@
 import json
 from io import BytesIO, StringIO, TextIOWrapper
 from pathlib import Path
-from tempfile import TemporaryDirectory
-
-import pytest
 
 from datajudge.utils.io_utils import (
     wrap_bytes,

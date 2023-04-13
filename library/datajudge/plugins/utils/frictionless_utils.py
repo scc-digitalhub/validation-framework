@@ -89,6 +89,9 @@ def frictionless_schema_converter(
     return constraints
 
 
+from frictionless import Resource
+
+
 def describe_resource(pth: str) -> dict:
     """
     Describe a resource using frictionless.

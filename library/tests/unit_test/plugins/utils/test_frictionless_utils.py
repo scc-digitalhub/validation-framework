@@ -1,5 +1,11 @@
+import pytest
+from frictionless import Detector
+
 from datajudge.utils.config import ConstraintFrictionless
-from datajudge.plugins.utils.frictionless_utils import frictionless_schema_converter
+from datajudge.plugins.utils.frictionless_utils import (
+    frictionless_schema_converter,
+    describe_resource,
+)
 
 
 def test_frictionless_schema_converter():
@@ -80,3 +86,31 @@ def test_frictionless_schema_converter():
         ),
     ]
     assert const == list_const
+
+
+# With bigger buffer/sample we should avoid error encoding detection
+custom_frictionless_detector = Detector(buffer_size=20000, sample_size=1250)
+
+
+# fixture to create a temporary file for testing
+@pytest.fixture(scope="function")
+def tmp_file(tmp_path):
+    temp_file = tmp_path / "test.csv"
+    temp_file.write_text("name,age\nAlice,25\nBob,30\n")
+    return str(temp_file)
+
+
+# define test functions
+def test_describe_resource_returns_dict(tmp_file):
+    result = describe_resource(tmp_file)
+    assert isinstance(result, dict)
+
+
+def test_describe_resource_non_empty_dict(tmp_file):
+    result = describe_resource(tmp_file)
+    assert bool(result)
+
+
+def test_describe_resource_raises_exception_for_invalid_path():
+    with pytest.raises(Exception):
+        describe_resource("invalid_path")

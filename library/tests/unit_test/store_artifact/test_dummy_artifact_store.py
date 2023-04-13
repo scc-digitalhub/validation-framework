@@ -3,7 +3,6 @@ from datajudge.store_artifact.dummy_artifact_store import DummyArtifactStore
 
 
 class TestDummyArtifactStore:
-
     @pytest.fixture()
     def store(self):
         return DummyArtifactStore("", "", "", "")
