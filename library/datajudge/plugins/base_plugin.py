@@ -80,7 +80,7 @@ class Plugin(metaclass=ABCMeta):
         """
         return {
             "libraryName": self.get_lib_name(),
-            "libraryVersion": self.get_lib_version()
+            "libraryVersion": self.get_lib_version(),
         }
 
 
@@ -89,10 +89,7 @@ class PluginBuilder:
     Abstract PluginBuilder class.
     """
 
-    def __init__(self,
-                 stores: List["ArtifactStore"],
-                 exec_args: dict
-                 ) -> None:
+    def __init__(self, stores: List["ArtifactStore"], exec_args: dict) -> None:
         self.stores = stores
         self.exec_args = exec_args
 
@@ -116,8 +113,9 @@ class PluginBuilder:
         try:
             return [store for store in self.stores if store.name == resource.store][0]
         except IndexError:
-            raise StoreError(f"No store registered with name '{resource.store}'. " +
-                             f"Impossible to fetch resource '{resource.name}'")
+            raise StoreError(
+                f"No store registered with name '{resource.store}'. Impossible to fetch resource '{resource.name}'"
+            )
 
     @abstractmethod
     def destroy(self) -> None:

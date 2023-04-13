@@ -20,20 +20,15 @@ class HTTPArtifactStore(ArtifactStore):
 
     """
 
-    def persist_artifact(self,
-                         src: Any,
-                         dst: str,
-                         src_name: str,
-                         metadata: dict
-                         ) -> None:
+    def persist_artifact(
+        self, src: Any, dst: str, src_name: str, metadata: dict
+    ) -> None:
         """
         Persist an artifact.
         """
         raise NotImplementedError
 
-    def _get_and_register_artifact(self,
-                                   src: str,
-                                   fetch_mode: str) -> str:
+    def _get_and_register_artifact(self, src: str, fetch_mode: str) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
@@ -75,9 +70,9 @@ class HTTPArtifactStore(ArtifactStore):
         try:
             response = requests.head(url)
             if not response.ok:
-                raise HTTPError("Something wrong, response code " +
-                                f"{response.status_code} for url " +
-                                f"{url}.")
+                raise HTTPError(
+                    f"Something wrong, response code {response.status_code} for url {url}."
+                )
         except Exception as ex:
             raise ex
 
@@ -90,9 +85,7 @@ class HTTPArtifactStore(ArtifactStore):
             if self.config["auth"] == "basic":
                 kwargs["auth"] = self.config["user"], self.config["password"]
             if self.config["auth"] == "oauth":
-                kwargs["headers"] = {
-                    "Authorization": f"Bearer {self.config['token']}"
-                }
+                kwargs["headers"] = {"Authorization": f"Bearer {self.config['token']}"}
         return kwargs
 
     def _get_data(self, key: str) -> bytes:
@@ -103,9 +96,7 @@ class HTTPArtifactStore(ArtifactStore):
         res = requests.get(key, **kwargs)
         return res.content
 
-    def _store_data(self,
-                    obj: bytes,
-                    key: str) -> str:
+    def _store_data(self, obj: bytes, key: str) -> str:
         """
         Store data locally in temporary folder and return tmp path.
         """

@@ -12,8 +12,7 @@ class FileReader(DataReader):
     resources from backend and store them locally.
     """
 
-    def fetch_data(self,
-                   src: str) -> str:
+    def fetch_data(self, src: str) -> str:
         """
         Fetch resource from backend.
         """

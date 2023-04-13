@@ -5,8 +5,12 @@ from abc import ABCMeta, abstractmethod
 from typing import Any, List
 
 from datajudge.plugins.base_plugin import Plugin, PluginBuilder
-from datajudge.utils.commons import (RESULT_DATAJUDGE, RESULT_LIBRARY,
-                                     RESULT_RENDERED, RESULT_WRAPPED)
+from datajudge.utils.commons import (
+    RESULT_DATAJUDGE,
+    RESULT_LIBRARY,
+    RESULT_RENDERED,
+    RESULT_WRAPPED,
+)
 
 
 class Validation(Plugin, metaclass=ABCMeta):
@@ -25,19 +29,20 @@ class Validation(Plugin, metaclass=ABCMeta):
         """
         Method that call specific execution.
         """
-        self.logger.info(
-            f"Execute validation: plugin {self.lib_name} {self._id}, constraint {self.constraint.name}, resources {self.constraint.resources}")
+        plugin = f"Plugin: {self.lib_name} {self._id};"
+        constraint = f"Constraint: {self.constraint.name};"
+        resources = f"Resources: {self.constraint.resources};"
+        self.logger.info(f"Execute validation - {plugin} {constraint} {resources}")
         lib_result = self.validate()
-        self.logger.info(
-            f"Render datajudge result: plugin {self.lib_name} {self._id}")
+        self.logger.info(f"Render datajudge result - {plugin}")
         dj_result = self.render_datajudge(lib_result)
-        self.logger.info(f"Render artifact: plugin {self.lib_name} {self._id}")
+        self.logger.info(f"Render artifact - {plugin}")
         render_result = self.render_artifact(lib_result)
         return {
             RESULT_WRAPPED: lib_result,
             RESULT_DATAJUDGE: dj_result,
             RESULT_RENDERED: render_result,
-            RESULT_LIBRARY: self.get_library()
+            RESULT_LIBRARY: self.get_library(),
         }
 
     @abstractmethod
@@ -53,8 +58,7 @@ class Validation(Plugin, metaclass=ABCMeta):
         """
         return {"type": code}
 
-    def _parse_error_report(self,
-                            error_list: list) -> list:
+    def _parse_error_report(self, error_list: list) -> list:
         """
         Return a list of record according to user parameter.
         """
@@ -68,17 +72,13 @@ class Validation(Plugin, metaclass=ABCMeta):
             return error_list
 
     @staticmethod
-    def _get_errors(count: int = 0,
-                    records: list = None) -> dict:
+    def _get_errors(count: int = 0, records: list = None) -> dict:
         """
         Return a common error structure.
         """
         if records is None:
             records = []
-        return {
-            "count": count,
-            "records": records
-        }
+        return {"count": count, "records": records}
 
 
 class ValidationPluginBuilder(PluginBuilder):
@@ -88,8 +88,7 @@ class ValidationPluginBuilder(PluginBuilder):
 
     @staticmethod
     @abstractmethod
-    def _filter_constraints(constraints: List["Constraint"]
-                            ) -> List["Constraint"]:
+    def _filter_constraints(constraints: List["Constraint"]) -> List["Constraint"]:
         """
         Filter constraints by library.
         """

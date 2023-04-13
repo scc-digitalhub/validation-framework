@@ -7,14 +7,22 @@ from io import BytesIO, StringIO
 from pathlib import Path
 from typing import IO, Any
 
-from azure.storage.blob import (BlobSasPermissions, BlobServiceClient,
-                                ContainerClient, generate_blob_sas)
+from azure.storage.blob import (
+    BlobSasPermissions,
+    BlobServiceClient,
+    ContainerClient,
+    generate_blob_sas,
+)
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.file_utils import check_make_dir, check_path, get_path
 from datajudge.utils.io_utils import wrap_string, write_bytes, write_bytesio
-from datajudge.utils.uri_utils import (build_key, get_name_from_uri,
-                                       get_uri_netloc, get_uri_path)
+from datajudge.utils.uri_utils import (
+    build_key,
+    get_name_from_uri,
+    get_uri_netloc,
+    get_uri_path,
+)
 
 
 class AzureArtifactStore(ArtifactStore):
@@ -25,12 +33,9 @@ class AzureArtifactStore(ArtifactStore):
 
     """
 
-    def persist_artifact(self,
-                         src: Any,
-                         dst: str,
-                         src_name: str,
-                         metadata: dict
-                         ) -> None:
+    def persist_artifact(
+        self, src: Any, dst: str, src_name: str, metadata: dict
+    ) -> None:
         """
         Persist an artifact.
         """
@@ -58,9 +63,7 @@ class AzureArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    def _get_and_register_artifact(self,
-                                   src: str,
-                                   fetch_mode: str) -> str:
+    def _get_and_register_artifact(self, src: str, fetch_mode: str) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
@@ -101,15 +104,13 @@ class AzureArtifactStore(ArtifactStore):
 
             # Check connection string
             if conn_string is not None:
-                client = BlobServiceClient.from_connection_string(
-                    conn_str=conn_string)
+                client = BlobServiceClient.from_connection_string(conn_str=conn_string)
                 return client.get_container_client(container)
 
             # Otherwise account name + key
             if acc_name is not None and acc_key is not None:
                 url = f"https://{acc_name}.blob.core.windows.net"
-                client = BlobServiceClient(account_url=url,
-                                           credential=acc_key)
+                client = BlobServiceClient(account_url=url, credential=acc_key)
                 return client.get_container_client(container)
 
         raise Exception("You must provide credentials!")
@@ -123,60 +124,48 @@ class AzureArtifactStore(ArtifactStore):
             raise RuntimeError("No access to Azure container!")
 
     @staticmethod
-    def _get_presigned_url(client: ContainerClient,
-                           src: str) -> str:
+    def _get_presigned_url(client: ContainerClient, src: str) -> str:
         """
         Encode credentials in Azure URI.
         """
         if src.startswith("/"):
             src = src[1:]
-        read_sas_blob = generate_blob_sas(account_name=client.credential.account_name,
-                                          container_name=client.container_name,
-                                          blob_name=src,
-                                          account_key=client.credential.account_key,
-                                          permission=BlobSasPermissions(
-                                              read=True),
-                                          expiry=datetime.utcnow() + timedelta(hours=2))
+        read_sas_blob = generate_blob_sas(
+            account_name=client.credential.account_name,
+            container_name=client.container_name,
+            blob_name=src,
+            account_key=client.credential.account_key,
+            permission=BlobSasPermissions(read=True),
+            expiry=datetime.utcnow() + timedelta(hours=2),
+        )
         return f"{client.primary_endpoint}/{src}?{read_sas_blob}"
 
     @staticmethod
-    def _upload_fileobj(client: ContainerClient,
-                        name: str,
-                        data: IO,
-                        metadata: dict) -> None:
+    def _upload_fileobj(
+        client: ContainerClient, name: str, data: IO, metadata: dict
+    ) -> None:
         """
         Upload fileobj to Azure.
         """
-        client.upload_blob(name=name,
-                           data=data,
-                           metadata=metadata,
-                           overwrite=True)
+        client.upload_blob(name=name, data=data, metadata=metadata, overwrite=True)
 
     @staticmethod
-    def _upload_file(client: ContainerClient,
-                     name: str,
-                     path: str,
-                     metadata: dict) -> None:
+    def _upload_file(
+        client: ContainerClient, name: str, path: str, metadata: dict
+    ) -> None:
         """
         Upload file to Azure.
         """
         with open(path, "rb") as file:
-            client.upload_blob(name=name,
-                               data=file,
-                               metadata=metadata,
-                               overwrite=True)
+            client.upload_blob(name=name, data=file, metadata=metadata, overwrite=True)
 
-    def _get_data(self,
-                  client: ContainerClient,
-                  key: str) -> bytes:
+    def _get_data(self, client: ContainerClient, key: str) -> bytes:
         """
         Download object from Azure.
         """
         return client.download_blob(key).readall()
 
-    def _store_data(self,
-                    obj: bytes,
-                    key: str) -> str:
+    def _store_data(self, obj: bytes, key: str) -> str:
         """
         Store data locally in temporary folder and return tmp path.
         """

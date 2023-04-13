@@ -10,15 +10,21 @@ from typing import List
 import duckdb
 from duckdb import CatalogException
 
-from datajudge.data_reader.pandas_dataframe_duckdb_reader import PandasDataFrameDuckDBReader
+from datajudge.data_reader.pandas_dataframe_duckdb_reader import (
+    PandasDataFrameDuckDBReader,
+)
 from datajudge.data_reader.polars_dataframe_file_reader import PolarsDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
-from datajudge.plugins.utils.sql_checks import (evaluate_validity,
-                                                filter_result,
-                                                render_result)
+from datajudge.plugins.utils.sql_checks import (
+    evaluate_validity,
+    filter_result,
+    render_result,
+)
 from datajudge.plugins.validation.validation_plugin import (
-    Validation, ValidationPluginBuilder)
+    Validation,
+    ValidationPluginBuilder,
+)
 from datajudge.utils.commons import DEFAULT_DIRECTORY, LIBRARY_DUCKDB
 from datajudge.utils.utils import flatten_list, get_uiid, listify
 
@@ -33,12 +39,14 @@ class ValidationPluginDuckDB(Validation):
         self.db = None
         self.exec_multiprocess = True
 
-    def setup(self,
-              data_reader: PandasDataFrameDuckDBReader,
-              db: str,
-              constraint: "ConstraintDuckDB",
-              error_report: str,
-              exec_args: dict) -> None:
+    def setup(
+        self,
+        data_reader: PandasDataFrameDuckDBReader,
+        db: str,
+        constraint: "ConstraintDuckDB",
+        error_report: str,
+        exec_args: dict,
+    ) -> None:
         """
         Set plugin resource.
         """
@@ -54,18 +62,13 @@ class ValidationPluginDuckDB(Validation):
         Validate a Data Resource.
         """
         try:
-            data = self.data_reader.fetch_data(self.db,
-                                               self.constraint.query)
+            data = self.data_reader.fetch_data(self.db, self.constraint.query)
             value = filter_result(data, self.constraint.check)
-            valid, errors = evaluate_validity(value,
-                                              self.constraint.expect,
-                                              self.constraint.value)
+            valid, errors = evaluate_validity(
+                value, self.constraint.expect, self.constraint.value
+            )
             result = render_result(data)
-            return {
-                "result": result,
-                "valid": valid,
-                "error": errors
-            }
+            return {"result": result, "valid": valid, "error": errors}
         except Exception as ex:
             raise ex
 
@@ -89,16 +92,17 @@ class ValidationPluginDuckDB(Validation):
                 errors = self._get_errors(total_count, parsed_error_list)
 
         else:
-            self.logger.error(
-                f"Execution error {str(exec_err)} for plugin {self._id}")
+            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
             valid = False
 
-        return DatajudgeReport(self.get_lib_name(),
-                               self.get_lib_version(),
-                               duration,
-                               constraint,
-                               valid,
-                               errors)
+        return DatajudgeReport(
+            self.get_lib_name(),
+            self.get_lib_version(),
+            duration,
+            constraint,
+            valid,
+            errors,
+        )
 
     @exec_decorator
     def render_artifact(self, result: "Result") -> List[tuple]:
@@ -134,11 +138,12 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
     DuckDB validation plugin builder.
     """
 
-    def build(self,
-              resources: List["DataResource"],
-              constraints: List["Constraint"],
-              error_report: str
-              ) -> List[ValidationPluginDuckDB]:
+    def build(
+        self,
+        resources: List["DataResource"],
+        constraints: List["Constraint"],
+        error_report: str,
+    ) -> List[ValidationPluginDuckDB]:
         """
         Build a plugin for every resource and every constraint.
         """
@@ -152,11 +157,9 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         for const in f_constraint:
             data_reader = PandasDataFrameDuckDBReader(None)
             plugin = ValidationPluginDuckDB()
-            plugin.setup(data_reader,
-                         self.tmp_db.as_posix(),
-                         const,
-                         error_report,
-                         self.exec_args)
+            plugin.setup(
+                data_reader, self.tmp_db.as_posix(), const, error_report, self.exec_args
+            )
             plugins.append(plugin)
 
         return plugins
@@ -167,28 +170,25 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         self.tmp_db = Path(DEFAULT_DIRECTORY, get_uiid(), "tmp.duckdb")
         self.tmp_db.parent.mkdir(parents=True, exist_ok=True)
-        self.con = duckdb.connect(
-            database=self.tmp_db.as_posix(), read_only=False)
+        self.con = duckdb.connect(database=self.tmp_db.as_posix(), read_only=False)
 
     @staticmethod
-    def _filter_resources(resources: List["DataResource"],
-                          constraints: List["Constraint"]
-                          ) -> List["DataResource"]:
+    def _filter_resources(
+        resources: List["DataResource"], constraints: List["Constraint"]
+    ) -> List["DataResource"]:
         """
         Filter resources used by validator.
         """
-        res_names = set(flatten_list(
-            [deepcopy(const.resources) for const in constraints]))
+        res_names = set(
+            flatten_list([deepcopy(const.resources) for const in constraints])
+        )
         return [res for res in resources if res.name in res_names]
 
-    def _register_resources(self,
-                            resources: List["DataResource"]
-                            ) -> None:
+    def _register_resources(self, resources: List["DataResource"]) -> None:
         """
         Register resources in db.
         """
         for resource in resources:
-
             store = self._get_resource_store(resource)
 
             # If resource is already registered, continue
@@ -215,8 +215,9 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         self.con.close()
 
     @staticmethod
-    def _filter_constraints(constraints: List["Constraint"]
-                            ) -> List["ConstraintDuckDB"]:
+    def _filter_constraints(
+        constraints: List["Constraint"],
+    ) -> List["ConstraintDuckDB"]:
         """
         Filter out "ConstraintDuckDB".
         """

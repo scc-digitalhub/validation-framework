@@ -4,8 +4,11 @@ Abstract class for artifact store.
 from abc import ABCMeta, abstractmethod
 from typing import IO, Any, Optional, Union
 
-from datajudge.utils.commons import (DATAREADER_BUFFER, DATAREADER_FILE,
-                                     DATAREADER_NATIVE)
+from datajudge.utils.commons import (
+    DATAREADER_BUFFER,
+    DATAREADER_FILE,
+    DATAREADER_NATIVE,
+)
 from datajudge.utils.logger import LOGGER
 from datajudge.utils.uri_utils import rebuild_uri
 
@@ -18,9 +21,7 @@ class ResourceRegistry:
     def __init__(self) -> None:
         self.registry = {}
 
-    def register(self,
-                 res_name: str,
-                 tmp_path: str) -> None:
+    def register(self, res_name: str, tmp_path: str) -> None:
         """
         Register a resource temporary path.
         """
@@ -68,14 +69,15 @@ class ArtifactStore(metaclass=ABCMeta):
     NATIVE = DATAREADER_NATIVE
     BUFFER = DATAREADER_BUFFER
 
-    def __init__(self,
-                 name: str,
-                 store_type: str,
-                 artifact_uri: str,
-                 temp_dir: str,
-                 config: Optional[dict] = None,
-                 is_default=False
-                 ) -> None:
+    def __init__(
+        self,
+        name: str,
+        store_type: str,
+        artifact_uri: str,
+        temp_dir: str,
+        config: Optional[dict] = None,
+        is_default=False,
+    ) -> None:
         self.name = name
         self.store_type = store_type
         self.artifact_uri = artifact_uri
@@ -86,43 +88,39 @@ class ArtifactStore(metaclass=ABCMeta):
         self.logger = LOGGER
 
     @abstractmethod
-    def persist_artifact(self,
-                         src: Any,
-                         dst: str,
-                         src_name: str,
-                         metadata: dict
-                         ) -> None:
+    def persist_artifact(
+        self, src: Any, dst: str, src_name: str, metadata: dict
+    ) -> None:
         """
         Method to persist an artifact.
         """
 
-    def fetch_file(self,
-                   src: str) -> str:
+    def fetch_file(self, src: str) -> str:
         """
         Return the temporary path where a resource it is stored.
         """
-        return (self._get_resource(f"{src}_{self.FILE}") or
-                self._get_and_register_artifact(src, self.FILE))
+        return self._get_resource(
+            f"{src}_{self.FILE}"
+        ) or self._get_and_register_artifact(src, self.FILE)
 
     def fetch_native(self, src: str) -> str:
         """
         Return a native format path for a resource.
         """
-        return (self._get_resource(f"{src}_{self.NATIVE}") or
-                self._get_and_register_artifact(src, self.NATIVE))
+        return self._get_resource(
+            f"{src}_{self.NATIVE}"
+        ) or self._get_and_register_artifact(src, self.NATIVE)
 
     def fetch_buffer(self, src: str) -> IO:
         """
         Return a buffered resource.
         """
-        return (self._get_resource(f"{src}_{self.BUFFER}") or
-                self._get_and_register_artifact(src, self.BUFFER))
+        return self._get_resource(
+            f"{src}_{self.BUFFER}"
+        ) or self._get_and_register_artifact(src, self.BUFFER)
 
     @abstractmethod
-    def _get_and_register_artifact(self,
-                                   src: str,
-                                   fetch_mode: str
-                                   ) -> str:
+    def _get_and_register_artifact(self, src: str, fetch_mode: str) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
@@ -146,9 +144,7 @@ class ArtifactStore(metaclass=ABCMeta):
         Check if there is access to the storage.
         """
 
-    def get_run_artifacts_uri(self,
-                              exp_name: str,
-                              run_id: str) -> str:
+    def get_run_artifacts_uri(self, exp_name: str, run_id: str) -> str:
         """
         Return the path of the artifact store for the Run.
         """

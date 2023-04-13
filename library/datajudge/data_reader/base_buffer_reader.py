@@ -13,8 +13,7 @@ class BufferReader(DataReader):
     a string reference to the plugin according to store.
     """
 
-    def fetch_data(self,
-                   src: str) -> bytes:
+    def fetch_data(self, src: str) -> bytes:
         """
         Fetch resource from backend as bytes.
         """

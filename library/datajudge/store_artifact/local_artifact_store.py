@@ -6,8 +6,13 @@ from pathlib import Path
 from typing import Any
 
 from datajudge.store_artifact.artifact_store import ArtifactStore
-from datajudge.utils.file_utils import (check_dir, check_path, copy_file,
-                                        get_path, make_dir)
+from datajudge.utils.file_utils import (
+    check_dir,
+    check_path,
+    copy_file,
+    get_path,
+    make_dir,
+)
 from datajudge.utils.io_utils import write_json, write_object
 
 
@@ -19,12 +24,9 @@ class LocalArtifactStore(ArtifactStore):
 
     """
 
-    def persist_artifact(self,
-                         src: Any,
-                         dst: str,
-                         src_name: str,
-                         metadata: dict
-                         ) -> None:
+    def persist_artifact(
+        self, src: Any, dst: str, src_name: str, metadata: dict
+    ) -> None:
         """
         Persist an artifact.
         """
@@ -48,9 +50,7 @@ class LocalArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    def _get_and_register_artifact(self,
-                                   src: str,
-                                   fetch_mode: str) -> str:
+    def _get_and_register_artifact(self, src: str, fetch_mode: str) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
@@ -70,15 +70,15 @@ class LocalArtifactStore(ArtifactStore):
         if fetch_mode == self.BUFFER:
             raise NotImplementedError
 
-    def _check_access_to_storage(self,
-                                 dst: str,
-                                 write: bool = False) -> None:
+    def _check_access_to_storage(self, dst: str, write: bool = False) -> None:
         """
         Check if there is access to the storage.
         """
         if write and not check_dir(dst):
             make_dir(dst)
 
-    def _get_data(self, *args) -> None: ...
+    def _get_data(self, *args) -> None:
+        ...
 
-    def _store_data(self, *args) -> None: ...
+    def _store_data(self, *args) -> None:
+        ...

@@ -17,28 +17,31 @@ class PolarsDataFrameFileReader(FileReader):
     Read a DataFrame from local file.
     """
 
-    def fetch_data(self,
-                   src: str) -> pl.DataFrame:
+    def fetch_data(self, src: str) -> pl.DataFrame:
         """
         Fetch resource from backend.
         """
         path = super().fetch_data(src)
-        return self._read_df_from_path(path)
+        res = self._describe_resource(path)
+        return self._read_df_from_path(res)
 
-    def _read_df_from_path(self,
-                           tmp_path: str) -> pl.DataFrame:
+    def _describe_resource(self, src: str) -> dict:
+        """
+        Describe resource.
+        """
+        return describe_resource(src)
+
+    def _read_df_from_path(self, resource: dict) -> pl.DataFrame:
         """
         Read a file into a Polars DataFrame.
         """
-        resource = describe_resource(tmp_path)
-
         paths = listify(resource.get("path"))
         file_format = resource.get("format")
 
         if file_format == "csv":
             csv_args = {
-            "separator": resource.get("dialect", {}).get("delimiter", ","),
-            "encoding": resource.get("encoding", "utf8")
+                "separator": resource.get("dialect", {}).get("delimiter", ","),
+                "encoding": resource.get("encoding", "utf8"),
             }
             list_df = [pl.read_csv(Path(i), **csv_args) for i in paths]
         elif file_format == "parquet":

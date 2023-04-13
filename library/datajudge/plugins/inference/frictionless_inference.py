@@ -24,10 +24,9 @@ class InferencePluginFrictionless(Inference):
         self.resource = None
         self.exec_multiprocess = True
 
-    def setup(self,
-              data_reader: FileReader,
-              resource: "DataResource",
-              exec_args: dict) -> None:
+    def setup(
+        self, data_reader: FileReader, resource: "DataResource", exec_args: dict
+    ) -> None:
         """
         Set plugin resource.
         """
@@ -42,9 +41,7 @@ class InferencePluginFrictionless(Inference):
         inferred schema.
         """
         data = self.data_reader.fetch_data(self.resource.path)
-        schema = Schema.describe(path=data,
-                                 name=self.resource.name,
-                                 **self.exec_args)
+        schema = Schema.describe(path=data, name=self.resource.name, **self.exec_args)
         return Schema(schema.to_dict())
 
     @exec_decorator
@@ -60,17 +57,16 @@ class InferencePluginFrictionless(Inference):
         if exec_err is None:
             inferred_fields = result.artifact.get("fields")
             if inferred_fields is not None:
-                fields = [self._get_fields(field.get("name", ""),
-                                           field.get("type", ""))
-                          for field in inferred_fields]
+                fields = [
+                    self._get_fields(field.get("name", ""), field.get("type", ""))
+                    for field in inferred_fields
+                ]
         else:
-            self.logger.error(
-                f"Execution error {str(exec_err)} for plugin {self._id}")
+            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
 
-        return DatajudgeSchema(self.get_lib_name(),
-                               self.get_lib_version(),
-                               duration,
-                               fields)
+        return DatajudgeSchema(
+            self.get_lib_name(), self.get_lib_version(), duration, fields
+        )
 
     @exec_decorator
     def render_artifact(self, result: "Result") -> List[tuple]:
@@ -106,9 +102,9 @@ class InferenceBuilderFrictionless(PluginBuilder):
     Inference plugin builder.
     """
 
-    def build(self,
-              resources: List["DataResource"]
-              ) -> List[InferencePluginFrictionless]:
+    def build(
+        self, resources: List["DataResource"]
+    ) -> List[InferencePluginFrictionless]:
         """
         Build a plugin.
         """

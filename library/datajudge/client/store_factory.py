@@ -6,14 +6,28 @@ from typing import Union
 
 from datajudge.store_artifact.registry import ART_STORES
 from datajudge.store_metadata.registry import MD_STORES
-from datajudge.utils.commons import (API_BASE, GENERIC_DUMMY, SCHEME_AZURE,
-                                     SCHEME_DUMMY, SCHEME_FTP, SCHEME_HTTP,
-                                     SCHEME_LOCAL, SCHEME_ODBC, SCHEME_S3,
-                                     SCHEME_SQL, STORE_DUMMY)
+from datajudge.utils.commons import (
+    API_BASE,
+    GENERIC_DUMMY,
+    SCHEME_AZURE,
+    SCHEME_DUMMY,
+    SCHEME_FTP,
+    SCHEME_HTTP,
+    SCHEME_LOCAL,
+    SCHEME_ODBC,
+    SCHEME_S3,
+    SCHEME_SQL,
+    STORE_DUMMY,
+)
 from datajudge.utils.config import StoreConfig
 from datajudge.utils.file_utils import get_absolute_path
-from datajudge.utils.uri_utils import (check_url, get_uri_netloc, get_uri_path,
-                                       get_uri_scheme, rebuild_uri)
+from datajudge.utils.uri_utils import (
+    check_url,
+    get_uri_netloc,
+    get_uri_path,
+    get_uri_scheme,
+    rebuild_uri,
+)
 from datajudge.utils.utils import get_uiid
 
 
@@ -22,15 +36,11 @@ class StoreBuilder:
     StoreBuilder class.
     """
 
-    def __init__(self,
-                 project_id: str,
-                 tmp_dir: str) -> None:
+    def __init__(self, project_id: str, tmp_dir: str) -> None:
         self.project_id = project_id
         self.tmp_dir = tmp_dir
 
-    def build(self,
-              config: Union[dict, StoreConfig],
-              md_store: bool = False) -> dict:
+    def build(self, config: Union[dict, StoreConfig], md_store: bool = False) -> dict:
         """
         Builder method that recieves store configurations.
         """
@@ -39,34 +49,24 @@ class StoreBuilder:
             return self.build_metadata_store(cfg)
         return self.build_artifact_store(cfg)
 
-    def build_metadata_store(self,
-                             cfg: StoreConfig) -> "MetadataStore":
+    def build_metadata_store(self, cfg: StoreConfig) -> "MetadataStore":
         """
         Method to create a metadata stores.
         """
         scheme = get_uri_scheme(cfg.uri)
-        new_uri = self.resolve_uri_metadata(cfg.uri,
-                                            scheme,
-                                            self.project_id)
+        new_uri = self.resolve_uri_metadata(cfg.uri, scheme, self.project_id)
         try:
-            return MD_STORES[cfg.type](cfg.name,
-                                       cfg.type,
-                                       new_uri,
-                                       cfg.config)
+            return MD_STORES[cfg.type](cfg.name, cfg.type, new_uri, cfg.config)
         except KeyError:
             raise NotImplementedError
 
     @staticmethod
-    def resolve_uri_metadata(uri: str,
-                             scheme: str,
-                             project_name: str) -> str:
+    def resolve_uri_metadata(uri: str, scheme: str, project_name: str) -> str:
         """
         Resolve metadata URI location.
         """
         if scheme in [*SCHEME_LOCAL]:
-            return get_absolute_path(get_uri_netloc(uri),
-                                     get_uri_path(uri),
-                                     "metadata")
+            return get_absolute_path(get_uri_netloc(uri), get_uri_path(uri), "metadata")
         if scheme in [*SCHEME_HTTP]:
             url = uri + API_BASE + project_name
             return check_url(url)
@@ -74,8 +74,7 @@ class StoreBuilder:
             return uri
         raise NotImplementedError
 
-    def build_artifact_store(self,
-                             cfg: StoreConfig) -> "ArtifactStore":
+    def build_artifact_store(self, cfg: StoreConfig) -> "ArtifactStore":
         """
         Method to create a artifact stores.
         """
@@ -83,12 +82,9 @@ class StoreBuilder:
         new_uri = self.resolve_artifact_uri(cfg.uri, scheme)
         tmp = str(Path(self.tmp_dir, get_uiid()))
         try:
-            return ART_STORES[cfg.type](cfg.name,
-                                        cfg.type,
-                                        new_uri,
-                                        tmp,
-                                        cfg.config,
-                                        cfg.isDefault)
+            return ART_STORES[cfg.type](
+                cfg.name, cfg.type, new_uri, tmp, cfg.config, cfg.isDefault
+            )
         except KeyError:
             raise NotImplementedError
 
@@ -98,13 +94,10 @@ class StoreBuilder:
         Resolve artifact URI location.
         """
         if scheme in [*SCHEME_LOCAL]:
-            return get_absolute_path(get_uri_netloc(uri),
-                                     get_uri_path(uri),
-                                     "artifact")
+            return get_absolute_path(get_uri_netloc(uri), get_uri_path(uri), "artifact")
         if scheme in [*SCHEME_AZURE, *SCHEME_S3, *SCHEME_FTP]:
             return rebuild_uri(uri, "artifact")
-        if scheme in [*SCHEME_DUMMY, *SCHEME_HTTP,
-                      *SCHEME_SQL, *SCHEME_ODBC]:
+        if scheme in [*SCHEME_DUMMY, *SCHEME_HTTP, *SCHEME_SQL, *SCHEME_ODBC]:
             return uri
         raise NotImplementedError
 
@@ -116,9 +109,9 @@ class StoreBuilder:
         config.
         """
         if config is None:
-            return StoreConfig(name=GENERIC_DUMMY,
-                               type=STORE_DUMMY,
-                               uri=f"{SCHEME_DUMMY}://")
+            return StoreConfig(
+                name=GENERIC_DUMMY, type=STORE_DUMMY, uri=f"{SCHEME_DUMMY}://"
+            )
         if not isinstance(config, StoreConfig):
             try:
                 return StoreConfig(**config)

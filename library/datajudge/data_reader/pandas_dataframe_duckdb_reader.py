@@ -15,17 +15,14 @@ class PandasDataFrameDuckDBReader(NativeReader):
     It allows to read a resource as pandas DataFrame.
     """
 
-    def fetch_data(self,
-                   src: str,
-                   query: str) -> pd.DataFrame:
+    def fetch_data(self, src: str, query: str) -> pd.DataFrame:
         """
         Fetch resource from backend.
         """
         return self._read_df_from_db(src, query)
 
     @staticmethod
-    def _read_df_from_db(src: str,
-                         query: str) -> pd.DataFrame:
+    def _read_df_from_db(src: str, query: str) -> pd.DataFrame:
         """
         Use the pandas to read data from db.
         """
@@ -35,4 +32,5 @@ class PandasDataFrameDuckDBReader(NativeReader):
             return conn.fetchdf()
         except Exception as ex:
             raise StoreError(
-                f"Unable to read data from query: {query}. Arguments: {str(ex.args)}")
+                f"Unable to read data from query: {query}. Arguments: {str(ex.args)}"
+            )

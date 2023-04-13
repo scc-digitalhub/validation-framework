@@ -20,9 +20,7 @@ class ProfilePluginDummy(Profiling):
         super().__init__()
         self.resource = None
 
-    def setup(self,
-              resource: "DataResource",
-              exec_args: dict) -> None:
+    def setup(self, resource: "DataResource", exec_args: dict) -> None:
         """
         Set plugin resource.
         """
@@ -41,11 +39,9 @@ class ProfilePluginDummy(Profiling):
         """
         Return a DatajudgeProfile.
         """
-        return DatajudgeProfile(self.get_lib_name(),
-                                self.get_lib_version(),
-                                None,
-                                None,
-                                None)
+        return DatajudgeProfile(
+            self.get_lib_name(), self.get_lib_version(), None, None, None
+        )
 
     @exec_decorator
     def render_artifact(self, result: "Result") -> List[tuple]:
@@ -81,9 +77,7 @@ class ProfileBuilderDummy(PluginBuilder):
     Profile plugin builder.
     """
 
-    def build(self,
-              resources: List["DataResource"]
-              ) -> List[ProfilePluginDummy]:
+    def build(self, resources: List["DataResource"]) -> List[ProfilePluginDummy]:
         """
         Build a plugin.
         """

@@ -14,8 +14,7 @@ class NativeReader(DataReader):
     for remote storages.
     """
 
-    def fetch_data(self,
-                   src: str) -> str:
+    def fetch_data(self, src: str) -> str:
         """
         Fetch resource from backend.
         """

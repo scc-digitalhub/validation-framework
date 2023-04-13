@@ -33,48 +33,42 @@ class MetadataStore(metaclass=ABCMeta):
     _ARTIFACT_METADATA = cfg.MT_ARTIFACT_METADATA
     _RUN_ENV = cfg.MT_RUN_ENV
 
-    def __init__(self,
-                 name: str,
-                 store_type: str,
-                 metadata_uri: str,
-                 config:  Optional[dict] = None) -> None:
+    def __init__(
+        self,
+        name: str,
+        store_type: str,
+        metadata_uri: str,
+        config: Optional[dict] = None,
+    ) -> None:
         self.name = name
         self.store_type = store_type
         self.metadata_uri = metadata_uri
         self.config = config
 
     @abstractmethod
-    def init_run(self,
-                 exp_name: str,
-                 run_id: str,
-                 overwrite: bool) -> None:
+    def init_run(self, exp_name: str, run_id: str, overwrite: bool) -> None:
         """
         Initial enviroment operation.
         """
 
     @abstractmethod
-    def log_metadata(self,
-                     metadata: str,
-                     dst: str,
-                     src_type: str,
-                     overwrite: bool) -> None:
+    def log_metadata(
+        self, metadata: str, dst: str, src_type: str, overwrite: bool
+    ) -> None:
         """
         Method that log metadata.
         """
 
     @abstractmethod
-    def get_run_metadata_uri(self,
-                             exp_name: str,
-                             run_id: str) -> str:
+    def get_run_metadata_uri(self, exp_name: str, run_id: str) -> str:
         """
         Return the URI of the metadata store for the Run.
         """
 
     @abstractmethod
-    def _build_source_destination(self,
-                                  dst: str,
-                                  src_type: str,
-                                  key: Optional[str] = None) -> str:
+    def _build_source_destination(
+        self, dst: str, src_type: str, key: Optional[str] = None
+    ) -> str:
         """
         Return source destination based on source type.
         """

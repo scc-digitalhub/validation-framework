@@ -18,17 +18,13 @@ class RunBuilder:
 
     """
 
-    def __init__(self,
-                 store_handler: "StoreHandler") -> None:
+    def __init__(self, store_handler: "StoreHandler") -> None:
         """
         The RunBuilder recieves a store handler to get stores.
         """
         self._store_handler = store_handler
 
-    def _init_run(self,
-                  exp_name: str,
-                  run_id: str,
-                  overwrite: bool) -> None:
+    def _init_run(self, exp_name: str, run_id: str, overwrite: bool) -> None:
         """
         Initialize run in the metadata store backend.
         """
@@ -57,16 +53,17 @@ class RunBuilder:
         exists = []
         for res in resources:
             if res.name in exists:
-                raise RunError(
-                    f"Resource with name {res.name} already exists!")
+                raise RunError(f"Resource with name {res.name} already exists!")
             exists.append(res.name)
 
-    def create_run(self,
-                   resources: Union[List[DataResource], DataResource],
-                   run_config: RunConfig,
-                   experiment: Optional[str] = DEFAULT_EXPERIMENT,
-                   run_id: Optional[str] = None,
-                   overwrite: Optional[bool] = False) -> Run:
+    def create_run(
+        self,
+        resources: Union[List[DataResource], DataResource],
+        run_config: RunConfig,
+        experiment: Optional[str] = DEFAULT_EXPERIMENT,
+        run_id: Optional[str] = None,
+        overwrite: Optional[bool] = False,
+    ) -> Run:
         """
         Create a new run.
         """
@@ -78,13 +75,9 @@ class RunBuilder:
         run_md_uri = self._get_md_uri(experiment, run_id)
         run_art_uri = self._get_art_uri(experiment, run_id)
 
-        run_handler = RunHandler(run_config,
-                                 self._store_handler)
-        run_info = RunInfo(experiment,
-                           resources,
-                           run_id,
-                           run_config,
-                           run_md_uri,
-                           run_art_uri)
+        run_handler = RunHandler(run_config, self._store_handler)
+        run_info = RunInfo(
+            experiment, resources, run_id, run_config, run_md_uri, run_art_uri
+        )
         run = Run(run_info, run_handler, overwrite)
         return run

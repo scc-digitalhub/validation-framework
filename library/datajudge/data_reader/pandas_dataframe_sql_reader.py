@@ -16,9 +16,7 @@ class PandasDataFrameSQLReader(NativeReader):
     It allows to read a resource as pandas DataFrame.
     """
 
-    def fetch_data(self,
-                   src: str,
-                   query: str) -> pd.DataFrame:
+    def fetch_data(self, src: str, query: str) -> pd.DataFrame:
         """
         Fetch resource from backend.
         """
@@ -34,11 +32,10 @@ class PandasDataFrameSQLReader(NativeReader):
             return create_engine(conn_str)
         except Exception as ex:
             raise StoreError(
-                f"Something wrong with connection string. Arguments: {str(ex.args)}")
+                f"Something wrong with connection string. Arguments: {str(ex.args)}"
+            )
 
-    def _read_df_from_db(self,
-                         conn_str: str,
-                         query: str) -> pd.DataFrame:
+    def _read_df_from_db(self, conn_str: str, query: str) -> pd.DataFrame:
         """
         Use the pandas to read data from db.
         """
@@ -47,6 +44,7 @@ class PandasDataFrameSQLReader(NativeReader):
             return pd.read_sql(query, engine)
         except Exception as ex:
             raise StoreError(
-                f"Unable to read data from query: {query}. Arguments: {str(ex.args)}")
+                f"Unable to read data from query: {query}. Arguments: {str(ex.args)}"
+            )
         finally:
             engine.dispose()

@@ -25,10 +25,9 @@ class ProfilePluginFrictionless(Profiling):
         self.resource = None
         self.exec_multiprocess = True
 
-    def setup(self,
-              data_reader: FileReader,
-              resource: "DataResource",
-              exec_args: dict) -> None:
+    def setup(
+        self, data_reader: FileReader, resource: "DataResource", exec_args: dict
+    ) -> None:
         """
         Set plugin resource.
         """
@@ -42,10 +41,7 @@ class ProfilePluginFrictionless(Profiling):
         Profile
         """
         data = self.data_reader.fetch_data(self.resource.path)
-        profile = Resource().describe(data,
-                                      expand=True,
-                                      stats=True,
-                                      **self.exec_args)
+        profile = Resource().describe(data, expand=True, stats=True, **self.exec_args)
         return Resource(profile.to_dict())
 
     @exec_decorator
@@ -61,16 +57,13 @@ class ProfilePluginFrictionless(Profiling):
             fields = rep.get("schema", {}).get("fields")
             stats = {k: v for k, v in rep.items() if k != "schema"}
         else:
-            self.logger.error(
-                f"Execution error {str(exec_err)} for plugin {self._id}")
+            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
             fields = None
             stats = None
 
-        return DatajudgeProfile(self.get_lib_name(),
-                                self.get_lib_version(),
-                                duration,
-                                stats,
-                                fields)
+        return DatajudgeProfile(
+            self.get_lib_name(), self.get_lib_version(), duration, stats, fields
+        )
 
     @exec_decorator
     def render_artifact(self, result: "Result") -> List[tuple]:
@@ -106,9 +99,7 @@ class ProfileBuilderFrictionless(PluginBuilder):
     Profile plugin builder.
     """
 
-    def build(self,
-              resources: List["DataResource"]
-              ) -> List[ProfilePluginFrictionless]:
+    def build(self, resources: List["DataResource"]) -> List[ProfilePluginFrictionless]:
         """
         Build a plugin.
         """

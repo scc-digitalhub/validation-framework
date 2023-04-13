@@ -11,10 +11,11 @@ from datajudge.data_reader.base_file_reader import FileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.validation.validation_plugin import (
-    Validation, ValidationPluginBuilder)
+    Validation,
+    ValidationPluginBuilder,
+)
 from datajudge.plugins.utils.frictionless_utils import custom_frictionless_detector
-from datajudge.utils.commons import (CONSTRAINT_FRICTIONLESS_SCHEMA,
-                                     LIBRARY_FRICTIONLESS)
+from datajudge.utils.commons import CONSTRAINT_FRICTIONLESS_SCHEMA, LIBRARY_FRICTIONLESS
 
 
 class ValidationPluginFrictionless(Validation):
@@ -28,12 +29,14 @@ class ValidationPluginFrictionless(Validation):
         self.schema = None
         self.exec_multiprocess = True
 
-    def setup(self,
-              data_reader: FileReader,
-              resource: "DataResource",
-              constraint: "ConstraintFrictionless",
-              error_report: str,
-              exec_args: dict) -> None:
+    def setup(
+        self,
+        data_reader: FileReader,
+        resource: "DataResource",
+        constraint: "ConstraintFrictionless",
+        error_report: str,
+        exec_args: dict,
+    ) -> None:
         """
         Set plugin resource.
         """
@@ -50,9 +53,9 @@ class ValidationPluginFrictionless(Validation):
         """
         data = self.data_reader.fetch_data(self.resource.path)
         schema = self._rebuild_constraints(data)
-        res = Resource(path=data,
-                       schema=schema,
-                       detector=custom_frictionless_detector).validate(**self.exec_args)
+        res = Resource(
+            path=data, schema=schema, detector=custom_frictionless_detector
+        ).validate(**self.exec_args)
         return Report(res.to_dict())
 
     def _rebuild_constraints(self, data_path: str) -> Schema:
@@ -112,23 +115,26 @@ class ValidationPluginFrictionless(Validation):
         if exec_err is None:
             valid = result.artifact.get("valid")
             if not valid:
-                errors_list = [self._render_error_type(err[0])
-                               for err in result.artifact.flatten(spec=["code"])]
+                errors_list = [
+                    self._render_error_type(err[0])
+                    for err in result.artifact.flatten(spec=["code"])
+                ]
                 total_count = len(errors_list)
                 parsed_error_list = self._parse_error_report(errors_list)
                 errors = self._get_errors(total_count, parsed_error_list)
 
         else:
-            self.logger.error(
-                f"Execution error {str(exec_err)} for plugin {self._id}")
+            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
             valid = False
 
-        return DatajudgeReport(self.get_lib_name(),
-                               self.get_lib_version(),
-                               duration,
-                               constraint,
-                               valid,
-                               errors)
+        return DatajudgeReport(
+            self.get_lib_name(),
+            self.get_lib_version(),
+            duration,
+            constraint,
+            valid,
+            errors,
+        )
 
     @exec_decorator
     def render_artifact(self, result: "Result") -> List[tuple]:
@@ -164,11 +170,12 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
     Validation plugin builder.
     """
 
-    def build(self,
-              resources: List["DataResource"],
-              constraints: List["Constraint"],
-              error_report: str
-              ) -> List[ValidationPluginFrictionless]:
+    def build(
+        self,
+        resources: List["DataResource"],
+        constraints: List["Constraint"],
+        error_report: str,
+    ) -> List[ValidationPluginFrictionless]:
         """
         Build a plugin for every resource and every constraint.
         """
@@ -181,21 +188,25 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
                     store = self._get_resource_store(resource)
                     data_reader = FileReader(store)
                     plugin = ValidationPluginFrictionless()
-                    plugin.setup(data_reader, resource, const,
-                                 error_report, self.exec_args)
+                    plugin.setup(
+                        data_reader, resource, const, error_report, self.exec_args
+                    )
                     plugins.append(plugin)
 
         return plugins
 
     @staticmethod
-    def _filter_constraints(constraints: List["Constraint"]
-                            ) -> List[Union["ConstraintFrictionless", "ConstraintFullFrictionless"]]:
+    def _filter_constraints(
+        constraints: List["Constraint"],
+    ) -> List[Union["ConstraintFrictionless", "ConstraintFullFrictionless"]]:
         """
         Filter out ConstraintFrictionless and ConstraintFullFrictionless.
         """
-        return [const for const in constraints
-                if const.type in (LIBRARY_FRICTIONLESS,
-                                  CONSTRAINT_FRICTIONLESS_SCHEMA)]
+        return [
+            const
+            for const in constraints
+            if const.type in (LIBRARY_FRICTIONLESS, CONSTRAINT_FRICTIONLESS_SCHEMA)
+        ]
 
     def destroy(self) -> None:
         """

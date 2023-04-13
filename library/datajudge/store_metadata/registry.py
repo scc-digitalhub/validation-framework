@@ -1,8 +1,7 @@
 """
 MetadataStore registry.
 """
-from datajudge.store_metadata.digitalhub_metadata_store import \
-    DigitalHubMetadataStore
+from datajudge.store_metadata.digitalhub_metadata_store import DigitalHubMetadataStore
 from datajudge.store_metadata.dummy_metadata_store import DummyMetadataStore
 from datajudge.store_metadata.local_metadata_store import LocalMetadataStore
 from datajudge.utils.commons import STORE_DUMMY, STORE_HTTP, STORE_LOCAL

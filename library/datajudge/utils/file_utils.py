@@ -8,6 +8,7 @@ from pathlib import Path
 
 # Directories
 
+
 def check_dir(path: str) -> bool:
     """
     Check if a directory exists.
@@ -51,6 +52,7 @@ def check_make_dir(uri: str) -> None:
 
 
 # Files
+
 
 def check_path(path: str) -> bool:
     """

@@ -21,12 +21,9 @@ class BlobLog:
 
     """
 
-    def __init__(self,
-                 run_id: str,
-                 experiment_name: str,
-                 datajudge_version: str,
-                 contents: dict
-                 ) -> None:
+    def __init__(
+        self, run_id: str, experiment_name: str, datajudge_version: str, contents: dict
+    ) -> None:
         self.run_id = run_id
         self.experiment_name = experiment_name
         self.datajudge_version = datajudge_version
@@ -40,7 +37,7 @@ class BlobLog:
             "runId": self.run_id,
             "experimentName": self.experiment_name,
             "datajudgeVersion": self.datajudge_version,
-            **self.contents
+            **self.contents,
         }
         return run_dict
 

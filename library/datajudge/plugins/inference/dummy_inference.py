@@ -20,9 +20,7 @@ class InferencePluginDummy(Inference):
         super().__init__()
         self.resource = None
 
-    def setup(self,
-              resource: "DataResource",
-              exec_args: dict) -> None:
+    def setup(self, resource: "DataResource", exec_args: dict) -> None:
         """
         Set plugin resource.
         """
@@ -41,10 +39,7 @@ class InferencePluginDummy(Inference):
         """
         Return a DatajudgeSchema.
         """
-        return DatajudgeSchema(self.get_lib_name(),
-                               self.get_lib_version(),
-                               None,
-                               None)
+        return DatajudgeSchema(self.get_lib_name(), self.get_lib_version(), None, None)
 
     @exec_decorator
     def render_artifact(self, result: "Result") -> List[tuple]:
@@ -80,9 +75,7 @@ class InferenceBuilderDummy(PluginBuilder):
     Inference plugin builder.
     """
 
-    def build(self,
-              resources: List["DataResource"]
-              ) -> List[InferencePluginDummy]:
+    def build(self, resources: List["DataResource"]) -> List[InferencePluginDummy]:
         """
         Build a plugin.
         """

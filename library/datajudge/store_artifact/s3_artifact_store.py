@@ -15,8 +15,12 @@ from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.utils.exceptions import StoreError
 from datajudge.utils.file_utils import check_make_dir, check_path, get_path
 from datajudge.utils.io_utils import wrap_string, write_bytes, write_bytesio
-from datajudge.utils.uri_utils import (build_key, get_name_from_uri,
-                                       get_uri_netloc, get_uri_path)
+from datajudge.utils.uri_utils import (
+    build_key,
+    get_name_from_uri,
+    get_uri_netloc,
+    get_uri_path,
+)
 
 S3Client = Type["botocore.client.S3"]
 
@@ -29,12 +33,9 @@ class S3ArtifactStore(ArtifactStore):
 
     """
 
-    def persist_artifact(self,
-                         src: Any,
-                         dst: str,
-                         src_name: str,
-                         metadata: dict
-                         ) -> None:
+    def persist_artifact(
+        self, src: Any, dst: str, src_name: str, metadata: dict
+    ) -> None:
         """
         Persist an artifact.
         """
@@ -62,9 +63,7 @@ class S3ArtifactStore(ArtifactStore):
         else:
             raise NotImplementedError
 
-    def _get_and_register_artifact(self,
-                                   src: str,
-                                   fetch_mode: str) -> str:
+    def _get_and_register_artifact(self, src: str, fetch_mode: str) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
@@ -98,9 +97,7 @@ class S3ArtifactStore(ArtifactStore):
         """
         return boto3.client("s3", **self.config)
 
-    def _check_access_to_storage(self,
-                                 client: S3Client,
-                                 bucket: str) -> None:
+    def _check_access_to_storage(self, client: S3Client, bucket: str) -> None:
         """
         Check access to storage.
         """
@@ -110,9 +107,7 @@ class S3ArtifactStore(ArtifactStore):
             raise StoreError("No access to s3 bucket!")
 
     @staticmethod
-    def _get_presigned_url(client: S3Client,
-                           bucket: str,
-                           src: str) -> str:
+    def _get_presigned_url(client: S3Client, bucket: str, src: str) -> str:
         """
         Encode credentials in S3 URI.
         """
@@ -120,56 +115,39 @@ class S3ArtifactStore(ArtifactStore):
             src = src[1:]
         return client.generate_presigned_url(
             ClientMethod="get_object",
-            Params={"Bucket": bucket,
-                    "Key": src},
-            ExpiresIn=7200)
+            Params={"Bucket": bucket, "Key": src},
+            ExpiresIn=7200,
+        )
 
     @staticmethod
-    def _upload_file(client: S3Client,
-                     bucket: str,
-                     src: str,
-                     key: str,
-                     metadata: dict
-                     ) -> None:
+    def _upload_file(
+        client: S3Client, bucket: str, src: str, key: str, metadata: dict
+    ) -> None:
         """
         Upload file to S3.
         """
         ex_args = {"Metadata": metadata}
-        client.upload_file(Filename=src,
-                           Bucket=bucket,
-                           Key=key,
-                           ExtraArgs=ex_args)
+        client.upload_file(Filename=src, Bucket=bucket, Key=key, ExtraArgs=ex_args)
 
     @staticmethod
-    def _upload_fileobj(client: S3Client,
-                        bucket: str,
-                        obj: IO,
-                        key: str,
-                        metadata: dict
-                        ) -> None:
+    def _upload_fileobj(
+        client: S3Client, bucket: str, obj: IO, key: str, metadata: dict
+    ) -> None:
         """
         Upload fileobject to S3.
         """
         ex_args = {"Metadata": metadata}
-        client.upload_fileobj(obj,
-                              Bucket=bucket,
-                              Key=key,
-                              ExtraArgs=ex_args)
+        client.upload_fileobj(obj, Bucket=bucket, Key=key, ExtraArgs=ex_args)
 
     @staticmethod
-    def _get_data(client: S3Client,
-                  bucket: str,
-                  key: str) -> bytes:
+    def _get_data(client: S3Client, bucket: str, key: str) -> bytes:
         """
         Download object from S3.
         """
-        obj = client.get_object(Bucket=bucket,
-                                Key=key)
-        return obj['Body'].read()
+        obj = client.get_object(Bucket=bucket, Key=key)
+        return obj["Body"].read()
 
-    def _store_data(self,
-                    obj: bytes,
-                    key: str) -> str:
+    def _store_data(self, obj: bytes, key: str) -> str:
         """
         Store data locally in temporary folder and return tmp path.
         """
