@@ -8,6 +8,7 @@ DATAJUDGE_VERSION = ""
 # Libraries
 LIBRARY_FRICTIONLESS = "frictionless"
 LIBRARY_PANDAS_PROFILING = "pandas_profiling"
+LIBRARY_YDATA_PROFILING = "ydata_profiling"
 LIBRARY_DUCKDB = "duckdb"
 LIBRARY_SQLALCHEMY = "sqlalchemy"
 LIBRARY_GREAT_EXPECTATIONS = "great_expectations"

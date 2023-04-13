@@ -10,7 +10,7 @@ install_requires = [
     "pyarrow==11.0.0",
     "pydantic==1.10.7",
     "pyodbc==4.0.32",
-    "requests==2.27.1",
+    "requests==2.28.2",
     "SQLAlchemy==1.4.36",
 ]
 

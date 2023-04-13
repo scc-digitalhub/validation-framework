@@ -34,7 +34,7 @@ class Validation(Plugin, metaclass=ABCMeta):
         resources = f"Resources: {self.constraint.resources};"
         self.logger.info(f"Execute validation - {plugin} {constraint} {resources}")
         lib_result = self.validate()
-        self.logger.info(f"Render datajudge result - {plugin}")
+        self.logger.info(f"Render report - {plugin}")
         dj_result = self.render_datajudge(lib_result)
         self.logger.info(f"Render artifact - {plugin}")
         render_result = self.render_artifact(lib_result)

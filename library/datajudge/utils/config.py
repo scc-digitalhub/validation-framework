@@ -175,7 +175,8 @@ class ConstraintBaseSQL(Constraint):
     """Value of the constraint."""
 
     check: Literal[
-        CONSTRAINT_SQL_CHECK_VALUE, CONSTRAINT_SQL_CHECK_ROWS
+        CONSTRAINT_SQL_CHECK_VALUE,
+        CONSTRAINT_SQL_CHECK_ROWS,
     ] = CONSTRAINT_SQL_CHECK_ROWS
     """Modality of constraint checking (On rows or single value)."""
 

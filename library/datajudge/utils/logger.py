@@ -26,7 +26,7 @@ ch.setLevel(logging.INFO)
 ch.addFilter(LogFilter())
 
 # Create formatter and add to console handler
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
 
 # Add console handler to logger

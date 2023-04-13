@@ -15,6 +15,9 @@ from datajudge.plugins.profiling.great_expectations_profiling import (
 from datajudge.plugins.profiling.pandas_profiling_profiling import (
     ProfileBuilderPandasProfiling,
 )
+from datajudge.plugins.profiling.ydata_profiling_profiling import (
+    ProfileBuilderYdataProfiling,
+)
 from datajudge.plugins.validation.duckdb_validation import ValidationBuilderDuckDB
 from datajudge.plugins.validation.dummy_validation import ValidationBuilderDummy
 from datajudge.plugins.validation.frictionless_validation import (
@@ -32,6 +35,7 @@ from datajudge.utils.commons import (
     LIBRARY_FRICTIONLESS,
     LIBRARY_GREAT_EXPECTATIONS,
     LIBRARY_PANDAS_PROFILING,
+    LIBRARY_YDATA_PROFILING,
     LIBRARY_SQLALCHEMY,
     OPERATION_INFERENCE,
     OPERATION_PROFILING,
@@ -48,6 +52,7 @@ REGISTRY = {
         LIBRARY_FRICTIONLESS: ProfileBuilderFrictionless,
         LIBRARY_GREAT_EXPECTATIONS: ProfileBuilderGreatExpectations,
         LIBRARY_PANDAS_PROFILING: ProfileBuilderPandasProfiling,
+        LIBRARY_YDATA_PROFILING: ProfileBuilderYdataProfiling,
     },
     OPERATION_VALIDATION: {
         LIBRARY_DUCKDB: ValidationBuilderDuckDB,

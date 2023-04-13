@@ -27,7 +27,7 @@ class Profiling(Plugin, metaclass=ABCMeta):
         plugin = f"Plugin: {self.lib_name} {self._id};"
         self.logger.info(f"Execute profiling - {plugin}")
         lib_result = self.profile()
-        self.logger.info(f"Render datajudge result - {plugin}")
+        self.logger.info(f"Render report - {plugin}")
         dj_result = self.render_datajudge(lib_result)
         self.logger.info(f"Render artifact - {plugin}")
         render_result = self.render_artifact(lib_result)
