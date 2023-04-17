@@ -10,10 +10,6 @@ from typing import List, Any
 import duckdb
 from duckdb import CatalogException
 
-from datajudge.data_reader.pandas_dataframe_duckdb_reader import (
-    PandasDataFrameDuckDBReader,
-)
-from datajudge.data_reader.polars_dataframe_file_reader import PolarsDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.utils.sql_checks import evaluate_validity
@@ -22,6 +18,8 @@ from datajudge.plugins.validation.validation_plugin import (
     ValidationPluginBuilder,
 )
 from datajudge.utils.commons import (
+    POLARS_DATAFRAME_DUCKDB_READER,
+    PANDAS_DATAFRAME_DUCKDB_READER,
     DEFAULT_DIRECTORY,
     LIBRARY_DUCKDB,
     CONSTRAINT_SQL_CHECK_ROWS,
@@ -171,7 +169,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
 
         plugins = []
         for const in f_constraint:
-            data_reader = PandasDataFrameDuckDBReader(None)
+            data_reader = self._get_data_reader(PANDAS_DATAFRAME_DUCKDB_READER, store)
             plugin = ValidationPluginDuckDB()
             plugin.setup(
                 data_reader, self.tmp_db.as_posix(), const, error_report, self.exec_args
@@ -217,7 +215,11 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
             # Handle multiple paths: crate a table for
             # first file, then append. Load data from Polars DF
             for idx, pth in enumerate(listify(resource.path)):
-                df = PolarsDataFrameFileReader(store).fetch_data(pth)
+                build_reader
+                data_reader = self._get_data_reader(
+                    POLARS_DATAFRAME_DUCKDB_READER, store
+                )
+                df = data_reader.fetch_data(pth)
                 if idx == 0:
                     sql = f"CREATE TABLE {resource.name} AS SELECT * FROM df;"
                 else:

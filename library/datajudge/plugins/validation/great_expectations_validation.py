@@ -11,7 +11,6 @@ from great_expectations.core.expectation_validation_result import (
     ExpectationValidationResult,
 )
 
-from datajudge.data_reader.pandas_dataframe_file_reader import PandasDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.great_expectations_utils import (
     get_great_expectations_validator,
@@ -21,7 +20,10 @@ from datajudge.plugins.validation.validation_plugin import (
     Validation,
     ValidationPluginBuilder,
 )
-from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATIONS
+from datajudge.utils.commons import (
+    LIBRARY_GREAT_EXPECTATIONS,
+    PANDAS_DATAFRAME_FILE_READER,
+)
 from datajudge.utils.file_utils import clean_all
 
 
@@ -37,7 +39,7 @@ class ValidationPluginGreatExpectations(Validation):
 
     def setup(
         self,
-        data_reader: PandasDataFrameFileReader,
+        data_reader: "NativeReader",
         resource: "DataResource",
         constraint: "ConstraintGreatExpectations",
         error_report: str,
@@ -162,7 +164,9 @@ class ValidationBuilderGreatExpectations(ValidationPluginBuilder):
             for const in f_constraints:
                 if resource.name in const.resources:
                     store = self._get_resource_store(resource)
-                    data_reader = PandasDataFrameFileReader(store)
+                    data_reader = self._get_data_reader(
+                        PANDAS_DATAFRAME_FILE_READER, store
+                    )
                     plugin = ValidationPluginGreatExpectations()
                     plugin.setup(
                         data_reader, resource, const, error_report, self.exec_args

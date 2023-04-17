@@ -5,6 +5,7 @@ from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from typing import Any, List
 
+from datajudge.data_reader.utils import build_reader
 from datajudge.plugins.utils.plugin_utils import RenderTuple
 from datajudge.utils.config import DataResource
 from datajudge.utils.exceptions import StoreError
@@ -116,6 +117,13 @@ class PluginBuilder:
             raise StoreError(
                 f"No store registered with name '{resource.store}'. Impossible to fetch resource '{resource.name}'"
             )
+
+    @staticmethod
+    def _get_data_reader(type: str, store: "ArtifactStore") -> "DataReader":
+        """
+        Get data reader.
+        """
+        return build_reader(type, store)
 
     @abstractmethod
     def destroy(self) -> None:

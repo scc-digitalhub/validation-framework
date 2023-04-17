@@ -1,6 +1,6 @@
 import pytest
 
-from datajudge.data_reader.base_buffer_reader import BufferReader
+from datajudge.data_reader.base_reader.base_buffer_reader import BufferReader
 from tests.conftest import STORE_LOCAL_01, Configurator
 
 

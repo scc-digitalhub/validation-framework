@@ -22,6 +22,18 @@ DATAREADER_NATIVE = "native"
 DATAREADER_BUFFER = "buffer"
 
 
+# Data readers type
+BASE_FILE_READER = "FileReader"
+BASE_NATIVE_READER = "NativeReader"
+BASE_BUFFER_READER = "BufferReader"
+PANDAS_DATAFRAME_FILE_READER = "PandasDataFrameFileReader"
+PANDAS_DATAFRAME_DUCKDB_READER = "PandasDataFrameDuckDBReader"
+PANDAS_DATAFRAME_SQL_READER = "PandasDataFrameSQLReader"
+POLARS_DATAFRAME_FILE_READER = "PolarsDataFrameFileReader"
+POLARS_DATAFRAME_DUCKDB_READER = "PolarsDataFrameDuckDBReader"
+POLARS_DATAFRAME_SQL_READER = "PolarsDataFrameSQLReader"
+
+
 # Store types
 STORE_DUMMY = "_dummy"
 STORE_LOCAL = "local"

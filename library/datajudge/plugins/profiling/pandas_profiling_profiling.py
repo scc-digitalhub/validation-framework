@@ -8,12 +8,14 @@ import pandas_profiling
 from pandas_profiling import ProfileReport
 
 
-from datajudge.data_reader.pandas_dataframe_file_reader import PandasDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeProfile
 from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.profiling.profiling_plugin import Profiling
 from datajudge.plugins.utils.plugin_utils import exec_decorator
-from datajudge.utils.commons import LIBRARY_PANDAS_PROFILING
+from datajudge.utils.commons import (
+    LIBRARY_PANDAS_PROFILING,
+    PANDAS_DATAFRAME_FILE_READER,
+)
 from datajudge.utils.io_utils import write_bytesio
 
 
@@ -47,7 +49,7 @@ class ProfilePluginPandasProfiling(Profiling):
 
     def setup(
         self,
-        data_reader: PandasDataFrameFileReader,
+        data_reader: "NativeReader",
         resource: "DataResource",
         exec_args: dict,
     ) -> None:
@@ -156,7 +158,7 @@ class ProfileBuilderPandasProfiling(PluginBuilder):
         for res in resources:
             resource = self._get_resource_deepcopy(res)
             store = self._get_resource_store(resource)
-            data_reader = PandasDataFrameFileReader(store)
+            data_reader = self._get_data_reader(PANDAS_DATAFRAME_FILE_READER, store)
             plugin = ProfilePluginPandasProfiling()
             plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)

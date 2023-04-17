@@ -1,7 +1,7 @@
 """
 NativeReader module.
 """
-from datajudge.data_reader.base_data_reader import DataReader
+from datajudge.data_reader.base_reader.base_data_reader import DataReader
 
 
 class NativeReader(DataReader):

@@ -6,7 +6,6 @@ from typing import List, Any
 
 import sqlalchemy
 
-from datajudge.data_reader.pandas_dataframe_sql_reader import PandasDataFrameSQLReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.utils.sql_checks import evaluate_validity
@@ -15,6 +14,7 @@ from datajudge.plugins.validation.validation_plugin import (
     ValidationPluginBuilder,
 )
 from datajudge.utils.commons import (
+    PANDAS_DATAFRAME_SQL_READER,
     LIBRARY_SQLALCHEMY,
     STORE_SQL,
     CONSTRAINT_SQL_CHECK_ROWS,
@@ -168,7 +168,7 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         for pack in grouped_constraints:
             store = pack["store"]
             const = pack["constraint"]
-            data_reader = PandasDataFrameSQLReader(store)
+            data_reader = self._get_data_reader(PANDAS_DATAFRAME_SQL_READER, store)
             plugin = ValidationPluginSqlAlchemy()
             plugin.setup(data_reader, const, error_report, self.exec_args)
             plugins.append(plugin)

@@ -12,7 +12,6 @@ from great_expectations.profile.user_configurable_profiler import (
     UserConfigurableProfiler,
 )
 
-from datajudge.data_reader.pandas_dataframe_file_reader import PandasDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeProfile
 from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.profiling.profiling_plugin import Profiling
@@ -20,7 +19,10 @@ from datajudge.plugins.utils.great_expectations_utils import (
     get_great_expectations_validator,
 )
 from datajudge.plugins.utils.plugin_utils import exec_decorator
-from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATIONS
+from datajudge.utils.commons import (
+    LIBRARY_GREAT_EXPECTATIONS,
+    PANDAS_DATAFRAME_FILE_READER,
+)
 from datajudge.utils.file_utils import clean_all
 
 
@@ -36,7 +38,7 @@ class ProfilePluginGreatExpectations(Profiling):
 
     def setup(
         self,
-        data_reader: PandasDataFrameFileReader,
+        data_reader: "NativeReader",
         resource: "DataResource",
         exec_args: dict,
     ) -> None:
@@ -125,7 +127,7 @@ class ProfileBuilderGreatExpectations(PluginBuilder):
         for res in resources:
             resource = self._get_resource_deepcopy(res)
             store = self._get_resource_store(resource)
-            data_reader = PandasDataFrameFileReader(store)
+            data_reader = self._get_data_reader(PANDAS_DATAFRAME_FILE_READER, store)
             plugin = ProfilePluginGreatExpectations()
             plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)

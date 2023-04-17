@@ -1,9 +1,10 @@
 """
 PolarsDataFrameReader module.
 """
+from typing import Any
 import polars as pl
 
-from datajudge.data_reader.base_native_reader import NativeReader
+from datajudge.data_reader.base_reader.base_native_reader import NativeReader
 from datajudge.utils.exceptions import StoreError
 
 

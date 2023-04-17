@@ -7,7 +7,6 @@ import frictionless
 from frictionless import Report, Resource, Schema
 from frictionless.exception import FrictionlessException
 
-from datajudge.data_reader.base_file_reader import FileReader
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.plugins.validation.validation_plugin import (
@@ -15,7 +14,11 @@ from datajudge.plugins.validation.validation_plugin import (
     ValidationPluginBuilder,
 )
 from datajudge.plugins.utils.frictionless_utils import custom_frictionless_detector
-from datajudge.utils.commons import CONSTRAINT_FRICTIONLESS_SCHEMA, LIBRARY_FRICTIONLESS
+from datajudge.utils.commons import (
+    CONSTRAINT_FRICTIONLESS_SCHEMA,
+    LIBRARY_FRICTIONLESS,
+    BASE_FILE_READER,
+)
 
 
 class ValidationPluginFrictionless(Validation):
@@ -31,7 +34,7 @@ class ValidationPluginFrictionless(Validation):
 
     def setup(
         self,
-        data_reader: FileReader,
+        data_reader: "FileReader",
         resource: "DataResource",
         constraint: "ConstraintFrictionless",
         error_report: str,
@@ -186,7 +189,7 @@ class ValidationBuilderFrictionless(ValidationPluginBuilder):
             for const in f_constraints:
                 if resource.name in const.resources:
                     store = self._get_resource_store(resource)
-                    data_reader = FileReader(store)
+                    data_reader = self._get_data_reader(BASE_FILE_READER, store)
                     plugin = ValidationPluginFrictionless()
                     plugin.setup(
                         data_reader, resource, const, error_report, self.exec_args

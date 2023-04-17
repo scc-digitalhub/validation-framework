@@ -1,11 +1,11 @@
 from pathlib import Path
 
 import duckdb
-import pandas as pd
+import polars as pl
 import pytest
 
-from datajudge.data_reader.pandas_dataframe_duckdb_reader import (
-    PandasDataFrameDuckDBReader,
+from datajudge.data_reader.polars_reader.polars_dataframe_duckdb_reader import (
+    PolarsDataFrameDuckDBReader,
 )
 from datajudge.utils.exceptions import StoreError
 from tests.conftest import STORE_LOCAL_01, Configurator
@@ -15,7 +15,7 @@ def test_fetch_data():
     # Get reader
     conf = Configurator()
     store = conf.get_store(STORE_LOCAL_01, tmp=True)
-    reader = PandasDataFrameDuckDBReader(store)
+    reader = PolarsDataFrameDuckDBReader(store)
 
     # Get tmp db path
     name = conf.get_tmp()
@@ -29,6 +29,6 @@ def test_fetch_data():
     conn.close()
 
     df = reader.fetch_data(db_path, "select * from test")
-    assert isinstance(df, pd.DataFrame)
+    assert isinstance(df, pl.DataFrame)
     with pytest.raises(StoreError):
         reader._read_df_from_db(db_path, "select not_existing from test")

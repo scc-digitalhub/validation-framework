@@ -4,9 +4,10 @@ Run handler module.
 import concurrent.futures
 from typing import Any, List
 
-from datajudge.data_reader.base_file_reader import FileReader
+from datajudge.data_reader.utils import build_reader
 from datajudge.plugins.plugin_factory import builder_factory
 from datajudge.utils.commons import (
+    BASE_FILE_READER,
     OPERATION_INFERENCE,
     OPERATION_PROFILING,
     OPERATION_VALIDATION,
@@ -369,7 +370,7 @@ class RunHandler:
         """
         for res in resources:
             store = self._store_handler.get_art_store(res.store)
-            data_reader = FileReader(store)
+            data_reader = build_reader(BASE_FILE_READER, store)
             for path in listify(res.path):
                 tmp_pth = data_reader.fetch_data(path)
                 tmp_pth = get_absolute_path(tmp_pth)

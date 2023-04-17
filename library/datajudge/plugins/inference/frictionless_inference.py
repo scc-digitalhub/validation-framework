@@ -6,12 +6,11 @@ from typing import List
 import frictionless
 from frictionless.schema import Schema
 
-from datajudge.data_reader.base_file_reader import FileReader
 from datajudge.metadata.datajudge_reports import DatajudgeSchema
 from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.inference.inference_plugin import Inference
 from datajudge.plugins.utils.plugin_utils import exec_decorator
-from datajudge.utils.commons import LIBRARY_FRICTIONLESS
+from datajudge.utils.commons import LIBRARY_FRICTIONLESS, BASE_FILE_READER
 
 
 class InferencePluginFrictionless(Inference):
@@ -25,7 +24,7 @@ class InferencePluginFrictionless(Inference):
         self.exec_multiprocess = True
 
     def setup(
-        self, data_reader: FileReader, resource: "DataResource", exec_args: dict
+        self, data_reader: "FileReader", resource: "DataResource", exec_args: dict
     ) -> None:
         """
         Set plugin resource.
@@ -112,7 +111,7 @@ class InferenceBuilderFrictionless(PluginBuilder):
         for res in resources:
             resource = self._get_resource_deepcopy(res)
             store = self._get_resource_store(resource)
-            data_reader = FileReader(store)
+            data_reader = self._get_data_reader(BASE_FILE_READER, store)
             plugin = InferencePluginFrictionless()
             plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)

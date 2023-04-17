@@ -1,21 +1,23 @@
 """
-PandasDataFrameReader module.
+PolarsDataFrameReader module.
 """
-import pandas as pd
+from pathlib import Path
 
-from datajudge.data_reader.base_file_reader import FileReader
+import polars as pl
+
+from datajudge.data_reader.base_reader.base_file_reader import FileReader
 from datajudge.plugins.utils.frictionless_utils import describe_resource
 from datajudge.utils.utils import listify
 
 
-class PandasDataFrameFileReader(FileReader):
+class PolarsDataFrameFileReader(FileReader):
     """
-    PandasDataFrameFileReader class.
+    PolarsDataFrameFileReader class.
 
     Read a DataFrame from local file.
     """
 
-    def fetch_data(self, src: str) -> pd.DataFrame:
+    def fetch_data(self, src: str) -> pl.DataFrame:
         """
         Fetch resource from backend.
         """
@@ -29,24 +31,22 @@ class PandasDataFrameFileReader(FileReader):
         """
         return describe_resource(src)
 
-    def _read_df_from_path(self, resource: dict) -> pd.DataFrame:
+    def _read_df_from_path(self, resource: dict) -> pl.DataFrame:
         """
-        Read a file into a pandas DataFrame.
+        Read a file into a Polars DataFrame.
         """
         paths = listify(resource.get("path"))
         file_format = resource.get("format")
 
         if file_format == "csv":
             csv_args = {
-                "sep": resource.get("dialect", {}).get("delimiter", ","),
-                "encoding": resource.get("encoding"),
+                "separator": resource.get("dialect", {}).get("delimiter", ","),
+                "encoding": resource.get("encoding", "utf8"),
             }
-            list_df = [pd.read_csv(i, **csv_args) for i in paths]
-        elif file_format in ["xls", "xlsx", "ods", "odf"]:
-            list_df = [pd.read_excel(i) for i in paths]
+            list_df = [pl.read_csv(Path(i), **csv_args) for i in paths]
         elif file_format == "parquet":
-            list_df = [pd.read_parquet(i) for i in paths]
+            list_df = [pl.read_parquet(Path(i)) for i in paths]
         else:
             raise ValueError("File extension not supported!")
 
-        return pd.concat(list_df)
+        return pl.concat(list_df)

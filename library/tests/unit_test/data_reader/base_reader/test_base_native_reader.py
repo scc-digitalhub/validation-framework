@@ -1,6 +1,6 @@
 import pytest
 
-from datajudge.data_reader.base_native_reader import NativeReader
+from datajudge.data_reader.base_reader.base_native_reader import NativeReader
 from tests.conftest import STORE_LOCAL_01, Configurator
 
 
