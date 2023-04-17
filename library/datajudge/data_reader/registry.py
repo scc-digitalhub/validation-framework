@@ -20,7 +20,7 @@ REGISTRY = {
 }
 
 try:
-    from datajudge.data_reader.pandas_dataframe_duckdb_reader import (
+    from datajudge.data_reader.pandas_reader.pandas_dataframe_duckdb_reader import (
         PandasDataFrameDuckDBReader,
     )
     from datajudge.utils.commons import PANDAS_DATAFRAME_DUCKDB_READER
@@ -30,7 +30,7 @@ except ImportError:
     ...
 
 try:
-    from datajudge.data_reader.pandas_dataframe_file_reader import (
+    from datajudge.data_reader.pandas_reader.pandas_dataframe_file_reader import (
         PandasDataFrameFileReader,
     )
     from datajudge.utils.commons import PANDAS_DATAFRAME_FILE_READER
@@ -40,7 +40,7 @@ except ImportError:
     ...
 
 try:
-    from datajudge.data_reader.pandas_dataframe_sql_reader import (
+    from datajudge.data_reader.pandas_reader.pandas_dataframe_sql_reader import (
         PandasDataFrameSQLReader,
     )
     from datajudge.utils.commons import PANDAS_DATAFRAME_SQL_READER
@@ -50,7 +50,7 @@ except ImportError:
     ...
 
 try:
-    from datajudge.data_reader.polars_dataframe_duckdb_reader import (
+    from datajudge.data_reader.polars_reader.polars_dataframe_duckdb_reader import (
         PolarsDataFrameDuckDBReader,
     )
     from datajudge.utils.commons import POLARS_DATAFRAME_DUCKDB_READER
@@ -60,7 +60,7 @@ except ImportError:
     ...
 
 try:
-    from datajudge.data_reader.polars_dataframe_file_reader import (
+    from datajudge.data_reader.polars_reader.polars_dataframe_file_reader import (
         PolarsDataFrameFileReader,
     )
     from datajudge.utils.commons import POLARS_DATAFRAME_FILE_READER
@@ -70,7 +70,7 @@ except ImportError:
     ...
 
 try:
-    from datajudge.data_reader.polars_dataframe_sql_reader import (
+    from datajudge.data_reader.polars_reader.polars_dataframe_sql_reader import (
         PolarsDataFrameSQLReader,
     )
     from datajudge.utils.commons import POLARS_DATAFRAME_SQL_READER

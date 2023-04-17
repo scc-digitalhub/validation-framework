@@ -18,7 +18,7 @@ from datajudge.plugins.validation.validation_plugin import (
     ValidationPluginBuilder,
 )
 from datajudge.utils.commons import (
-    POLARS_DATAFRAME_DUCKDB_READER,
+    POLARS_DATAFRAME_FILE_READER,
     PANDAS_DATAFRAME_DUCKDB_READER,
     DEFAULT_DIRECTORY,
     LIBRARY_DUCKDB,
@@ -169,7 +169,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
 
         plugins = []
         for const in f_constraint:
-            data_reader = self._get_data_reader(PANDAS_DATAFRAME_DUCKDB_READER, store)
+            data_reader = self._get_data_reader(PANDAS_DATAFRAME_DUCKDB_READER, None)
             plugin = ValidationPluginDuckDB()
             plugin.setup(
                 data_reader, self.tmp_db.as_posix(), const, error_report, self.exec_args
@@ -215,9 +215,8 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
             # Handle multiple paths: crate a table for
             # first file, then append. Load data from Polars DF
             for idx, pth in enumerate(listify(resource.path)):
-                build_reader
                 data_reader = self._get_data_reader(
-                    POLARS_DATAFRAME_DUCKDB_READER, store
+                    POLARS_DATAFRAME_FILE_READER, store
                 )
                 df = data_reader.fetch_data(pth)
                 if idx == 0:
