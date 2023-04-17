@@ -2,7 +2,7 @@
 SQL checks module.
 """
 import re
-from typing import Any, Tuple, Union
+from typing import Any, Union
 
 from datajudge.utils.commons import (
     CONSTRAINT_SQL_EMPTY,
@@ -14,7 +14,7 @@ from datajudge.utils.commons import (
 )
 
 
-def evaluate_validity(result: Any, expect: str, value: Any) -> Tuple[bool, list]:
+def evaluate_validity(result: Any, expect: str, value: Any) -> tuple:
     """
     Evaluate validity of query results.
     """
@@ -31,6 +31,8 @@ def evaluate_validity(result: Any, expect: str, value: Any) -> Tuple[bool, list]
             return evaluate_min(result, value)
         if expect == CONSTRAINT_SQL_MAXIMUM:
             return evaluate_max(result, value)
+        else:
+            return False, "Invalid constraint expectation."
 
     except Exception as ex:
         return False, ex.args
@@ -83,35 +85,36 @@ def evaluate_range(result: Any, _range: str) -> tuple:
     Check if a value is in desired range.
     """
     regex = r"^(\[|\()([+-]?[0-9]+[.]?[0-9]*),\s?([+-]?[0-9]+[.]?[0-9]*)(\]|\))$"
-    mtc = re.match(regex, _range)
-    if mtc:
-        # Upper and lower limit type
-        # [ ] are inclusive
-        # ( ) are exclusive
-        ll = mtc.group(1)
-        ul = mtc.group(4)
+    try:
+        mtc = re.match(regex, _range)
+        if mtc:
+            # Upper and lower limit type
+            # [ ] are inclusive
+            # ( ) are exclusive
+            ll = mtc.group(1)
+            ul = mtc.group(4)
 
-        # Minimum and maximum range values
-        _min = float(mtc.group(2))
-        _max = float(mtc.group(3))
+            # Minimum and maximum range values
+            _min = float(mtc.group(2))
+            _max = float(mtc.group(3))
 
-        # Value to check to float
-        cv = float(result)
+            # Value to check to float
+            cv = float(result)
 
-        if ll == "[" and ul == "]":
-            valid = _min <= cv <= _max
-        elif ll == "[" and ul == ")":
-            valid = _min <= cv < _max
-        elif ll == "(" and ul == "]":
-            valid = _min < cv <= _max
-        elif ll == "(" and ul == ")":
-            valid = _min < cv < _max
+            if ll == "[" and ul == "]":
+                valid = _min <= cv <= _max
+            elif ll == "[" and ul == ")":
+                valid = _min <= cv < _max
+            elif ll == "(" and ul == "]":
+                valid = _min < cv <= _max
+            elif ll == "(" and ul == ")":
+                valid = _min < cv < _max
 
-        if valid:
-            return True, None
-        return (
-            False,
-            f"Expected value between {ll}{mtc.group(2)}, \
-                        {mtc.group(3)}{ul}.",
-        )
-    return False, "Invalid range format."
+            if valid:
+                return True, None
+            return (
+                False,
+                f"Expected value between {ll}{mtc.group(2)}, {mtc.group(3)}{ul}.",
+            )
+    except ValueError:
+        return False, "Invalid range format."
