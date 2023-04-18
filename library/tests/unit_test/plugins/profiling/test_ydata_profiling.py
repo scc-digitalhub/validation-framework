@@ -1,17 +1,17 @@
 import io
 
-import frictionless
+import ydata_profiling
 import pytest
-from frictionless.resource import Resource
+from ydata_profiling import ProfileReport
 
-from datajudge.plugins.profiling.frictionless_profiling import (
-    ProfileBuilderFrictionless,
-    ProfilePluginFrictionless,
+from datajudge.plugins.profiling.ydata_profiling_profiling import (
+    ProfileBuilderYdataProfiling,
+    ProfilePluginYdataProfiling,
 )
 from datajudge.utils.commons import (
-    LIBRARY_FRICTIONLESS,
+    LIBRARY_YDATA_PROFILING,
     OPERATION_PROFILING,
-    BASE_FILE_READER,
+    PANDAS_DATAFRAME_FILE_READER,
 )
 from tests.conftest import RES_LOCAL_01
 from tests.unit_test.plugins.utils_plugin_tests import (
@@ -24,14 +24,14 @@ from tests.unit_test.plugins.utils_plugin_tests import (
 )
 
 
-class TestProfilePluginFrictionless:
+class TestProfilePluginYdataProfiling:
     @pytest.fixture(scope="class")
     def plugin(self):
-        return ProfilePluginFrictionless
+        return ProfilePluginYdataProfiling
 
     @pytest.fixture(scope="class")
     def data_reader(self):
-        return BASE_FILE_READER
+        return PANDAS_DATAFRAME_FILE_READER
 
     def test_setup(self, plugin):
         plg = plugin()
@@ -44,7 +44,7 @@ class TestProfilePluginFrictionless:
         # Correct execution
         output = setted_plugin.profile()
         correct_execute(output)
-        assert isinstance(output.artifact, Resource)
+        assert isinstance(output.artifact, ProfileReport)
 
         # Error execution
         output = error_setted_plugin.profile()
@@ -65,31 +65,35 @@ class TestProfilePluginFrictionless:
         # Correct execution
         result = setted_plugin.profile()
         output = setted_plugin.render_artifact(result)
-        filename = setted_plugin._fn_profile.format(f"{LIBRARY_FRICTIONLESS}.json")
+        filename1 = setted_plugin._fn_profile.format(f"{LIBRARY_YDATA_PROFILING}.json")
+        filename2 = setted_plugin._fn_profile.format(f"{LIBRARY_YDATA_PROFILING}.html")
         correct_render_artifact(output)
         assert isinstance(output.artifact[0].object, io.BytesIO)
-        assert output.artifact[0].filename == filename
+        assert output.artifact[0].filename == filename2
+        assert isinstance(output.artifact[1].object, io.BytesIO)
+        assert output.artifact[1].filename == filename1
 
         # Error execution
         result = error_setted_plugin.profile()
         output = error_setted_plugin.render_artifact(result)
         incorrect_render_artifact(output)
-        assert output.artifact[0].filename == filename
+        assert output.artifact[0].filename == filename1
+        assert output.artifact[0].filename != filename2
 
     def test_get_lib_name(self, plugin):
-        assert plugin().get_lib_name() == frictionless.__name__
+        assert plugin().get_lib_name() == ydata_profiling.__name__
 
     def test_get_lib_version(self, plugin):
-        assert plugin().get_lib_version() == frictionless.__version__
+        assert plugin().get_lib_version() == ydata_profiling.__version__
 
 
-class TestProfileBuilderFrictionless:
+class TestProfileBuilderYdataProfiling:
     @pytest.fixture
     def plugin_builder(self, config_plugin_builder):
-        return ProfileBuilderFrictionless(**config_plugin_builder)
+        return ProfileBuilderYdataProfiling(**config_plugin_builder)
 
     def test_build(self, plugin_builder):
         plugins = plugin_builder.build([RES_LOCAL_01])
         assert isinstance(plugins, list)
         assert len(plugins) == 1
-        assert isinstance(plugins[0], ProfilePluginFrictionless)
+        assert isinstance(plugins[0], ProfilePluginYdataProfiling)

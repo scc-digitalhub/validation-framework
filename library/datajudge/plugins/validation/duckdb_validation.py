@@ -215,9 +215,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
             # Handle multiple paths: crate a table for
             # first file, then append. Load data from Polars DF
             for idx, pth in enumerate(listify(resource.path)):
-                data_reader = self._get_data_reader(
-                    POLARS_DATAFRAME_FILE_READER, store
-                )
+                data_reader = self._get_data_reader(POLARS_DATAFRAME_FILE_READER, store)
                 df = data_reader.fetch_data(pth)
                 if idx == 0:
                     sql = f"CREATE TABLE {resource.name} AS SELECT * FROM df;"

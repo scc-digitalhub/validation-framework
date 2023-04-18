@@ -72,12 +72,12 @@ class ProfilePluginGreatExpectations(Profiling):
 
         if exec_err is None:
             res = deepcopy(result.artifact).to_json_dict()
-            fields = list(res.get("meta", {}).get("columns", {}).keys())
-            stats = res.get("expectations")
+            fields = {"fields": list(res.get("meta", {}).get("columns", {}).keys())}
+            stats = {"stats": list(res.get("expectations"))}
         else:
             self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
-            fields = None
-            stats = None
+            fields = {}
+            stats = {}
 
         return DatajudgeProfile(
             self.get_lib_name(), self.get_lib_version(), duration, stats, fields
@@ -134,11 +134,4 @@ class ProfileBuilderGreatExpectations(PluginBuilder):
         return plugins
 
     def destroy(self) -> None:
-        """
-        Destory plugins.
-        """
-        path = Path(os.getcwd(), "ge_ctxt")
-        try:
-            clean_all(path)
-        except Exception:
-            pass
+        ...

@@ -2,17 +2,20 @@ import csv
 import sqlite3
 from tempfile import TemporaryDirectory
 
+import pytest
+
 from datajudge.client.store_factory import StoreBuilder
 from datajudge.client.store_handler import StoreHandler
+from datajudge.data_reader.utils import build_reader
 from datajudge.plugins.utils.plugin_utils import Result
-from datajudge.utils.config import DataResource, RunConfig, StoreConfig
 from datajudge.utils.config import (
     ConstraintFrictionless,
     ConstraintFullFrictionless,
+    DataResource,
     RunConfig,
     StoreConfig,
-    DataResource,
 )
+from datajudge.utils.commons import *
 
 
 class Configurator:
@@ -171,3 +174,36 @@ def insert_in_db(path):
     )
     con.commit()
     con.close()
+
+
+# Fixtures
+
+
+@pytest.fixture
+def config_plugin_builder():
+    conf = Configurator()
+    store = conf.get_store(STORE_LOCAL_01)
+    return {"stores": [store], "exec_args": {}}
+
+
+@pytest.fixture
+def config_plugin(data_reader):
+    conf = Configurator()
+    store = conf.get_store(STORE_LOCAL_01)
+    reader = build_reader(data_reader, store)
+    return [reader, RES_LOCAL_01, {}]
+
+
+@pytest.fixture
+def setted_plugin(plugin, config_plugin):
+    plg = plugin()
+    plg.setup(*config_plugin)
+    return plg
+
+
+@pytest.fixture
+def error_setted_plugin(plugin, config_plugin):
+    plg = plugin()
+    config_plugin[1] = "error"
+    plg.setup(*config_plugin)
+    return plg

@@ -2,6 +2,7 @@
 Dummy implementation of validation plugin.
 """
 # pylint: disable=unused-argument
+from collections import namedtuple
 from typing import List
 
 from datajudge.metadata.datajudge_reports import DatajudgeReport
@@ -11,7 +12,11 @@ from datajudge.plugins.validation.validation_plugin import (
     ValidationPluginBuilder,
 )
 from datajudge.utils.commons import GENERIC_DUMMY, LIBRARY_DUMMY
-from datajudge.utils.config import Constraint
+
+
+DummyConstraint = namedtuple(
+    "DummyConstraint", ["name", "resources"], defaults=["", [""]]
+)
 
 
 class ValidationPluginDummy(Validation):
@@ -21,22 +26,10 @@ class ValidationPluginDummy(Validation):
 
     def __init__(self) -> None:
         super().__init__()
-        self.resource = None
+        self.constraint = DummyConstraint()
 
-    def setup(
-        self,
-        resource: "DataResource",
-        constraint: dict,
-        error_report: str,
-        exec_args: dict,
-    ) -> None:
-        """
-        Set plugin resource.
-        """
-        self.resource = resource
-        self.constraint = constraint
-        self.error_report = error_report
-        self.exec_args = exec_args
+    def setup(self, *args) -> None:
+        ...
 
     @exec_decorator
     def validate(self) -> dict:
@@ -46,7 +39,7 @@ class ValidationPluginDummy(Validation):
         return {}
 
     @exec_decorator
-    def render_datajudge(self, result: "Result") -> DatajudgeReport:
+    def render_datajudge(self, *args) -> DatajudgeReport:
         """
         Return a DatajudgeReport.
         """
@@ -88,29 +81,15 @@ class ValidationBuilderDummy(ValidationPluginBuilder):
     Dummy validation plugin builder.
     """
 
-    def build(
-        self,
-        resources: List["DataResource"],
-        constraints: List[Constraint],
-        error_report: str,
-    ) -> List[ValidationPluginDummy]:
+    def build(self, *args) -> List[ValidationPluginDummy]:
         """
         Build a plugin.
         """
-        const = Constraint(name="", title="", resources=[""], weight=0)
-        plugins = []
-        plugin = ValidationPluginDummy()
-        plugin.setup(None, const, None, self.exec_args)
-        plugins.append(plugin)
-        return plugins
+        return [ValidationPluginDummy()]
 
     @staticmethod
-    def _filter_constraints(constraints: List[Constraint]) -> List[Constraint]:
-        """
-        Do nothing.
-        """
+    def _filter_constraints(*args) -> None:
+        ...
 
     def destroy(self, *args) -> None:
-        """
-        Do nothing.
-        """
+        ...

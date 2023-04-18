@@ -10,7 +10,7 @@ from datajudge.metadata.datajudge_reports import DatajudgeSchema
 from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.inference.inference_plugin import Inference
 from datajudge.plugins.utils.plugin_utils import exec_decorator
-from datajudge.utils.commons import LIBRARY_FRICTIONLESS, BASE_FILE_READER
+from datajudge.utils.commons import BASE_FILE_READER, LIBRARY_FRICTIONLESS
 
 
 class InferencePluginFrictionless(Inference):
@@ -29,9 +29,9 @@ class InferencePluginFrictionless(Inference):
         """
         Set plugin resource.
         """
+        self.data_reader = data_reader
         self.resource = resource
         self.exec_args = exec_args
-        self.data_reader = data_reader
 
     @exec_decorator
     def infer(self) -> Schema:
@@ -51,17 +51,14 @@ class InferencePluginFrictionless(Inference):
 
         exec_err = result.errors
         duration = result.duration
-        fields = []
 
         if exec_err is None:
-            inferred_fields = result.artifact.get("fields")
-            if inferred_fields is not None:
-                fields = [
-                    self._get_fields(field.get("name", ""), field.get("type", ""))
-                    for field in inferred_fields
-                ]
+            inferred_fields = result.artifact.get("fields", [])
+            func = lambda x: self._get_fields(x.get("name", ""), x.get("type", ""))
+            fields = [func(field) for field in inferred_fields]
         else:
             self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
+            fields = []
 
         return DatajudgeSchema(
             self.get_lib_name(), self.get_lib_version(), duration, fields
@@ -118,6 +115,4 @@ class InferenceBuilderFrictionless(PluginBuilder):
         return plugins
 
     def destroy(self) -> None:
-        """
-        Destory plugins.
-        """
+        ...

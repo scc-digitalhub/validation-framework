@@ -16,16 +16,8 @@ class InferencePluginDummy(Inference):
     Dummy implementation of inference plugin.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.resource = None
-
-    def setup(self, resource: "DataResource", exec_args: dict) -> None:
-        """
-        Set plugin resource.
-        """
-        self.resource = resource
-        self.exec_args = exec_args
+    def setup(self, *args) -> None:
+        ...
 
     @exec_decorator
     def infer(self) -> dict:
@@ -35,11 +27,11 @@ class InferencePluginDummy(Inference):
         return {}
 
     @exec_decorator
-    def render_datajudge(self, result: "Result") -> DatajudgeSchema:
+    def render_datajudge(self, *args) -> DatajudgeSchema:
         """
         Return a DatajudgeSchema.
         """
-        return DatajudgeSchema(self.get_lib_name(), self.get_lib_version(), None, None)
+        return DatajudgeSchema(self.get_lib_name(), self.get_lib_version(), 0.0, [])
 
     @exec_decorator
     def render_artifact(self, result: "Result") -> List[tuple]:
@@ -75,17 +67,11 @@ class InferenceBuilderDummy(PluginBuilder):
     Inference plugin builder.
     """
 
-    def build(self, resources: List["DataResource"]) -> List[InferencePluginDummy]:
+    def build(self, *args) -> List[InferencePluginDummy]:
         """
         Build a plugin.
         """
-        plugins = []
-        plugin = InferencePluginDummy()
-        plugin.setup(None, self.exec_args)
-        plugins.append(plugin)
-        return plugins
+        return [InferencePluginDummy()]
 
     def destroy(self) -> None:
-        """
-        Destory plugins.
-        """
+        ...

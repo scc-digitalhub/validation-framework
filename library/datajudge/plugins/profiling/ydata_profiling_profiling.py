@@ -12,7 +12,7 @@ from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.profiling.profiling_plugin import Profiling
 from datajudge.plugins.utils.plugin_utils import exec_decorator
 from datajudge.utils.commons import (
-    LIBRARY_PANDAS_PROFILING,
+    LIBRARY_YDATA_PROFILING,
     PANDAS_DATAFRAME_FILE_READER,
 )
 from datajudge.utils.io_utils import write_bytesio
@@ -95,8 +95,8 @@ class ProfilePluginYdataProfiling(Profiling):
             stats = args.get("table", {})
         else:
             self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
-            fields = None
-            stats = None
+            fields = {}
+            stats = {}
 
         return DatajudgeProfile(
             self.get_lib_name(), self.get_lib_version(), duration, stats, fields
@@ -111,18 +111,18 @@ class ProfilePluginYdataProfiling(Profiling):
 
         if result.artifact is None:
             _object = {"errors": result.errors}
-            filename = self._fn_profile.format(f"{LIBRARY_PANDAS_PROFILING}.json")
+            filename = self._fn_profile.format(f"{LIBRARY_YDATA_PROFILING}.json")
             artifacts.append(self.get_render_tuple(_object, filename))
         else:
             string_html = result.artifact.to_html()
             strio_html = write_bytesio(string_html)
-            html_filename = self._fn_profile.format(f"{LIBRARY_PANDAS_PROFILING}.html")
+            html_filename = self._fn_profile.format(f"{LIBRARY_YDATA_PROFILING}.html")
             artifacts.append(self.get_render_tuple(strio_html, html_filename))
 
             string_json = result.artifact.to_json()
             string_json = string_json.replace("NaN", "null")
             strio_json = write_bytesio(string_json)
-            json_filename = self._fn_profile.format(f"{LIBRARY_PANDAS_PROFILING}.json")
+            json_filename = self._fn_profile.format(f"{LIBRARY_YDATA_PROFILING}.json")
             artifacts.append(self.get_render_tuple(strio_json, json_filename))
 
         return artifacts

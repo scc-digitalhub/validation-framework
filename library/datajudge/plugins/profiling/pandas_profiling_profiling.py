@@ -96,8 +96,8 @@ class ProfilePluginPandasProfiling(Profiling):
             stats = args.get("table", {})
         else:
             self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
-            fields = None
-            stats = None
+            fields = {}
+            stats = {}
 
         return DatajudgeProfile(
             self.get_lib_name(), self.get_lib_version(), duration, stats, fields
