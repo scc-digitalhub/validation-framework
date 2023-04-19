@@ -1,11 +1,6 @@
-import io
-
 import pytest
 import great_expectations as ge
 from great_expectations.core.expectation_suite import ExpectationSuite
-from great_expectations.profile.user_configurable_profiler import (
-    UserConfigurableProfiler,
-)
 
 from datajudge.plugins.profiling.great_expectations_profiling import (
     ProfileBuilderGreatExpectations,
@@ -16,9 +11,9 @@ from datajudge.utils.commons import (
     OPERATION_PROFILING,
     PANDAS_DATAFRAME_FILE_READER,
 )
-from tests.conftest import RES_LOCAL_01
 from tests.unit_test.plugins.utils_plugin_tests import (
     correct_execute,
+    correct_setup,
     correct_render_artifact,
     correct_render_datajudge,
     incorrect_execute,
@@ -28,54 +23,49 @@ from tests.unit_test.plugins.utils_plugin_tests import (
 
 
 class TestProfilePluginGreatExpectations:
-    @pytest.fixture(scope="class")
-    def plugin(self):
-        return ProfilePluginGreatExpectations
-
-    @pytest.fixture(scope="class")
-    def data_reader(self):
-        return PANDAS_DATAFRAME_FILE_READER
-
     def test_setup(self, plugin):
         plg = plugin()
         plg.setup("test", "test", "test")
-        assert plg.data_reader == "test"
-        assert plg.resource == "test"
-        assert plg.exec_args == "test"
+        correct_setup(plg)
 
-    def test_profile(self, setted_plugin, error_setted_plugin):
+    def test_profile(self, setted_plugin):
         # Correct execution
         output = setted_plugin.profile()
         correct_execute(output)
         assert isinstance(output.artifact, ExpectationSuite)
 
         # Error execution
-        output = error_setted_plugin.profile()
+        setted_plugin.data_reader = "error"
+        output = setted_plugin.profile()
         incorrect_execute(output)
 
-    def test_render_datajudge(self, setted_plugin, error_setted_plugin):
+    def test_render_datajudge(self, setted_plugin):
         # Correct execution
         result = setted_plugin.profile()
         output = setted_plugin.render_datajudge(result)
         correct_render_datajudge(output, OPERATION_PROFILING)
 
         # Error execution
-        result = error_setted_plugin.profile()
-        output = error_setted_plugin.render_datajudge(result)
+        setted_plugin.data_reader = "error"
+        result = setted_plugin.profile()
+        output = setted_plugin.render_datajudge(result)
         incorrect_render_datajudge(output, OPERATION_PROFILING)
 
-    def test_render_artifact_method(self, setted_plugin, error_setted_plugin):
+    def test_render_artifact_method(self, setted_plugin):
         # Correct execution
         result = setted_plugin.profile()
         output = setted_plugin.render_artifact(result)
-        filename = setted_plugin._fn_profile.format(f"{LIBRARY_GREAT_EXPECTATIONS}.json")
+        filename = setted_plugin._fn_profile.format(
+            f"{LIBRARY_GREAT_EXPECTATIONS}.json"
+        )
         correct_render_artifact(output)
         assert isinstance(output.artifact[0].object, dict)
         assert output.artifact[0].filename == filename
 
         # Error execution
-        result = error_setted_plugin.profile()
-        output = error_setted_plugin.render_artifact(result)
+        setted_plugin.data_reader = "error"
+        result = setted_plugin.profile()
+        output = setted_plugin.render_artifact(result)
         incorrect_render_artifact(output)
         assert output.artifact[0].filename == filename
 
@@ -87,12 +77,38 @@ class TestProfilePluginGreatExpectations:
 
 
 class TestProfileBuilderGreatExpectations:
-    @pytest.fixture
-    def plugin_builder(self, config_plugin_builder):
-        return ProfileBuilderGreatExpectations(**config_plugin_builder)
-
-    def test_build(self, plugin_builder):
-        plugins = plugin_builder.build([RES_LOCAL_01])
+    def test_build(self, plugin_builder, plugin_builder_non_val_args):
+        plugins = plugin_builder.build(*plugin_builder_non_val_args)
         assert isinstance(plugins, list)
         assert len(plugins) == 1
         assert isinstance(plugins[0], ProfilePluginGreatExpectations)
+
+
+@pytest.fixture(scope="module")
+def plugin():
+    return ProfilePluginGreatExpectations
+
+
+@pytest.fixture
+def plugin_builder(config_plugin_builder):
+    return ProfileBuilderGreatExpectations(**config_plugin_builder)
+
+
+@pytest.fixture
+def config_plugin(reader, resource):
+    return [reader, resource, {}]
+
+
+@pytest.fixture
+def store_cfg(local_store_cfg):
+    return local_store_cfg
+
+
+@pytest.fixture
+def resource(local_resource):
+    return local_resource
+
+
+@pytest.fixture(scope="module")
+def data_reader():
+    return PANDAS_DATAFRAME_FILE_READER

@@ -14,14 +14,6 @@ from tests.unit_test.plugins.utils_plugin_tests import (
 
 
 class TestProfilePluginDummy:
-    @pytest.fixture(scope="class")
-    def plugin(self):
-        return ProfilePluginDummy
-
-    @pytest.fixture(scope="class")
-    def data_reader(self):
-        return BASE_FILE_READER
-
     def test_profile(self, setted_plugin):
         output = setted_plugin.profile()
         correct_execute(output)
@@ -48,12 +40,38 @@ class TestProfilePluginDummy:
 
 
 class TestProfileBuilderDummy:
-    @pytest.fixture
-    def plugin_builder(self, config_plugin_builder):
-        return ProfileBuilderDummy(**config_plugin_builder)
-
-    def test_build(self, plugin_builder):
-        plugins = plugin_builder.build([RES_LOCAL_01])
+    def test_build(self, plugin_builder, plugin_builder_non_val_args):
+        plugins = plugin_builder.build(*plugin_builder_non_val_args)
         assert isinstance(plugins, list)
         assert len(plugins) == 1
         assert isinstance(plugins[0], ProfilePluginDummy)
+
+
+@pytest.fixture(scope="module")
+def plugin():
+    return ProfilePluginDummy
+
+
+@pytest.fixture
+def plugin_builder(config_plugin_builder):
+    return ProfileBuilderDummy(**config_plugin_builder)
+
+
+@pytest.fixture
+def config_plugin(reader, resource):
+    return [reader, resource, {}]
+
+
+@pytest.fixture
+def store_cfg(local_store_cfg):
+    return local_store_cfg
+
+
+@pytest.fixture
+def resource(local_resource):
+    return local_resource
+
+
+@pytest.fixture(scope="module")
+def data_reader():
+    return BASE_FILE_READER

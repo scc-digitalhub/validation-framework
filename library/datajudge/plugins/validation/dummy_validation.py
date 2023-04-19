@@ -44,7 +44,7 @@ class ValidationPluginDummy(Validation):
         Return a DatajudgeReport.
         """
         return DatajudgeReport(
-            self.get_lib_name(), self.get_lib_version(), None, None, None, None
+            self.get_lib_name(), self.get_lib_version(), 0.0, {}, True, {}
         )
 
     @exec_decorator

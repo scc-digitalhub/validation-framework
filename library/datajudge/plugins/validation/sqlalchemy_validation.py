@@ -7,7 +7,7 @@ from typing import List, Any
 import sqlalchemy
 
 from datajudge.metadata.datajudge_reports import DatajudgeReport
-from datajudge.plugins.utils.plugin_utils import exec_decorator
+from datajudge.plugins.utils.plugin_utils import exec_decorator, ValidationReport
 from datajudge.plugins.utils.sql_checks import evaluate_validity
 from datajudge.plugins.validation.validation_plugin import (
     Validation,
@@ -62,7 +62,7 @@ class ValidationPluginSqlAlchemy(Validation):
                 value, self.constraint.expect, self.constraint.value
             )
             result = self._shorten_data(data)
-            return {"result": result, "valid": valid, "error": errors}
+            return ValidationReport(result, valid, errors)
         except Exception as ex:
             raise ex
 
@@ -89,17 +89,15 @@ class ValidationPluginSqlAlchemy(Validation):
         exec_err = result.errors
         duration = result.duration
         constraint = self.constraint.dict()
-        errors = self._get_errors()
+        errors = {}
 
         if exec_err is None:
-            valid = result.artifact.get("valid")
-
+            valid = result.artifact.valid
             if not valid:
                 total_count = 1
                 errors_list = [self._render_error_type("sql-check-error")]
                 parsed_error_list = self._parse_error_report(errors_list)
                 errors = self._get_errors(total_count, parsed_error_list)
-
         else:
             self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
             valid = False
@@ -122,7 +120,7 @@ class ValidationPluginSqlAlchemy(Validation):
         if result.artifact is None:
             _object = {"errors": result.errors}
         else:
-            _object = dict(result.artifact)
+            _object = result.artifact.to_dict()
         filename = self._fn_report.format(f"{LIBRARY_SQLALCHEMY}.json")
         artifacts.append(self.get_render_tuple(_object, filename))
         return artifacts
@@ -241,6 +239,4 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
         return constraint_connection
 
     def destroy(self) -> None:
-        """
-        Destory plugins.
-        """
+        ...

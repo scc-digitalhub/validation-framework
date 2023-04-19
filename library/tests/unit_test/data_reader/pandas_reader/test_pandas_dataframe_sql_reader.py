@@ -1,31 +1,28 @@
-from pathlib import Path
-
 import pandas as pd
 import pytest
 from sqlalchemy.engine import Engine
 
-from datajudge.data_reader.pandas_reader.pandas_dataframe_sql_reader import (
-    PandasDataFrameSQLReader,
-)
 from datajudge.utils.exceptions import StoreError
-from tests.conftest import STORE_LOCAL_01, Configurator, insert_in_db
+from datajudge.utils.commons import PANDAS_DATAFRAME_SQL_READER
 
 
 class TestPandasDataFrameSQLReader:
-    conf = Configurator()
-    store = conf.get_store(STORE_LOCAL_01, tmp=True)
-    reader = PandasDataFrameSQLReader(store)
-
-    db_path = Path(f"{conf.get_tmp()}", "test.db").as_posix()
-    conn = f"sqlite:///{db_path}"
-    insert_in_db(db_path)
-
-    def test_fetch_data(self):
-        df = self.reader.fetch_data(self.conn, "select * from test")
+    def test_fetch_data(self, reader, sqlitedb):
+        df = reader.fetch_data(sqlitedb, "select * from test")
         assert isinstance(df, pd.DataFrame)
         with pytest.raises(StoreError):
-            self.reader.fetch_data(self.conn, "select not_existing from test")
+            reader.fetch_data(sqlitedb, "select not_existing from test")
 
-    def test_get_engine(self):
-        engine = self.reader._get_engine(self.conn)
+    def test_get_engine(self, reader, sqlitedb):
+        engine = reader._get_engine(sqlitedb)
         assert isinstance(engine, Engine)
+
+
+@pytest.fixture
+def store_cfg(sql_store_cfg):
+    return sql_store_cfg
+
+
+@pytest.fixture
+def data_reader():
+    return PANDAS_DATAFRAME_SQL_READER

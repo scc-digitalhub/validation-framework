@@ -43,11 +43,11 @@ class ValidationPluginFrictionless(Validation):
         """
         Set plugin resource.
         """
+        self.data_reader = data_reader
         self.resource = resource
         self.constraint = constraint
         self.error_report = error_report
         self.exec_args = exec_args
-        self.data_reader = data_reader
 
     @exec_decorator
     def validate(self) -> Report:

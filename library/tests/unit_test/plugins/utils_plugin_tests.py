@@ -1,3 +1,4 @@
+from datajudge.plugins.base_plugin import Plugin
 from datajudge.plugins.utils.plugin_utils import RenderTuple, Result
 from datajudge.metadata.datajudge_reports import (
     DatajudgeSchema,
@@ -9,6 +10,14 @@ from datajudge.utils.commons import (
     OPERATION_PROFILING,
     OPERATION_VALIDATION,
 )
+
+
+def correct_setup(plg):
+    assert isinstance(plg, Plugin)
+    test_attr = ["data_reader", "resource", "exec_args", "error_report", "constraint"]
+    for attr in test_attr:
+        if hasattr(plg, attr):
+            assert getattr(plg, attr) == "test"
 
 
 def correct_result(output):
@@ -37,6 +46,9 @@ def correct_render_datajudge(output, op):
     if op == OPERATION_VALIDATION:
         assert isinstance(artifact, DatajudgeReport)
         assert isinstance(artifact.duration, float)
+        assert isinstance(artifact.constraint, dict)
+        assert isinstance(artifact.valid, bool)
+        assert isinstance(artifact.errors, dict)
 
 
 def correct_render_artifact(output):
@@ -64,6 +76,10 @@ def incorrect_render_datajudge(output, op):
         assert isinstance(artifact.duration, float)
         assert not artifact.stats
         assert not artifact.fields
+    if op == OPERATION_VALIDATION:
+        assert isinstance(artifact, DatajudgeReport)
+        assert isinstance(artifact.duration, float)
+        assert not artifact.valid
 
 
 def incorrect_render_artifact(output):

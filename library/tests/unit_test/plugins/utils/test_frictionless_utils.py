@@ -88,10 +88,6 @@ def test_frictionless_schema_converter():
     assert const == list_const
 
 
-# With bigger buffer/sample we should avoid error encoding detection
-custom_frictionless_detector = Detector(buffer_size=20000, sample_size=1250)
-
-
 # fixture to create a temporary file for testing
 @pytest.fixture(scope="function")
 def tmp_file(tmp_path):

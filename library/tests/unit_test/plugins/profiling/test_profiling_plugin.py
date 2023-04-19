@@ -1,5 +1,3 @@
-import pytest
-
 from datajudge.plugins.utils.plugin_utils import Result, exec_decorator
 from datajudge.utils.commons import (
     RESULT_DATAJUDGE,
@@ -55,7 +53,7 @@ class TestProfile:
         assert isinstance(result[RESULT_DATAJUDGE], Result)
         assert isinstance(result[RESULT_RENDERED], Result)
         assert isinstance(result[RESULT_LIBRARY], dict)
-        lib = {'libraryName': 'SamplePlugin', 'libraryVersion': '1.0'}
+        lib = {"libraryName": "SamplePlugin", "libraryVersion": "1.0"}
         assert result[RESULT_LIBRARY] == lib
 
         assert "Execute profiling - Plugin: SamplePlugin test;" in caplog.text

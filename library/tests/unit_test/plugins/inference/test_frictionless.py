@@ -13,9 +13,9 @@ from datajudge.utils.commons import (
     OPERATION_INFERENCE,
     BASE_FILE_READER,
 )
-from tests.conftest import RES_LOCAL_01
 from tests.unit_test.plugins.utils_plugin_tests import (
     correct_execute,
+    correct_setup,
     correct_render_artifact,
     correct_render_datajudge,
     incorrect_execute,
@@ -25,43 +25,35 @@ from tests.unit_test.plugins.utils_plugin_tests import (
 
 
 class TestInferencePluginFrictionless:
-    @pytest.fixture(scope="class")
-    def plugin(self):
-        return InferencePluginFrictionless
-
-    @pytest.fixture(scope="class")
-    def data_reader(self):
-        return BASE_FILE_READER
-
     def test_setup(self, plugin):
         plg = plugin()
         plg.setup("test", "test", "test")
-        assert plg.data_reader == "test"
-        assert plg.resource == "test"
-        assert plg.exec_args == "test"
+        correct_setup(plg)
 
-    def test_infer(self, setted_plugin, error_setted_plugin):
+    def test_infer(self, setted_plugin):
         # Correct execution
         output = setted_plugin.infer()
         correct_execute(output)
         assert isinstance(output.artifact, Schema)
 
         # Error execution
-        output = error_setted_plugin.infer()
+        setted_plugin.data_reader = "error"
+        output = setted_plugin.infer()
         incorrect_execute(output)
 
-    def test_render_datajudge(self, setted_plugin, error_setted_plugin):
+    def test_render_datajudge(self, setted_plugin):
         # Correct execution
         result = setted_plugin.infer()
         output = setted_plugin.render_datajudge(result)
         correct_render_datajudge(output, OPERATION_INFERENCE)
 
         # Error execution
-        result = error_setted_plugin.infer()
-        output = error_setted_plugin.render_datajudge(result)
+        setted_plugin.data_reader = "error"
+        result = setted_plugin.infer()
+        output = setted_plugin.render_datajudge(result)
         incorrect_render_datajudge(output, OPERATION_INFERENCE)
 
-    def test_render_artifact_method(self, setted_plugin, error_setted_plugin):
+    def test_render_artifact_method(self, setted_plugin):
         # Correct execution
         result = setted_plugin.infer()
         output = setted_plugin.render_artifact(result)
@@ -71,8 +63,9 @@ class TestInferencePluginFrictionless:
         assert output.artifact[0].filename == filename
 
         # Error execution
-        result = error_setted_plugin.infer()
-        output = error_setted_plugin.render_artifact(result)
+        setted_plugin.data_reader = "error"
+        result = setted_plugin.infer()
+        output = setted_plugin.render_artifact(result)
         incorrect_render_artifact(output)
         assert output.artifact[0].filename == filename
 
@@ -84,12 +77,38 @@ class TestInferencePluginFrictionless:
 
 
 class TestInferenceBuilderFrictionless:
-    @pytest.fixture
-    def plugin_builder(self, config_plugin_builder):
-        return InferenceBuilderFrictionless(**config_plugin_builder)
-
-    def test_build(self, plugin_builder):
-        plugins = plugin_builder.build([RES_LOCAL_01])
+    def test_build(self, plugin_builder, plugin_builder_non_val_args):
+        plugins = plugin_builder.build(*plugin_builder_non_val_args)
         assert isinstance(plugins, list)
         assert len(plugins) == 1
         assert isinstance(plugins[0], InferencePluginFrictionless)
+
+
+@pytest.fixture(scope="module")
+def plugin():
+    return InferencePluginFrictionless
+
+
+@pytest.fixture
+def plugin_builder(config_plugin_builder):
+    return InferenceBuilderFrictionless(**config_plugin_builder)
+
+
+@pytest.fixture
+def config_plugin(reader, resource):
+    return [reader, resource, {}]
+
+
+@pytest.fixture
+def store_cfg(local_store_cfg):
+    return local_store_cfg
+
+
+@pytest.fixture
+def resource(local_resource):
+    return local_resource
+
+
+@pytest.fixture(scope="module")
+def data_reader():
+    return BASE_FILE_READER

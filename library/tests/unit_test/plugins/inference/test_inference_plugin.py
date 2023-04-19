@@ -55,7 +55,7 @@ class TestInference:
         assert isinstance(result[RESULT_DATAJUDGE], Result)
         assert isinstance(result[RESULT_RENDERED], Result)
         assert isinstance(result[RESULT_LIBRARY], dict)
-        lib = {'libraryName': 'SamplePlugin', 'libraryVersion': '1.0'}
+        lib = {"libraryName": "SamplePlugin", "libraryVersion": "1.0"}
         assert result[RESULT_LIBRARY] == lib
 
         assert "Execute inference - Plugin: SamplePlugin test;" in caplog.text

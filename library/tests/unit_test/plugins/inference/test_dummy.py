@@ -5,7 +5,6 @@ from datajudge.plugins.inference.dummy_inference import (
     InferencePluginDummy,
 )
 from datajudge.utils.commons import LIBRARY_DUMMY, OPERATION_INFERENCE, BASE_FILE_READER
-from tests.conftest import RES_LOCAL_01
 from tests.unit_test.plugins.utils_plugin_tests import (
     correct_execute,
     correct_render_artifact,
@@ -14,14 +13,6 @@ from tests.unit_test.plugins.utils_plugin_tests import (
 
 
 class TestInferencePluginDummy:
-    @pytest.fixture(scope="class")
-    def plugin(self):
-        return InferencePluginDummy
-
-    @pytest.fixture(scope="class")
-    def data_reader(self):
-        return BASE_FILE_READER
-
     def test_infer(self, setted_plugin):
         output = setted_plugin.infer()
         correct_execute(output)
@@ -48,12 +39,38 @@ class TestInferencePluginDummy:
 
 
 class TestInferenceBuilderDummy:
-    @pytest.fixture
-    def plugin_builder(self, config_plugin_builder):
-        return InferenceBuilderDummy(**config_plugin_builder)
-
-    def test_build(self, plugin_builder):
-        plugins = plugin_builder.build([RES_LOCAL_01])
+    def test_build(self, plugin_builder, plugin_builder_non_val_args):
+        plugins = plugin_builder.build(*plugin_builder_non_val_args)
         assert isinstance(plugins, list)
         assert len(plugins) == 1
         assert isinstance(plugins[0], InferencePluginDummy)
+
+
+@pytest.fixture(scope="module")
+def plugin():
+    return InferencePluginDummy
+
+
+@pytest.fixture
+def plugin_builder(config_plugin_builder):
+    return InferenceBuilderDummy(**config_plugin_builder)
+
+
+@pytest.fixture
+def config_plugin(reader, resource):
+    return [reader, resource, {}]
+
+
+@pytest.fixture
+def store_cfg(local_store_cfg):
+    return local_store_cfg
+
+
+@pytest.fixture
+def resource(local_resource):
+    return local_resource
+
+
+@pytest.fixture(scope="module")
+def data_reader():
+    return BASE_FILE_READER
