@@ -11,7 +11,6 @@ LIBRARY_PANDAS_PROFILING = "pandas_profiling"
 LIBRARY_YDATA_PROFILING = "ydata_profiling"
 LIBRARY_DUCKDB = "duckdb"
 LIBRARY_SQLALCHEMY = "sqlalchemy"
-LIBRARY_SQL_GENERIC = "sql"
 LIBRARY_GREAT_EXPECTATIONS = "great_expectations"
 LIBRARY_DUMMY = "_dummy"
 

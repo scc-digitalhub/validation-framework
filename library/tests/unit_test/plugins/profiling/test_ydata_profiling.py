@@ -15,6 +15,7 @@ from datajudge.utils.commons import (
 )
 from tests.unit_test.plugins.utils_plugin_tests import (
     correct_execute,
+    correct_plugin_build,
     correct_setup,
     correct_render_artifact,
     correct_render_datajudge,
@@ -83,9 +84,7 @@ class TestProfilePluginYdataProfiling:
 class TestProfileBuilderYdataProfiling:
     def test_build(self, plugin_builder, plugin_builder_non_val_args):
         plugins = plugin_builder.build(*plugin_builder_non_val_args)
-        assert isinstance(plugins, list)
-        assert len(plugins) == 1
-        assert isinstance(plugins[0], ProfilePluginYdataProfiling)
+        correct_plugin_build(plugins, ProfilePluginYdataProfiling)
 
 
 @pytest.fixture(scope="module")

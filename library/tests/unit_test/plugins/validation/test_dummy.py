@@ -11,6 +11,7 @@ from datajudge.utils.commons import (
 )
 from tests.unit_test.plugins.utils_plugin_tests import (
     correct_execute,
+    correct_plugin_build,
     correct_render_artifact,
     correct_render_datajudge,
 )
@@ -45,9 +46,7 @@ class TestValidationPluginDummy:
 class TestValidationBuilderDummy:
     def test_build(self, plugin_builder, plugin_builder_val_args):
         plugins = plugin_builder.build(*plugin_builder_val_args)
-        assert isinstance(plugins, list)
-        assert len(plugins) == 1
-        assert isinstance(plugins[0], ValidationPluginDummy)
+        correct_plugin_build(plugins, ValidationPluginDummy)
 
 
 @pytest.fixture(scope="module")

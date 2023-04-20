@@ -3,6 +3,7 @@ import sqlite3
 from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock
 
+import duckdb
 import pytest
 
 from datajudge.client.store_factory import StoreBuilder
@@ -15,12 +16,10 @@ from datajudge.utils.config import (
     ConstraintGreatExpectations,
     ConstraintSqlAlchemy,
     ConstraintDuckDB,
-    ConstraintSQLGeneric,
     DataResource,
     RunConfig,
     StoreConfig,
 )
-from datajudge.plugins.validation.validation_plugin import Validation
 from datajudge.utils.commons import *
 from datajudge.utils.utils import listify
 
@@ -170,9 +169,18 @@ CONST_SQLALCHEMY_01 = ConstraintSqlAlchemy(
     weight=5,
 )
 
+
+CONST_DUCKDB_01 = ConstraintDuckDB(
+    name="const-duckdb-01",
+    title="Test duckdb constraint",
+    resources=["res_test_01"],
+    query="select * from test",
+    expect="non-empty",
+    check="rows",
+    weight=5,
+)
+
 # Utilities
-
-
 def get_str_cfg(str_dict):
     return StoreConfig(**str_dict)
 
@@ -182,12 +190,10 @@ def set_tmp(store_cfg, tmp):
     return store_cfg
 
 
-# Fixtures
-
-
 conf = Configurator()
 
 
+# Fixtures
 @pytest.fixture
 def store(store_cfg, tmp=False, md=False):
     return conf.get_store(store_cfg, tmp, md)
@@ -218,6 +224,17 @@ def sqlitedb(tmp_path_factory):
     con.commit()
     con.close()
     return f"sqlite:///{tmp}"
+
+
+@pytest.fixture(scope="session")
+def tmpduckdb(tmp_path_factory):
+    data_path = "tests/synthetic_data/test_csv_file.csv"
+    tmp = (tmp_path_factory.mktemp("data") / "duckdb.db").as_posix()
+    con = duckdb.connect(tmp)
+    sql = f"CREATE TABLE test AS SELECT * FROM read_csv_auto('{data_path}');"
+    con.execute(sql)
+    con.close()
+    return tmp
 
 
 @pytest.fixture

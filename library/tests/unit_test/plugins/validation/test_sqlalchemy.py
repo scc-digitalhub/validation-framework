@@ -14,6 +14,7 @@ from datajudge.utils.commons import (
 from tests.conftest import CONST_SQLALCHEMY_01
 from tests.unit_test.plugins.utils_plugin_tests import (
     correct_execute,
+    correct_plugin_build,
     correct_setup,
     correct_render_artifact,
     correct_render_datajudge,
@@ -78,9 +79,7 @@ class TestValidationPluginSqlAlchemy:
 class TestValidationBuilderSqlAlchemy:
     def test_build(self, plugin_builder, plugin_builder_val_args):
         plugins = plugin_builder.build(*plugin_builder_val_args)
-        assert isinstance(plugins, list)
-        assert len(plugins) == 1
-        assert isinstance(plugins[0], ValidationPluginSqlAlchemy)
+        correct_plugin_build(plugins, ValidationPluginSqlAlchemy)
 
 
 @pytest.fixture(scope="module")

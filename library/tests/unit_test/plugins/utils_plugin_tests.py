@@ -14,7 +14,10 @@ from datajudge.utils.commons import (
 
 def correct_setup(plg):
     assert isinstance(plg, Plugin)
-    test_attr = ["data_reader", "resource", "exec_args", "error_report", "constraint"]
+    # Possible attributes of a plugin
+    test_attr = [
+        "data_reader", "resource", "exec_args", "error_report", "constraint", "db"
+    ]
     for attr in test_attr:
         if hasattr(plg, attr):
             assert getattr(plg, attr) == "test"
@@ -88,3 +91,9 @@ def incorrect_render_artifact(output):
     assert isinstance(output.artifact, list)
     assert isinstance(output.artifact[0], RenderTuple)
     assert "errors" in output.artifact[0].object
+
+
+def correct_plugin_build(plugins, plg_type):
+    assert isinstance(plugins, list)
+    assert len(plugins) == 1
+    assert isinstance(plugins[0], plg_type)
