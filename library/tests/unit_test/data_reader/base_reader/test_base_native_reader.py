@@ -1,16 +1,18 @@
 import pytest
 
-from datajudge.data_reader.base_reader.base_native_reader import NativeReader
-from tests.conftest import STORE_LOCAL_01, Configurator
+from datajudge.utils.commons import BASE_NATIVE_READER
 
 
-@pytest.fixture()
-def reader():
-    conf = Configurator()
-    store = conf.get_store(STORE_LOCAL_01, tmp=True)
-    return NativeReader(store)
+def test_fetch_data(reader, data_path):
+    path = reader.fetch_data(data_path)
+    assert path == data_path
 
 
-def test_fetch_data(reader):
-    path = reader.fetch_data("../../synthetic_data/test_csv_file.csv")
-    assert path == "../../synthetic_data/test_csv_file.csv"
+@pytest.fixture
+def store_cfg(local_store_cfg):
+    return local_store_cfg
+
+
+@pytest.fixture(scope="module")
+def data_reader():
+    return BASE_NATIVE_READER

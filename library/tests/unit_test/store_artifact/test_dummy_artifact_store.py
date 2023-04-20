@@ -3,10 +3,6 @@ from datajudge.store_artifact.dummy_artifact_store import DummyArtifactStore
 
 
 class TestDummyArtifactStore:
-    @pytest.fixture()
-    def store(self):
-        return DummyArtifactStore("", "", "", "")
-
     def test_persist_artifact(self, store):
         assert store.persist_artifact() is None
 
@@ -33,3 +29,8 @@ class TestDummyArtifactStore:
 
     def test__store_data(self, store):
         assert store._store_data() is None
+
+
+@pytest.fixture
+def store():
+    return DummyArtifactStore("", "", "", "")

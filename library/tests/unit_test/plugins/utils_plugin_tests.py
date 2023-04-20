@@ -16,7 +16,12 @@ def correct_setup(plg):
     assert isinstance(plg, Plugin)
     # Possible attributes of a plugin
     test_attr = [
-        "data_reader", "resource", "exec_args", "error_report", "constraint", "db"
+        "data_reader",
+        "resource",
+        "exec_args",
+        "error_report",
+        "constraint",
+        "db",
     ]
     for attr in test_attr:
         if hasattr(plg, attr):

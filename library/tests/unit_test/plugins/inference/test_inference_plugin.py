@@ -58,6 +58,7 @@ class TestInference:
         lib = {"libraryName": "SamplePlugin", "libraryVersion": "1.0"}
         assert result[RESULT_LIBRARY] == lib
 
-        assert "Execute inference - Plugin: SamplePlugin test;" in caplog.text
-        assert "Render report - Plugin: SamplePlugin test;" in caplog.text
-        assert "Render artifact - Plugin: SamplePlugin test;" in caplog.text
+        plg = f"Plugin: SamplePlugin {plugin._id};"
+        assert f"Execute inference - {plg}" in caplog.text
+        assert f"Render report - {plg}" in caplog.text
+        assert f"Render artifact - {plg}" in caplog.text

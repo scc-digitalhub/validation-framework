@@ -120,5 +120,3 @@ def data_reader():
 @pytest.fixture(scope="module", params=[CONST_DUCKDB_01])
 def constraint(request):
     return request.param
-
-

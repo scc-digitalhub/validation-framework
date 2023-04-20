@@ -1,17 +1,18 @@
 import pytest
 
-from datajudge.data_reader.base_reader.base_file_reader import FileReader
-from tests.conftest import STORE_LOCAL_01, Configurator
+from datajudge.utils.commons import BASE_FILE_READER
 
 
-@pytest.fixture()
-def reader():
-    conf = Configurator()
-    store = conf.get_store(STORE_LOCAL_01, tmp=True)
-    return FileReader(store)
-
-
-def test_fetch_data(reader):
-    data_path = "tests/synthetic_data/test_csv_file.csv"
+def test_fetch_data(reader, data_path):
     path = reader.fetch_data(data_path)
     assert path == data_path
+
+
+@pytest.fixture
+def store_cfg(local_store_cfg):
+    return local_store_cfg
+
+
+@pytest.fixture(scope="module")
+def data_reader():
+    return BASE_FILE_READER

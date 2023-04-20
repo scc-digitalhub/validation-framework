@@ -180,6 +180,7 @@ CONST_DUCKDB_01 = ConstraintDuckDB(
     weight=5,
 )
 
+
 # Utilities
 def get_str_cfg(str_dict):
     return StoreConfig(**str_dict)
@@ -194,6 +195,11 @@ conf = Configurator()
 
 
 # Fixtures
+@pytest.fixture(scope="session")
+def data_path():
+    return "tests/synthetic_data/test_csv_file.csv"
+
+
 @pytest.fixture
 def store(store_cfg, tmp=False, md=False):
     return conf.get_store(store_cfg, tmp, md)
@@ -206,18 +212,14 @@ def reader(data_reader, store):
 
 # Readapted from https://stackoverflow.com/a/2888042/13195227
 @pytest.fixture(scope="session")
-def sqlitedb(tmp_path_factory):
-    data_path = "tests/synthetic_data/test_csv_file.csv"
-
+def sqlitedb(tmp_path_factory, data_path):
     tmp = tmp_path_factory.mktemp("data") / "test.db"
     con = sqlite3.connect(tmp)
     cur = con.cursor()
     cur.execute("CREATE TABLE test (col1, col2, col3, col4);")
-
     with open(data_path, "r") as fin:
         dr = csv.DictReader(fin)
         to_db = [(i["col1"], i["col2"], i["col3"], i["col4"]) for i in dr]
-
     cur.executemany(
         "INSERT INTO test (col1, col2, col3, col4) VALUES (?, ?, ?, ?);", to_db
     )
@@ -227,21 +229,13 @@ def sqlitedb(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
-def tmpduckdb(tmp_path_factory):
-    data_path = "tests/synthetic_data/test_csv_file.csv"
+def tmpduckdb(tmp_path_factory, data_path):
     tmp = (tmp_path_factory.mktemp("data") / "duckdb.db").as_posix()
     con = duckdb.connect(tmp)
     sql = f"CREATE TABLE test AS SELECT * FROM read_csv_auto('{data_path}');"
     con.execute(sql)
     con.close()
     return tmp
-
-
-@pytest.fixture
-def get_db_and_reader(data_reader, sqlitedb):
-    store = conf.get_store(STORE_LOCAL_01)
-    reader = build_reader(data_reader, store)
-    return reader, sqlitedb
 
 
 @pytest.fixture
