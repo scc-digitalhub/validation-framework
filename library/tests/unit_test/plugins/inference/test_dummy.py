@@ -45,7 +45,7 @@ class TestInferenceBuilderDummy:
         correct_plugin_build(plugins, InferencePluginDummy)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def plugin():
     return InferencePluginDummy
 
@@ -70,6 +70,6 @@ def resource(local_resource):
     return local_resource
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def data_reader():
     return BASE_FILE_READER

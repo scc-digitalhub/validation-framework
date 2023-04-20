@@ -87,7 +87,7 @@ class TestValidationBuilderDuckDB:
         shutil.rmtree(Path(DEFAULT_DIRECTORY).parent)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def plugin():
     return ValidationPluginDuckDB
 
@@ -112,11 +112,11 @@ def resource(local_resource):
     return local_resource
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def data_reader():
     return PANDAS_DATAFRAME_DUCKDB_READER
 
 
-@pytest.fixture(scope="module", params=[CONST_DUCKDB_01])
+@pytest.fixture(params=[CONST_DUCKDB_01])
 def constraint(request):
     return request.param

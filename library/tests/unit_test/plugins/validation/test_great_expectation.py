@@ -86,7 +86,7 @@ class TestValidationBuilderGreatExpectations:
         correct_plugin_build(plugins, ValidationPluginGreatExpectations)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def plugin():
     return ValidationPluginGreatExpectations
 
@@ -111,11 +111,11 @@ def resource(local_resource):
     return local_resource
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def data_reader():
     return PANDAS_DATAFRAME_FILE_READER
 
 
-@pytest.fixture(scope="module", params=[CONST_GE_01])
+@pytest.fixture(params=[CONST_GE_01])
 def constraint(request):
     return request.param

@@ -83,7 +83,7 @@ class TestInferenceBuilderFrictionless:
         correct_plugin_build(plugins, InferencePluginFrictionless)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def plugin():
     return InferencePluginFrictionless
 
@@ -108,6 +108,6 @@ def resource(local_resource):
     return local_resource
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def data_reader():
     return BASE_FILE_READER

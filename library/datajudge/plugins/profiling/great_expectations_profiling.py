@@ -1,9 +1,7 @@
 """
 GreatExpectations implementation of profiling plugin.
 """
-import os
 from copy import deepcopy
-from pathlib import Path
 from typing import List
 
 import great_expectations as ge
@@ -23,7 +21,6 @@ from datajudge.utils.commons import (
     LIBRARY_GREAT_EXPECTATIONS,
     PANDAS_DATAFRAME_FILE_READER,
 )
-from datajudge.utils.file_utils import clean_all
 
 
 class ProfilePluginGreatExpectations(Profiling):

@@ -87,7 +87,7 @@ class TestProfileBuilderPandasProfiling:
         correct_plugin_build(plugins, ProfilePluginPandasProfiling)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def plugin():
     return ProfilePluginPandasProfiling
 
@@ -112,6 +112,6 @@ def resource(local_resource):
     return local_resource
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def data_reader():
     return PANDAS_DATAFRAME_FILE_READER

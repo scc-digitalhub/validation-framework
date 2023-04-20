@@ -49,7 +49,7 @@ class TestValidationBuilderDummy:
         correct_plugin_build(plugins, ValidationPluginDummy)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def plugin():
     return ValidationPluginDummy
 
@@ -74,11 +74,11 @@ def resource(local_resource):
     return local_resource
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def data_reader():
     return BASE_FILE_READER
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def constraint():
     return None

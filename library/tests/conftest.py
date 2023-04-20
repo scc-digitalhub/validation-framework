@@ -196,8 +196,13 @@ conf = Configurator()
 
 # Fixtures
 @pytest.fixture(scope="session")
-def data_path():
+def data_path_csv():
     return "tests/synthetic_data/test_csv_file.csv"
+
+
+@pytest.fixture(scope="session")
+def data_path_parquet():
+    return "tests/synthetic_data/test_parquet_file.parquet"
 
 
 @pytest.fixture
@@ -212,12 +217,12 @@ def reader(data_reader, store):
 
 # Readapted from https://stackoverflow.com/a/2888042/13195227
 @pytest.fixture(scope="session")
-def sqlitedb(tmp_path_factory, data_path):
+def sqlitedb(tmp_path_factory, data_path_csv):
     tmp = tmp_path_factory.mktemp("data") / "test.db"
     con = sqlite3.connect(tmp)
     cur = con.cursor()
     cur.execute("CREATE TABLE test (col1, col2, col3, col4);")
-    with open(data_path, "r") as fin:
+    with open(data_path_csv, "r") as fin:
         dr = csv.DictReader(fin)
         to_db = [(i["col1"], i["col2"], i["col3"], i["col4"]) for i in dr]
     cur.executemany(
@@ -229,10 +234,10 @@ def sqlitedb(tmp_path_factory, data_path):
 
 
 @pytest.fixture(scope="session")
-def tmpduckdb(tmp_path_factory, data_path):
+def tmpduckdb(tmp_path_factory, data_path_csv):
     tmp = (tmp_path_factory.mktemp("data") / "duckdb.db").as_posix()
     con = duckdb.connect(tmp)
-    sql = f"CREATE TABLE test AS SELECT * FROM read_csv_auto('{data_path}');"
+    sql = f"CREATE TABLE test AS SELECT * FROM read_csv_auto('{data_path_csv}');"
     con.execute(sql)
     con.close()
     return tmp

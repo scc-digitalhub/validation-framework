@@ -91,17 +91,20 @@ class ValidationPluginFrictionless(Validation):
         # Otherwise return the full table schema
         return Schema(self.constraint.tableSchema)
 
-    def _get_schema(self, data_path: str) -> dict:
+    @staticmethod
+    def _get_schema(data_path: str) -> dict:
         """
         Infer simple schema of a resource if not present.
         """
         try:
-            schema = Schema(self.resource.tableSchema)
+            schema = Schema.describe(path=data_path)
             if not schema:
-                schema = Schema.describe(path=data_path)
-                if not schema:
-                    return {"fields": []}
-            return {"fields": [{"name": field["name"]} for field in schema["fields"]]}
+                return {"fields": []}
+            return {
+                "fields": [
+                    {"name": field["name"], "type": "any"} for field in schema["fields"]
+                ]
+            }
         except FrictionlessException as fex:
             raise fex
 

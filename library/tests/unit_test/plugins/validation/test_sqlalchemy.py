@@ -82,7 +82,7 @@ class TestValidationBuilderSqlAlchemy:
         correct_plugin_build(plugins, ValidationPluginSqlAlchemy)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def plugin():
     return ValidationPluginSqlAlchemy
 
@@ -107,11 +107,11 @@ def resource(sql_resource):
     return sql_resource
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def data_reader():
     return PANDAS_DATAFRAME_SQL_READER
 
 
-@pytest.fixture(scope="module", params=[CONST_SQLALCHEMY_01])
+@pytest.fixture(params=[CONST_SQLALCHEMY_01])
 def constraint(request):
     return request.param

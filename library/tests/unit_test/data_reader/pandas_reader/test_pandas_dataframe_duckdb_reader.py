@@ -17,6 +17,6 @@ def store_cfg(local_store_cfg):
     return local_store_cfg
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def data_reader():
     return PANDAS_DATAFRAME_DUCKDB_READER
