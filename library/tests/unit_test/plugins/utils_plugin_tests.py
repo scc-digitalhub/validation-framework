@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 from datajudge.plugins.base_plugin import Plugin
 from datajudge.plugins.utils.plugin_utils import RenderTuple, Result
 from datajudge.metadata.datajudge_reports import (
@@ -102,3 +104,25 @@ def correct_plugin_build(plugins, plg_type):
     assert isinstance(plugins, list)
     assert len(plugins) == 1
     assert isinstance(plugins[0], plg_type)
+
+
+def mock_const_factory(type_):
+    mock_const = MagicMock()
+    mock_const.type = type_
+    return mock_const
+
+
+from datajudge.utils.commons import (
+    LIBRARY_DUCKDB,
+    LIBRARY_FRICTIONLESS,
+    LIBRARY_GREAT_EXPECTATIONS,
+    LIBRARY_SQLALCHEMY,
+    CONSTRAINT_FRICTIONLESS_SCHEMA,
+)
+
+mock_c_frict = mock_const_factory(LIBRARY_FRICTIONLESS)
+mock_c_frict_full = mock_const_factory(CONSTRAINT_FRICTIONLESS_SCHEMA)
+mock_c_duckdb = mock_const_factory(LIBRARY_DUCKDB)
+mock_c_gex = mock_const_factory(LIBRARY_GREAT_EXPECTATIONS)
+mock_c_sqlalc = mock_const_factory(LIBRARY_SQLALCHEMY)
+mock_c_generic = mock_const_factory("generic")

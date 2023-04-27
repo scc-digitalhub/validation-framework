@@ -25,6 +25,8 @@ from tests.unit_test.plugins.utils_plugin_tests import (
     incorrect_execute,
     incorrect_render_artifact,
     incorrect_render_datajudge,
+    mock_c_duckdb,
+    mock_c_generic,
 )
 
 
@@ -85,6 +87,21 @@ class TestValidationBuilderDuckDB:
         plugins = plugin_builder.build(*plugin_builder_val_args)
         correct_plugin_build(plugins, ValidationPluginDuckDB)
         shutil.rmtree(Path(DEFAULT_DIRECTORY).parent)
+
+    # fmt: off
+    @pytest.mark.parametrize(
+        "const_list,len_list",
+        [
+            ([mock_c_duckdb, mock_c_duckdb,], 2),
+            ([mock_c_duckdb, mock_c_generic,], 1),
+            ([mock_c_generic,], 0),
+            ([mock_c_generic, mock_c_generic,], 0),
+
+        ]
+    )
+    # fmt: on
+    def test_filter_constraints(self, plugin_builder, const_list, len_list):
+        assert len(plugin_builder._filter_constraints(const_list)) == len_list
 
 
 @pytest.fixture
