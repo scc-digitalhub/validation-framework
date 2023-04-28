@@ -50,3 +50,9 @@ class PolarsDataFrameFileReader(FileReader):
             raise ValueError("File extension not supported!")
 
         return pl.concat(list_df)
+
+    def concat_data(self, dfs: list) -> pl.DataFrame:
+        """
+        Concatenate a list of Polars DataFrames.
+        """
+        return pl.concat(dfs)

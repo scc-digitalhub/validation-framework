@@ -68,7 +68,7 @@ class HTTPArtifactStore(ArtifactStore):
         Check URL availability.
         """
         try:
-            response = requests.head(url)
+            response = requests.head(url, timeout=60)
             if not response.ok:
                 raise HTTPError(
                     f"Something wrong, response code {response.status_code} for url {url}."
@@ -93,7 +93,7 @@ class HTTPArtifactStore(ArtifactStore):
         Get data from remote.
         """
         kwargs = self._parse_auth()
-        res = requests.get(key, **kwargs)
+        res = requests.get(key, timeout=60, **kwargs)
         return res.content
 
     def _store_data(self, obj: bytes, key: str) -> str:

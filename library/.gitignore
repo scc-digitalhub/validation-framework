@@ -136,3 +136,6 @@ dmypy.json
 
 # pylint
 .pylintrc
+
+# Djruns tests tmp files
+djruns/

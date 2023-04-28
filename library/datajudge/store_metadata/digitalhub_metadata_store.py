@@ -89,16 +89,16 @@ class DigitalHubMetadataStore(MetadataStore):
                 if elm.run_id == metadata["runId"]:
                     key = elm.key
         dst = self._build_source_destination(dst, src_type, key)
-        kwargs = {"json": metadata}
+        kwargs = {"json": metadata, "timeout": 60}
         kwargs = self._parse_auth(kwargs)
 
         if key is None:
             if src_type == self._RUN_METADATA:
                 kwargs["params"] = {"overwrite": "true" if overwrite else "false"}
-            response = requests.post(dst, **kwargs)
+            response = requests.post(dst, timeout=60, **kwargs)
             self._parse_response(response, src_type)
         else:
-            response = requests.put(dst, **kwargs)
+            response = requests.put(dst, timeout=60, **kwargs)
             self._parse_response(response, src_type)
 
     def _build_source_destination(

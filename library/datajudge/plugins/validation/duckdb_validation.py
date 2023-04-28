@@ -162,7 +162,8 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         self._setup_connection()
         f_constraint = self._filter_constraints(constraints)
         f_resources = self._filter_resources(resources, f_constraint)
-        self._register_resources(f_resources)
+        for res in f_resources:
+            self._register_resources(res)
         self._tear_down_connection()
 
         plugins = []
@@ -196,30 +197,22 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         )
         return [res for res in resources if res.name in res_names]
 
-    def _register_resources(self, resources: List["DataResource"]) -> None:
+    def _register_resources(self, resource: "DataResource") -> None:
         """
-        Register resources in db.
+        Register resource in db.
         """
-        for resource in resources:
-            store = self._get_resource_store(resource)
+        store = self._get_resource_store(resource)
+        data_reader = self._get_data_reader(POLARS_DATAFRAME_FILE_READER, store)
+        df = self._get_data(data_reader, listify(resource.path))
+        self.con.execute(f"CREATE TABLE IF NOT EXISTS {resource.name} AS SELECT * FROM df;")
 
-            # If resource is already registered, continue
-            try:
-                if bool(self.con.table(f"{resource.name}")):
-                    continue
-            except CatalogException:
-                pass
-
-            # Handle multiple paths: crate a table for
-            # first file, then append. Load data from Polars DF
-            for idx, pth in enumerate(listify(resource.path)):
-                data_reader = self._get_data_reader(POLARS_DATAFRAME_FILE_READER, store)
-                df = data_reader.fetch_data(pth)
-                if idx == 0:
-                    sql = f"CREATE TABLE {resource.name} AS SELECT * FROM df;"
-                else:
-                    sql = f"INSERT INTO {resource.name} SELECT * FROM df;"
-                self.con.execute(sql)
+    @staticmethod
+    def _get_data(data_reader: "NativeReader", paths: list) -> Any:
+        """
+        Fetch data from paths.
+        """
+        dfs = [data_reader.fetch_data(pth) for pth in paths]
+        return data_reader.concat_data(dfs)
 
     def _tear_down_connection(self) -> None:
         """
