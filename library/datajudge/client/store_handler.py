@@ -163,7 +163,7 @@ class StoreHandler:
                 else:
                     raise StoreError("Configure only one store as default.")
 
-        if not default.is_default:
+        if (default is None) or (not default.is_default):
             raise StoreError("Please configure one store as default.")
 
     def get_md_store(self) -> "MetadataStore":

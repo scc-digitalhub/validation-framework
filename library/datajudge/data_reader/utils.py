@@ -11,7 +11,7 @@ def get_reader(reader_type: str) -> "DataReader":
     try:
         return REGISTRY[reader_type]
     except KeyError:
-        raise NotImplementedError
+        raise KeyError(f"Reader {reader_type} not found. Check installed libraries.")
 
 
 def build_reader(

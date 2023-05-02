@@ -23,6 +23,11 @@ from tests.unit_test.plugins.utils_plugin_tests import (
     incorrect_render_datajudge,
     mock_c_sqlalc,
     mock_c_generic,
+    mock_s_generic,
+    mock_r_generic,
+    mock_c_to_fail,
+    mock_s_to_fail,
+    mock_r_to_fail,
 )
 
 
@@ -96,6 +101,32 @@ class TestValidationBuilderSqlAlchemy:
     # fmt: on
     def test_filter_constraints(self, plugin_builder, const_list, len_list):
         assert len(plugin_builder._filter_constraints(const_list)) == len_list
+
+    # fmt: off
+    @pytest.mark.parametrize(
+        "store_list,const_list,res_list,len_list",
+        [
+            ([mock_s_generic], [mock_c_generic], [mock_r_generic], 1),
+            ([mock_s_to_fail], [mock_c_generic], [mock_r_generic], 0),
+            ([mock_s_generic], [mock_c_to_fail], [mock_r_generic], 0),
+            # This gives 2 because the resource filtering happens before
+            ([mock_s_generic], [mock_c_generic], [mock_r_generic, mock_r_generic], 2),
+            ([mock_s_generic, mock_s_to_fail], [mock_c_generic, mock_c_to_fail], [mock_r_generic, mock_r_to_fail], 2),
+        ],
+    )
+    # fmt: on
+    def test_filter_resources(
+        self, plugin_builder, store_list, const_list, res_list, len_list
+    ):
+        plugin_builder.stores = store_list
+        assert len(plugin_builder._filter_resources(res_list, const_list)) == len_list
+
+    def test_regroup_constraint_resources(self, plugin_builder):
+        plugin_builder.stores = [mock_s_generic]
+        regroup = plugin_builder._regroup_constraint_resources(
+            [mock_c_generic], [mock_r_generic]
+        )
+        assert regroup == [{"constraint": mock_c_generic, "store": mock_s_generic,},]
 
 
 @pytest.fixture

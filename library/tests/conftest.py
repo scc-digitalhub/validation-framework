@@ -194,6 +194,13 @@ def set_tmp(store_cfg, tmp):
 conf = Configurator()
 
 
+def mock_object_factory(**kwargs):
+    mock_obj = MagicMock()
+    for k, v in kwargs.items():
+        setattr(mock_obj, k, v)
+    return mock_obj
+
+
 # Fixtures
 @pytest.fixture(scope="session")
 def data_path_csv():

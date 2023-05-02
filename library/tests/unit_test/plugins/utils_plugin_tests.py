@@ -11,7 +11,13 @@ from datajudge.utils.commons import (
     OPERATION_INFERENCE,
     OPERATION_PROFILING,
     OPERATION_VALIDATION,
+    LIBRARY_DUCKDB,
+    LIBRARY_FRICTIONLESS,
+    LIBRARY_GREAT_EXPECTATIONS,
+    LIBRARY_SQLALCHEMY,
+    CONSTRAINT_FRICTIONLESS_SCHEMA,
 )
+from tests.conftest import mock_object_factory
 
 
 def correct_setup(plg):
@@ -106,23 +112,18 @@ def correct_plugin_build(plugins, plg_type):
     assert isinstance(plugins[0], plg_type)
 
 
-def mock_const_factory(type_):
-    mock_const = MagicMock()
-    mock_const.type = type_
-    return mock_const
+# Mock constraints
+mock_c_frict = mock_object_factory(type=LIBRARY_FRICTIONLESS)
+mock_c_frict_full = mock_object_factory(type=CONSTRAINT_FRICTIONLESS_SCHEMA)
+mock_c_duckdb = mock_object_factory(type=LIBRARY_DUCKDB)
+mock_c_gex = mock_object_factory(type=LIBRARY_GREAT_EXPECTATIONS)
+mock_c_sqlalc = mock_object_factory(type=LIBRARY_SQLALCHEMY)
 
 
-from datajudge.utils.commons import (
-    LIBRARY_DUCKDB,
-    LIBRARY_FRICTIONLESS,
-    LIBRARY_GREAT_EXPECTATIONS,
-    LIBRARY_SQLALCHEMY,
-    CONSTRAINT_FRICTIONLESS_SCHEMA,
-)
-
-mock_c_frict = mock_const_factory(LIBRARY_FRICTIONLESS)
-mock_c_frict_full = mock_const_factory(CONSTRAINT_FRICTIONLESS_SCHEMA)
-mock_c_duckdb = mock_const_factory(LIBRARY_DUCKDB)
-mock_c_gex = mock_const_factory(LIBRARY_GREAT_EXPECTATIONS)
-mock_c_sqlalc = mock_const_factory(LIBRARY_SQLALCHEMY)
-mock_c_generic = mock_const_factory("generic")
+# Generic mock objects (c = constraint, r = resources, s = store)
+mock_c_generic = mock_object_factory(type="generic", resources=["resource"])
+mock_r_generic = mock_object_factory(name="resource", store="store")
+mock_s_generic = mock_object_factory(name="store", type="generic")
+mock_c_to_fail = mock_object_factory(type="generic", resources=["resource_fail"])
+mock_r_to_fail = mock_object_factory(name="resource_fail", store="fail")
+mock_s_to_fail = mock_object_factory(name="fail", type="fail")

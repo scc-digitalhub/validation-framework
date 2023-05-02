@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import List, Any
 
 import duckdb
-from duckdb import CatalogException
 
 from datajudge.metadata.datajudge_reports import DatajudgeReport
 from datajudge.plugins.utils.plugin_utils import exec_decorator, ValidationReport
@@ -19,6 +18,7 @@ from datajudge.plugins.validation.validation_plugin import (
 )
 from datajudge.utils.commons import (
     POLARS_DATAFRAME_FILE_READER,
+    PANDAS_DATAFRAME_FILE_READER,
     PANDAS_DATAFRAME_DUCKDB_READER,
     DEFAULT_DIRECTORY,
     LIBRARY_DUCKDB,
@@ -186,6 +186,15 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         self.con = duckdb.connect(database=self.tmp_db.as_posix(), read_only=False)
 
     @staticmethod
+    def _filter_constraints(
+        constraints: List["Constraint"],
+    ) -> List["ConstraintDuckDB"]:
+        """
+        Filter out "ConstraintDuckDB".
+        """
+        return [const for const in constraints if const.type == LIBRARY_DUCKDB]
+
+    @staticmethod
     def _filter_resources(
         resources: List["DataResource"], constraints: List["Constraint"]
     ) -> List["DataResource"]:
@@ -202,9 +211,21 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         Register resource in db.
         """
         store = self._get_resource_store(resource)
-        data_reader = self._get_data_reader(POLARS_DATAFRAME_FILE_READER, store)
+        data_reader = self._get_reader(store)
         df = self._get_data(data_reader, listify(resource.path))
-        self.con.execute(f"CREATE TABLE IF NOT EXISTS {resource.name} AS SELECT * FROM df;")
+        self.con.execute(
+            f"CREATE TABLE IF NOT EXISTS {resource.name} AS SELECT * FROM df;"
+        )
+
+    def _get_reader(self, store: "ArtifactStore") -> "NativeReader":
+        """
+        Get reader. Preference goes to polars, otherwise, use pandas.
+        """
+        try:
+            return self._get_data_reader(POLARS_DATAFRAME_FILE_READER, store)
+        except KeyError:
+            self.logger.info(f"Polars not installed, using pandas.")
+            return self._get_data_reader(PANDAS_DATAFRAME_FILE_READER, store)
 
     @staticmethod
     def _get_data(data_reader: "NativeReader", paths: list) -> Any:
@@ -219,15 +240,6 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         Close connection.
         """
         self.con.close()
-
-    @staticmethod
-    def _filter_constraints(
-        constraints: List["Constraint"],
-    ) -> List["ConstraintDuckDB"]:
-        """
-        Filter out "ConstraintDuckDB".
-        """
-        return [const for const in constraints if const.type == LIBRARY_DUCKDB]
 
     def destroy(self) -> None:
         """

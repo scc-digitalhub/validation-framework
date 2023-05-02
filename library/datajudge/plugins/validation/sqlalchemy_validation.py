@@ -175,7 +175,7 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
 
     def _setup(self) -> None:
         """
-        Filter builder store to keep only SQLStores and set `native` mode for
+        Filter builder store to keep only SQLStores and set 'native' mode for
         reading data to return a connection string to a db.
         """
         self.stores = [store for store in self.stores if store.store_type == STORE_SQL]
@@ -212,7 +212,8 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
     ) -> list:
         """
         Check univocity of resources location and return connection
-        string for db access.
+        string for db access. Basically, all resources must be in
+        the same database.
         """
         constraint_connection = []
 
@@ -222,11 +223,11 @@ class ValidationBuilderSqlAlchemy(ValidationPluginBuilder):
             store_num = len(set(res_stores))
             if store_num > 1:
                 raise ValidationError(
-                    f"Resources for constraint `{const.name}` are not in the same database."
+                    f"Resources for constraint '{const.name}' are not in the same database."
                 )
             if store_num == 0:
                 raise ValidationError(
-                    f"No resources for constraint `{const.name}` are in a configured store."
+                    f"No resources for constraint '{const.name}' are in a configured store."
                 )
 
             constraint_connection.append(

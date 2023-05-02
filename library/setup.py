@@ -15,9 +15,9 @@ install_requires = [
 ]
 
 if sys.version_info[1] == 7:
-    install_requires.append("pandas==1.3.5")
+    pd = "pandas==1.3.5"
 else:
-    install_requires.append("pandas==1.4.2")
+    pd = "pandas==1.4.2"
 
 setup(
     name="datajudge",
@@ -30,9 +30,27 @@ setup(
         "all": [
             "duckdb==0.7.1",
             "pandas-profiling==3.6.6",
+            "ydata-profiling==4.1.2",
             "great-expectations==0.16.5",
             "polars==0.16.18",
             "connectorx==0.3.1",
+            pd,
+        ],
+        "duckdb": [
+            "duckdb==0.7.1",
+            pd,
+        ],
+        "pandas-profiling": [
+            "pandas-profiling==3.6.6",
+            pd,
+        ],
+        "ydata-profiling": [
+            "ydata-profiling==4.1.2",
+            pd,
+        ],
+        "great-expectations": [
+            "great-expectations==0.16.5",
+            pd,
         ],
     },
     packages=find_packages(),
