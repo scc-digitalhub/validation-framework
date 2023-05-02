@@ -104,8 +104,9 @@ def store_cfg(local_store_cfg):
 
 
 @pytest.fixture
-def resource(local_resource):
-    return local_resource
+def resource(local_resource_no_temp):
+    # Otherwise the plugin will give error for unsafe path
+    return local_resource_no_temp
 
 
 @pytest.fixture

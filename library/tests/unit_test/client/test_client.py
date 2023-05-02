@@ -3,22 +3,6 @@ import pytest
 from datajudge.client.client import Client
 from datajudge.run.run import Run
 from datajudge.utils.exceptions import StoreError
-from tests.conftest import (
-    METADATA_STORE_LOCAL,
-    RES_LOCAL_01,
-    RUN_CFG_EMPTY,
-    STORE_LOCAL_01,
-    STORE_LOCAL_02,
-    Configurator,
-)
-
-
-@pytest.fixture()
-def st_confs() -> None:
-    conf = Configurator()
-    md_loc_cfg_01 = conf.get_store_cfg(METADATA_STORE_LOCAL, tmp=True)
-    art_loc_cfg_01 = conf.get_store_cfg(STORE_LOCAL_01, tmp=True)
-    return md_loc_cfg_01, art_loc_cfg_01
 
 
 class TestClient:
@@ -26,47 +10,58 @@ class TestClient:
         client = Client()
         assert isinstance(client, Client)
 
-    def test_create_client_only_metadata_store(self, st_confs):
-        md_loc_cfg_01, _ = st_confs
-        client = Client(metadata_store=md_loc_cfg_01)
+    def test_create_client_only_metadata_store(self, mds_cfg):
+        client = Client(metadata_store=mds_cfg)
         assert isinstance(client, Client)
 
-    def test_create_client_only_artifact_store(self, st_confs):
-        _, art_loc_cfg_01 = st_confs
-        client = Client(store=art_loc_cfg_01)
+    def test_create_client_only_artifact_store(self, st_loc1):
+        client = Client(store=st_loc1)
         assert isinstance(client, Client)
 
-    def test_create_client(self, st_confs):
-        md_loc_cfg_01, art_loc_cfg_01 = st_confs
-        client = Client(metadata_store=md_loc_cfg_01, store=art_loc_cfg_01)
+    def test_create_client(self, st_loc1, mds_cfg):
+        client = Client(metadata_store=mds_cfg, store=st_loc1)
         assert isinstance(client, Client)
 
-    def test_create_client_multiple_stores(self, st_confs):
-        md_loc_cfg_01, art_loc_cfg_01 = st_confs
+    def test_create_client_multiple_stores(self, st_loc1, st_loc2, mds_cfg):
         client = Client(
-            metadata_store=md_loc_cfg_01,
-            store=[art_loc_cfg_01, STORE_LOCAL_02],
+            metadata_store=mds_cfg,
+            store=[st_loc1, st_loc2],
         )
         assert isinstance(client, Client)
 
-    def test_add_store(self, st_confs):
-        md_loc_cfg_01, art_loc_cfg_01 = st_confs
-        client = Client(metadata_store=md_loc_cfg_01, store=[art_loc_cfg_01])
-        client.add_store(STORE_LOCAL_02)
+    def test_add_store(self, st_loc1, st_loc2, mds_cfg):
+        client = Client(metadata_store=mds_cfg, store=[st_loc1])
+        client.add_store(st_loc2)
 
-    def test_add_same_store(self, st_confs):
-        md_loc_cfg_01, art_loc_cfg_01 = st_confs
-        client = Client(metadata_store=md_loc_cfg_01, store=[art_loc_cfg_01])
+    def test_add_same_store(self, st_loc1, mds_cfg):
+        client = Client(metadata_store=mds_cfg, store=[st_loc1])
         with pytest.raises(StoreError):
-            client.add_store(art_loc_cfg_01)
+            client.add_store(st_loc1)
 
     def test_fail_add_store(self):
         client = Client()
         with pytest.raises(TypeError):
             client.add_store([])
 
-    def test_create_run(self, st_confs):
-        md_loc_cfg_01, art_loc_cfg_01 = st_confs
-        client = Client(metadata_store=md_loc_cfg_01, store=[art_loc_cfg_01])
-        run = client.create_run([RES_LOCAL_01], RUN_CFG_EMPTY)
+    def test_create_run(self, st_loc1, mds_cfg, run_empty, local_resource):
+        client = Client(metadata_store=mds_cfg, store=[st_loc1])
+        run = client.create_run([local_resource], run_empty)
         assert isinstance(run, Run)
+
+
+# Metadata store config
+@pytest.fixture
+def mds_cfg(local_md_store_cfg):
+    return local_md_store_cfg
+
+
+# Artifact store config 1
+@pytest.fixture
+def st_loc1(local_store_cfg):
+    return local_store_cfg
+
+
+# Artifact store config 2
+@pytest.fixture
+def st_loc2(local_store_cfg_2):
+    return local_store_cfg_2

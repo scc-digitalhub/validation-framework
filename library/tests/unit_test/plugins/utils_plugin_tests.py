@@ -110,20 +110,3 @@ def correct_plugin_build(plugins, plg_type):
     assert isinstance(plugins, list)
     assert len(plugins) == 1
     assert isinstance(plugins[0], plg_type)
-
-
-# Mock constraints
-mock_c_frict = mock_object_factory(type=LIBRARY_FRICTIONLESS)
-mock_c_frict_full = mock_object_factory(type=CONSTRAINT_FRICTIONLESS_SCHEMA)
-mock_c_duckdb = mock_object_factory(type=LIBRARY_DUCKDB)
-mock_c_gex = mock_object_factory(type=LIBRARY_GREAT_EXPECTATIONS)
-mock_c_sqlalc = mock_object_factory(type=LIBRARY_SQLALCHEMY)
-
-
-# Generic mock objects (c = constraint, r = resources, s = store)
-mock_c_generic = mock_object_factory(type="generic", resources=["resource"])
-mock_r_generic = mock_object_factory(name="resource", store="store")
-mock_s_generic = mock_object_factory(name="store", type="generic")
-mock_c_to_fail = mock_object_factory(type="generic", resources=["resource_fail"])
-mock_r_to_fail = mock_object_factory(name="resource_fail", store="fail")
-mock_s_to_fail = mock_object_factory(name="fail", type="fail")

@@ -5,7 +5,6 @@ from datajudge.plugins.profiling.dummy_profiling import (
     ProfilePluginDummy,
 )
 from datajudge.utils.commons import LIBRARY_DUMMY, OPERATION_PROFILING, BASE_FILE_READER
-from tests.conftest import RES_LOCAL_01
 from tests.unit_test.plugins.utils_plugin_tests import (
     correct_execute,
     correct_plugin_build,

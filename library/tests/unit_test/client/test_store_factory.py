@@ -2,41 +2,27 @@ import os
 
 import pytest
 
-from datajudge.client.store_factory import StoreBuilder
 from datajudge.store_artifact.artifact_store import ArtifactStore
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils.config import StoreConfig
 from datajudge.utils.uri_utils import get_uri_scheme
-from tests.conftest import METADATA_STORE_LOCAL, STORE_LOCAL_01, Configurator
+
 
 PROJ = "test"
 
 
-@pytest.fixture()
-def confs():
-    conf = Configurator()
-    md_loc_cfg_01 = conf.get_store_cfg(METADATA_STORE_LOCAL, tmp=True)
-    art_loc_cfg_01 = conf.get_store_cfg(STORE_LOCAL_01, tmp=True)
-    loc = conf.get_tmp()
-    builder = StoreBuilder(PROJ, loc)
-    return md_loc_cfg_01, art_loc_cfg_01, builder
-
-
 class TestStoreBuilder:
-    def test_build(self, confs):
-        md_loc_cfg_01, art_loc_cfg_01, builder = confs
-        store = builder.build(md_loc_cfg_01, md_store=True)
+    def test_build(self, store_builder, mds_cfg, st_loc1):
+        store = store_builder.build(mds_cfg, md_store=True)
         assert isinstance(store, MetadataStore)
-        store = builder.build(art_loc_cfg_01)
+        store = store_builder.build(st_loc1)
         assert isinstance(store, ArtifactStore)
 
-    def test_build_metadata_store(self, confs):
-        md_loc_cfg_01, _, builder = confs
-        store = builder.build_metadata_store(md_loc_cfg_01)
+    def test_build_metadata_store(self, mds_cfg, store_builder):
+        store = store_builder.build_metadata_store(mds_cfg)
         assert isinstance(store, MetadataStore)
 
-    def test_resolve_uri_metadata(self, confs):
-        _, _, builder = confs
+    def test_resolve_uri_metadata(self, store_builder):
         uris = [
             "http://localhost:5000",
             "https://test.com",
@@ -48,7 +34,7 @@ class TestStoreBuilder:
         resolved_uris = []
         for uri in uris:
             scheme = get_uri_scheme(uri)
-            new_uri = builder.resolve_uri_metadata(uri, scheme, PROJ)
+            new_uri = store_builder.resolve_uri_metadata(uri, scheme, PROJ)
             resolved_uris.append(new_uri)
         assert resolved_uris[0] == f"http://localhost:5000/api/project/{PROJ}"
         assert resolved_uris[1] == f"https://test.com/api/project/{PROJ}"
@@ -59,15 +45,13 @@ class TestStoreBuilder:
         with pytest.raises(NotImplementedError):
             uri = "fail://test"
             scheme = get_uri_scheme(uri)
-            new_uri = builder.resolve_uri_metadata(uri, scheme, PROJ)
+            new_uri = store_builder.resolve_uri_metadata(uri, scheme, PROJ)
 
-    def test_build_artifact_store(self, confs):
-        _, art_loc_cfg_01, builder = confs
-        store = builder.build_artifact_store(art_loc_cfg_01)
+    def test_build_artifact_store(self, store_builder, st_loc1):
+        store = store_builder.build_artifact_store(st_loc1)
         assert isinstance(store, ArtifactStore)
 
-    def test_resolve_artifact_uri(self, confs):
-        _, _, builder = confs
+    def test_resolve_artifact_uri(self, store_builder):
         uris = [
             "./test",
             "/test/test",
@@ -86,7 +70,7 @@ class TestStoreBuilder:
         resolved_uris = []
         for uri in uris:
             scheme = get_uri_scheme(uri)
-            new_uri = builder.resolve_artifact_uri(uri, scheme)
+            new_uri = store_builder.resolve_artifact_uri(uri, scheme)
             resolved_uris.append(new_uri)
         assert resolved_uris[0] == f"{os.getcwd()}/test/artifact"
         assert resolved_uris[1] == "/test/test/artifact"
@@ -104,17 +88,28 @@ class TestStoreBuilder:
         with pytest.raises(NotImplementedError):
             uri = "fail://test"
             scheme = get_uri_scheme(uri)
-            new_uri = builder.resolve_artifact_uri(uri, scheme)
+            new_uri = store_builder.resolve_artifact_uri(uri, scheme)
 
-    def test_check_config(self, confs):
-        _, art_loc_cfg_01, builder = confs
-        cfg = builder._check_config(None)
+    def test_check_config(self, store_builder, st_loc1):
+        cfg = store_builder._check_config(None)
         assert isinstance(cfg, StoreConfig)
         assert cfg.type == "_dummy"
 
-        cfg = builder._check_config(art_loc_cfg_01)
+        cfg = store_builder._check_config(st_loc1)
         assert isinstance(cfg, StoreConfig)
         assert cfg.type == "local"
 
         with pytest.raises(TypeError):
-            builder._check_config([])
+            store_builder._check_config([])
+
+
+# Metadata store config
+@pytest.fixture
+def mds_cfg(local_md_store_cfg):
+    return local_md_store_cfg
+
+
+# Artifact store config
+@pytest.fixture
+def st_loc1(local_store_cfg):
+    return local_store_cfg

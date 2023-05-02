@@ -1,13 +1,12 @@
 import csv
 import sqlite3
-from tempfile import TemporaryDirectory
+import shutil
 from unittest.mock import MagicMock
 
 import duckdb
 import pytest
 
 from datajudge.client.store_factory import StoreBuilder
-from datajudge.client.store_handler import StoreHandler
 from datajudge.data_reader.utils import build_reader
 from datajudge.plugins.utils.plugin_utils import Result
 from datajudge.utils.config import (
@@ -24,208 +23,43 @@ from datajudge.utils.commons import *
 from datajudge.utils.utils import listify
 
 
-class Configurator:
-    def __init__(self) -> None:
-        """Create temp dir and store builder"""
-        self.tmp = TemporaryDirectory()
-        self.store_builder = StoreBuilder("test", self.tmp.name)
-
-    def get_tmp(self):
-        """Get temporary folder name"""
-        return self.tmp.name
-
-    def get_resource(self, cfg):
-        """Return DataResource"""
-        return DataResource(**cfg)
-
-    def get_store_cfg(self, cfg, tmp=False):
-        """Return StoreConfig"""
-        cfg = StoreConfig(**cfg)
-        if tmp:
-            return self.up_tmp_store_cfg(cfg)
-        return cfg
-
-    def up_tmp_store_cfg(self, cfg):
-        """Update URI in StoreConfig to temporary URI"""
-        cfg.uri = self.get_tmp()
-        return cfg
-
-    def get_run_cfg(self, cfg):
-        """Return RunConfig"""
-        return RunConfig(**cfg)
-
-    def get_store(self, cfg, tmp=False, md=False):
-        """Build a store object"""
-        if not isinstance(cfg, StoreConfig):
-            cfg = self.get_store_cfg(cfg, tmp)
-        return self.store_builder.build(cfg, md_store=md)
-
-    def get_result_test(
-        self, status="test", duration="test", errors="test", artifact="test"
-    ):
-        """Return a generic result object"""
-        return Result(status, duration, errors, artifact)
-
-    def destroy(self):
-        """Cleanup of temp dir"""
-        self.tmp.cleanup()
+##############################
+# DATA
+##############################
 
 
-# Stores
-
-METADATA_STORE_LOCAL = {
-    "title": "Local Metadata Store",
-    "name": "local_md",
-    "type": "local",
-    "uri": "./djruns",
-}
-
-STORE_LOCAL_01 = {
-    "title": "Local Store",
-    "name": "local",
-    "type": "local",
-    "uri": "./djruns",
-    "isDefault": True,
-}
-STORE_LOCAL_02 = {
-    "title": "Local Store 2",
-    "name": "local_2",
-    "type": "local",
-    "uri": "./djruns",
-    "isDefault": False,
-}
-
-# Resources
-
-RES_LOCAL_01 = DataResource(
-    path="tests/synthetic_data/test_csv_file.csv", name="res_test_01", store="local"
-)
-
-RES_LOCAL_02 = DataResource(
-    path="tests/synthetic_data/test_csv_file_2.csv", name="res_test_02", store="local"
-)
-
-# Run
-
-RUN_CFG_EMPTY = RunConfig()
-
-
-# Constraints
-
-CONST_FRICT_01 = ConstraintFrictionless(
-    title="Test frictionless constraint",
-    name="test-const-frict-01",
-    resources=["res_test_01"],
-    field="col1",
-    fieldType="string",
-    constraint="maxLength",
-    value=1,
-    weight=5,
-)
-
-CONST_FRICT_02 = ConstraintFrictionless(
-    title="Test frictionless constraint",
-    name="test-const-frict-02",
-    resources=["res_test_01"],
-    field="col1",
-    fieldType="string",
-    constraint="minLength",
-    value=5,
-    weight=5,
-)
-
-CONST_FRICT_FULL_01 = ConstraintFullFrictionless(
-    title="Test frictionless constraint",
-    name="test-const-frict-01",
-    resources=["res_test_01"],
-    tableSchema={
-        "fields": [
-            {"name": "col1", "type": "string"},
-            {"name": "col2", "type": "number"},
-            {"name": "col3", "type": "integer"},
-            {"name": "col4", "type": "date"},
-        ]
-    },
-    weight=5,
-)
-
-CONST_GE_01 = ConstraintGreatExpectations(
-    name="const-ge-01",
-    title="Test GE constraint",
-    resources=["res_test_01"],
-    expectation="expect_column_value_lengths_to_be_between",
-    expectation_args={"column": "col1", "min_value": 1, "max_value": 1},
-    weight=5,
-)
-
-
-CONST_SQLALCHEMY_01 = ConstraintSqlAlchemy(
-    name="const-sqlalc-01",
-    title="Test sqlalchemy constraint",
-    resources=["res_test_01"],
-    query="select * from test",
-    expect="non-empty",
-    check="rows",
-    weight=5,
-)
-
-
-CONST_DUCKDB_01 = ConstraintDuckDB(
-    name="const-duckdb-01",
-    title="Test duckdb constraint",
-    resources=["res_test_01"],
-    query="select * from test",
-    expect="non-empty",
-    check="rows",
-    weight=5,
-)
-
-
-# Utilities
-def get_str_cfg(str_dict):
-    return StoreConfig(**str_dict)
-
-
-def set_tmp(store_cfg, tmp):
-    store_cfg.uri = tmp
-    return store_cfg
-
-
-conf = Configurator()
-
-
-def mock_object_factory(**kwargs):
-    mock_obj = MagicMock()
-    for k, v in kwargs.items():
-        setattr(mock_obj, k, v)
-    return mock_obj
-
-
-# Fixtures
+# Tmp root
 @pytest.fixture(scope="session")
-def data_path_csv():
-    return "tests/synthetic_data/test_csv_file.csv"
+def temp_folder(tmp_path_factory):
+    return tmp_path_factory.mktemp("data")
 
 
 @pytest.fixture(scope="session")
-def data_path_parquet():
-    return "tests/synthetic_data/test_parquet_file.parquet"
+def temp_data(temp_folder):
+    return str(temp_folder)
 
 
-@pytest.fixture
-def store(store_cfg, tmp=False, md=False):
-    return conf.get_store(store_cfg, tmp, md)
+# Sample csv
+@pytest.fixture(scope="session")
+def data_path_csv(temp_folder):
+    tmp = str(temp_folder / "test_csv_file.csv")
+    shutil.copy("tests/synthetic_data/test_csv_file.csv", tmp)
+    return tmp
 
 
-@pytest.fixture
-def reader(data_reader, store):
-    return build_reader(data_reader, store)
+# Sample parquet
+@pytest.fixture(scope="session")
+def data_path_parquet(temp_folder):
+    tmp = str(temp_folder / "test_parquet_file.parquet")
+    shutil.copy("tests/synthetic_data/test_parquet_file.parquet", tmp)
+    return tmp
 
 
+# Sample sqlite database
 # Readapted from https://stackoverflow.com/a/2888042/13195227
 @pytest.fixture(scope="session")
-def sqlitedb(tmp_path_factory, data_path_csv):
-    tmp = tmp_path_factory.mktemp("data") / "test.db"
+def sqlitedb(temp_folder, data_path_csv):
+    tmp = str(temp_folder / "test.db")
     con = sqlite3.connect(tmp)
     cur = con.cursor()
     cur.execute("CREATE TABLE test (col1, col2, col3, col4);")
@@ -240,9 +74,10 @@ def sqlitedb(tmp_path_factory, data_path_csv):
     return f"sqlite:///{tmp}"
 
 
+# Sample duckdb database
 @pytest.fixture(scope="session")
-def tmpduckdb(tmp_path_factory, data_path_csv):
-    tmp = (tmp_path_factory.mktemp("data") / "duckdb.db").as_posix()
+def tmpduckdb(temp_folder, data_path_csv):
+    tmp = str(temp_folder / "duckdb.db")
     con = duckdb.connect(tmp)
     sql = f"CREATE TABLE test AS SELECT * FROM read_csv_auto('{data_path_csv}');"
     con.execute(sql)
@@ -250,14 +85,141 @@ def tmpduckdb(tmp_path_factory, data_path_csv):
     return tmp
 
 
-@pytest.fixture
-def local_resource():
-    return RES_LOCAL_01
+# Saample Result object
+@pytest.fixture(scope="session")
+def result_obj():
+    return Result("test", "test", "test", "test")
+
+
+##############################
+# FIXTURES & CONFIGS
+##############################
+
+# ---------------
+# RUNS
+# ---------------
 
 
 @pytest.fixture
-def local_store_cfg():
-    return STORE_LOCAL_01
+def run_empty():
+    return RunConfig()
+
+
+# ---------------
+# STORES
+# ---------------
+
+
+@pytest.fixture(scope="session")
+def store_builder(temp_folder):
+    return StoreBuilder("test", temp_folder)
+
+
+@pytest.fixture
+def store(store_cfg, store_builder):
+    return store_builder.build(store_cfg)
+
+
+# ---------------
+# Artifact Stores
+# ---------------
+
+
+# Local 1
+@pytest.fixture
+def local_store_cfg(temp_data):
+    return StoreConfig(
+        **{
+            "title": "Local Store",
+            "name": "local",
+            "type": "local",
+            "uri": temp_data,
+            "isDefault": True,
+        }
+    )
+
+
+# Local 2
+@pytest.fixture
+def local_store_cfg_2():
+    return StoreConfig(
+        **{
+            "title": "Local Store 2",
+            "name": "local_2",
+            "type": "local",
+            "uri": "./djruns",
+            "isDefault": False,
+        }
+    )
+
+
+# SQL
+@pytest.fixture
+def sql_store_cfg(sqlitedb):
+    return StoreConfig(
+        **{
+            "title": "SQLite Store",
+            "name": "sql",
+            "type": "sql",
+            "uri": "sql://test",
+            "isDefault": True,
+            "config": {"connection_string": sqlitedb},
+        }
+    )
+
+
+# ----------------
+# Metadata Stores
+# ----------------
+
+
+# Local
+@pytest.fixture
+def local_md_store_cfg(temp_data):
+    return StoreConfig(
+        **{
+            "title": "Local Metadata Store",
+            "name": "local_md",
+            "type": "local",
+            "uri": temp_data,
+        }
+    )
+
+
+# ----------------
+# DATA READER
+# ----------------
+
+
+@pytest.fixture
+def reader(data_reader, store):
+    return build_reader(data_reader, store)
+
+
+# ----------------
+# DATA RESOURCES
+# ----------------
+
+
+@pytest.fixture
+def local_resource(data_path_csv):
+    return DataResource(path=data_path_csv, name="res_test_01", store="local")
+
+
+@pytest.fixture
+def local_resource_no_temp():
+    return DataResource(
+        path="tests/synthetic_data/test_csv_file.csv", name="res_test_01", store="local"
+    )
+
+
+@pytest.fixture
+def local_resource_2():
+    return DataResource(
+        path="tests/synthetic_data/test_csv_file_2.csv",
+        name="res_test_02",
+        store="local",
+    )
 
 
 @pytest.fixture
@@ -265,22 +227,80 @@ def sql_resource(sqlitedb):
     return DataResource(path=sqlitedb, name="res_test_01", store="sql")
 
 
-@pytest.fixture
-def sql_store_cfg(sqlitedb):
-    return {
-        "title": "SQLite Store",
-        "name": "sql",
-        "type": "sql",
-        "uri": "sql://test",
-        "isDefault": True,
-        "config": {"connection_string": sqlitedb},
-    }
+# ----------------
+# CONSTRAINTS
+# ----------------
+
+CONST_FRICT_01 = ConstraintFrictionless(
+    title="Test frictionless constraint",
+    name="test-const-frict-01",
+    resources=["res_test_01"],
+    field="col1",
+    fieldType="string",
+    constraint="maxLength",
+    value=1,
+    weight=5,
+)
+CONST_FRICT_02 = ConstraintFrictionless(
+    title="Test frictionless constraint",
+    name="test-const-frict-02",
+    resources=["res_test_01"],
+    field="col1",
+    fieldType="string",
+    constraint="minLength",
+    value=5,
+    weight=5,
+)
+CONST_FRICT_FULL_01 = ConstraintFullFrictionless(
+    title="Test frictionless constraint",
+    name="test-const-frict-01",
+    resources=["res_test_01"],
+    tableSchema={
+        "fields": [
+            {"name": "col1", "type": "string"},
+            {"name": "col2", "type": "number"},
+            {"name": "col3", "type": "integer"},
+            {"name": "col4", "type": "date"},
+        ]
+    },
+    weight=5,
+)
+CONST_GE_01 = ConstraintGreatExpectations(
+    name="const-ge-01",
+    title="Test GE constraint",
+    resources=["res_test_01"],
+    expectation="expect_column_value_lengths_to_be_between",
+    expectation_args={"column": "col1", "min_value": 1, "max_value": 1},
+    weight=5,
+)
+CONST_SQLALCHEMY_01 = ConstraintSqlAlchemy(
+    name="const-sqlalc-01",
+    title="Test sqlalchemy constraint",
+    resources=["res_test_01"],
+    query="select * from test",
+    expect="non-empty",
+    check="rows",
+    weight=5,
+)
+CONST_DUCKDB_01 = ConstraintDuckDB(
+    name="const-duckdb-01",
+    title="Test duckdb constraint",
+    resources=["res_test_01"],
+    query="select * from test",
+    expect="non-empty",
+    check="rows",
+    weight=5,
+)
 
 
-# Plugins Builders
+# ----------------
+# PLUGINS BUILDERS
+# ----------------
+
+
 @pytest.fixture
-def config_plugin_builder(store_cfg):
-    stores = listify(conf.get_store(store_cfg))
+def config_plugin_builder(store):
+    stores = listify(store)
     return {"stores": stores, "exec_args": {}}
 
 
@@ -297,7 +317,11 @@ def plugin_builder_non_val_args(resource):
     return [resources]
 
 
-# Plugins
+# ----------------
+# PLUGINS
+# ----------------
+
+
 @pytest.fixture
 def setted_plugin(plugin, config_plugin):
     plg = plugin()
@@ -305,7 +329,44 @@ def setted_plugin(plugin, config_plugin):
     return plg
 
 
-# Fixtures for validation plugins
 @pytest.fixture(params=["partial", "full", "count"])
 def error_report(request):
     return request.param
+
+
+##############################
+# MOCKS
+##############################
+
+# ----------------
+# Factory
+# ----------------
+
+
+def mock_object_factory(**kwargs):
+    mock_obj = MagicMock()
+    for k, v in kwargs.items():
+        setattr(mock_obj, k, v)
+    return mock_obj
+
+
+# ----------------
+# Mock constraints
+# ----------------
+
+mock_c_frict = mock_object_factory(type=LIBRARY_FRICTIONLESS)
+mock_c_frict_full = mock_object_factory(type=CONSTRAINT_FRICTIONLESS_SCHEMA)
+mock_c_duckdb = mock_object_factory(type=LIBRARY_DUCKDB)
+mock_c_gex = mock_object_factory(type=LIBRARY_GREAT_EXPECTATIONS)
+mock_c_sqlalc = mock_object_factory(type=LIBRARY_SQLALCHEMY)
+
+# ----------------
+# Generic mock objects (c = constraint, r = resources, s = store)
+# ----------------
+
+mock_c_generic = mock_object_factory(type="generic", resources=["resource"])
+mock_r_generic = mock_object_factory(name="resource", store="store")
+mock_s_generic = mock_object_factory(name="store", type="generic")
+mock_c_to_fail = mock_object_factory(type="generic", resources=["resource_fail"])
+mock_r_to_fail = mock_object_factory(name="resource_fail", store="fail")
+mock_s_to_fail = mock_object_factory(name="fail", type="fail")

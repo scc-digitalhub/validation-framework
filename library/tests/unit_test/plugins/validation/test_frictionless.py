@@ -19,6 +19,9 @@ from datajudge.utils.commons import (
 from tests.conftest import (
     CONST_FRICT_01,
     CONST_FRICT_FULL_01,
+    mock_c_frict,
+    mock_c_frict_full,
+    mock_c_generic,
 )
 from tests.unit_test.plugins.utils_plugin_tests import (
     correct_execute,
@@ -29,9 +32,6 @@ from tests.unit_test.plugins.utils_plugin_tests import (
     incorrect_execute,
     incorrect_render_artifact,
     incorrect_render_datajudge,
-    mock_c_frict,
-    mock_c_frict_full,
-    mock_c_generic,
 )
 
 
@@ -154,8 +154,9 @@ def store_cfg(local_store_cfg):
 
 
 @pytest.fixture
-def resource(local_resource):
-    return local_resource
+def resource(local_resource_no_temp):
+    # Otherwise the plugin will give error for unsafe path
+    return local_resource_no_temp
 
 
 @pytest.fixture

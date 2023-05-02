@@ -15,6 +15,8 @@ from datajudge.utils.commons import (
 )
 from tests.conftest import (
     CONST_GE_01,
+    mock_c_gex,
+    mock_c_generic,
 )
 from tests.unit_test.plugins.utils_plugin_tests import (
     correct_setup,
@@ -25,8 +27,6 @@ from tests.unit_test.plugins.utils_plugin_tests import (
     incorrect_execute,
     incorrect_render_artifact,
     incorrect_render_datajudge,
-    mock_c_gex,
-    mock_c_generic,
 )
 
 

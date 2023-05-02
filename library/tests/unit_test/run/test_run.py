@@ -19,49 +19,19 @@ from datajudge.utils.commons import (
     RESULT_WRAPPED,
 )
 from datajudge.utils.exceptions import RunError
-from tests.conftest import (
-    METADATA_STORE_LOCAL,
-    RES_LOCAL_01,
-    RUN_CFG_EMPTY,
-    STORE_LOCAL_01,
-    Configurator,
-)
 
 
 class TestRun:
-    run_cfg = RUN_CFG_EMPTY
-    conf = Configurator()
-    md_loc_cfg_01 = conf.get_store_cfg(METADATA_STORE_LOCAL, tmp=True)
-    art_loc_cfg_01 = conf.get_store_cfg(STORE_LOCAL_01, tmp=True)
-    result = conf.get_result_test()
-    dict_result = {
-        RESULT_WRAPPED: result,
-        RESULT_DATAJUDGE: result,
-        RESULT_RENDERED: result,
-        RESULT_LIBRARY: [{"test": "test"}],
-    }
-
-    @pytest.fixture()
-    def handler(self):
-        store_handler = StoreHandler(
-            metadata_store=self.md_loc_cfg_01, store=self.art_loc_cfg_01
-        )
-        return RunHandler(self.run_cfg, store_handler)
-
-    def test_log_run(self, handler):
-        pth = Path(self.conf.get_tmp(), "report_0.json")
-        handler.log_metadata(
-            {"test": "test"}, pth.parent.as_posix(), MT_DJ_REPORT, True
-        )
+    def test_log_run(self, handler, temp_data):
+        pth = Path(temp_data, "report_0.json")
+        handler.log_metadata({"test": "test"}, str(pth.parent), MT_DJ_REPORT, True)
         assert pth.exists()
         with open(pth, "r") as f:
             assert f.read() == '{"test": "test"}'
 
-    def test_log_env(self, handler):
-        pth = Path(self.conf.get_tmp(), "report_0.json")
-        handler.log_metadata(
-            {"test": "test"}, pth.parent.as_posix(), MT_DJ_REPORT, True
-        )
+    def test_log_env(self, handler, temp_data):
+        pth = Path(temp_data, "report_0.json")
+        handler.log_metadata({"test": "test"}, str(pth.parent), MT_DJ_REPORT, True)
         assert pth.exists()
         with open(pth, "r") as f:
             assert f.read() == '{"test": "test"}'
@@ -69,11 +39,9 @@ class TestRun:
     def test_get_blob(self, handler):
         pass
 
-    def test_log_metadata(self, handler):
-        pth = Path(self.conf.get_tmp(), "report_0.json")
-        handler.log_metadata(
-            {"test": "test"}, pth.parent.as_posix(), MT_DJ_REPORT, True
-        )
+    def test_log_metadata(self, handler, temp_data):
+        pth = Path(temp_data, "report_0.json")
+        handler.log_metadata({"test": "test"}, str(pth.parent), MT_DJ_REPORT, True)
         assert pth.exists()
         with open(pth, "r") as f:
             assert f.read() == '{"test": "test"}'
@@ -81,26 +49,15 @@ class TestRun:
     def test_get_artifact_metadata(self, handler):
         pass
 
-    def test_log_artifact(self, handler):
-        pth = Path(self.conf.get_tmp(), "report_0.json")
-        handler.log_metadata(
-            {"test": "test"}, pth.parent.as_posix(), MT_DJ_REPORT, True
-        )
+    def test_persist_artifact(self, handler, temp_data):
+        pth = Path(temp_data, "test.txt")
+        handler.persist_artifact({"test": "test"}, str(pth.parent), "test.txt", {})
         assert pth.exists()
         with open(pth, "r") as f:
             assert f.read() == '{"test": "test"}'
 
     def test_render_artifact_name(self, handler):
         pass
-
-    def test_persist_artifact(self, handler):
-        pth = Path(self.conf.get_tmp(), "test.txt")
-        handler.persist_artifact(
-            {"test": "test"}, pth.parent.as_posix(), "test.txt", {}
-        )
-        assert pth.exists()
-        with open(pth, "r") as f:
-            assert f.read() == '{"test": "test"}'
 
     def test_check_metadata_uri(self, handler):
         pass
@@ -156,6 +113,37 @@ class TestRun:
     def test_persist_profile(self, handler):
         pass
 
-    def test_persist_data(self, handler):
-        handler.persist_data([RES_LOCAL_01], self.conf.get_tmp())
-        assert Path(self.conf.get_tmp(), "test_csv_file.csv").exists()
+    def test_persist_data(self, handler, local_resource, tmp_path):
+        # Use another tmp path, otherways raise SameFileError
+        # because copy same file to same path (from temp_data to temp_data)
+        handler.persist_data([local_resource], tmp_path)
+        assert Path(tmp_path, "test_csv_file.csv").exists()
+
+
+# RunHandlerRegistry
+@pytest.fixture()
+def registry():
+    return RunHandlerRegistry()
+
+
+# StoreHandler
+@pytest.fixture()
+def store_handler(local_md_store_cfg, local_store_cfg):
+    return StoreHandler(metadata_store=local_md_store_cfg, store=local_store_cfg)
+
+
+# RunHandler
+@pytest.fixture()
+def handler(run_empty, store_handler):
+    return RunHandler(run_empty, store_handler)
+
+
+# Sample result dict
+@pytest.fixture()
+def dict_result(result_obj):
+    return {
+        RESULT_WRAPPED: result_obj,
+        RESULT_DATAJUDGE: result_obj,
+        RESULT_RENDERED: result_obj,
+        RESULT_LIBRARY: [{"test": "test"}],
+    }

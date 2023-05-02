@@ -15,7 +15,14 @@ from datajudge.utils.commons import (
     PANDAS_DATAFRAME_DUCKDB_READER,
     DEFAULT_DIRECTORY,
 )
-from tests.conftest import CONST_DUCKDB_01
+from tests.conftest import (
+    CONST_DUCKDB_01,
+    mock_c_duckdb,
+    mock_c_generic,
+    mock_r_generic,
+    mock_c_to_fail,
+    mock_r_to_fail,
+)
 from tests.unit_test.plugins.utils_plugin_tests import (
     correct_execute,
     correct_plugin_build,
@@ -25,11 +32,6 @@ from tests.unit_test.plugins.utils_plugin_tests import (
     incorrect_execute,
     incorrect_render_artifact,
     incorrect_render_datajudge,
-    mock_c_duckdb,
-    mock_c_generic,
-    mock_r_generic,
-    mock_c_to_fail,
-    mock_r_to_fail,
 )
 
 

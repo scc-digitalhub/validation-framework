@@ -11,7 +11,16 @@ from datajudge.utils.commons import (
     OPERATION_VALIDATION,
     PANDAS_DATAFRAME_SQL_READER,
 )
-from tests.conftest import CONST_SQLALCHEMY_01
+from tests.conftest import (
+    CONST_SQLALCHEMY_01,
+    mock_c_sqlalc,
+    mock_c_generic,
+    mock_s_generic,
+    mock_r_generic,
+    mock_c_to_fail,
+    mock_s_to_fail,
+    mock_r_to_fail,
+)
 from tests.unit_test.plugins.utils_plugin_tests import (
     correct_execute,
     correct_plugin_build,
@@ -21,13 +30,6 @@ from tests.unit_test.plugins.utils_plugin_tests import (
     incorrect_execute,
     incorrect_render_artifact,
     incorrect_render_datajudge,
-    mock_c_sqlalc,
-    mock_c_generic,
-    mock_s_generic,
-    mock_r_generic,
-    mock_c_to_fail,
-    mock_s_to_fail,
-    mock_r_to_fail,
 )
 
 
@@ -126,7 +128,12 @@ class TestValidationBuilderSqlAlchemy:
         regroup = plugin_builder._regroup_constraint_resources(
             [mock_c_generic], [mock_r_generic]
         )
-        assert regroup == [{"constraint": mock_c_generic, "store": mock_s_generic,},]
+        assert regroup == [
+            {
+                "constraint": mock_c_generic,
+                "store": mock_s_generic,
+            },
+        ]
 
 
 @pytest.fixture
