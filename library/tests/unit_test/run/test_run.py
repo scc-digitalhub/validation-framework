@@ -1,4 +1,3 @@
-from datajudge.run.run import Run
 from pathlib import Path
 
 import pytest
@@ -7,6 +6,7 @@ from datajudge.client.store_handler import StoreHandler
 from datajudge.plugins.base_plugin import Plugin
 from datajudge.plugins.plugin_factory import builder_factory
 from datajudge.plugins.utils.plugin_utils import Result
+from datajudge.run.run import Run
 from datajudge.run.run_handler import RunHandler, RunHandlerRegistry
 from datajudge.utils.commons import (
     MT_DJ_REPORT,

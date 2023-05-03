@@ -1,8 +1,8 @@
 import csv
 import os
-import sqlite3
 import shutil
-from io import StringIO, BytesIO
+import sqlite3
+from io import BytesIO, StringIO
 from unittest.mock import MagicMock
 
 import boto3
@@ -13,18 +13,26 @@ from moto import mock_s3
 from datajudge.client.store_factory import StoreBuilder
 from datajudge.data_reader.utils import build_reader
 from datajudge.plugins.utils.plugin_utils import Result
+from datajudge.utils.commons import *
 from datajudge.utils.config import (
+    ConstraintDuckDB,
     ConstraintFrictionless,
     ConstraintFullFrictionless,
     ConstraintGreatExpectations,
     ConstraintSqlAlchemy,
-    ConstraintDuckDB,
     DataResource,
     RunConfig,
     StoreConfig,
 )
-from datajudge.utils.commons import *
 from datajudge.utils.utils import listify
+
+##############################
+# VARIABLES
+##############################
+
+TEST_FILENAME = "test.txt"
+S3_BUCKET = "test"
+S3_FILENAME = "file.csv"
 
 
 ##############################
@@ -89,7 +97,25 @@ def tmpduckdb(temp_folder, data_path_csv):
     return tmp
 
 
-# Saample Result object
+@pytest.fixture(scope="session")
+def aws_credentials():
+    os.environ["AWS_ACCESS_KEY_ID"] = "testing"
+    os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
+    os.environ["MOTO_S3_CUSTOM_ENDPOINTS"] = "http://localhost:9000"
+
+
+@pytest.fixture(scope="session")
+def s3(aws_credentials):
+    with mock_s3():
+        client = boto3.client("s3", region_name="us-east-1")
+        client.create_bucket(Bucket=S3_BUCKET)
+        client.upload_file(
+            "tests/synthetic_data/test_csv_file.csv", S3_BUCKET, S3_FILENAME
+        )
+        yield client
+
+
+# Sample Result object
 @pytest.fixture(scope="session")
 def result_obj():
     return Result("test", "test", "test", "test")
@@ -98,7 +124,7 @@ def result_obj():
 # Temporary file
 @pytest.fixture(scope="session")
 def temp_file(temp_folder):
-    file = temp_folder / "test.txt"
+    file = temp_folder / TEST_FILENAME
     file.write_text("test")
     return file
 
@@ -425,29 +451,3 @@ mock_s_generic = mock_object_factory(name="store", type="generic")
 mock_c_to_fail = mock_object_factory(type="generic", resources=["resource_fail"])
 mock_r_to_fail = mock_object_factory(name="resource_fail", store="fail")
 mock_s_to_fail = mock_object_factory(name="fail", type="fail")
-
-
-# ----------------
-# Mock plugins
-# ----------------
-
-S3_BUCKET = "test"
-
-
-@pytest.fixture(scope="session")
-def aws_credentials():
-    os.environ["AWS_ACCESS_KEY_ID"] = "testing"
-    os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
-    os.environ["MOTO_S3_CUSTOM_ENDPOINTS"] = "http://localhost:9000"
-
-
-@pytest.fixture(scope="session")
-def s3(aws_credentials):
-    with mock_s3():
-        client = boto3.client("s3", region_name="us-east-1")
-        client.create_bucket(Bucket=S3_BUCKET)
-        client.upload_file(
-            "tests/synthetic_data/test_csv_file.csv", S3_BUCKET, "test_csv_file.csv"
-        )
-        yield client
-

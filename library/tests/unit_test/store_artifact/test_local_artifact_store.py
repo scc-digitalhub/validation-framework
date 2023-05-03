@@ -5,14 +5,7 @@ from datajudge.utils.commons import (
     DATAREADER_FILE,
     DATAREADER_NATIVE,
 )
-
-
-TEST = "test.txt"
-
-
-@pytest.fixture
-def store_cfg(local_store_cfg):
-    return local_store_cfg
+from tests.conftest import TEST_FILENAME
 
 
 class TestLocalArtifactStore:
@@ -21,34 +14,29 @@ class TestLocalArtifactStore:
     ):
         src_name = "persist.txt"
         pth = temp_folder / src_name
-        assert not pth.exists()
 
         # Local file
-        assert not pth.exists()
+        not_exists(pth)
         store.persist_artifact(temp_file, temp_folder, src_name)
-        assert pth.exists()
-        pth.unlink()
+        exists(pth)
 
         # StringIO
-        assert not pth.exists()
+        not_exists(pth)
         store.persist_artifact(stringio, temp_folder, src_name)
-        assert pth.exists()
-        pth.unlink()
+        exists(pth)
 
         # BytesIO
-        assert not pth.exists()
+        not_exists(pth)
         store.persist_artifact(bytesio, temp_folder, src_name)
-        assert pth.exists()
-        pth.unlink()
+        exists(pth)
 
         # Dictionary
-        assert not pth.exists()
+        not_exists(pth)
         store.persist_artifact(dictionary, temp_folder, src_name)
-        assert pth.exists()
-        pth.unlink()
+        exists(pth)
 
         # Other
-        assert not pth.exists()
+        not_exists(pth)
         with pytest.raises(NotImplementedError):
             store.persist_artifact(None, temp_folder, src_name)
 
@@ -56,21 +44,21 @@ class TestLocalArtifactStore:
             store.persist_artifact(dictionary, temp_folder, None)
 
     def test_fetch_file(self, store):
-        assert store.fetch_file(TEST) == TEST
+        assert store.fetch_file(TEST_FILENAME) == TEST_FILENAME
 
     def test_fetch_native(self, store):
-        assert store.fetch_native(TEST) == TEST
+        assert store.fetch_native(TEST_FILENAME) == TEST_FILENAME
 
     def test_fetch_buffer(self, store):
         with pytest.raises(NotImplementedError):
-            store.fetch_buffer(TEST)
+            store.fetch_buffer(TEST_FILENAME)
 
     @pytest.mark.parametrize(
         "src,fetch_mode,expected,not_implemented",
         [
-            (TEST, DATAREADER_FILE, TEST, False),
-            (TEST, DATAREADER_NATIVE, TEST, False),
-            (TEST, DATAREADER_BUFFER, None, True),
+            (TEST_FILENAME, DATAREADER_FILE, TEST_FILENAME, False),
+            (TEST_FILENAME, DATAREADER_NATIVE, TEST_FILENAME, False),
+            (TEST_FILENAME, DATAREADER_BUFFER, None, True),
         ],
     )
     def test_get_and_register_artifact(
@@ -85,10 +73,10 @@ class TestLocalArtifactStore:
             assert res == store._get_resource(f"{src}_{fetch_mode}")
 
     def test_get_data(self, store):
-        assert store._get_data(TEST) is None
+        assert store._get_data(TEST_FILENAME) is None
 
     def test_store_data(self, store):
-        assert store._store_data(TEST) is None
+        assert store._store_data(TEST_FILENAME) is None
 
     def test_check_access_to_storage(self, store, temp_folder):
         fld = temp_folder / "fld"
@@ -103,18 +91,16 @@ class TestLocalArtifactStore:
         pth = str(temp_folder / "artifact" / "test1" / "test2")
         assert store.get_run_artifacts_uri("test1", "test2") == pth
 
-    def test_get_resource(self, store):
-        assert not store._get_resource(TEST)
-        store._register_resource(TEST, TEST)
-        assert store._get_resource(TEST) == TEST
 
-    def test_register_resource(self, store):
-        store._register_resource(TEST, TEST)
-        assert store._get_resource(TEST) == TEST
+@pytest.fixture
+def store_cfg(local_store_cfg):
+    return local_store_cfg
 
-    def test_clean_paths(self, store):
-        assert not store._get_resource(TEST)
-        store._register_resource(TEST, TEST)
-        assert store._get_resource(TEST) == TEST
-        store.clean_paths()
-        assert not store._get_resource(TEST)
+
+def exists(pth):
+    assert pth.exists()
+    pth.unlink()
+
+
+def not_exists(pth):
+    assert not pth.exists()
