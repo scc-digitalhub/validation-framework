@@ -17,7 +17,7 @@ def make_temp_file(tmp: str) -> str:
     pth = Path(tmp, "file.txt")
     with open(pth, "w") as file:
         file.write("test")
-    return pth.as_posix()
+    return str(pth)
 
 
 def read_file(pth: str):
@@ -50,7 +50,7 @@ def test_get_absolute_path(tmp_path):
 
 def test_get_path(tmp_path):
     assert isinstance(get_path(tmp_path), str)
-    assert Path(tmp_path).as_posix() == get_path(tmp_path)
+    assert str(tmp_path) == get_path(tmp_path)
 
 
 def test_check_path(tmp_path):
@@ -66,7 +66,7 @@ def test_check_path(tmp_path):
 def test_copy_file(tmp_path):
     path_1 = Path(make_temp_file(tmp_path))
     path_2 = Path(tmp_path, "copy.txt")
-    copy_file(path_1.as_posix(), path_2.as_posix())
+    copy_file(path_1, path_2)
     assert path_2.is_file()
     assert path_1.stat().st_size == path_2.stat().st_size
     content_1 = read_file(path_1)

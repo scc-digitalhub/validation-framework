@@ -47,7 +47,7 @@ class S3ArtifactStore(ArtifactStore):
 
         # Local file
         if isinstance(src, (str, Path)) and check_path(src):
-            self._upload_file(client, bucket, src, key, metadata)
+            self._upload_file(client, bucket, str(src), key, metadata)
 
         # Dictionary
         elif isinstance(src, dict) and src_name is not None:

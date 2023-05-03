@@ -24,9 +24,7 @@ class LocalArtifactStore(ArtifactStore):
 
     """
 
-    def persist_artifact(
-        self, src: Any, dst: str, src_name: str, metadata: dict
-    ) -> None:
+    def persist_artifact(self, src: Any, dst: str, src_name: str, *args) -> None:
         """
         Persist an artifact.
         """

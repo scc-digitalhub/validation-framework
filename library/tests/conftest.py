@@ -1,10 +1,14 @@
 import csv
+import os
 import sqlite3
 import shutil
+from io import StringIO, BytesIO
 from unittest.mock import MagicMock
 
+import boto3
 import duckdb
 import pytest
+from moto import mock_s3
 
 from datajudge.client.store_factory import StoreBuilder
 from datajudge.data_reader.utils import build_reader
@@ -91,6 +95,38 @@ def result_obj():
     return Result("test", "test", "test", "test")
 
 
+# Temporary file
+@pytest.fixture(scope="session")
+def temp_file(temp_folder):
+    file = temp_folder / "test.txt"
+    file.write_text("test")
+    return file
+
+
+# StringIO sample
+@pytest.fixture
+def stringio():
+    io = StringIO()
+    io.write("test")
+    io.seek(0)
+    return io
+
+
+# BytesIO sample
+@pytest.fixture
+def bytesio():
+    io = BytesIO()
+    io.write(b"test")
+    io.seek(0)
+    return io
+
+
+# Dict sample
+@pytest.fixture
+def dictionary():
+    return {"a": 1, "b": 2}
+
+
 ##############################
 # FIXTURES & CONFIGS
 ##############################
@@ -164,6 +200,25 @@ def sql_store_cfg(sqlitedb):
             "uri": "sql://test",
             "isDefault": True,
             "config": {"connection_string": sqlitedb},
+        }
+    )
+
+
+# S3
+@pytest.fixture
+def s3_store_cfg():
+    return StoreConfig(
+        **{
+            "title": "S3 Store",
+            "name": "s3",
+            "type": "s3",
+            "uri": "s3://test",
+            "isDefault": True,
+            "config": {
+                "aws_access_key_id": "test",
+                "aws_secret_access_key": "test",
+                "endpoint_url": "http://localhost:9000/",
+            },
         }
     )
 
@@ -370,3 +425,29 @@ mock_s_generic = mock_object_factory(name="store", type="generic")
 mock_c_to_fail = mock_object_factory(type="generic", resources=["resource_fail"])
 mock_r_to_fail = mock_object_factory(name="resource_fail", store="fail")
 mock_s_to_fail = mock_object_factory(name="fail", type="fail")
+
+
+# ----------------
+# Mock plugins
+# ----------------
+
+S3_BUCKET = "test"
+
+
+@pytest.fixture(scope="session")
+def aws_credentials():
+    os.environ["AWS_ACCESS_KEY_ID"] = "testing"
+    os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
+    os.environ["MOTO_S3_CUSTOM_ENDPOINTS"] = "http://localhost:9000"
+
+
+@pytest.fixture(scope="session")
+def s3(aws_credentials):
+    with mock_s3():
+        client = boto3.client("s3", region_name="us-east-1")
+        client.create_bucket(Bucket=S3_BUCKET)
+        client.upload_file(
+            "tests/synthetic_data/test_csv_file.csv", S3_BUCKET, "test_csv_file.csv"
+        )
+        yield client
+

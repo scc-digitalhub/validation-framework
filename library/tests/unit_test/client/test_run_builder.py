@@ -17,11 +17,11 @@ class TestRunBuilder:
 
     def test_get_md_uri(self, builder, temp_data):
         uri = builder._get_md_uri("test", "test")
-        assert uri == Path(temp_data, "metadata", "test", "test").as_posix()
+        assert uri == str(Path(temp_data, "metadata", "test", "test"))
 
     def test_get_art_uri(self, builder, temp_data):
         uri = builder._get_art_uri("test", "test")
-        assert uri == Path(temp_data, "artifact", "test", "test").as_posix()
+        assert uri == str(Path(temp_data, "artifact", "test", "test"))
 
     def test_check_unique_resource(self, builder, local_resource):
         with pytest.raises(RunError):

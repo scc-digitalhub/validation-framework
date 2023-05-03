@@ -171,7 +171,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
             data_reader = self._get_data_reader(PANDAS_DATAFRAME_DUCKDB_READER, None)
             plugin = ValidationPluginDuckDB()
             plugin.setup(
-                data_reader, self.tmp_db.as_posix(), const, error_report, self.exec_args
+                data_reader, str(self.tmp_db), const, error_report, self.exec_args
             )
             plugins.append(plugin)
 
@@ -183,7 +183,7 @@ class ValidationBuilderDuckDB(ValidationPluginBuilder):
         """
         self.tmp_db = Path(DEFAULT_DIRECTORY, get_uiid(), "tmp.duckdb")
         self.tmp_db.parent.mkdir(parents=True, exist_ok=True)
-        self.con = duckdb.connect(database=self.tmp_db.as_posix(), read_only=False)
+        self.con = duckdb.connect(database=str(self.tmp_db), read_only=False)
 
     @staticmethod
     def _filter_constraints(

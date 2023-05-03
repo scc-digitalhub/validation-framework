@@ -19,7 +19,7 @@ def check_dir(path: str) -> bool:
         return False
 
 
-def make_dir(*args):
+def make_dir(*args) -> None:
     """
     Dirs builder function.
     """
@@ -33,14 +33,14 @@ def get_absolute_path(*args) -> str:
     """
     Return absolute path.
     """
-    return Path(*args).absolute().as_posix()
+    return str(Path(*args).absolute())
 
 
 def get_path(*args) -> str:
     """
     Return path.
     """
-    return Path(*args).as_posix()
+    return str(Path(*args))
 
 
 def check_make_dir(uri: str) -> None:
