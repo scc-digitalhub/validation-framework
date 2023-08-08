@@ -23,6 +23,7 @@ from datajudge.utils.commons import (
     LIBRARY_FRICTIONLESS,
     LIBRARY_GREAT_EXPECTATIONS,
     LIBRARY_SQLALCHEMY,
+    LIBRARY_EVIDENTLY,
     STORE_AZURE,
     STORE_DUMMY,
     STORE_FTP,
@@ -78,7 +79,7 @@ class DataResource(BaseModel):
     from other resources.
     """
 
-    _id: str = Field(default_factory=uuid4)
+    id: str = Field(default_factory=uuid4)
     """UUID of DataResource."""
 
     name: str
@@ -108,7 +109,7 @@ class Constraint(BaseModel):
     Base model for constraint.
     """
 
-    _id: str = Field(default_factory=uuid4)
+    id: str = Field(default_factory=uuid4)
     """UUID of constraint."""
 
     name: str
@@ -129,7 +130,7 @@ class ConstraintFrictionless(Constraint):
     Frictionless constraint.
     """
 
-    type: str = Field(LIBRARY_FRICTIONLESS, const=True)
+    type: str = Field(LIBRARY_FRICTIONLESS, Literal=True)
     """Constraint type ("frictionless")."""
 
     field: str
@@ -150,7 +151,7 @@ class ConstraintFullFrictionless(Constraint):
     Frictionless full schema constraint.
     """
 
-    type: str = Field(CONSTRAINT_FRICTIONLESS_SCHEMA, const=True)
+    type: str = Field(CONSTRAINT_FRICTIONLESS_SCHEMA, Literal=True)
     """Constraint type ("frictionless_schema")."""
 
     tableSchema: dict
@@ -180,7 +181,7 @@ class ConstraintBaseSQL(Constraint):
     ] = CONSTRAINT_SQL_CHECK_ROWS
     """Modality of constraint checking (On rows or single value)."""
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def check_for_emptiness(cls, values):
         """
         Check that evaluation of emptiness is performed
@@ -201,7 +202,7 @@ class ConstraintDuckDB(ConstraintBaseSQL):
     DuckDB constraint.
     """
 
-    type: str = Field(LIBRARY_DUCKDB, const=True)
+    type: str = Field(LIBRARY_DUCKDB, Literal=True)
     """Constraint type ("duckdb")."""
 
 
@@ -210,7 +211,7 @@ class ConstraintSqlAlchemy(ConstraintBaseSQL):
     SqlAlchemy constraint.
     """
 
-    type: str = Field(LIBRARY_SQLALCHEMY, const=True)
+    type: str = Field(LIBRARY_SQLALCHEMY, Literal=True)
     """Constraint type ("sqlalchemy")."""
 
 
@@ -219,7 +220,7 @@ class ConstraintGreatExpectations(Constraint):
     Great Expectation constraint.
     """
 
-    type: str = Field(LIBRARY_GREAT_EXPECTATIONS, const=True)
+    type: str = Field(LIBRARY_GREAT_EXPECTATIONS, Literal=True)
     """Constraint type ("great_expectations")."""
 
     expectation: str
@@ -229,12 +230,38 @@ class ConstraintGreatExpectations(Constraint):
     """Arguments for the exepectation."""
 
 
+class EvidentlyElement(BaseModel):
+    """
+    Evidently single test
+    """
+    test: str
+    """Evidently test/metric type (fully qualified class name)."""
+    values: Optional[dict] = None
+    """Custom parameters for the test/metric."""
+
+class ConstraintEvidently(Constraint):
+    """
+    Evidently constraint.
+    """
+
+    type: str = Field(LIBRARY_EVIDENTLY, Literal=True)
+    """Constraint type ("Evidently")."""
+
+    resource: str
+    """Resource to validate."""
+
+    reference_resource: Optional[str] = None
+    """Resource to use as reference."""
+
+    tests: List[EvidentlyElement]
+    """Evidently tests."""
+
 class ExecConfig(BaseModel):
     """
     Generic configuration for run operation.
     """
 
-    _id: str = Field(default_factory=uuid4)
+    id: str = Field(default_factory=uuid4)
     """UUID of operation."""
 
     library: Optional[str] = LIBRARY_DUMMY

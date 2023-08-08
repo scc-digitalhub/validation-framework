@@ -20,6 +20,7 @@ from datajudge.utils.config import (
     ConstraintFullFrictionless,
     ConstraintGreatExpectations,
     ConstraintSqlAlchemy,
+    ConstraintEvidently, EvidentlyElement,
     DataResource,
     RunConfig,
     StoreConfig,
@@ -373,6 +374,18 @@ CONST_DUCKDB_01 = ConstraintDuckDB(
     weight=5,
 )
 
+CONST_EVIDENTLY_01 = ConstraintEvidently(
+    name="const-evidently-01",
+    title="Test evidently constraint",
+    resources=["res_test_01"],
+    resource="res_test_01",
+    reference_resource="res_test_01",
+    tests=[EvidentlyElement(
+        test="evidently.test_preset.DataQualityTestPreset",
+        values={ "columns": ["col1", "col2", "col3"] })],
+    check="evidently.test_preset.DataQualityTestPreset",
+    weight=5
+)
 
 # ----------------
 # PLUGINS BUILDERS
@@ -440,6 +453,7 @@ mock_c_frict_full = mock_object_factory(type=CONSTRAINT_FRICTIONLESS_SCHEMA)
 mock_c_duckdb = mock_object_factory(type=LIBRARY_DUCKDB)
 mock_c_gex = mock_object_factory(type=LIBRARY_GREAT_EXPECTATIONS)
 mock_c_sqlalc = mock_object_factory(type=LIBRARY_SQLALCHEMY)
+mock_c_evidently = mock_object_factory(type=LIBRARY_EVIDENTLY)
 
 # ----------------
 # Generic mock objects (c = constraint, r = resources, s = store)

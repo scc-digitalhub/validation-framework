@@ -52,6 +52,10 @@ setup(
             "great-expectations==0.16.5",
             pd,
         ],
+        "evidently": [
+            "evidently==0.4.0",
+            pd,
+        ],
     },
     packages=find_packages(),
 )

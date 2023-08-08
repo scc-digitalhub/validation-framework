@@ -116,3 +116,14 @@ try:
 
 except ImportError:
     ...
+
+try:
+    from datajudge.plugins.validation.evidently_validation import (
+        ValidationBuilderEvidently
+    )
+    from datajudge.utils.commons import LIBRARY_EVIDENTLY
+
+    REGISTRY[OPERATION_VALIDATION][LIBRARY_EVIDENTLY] = ValidationBuilderEvidently
+
+except ImportError:
+    ...

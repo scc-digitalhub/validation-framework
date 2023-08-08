@@ -13,7 +13,7 @@ LIBRARY_DUCKDB = "duckdb"
 LIBRARY_SQLALCHEMY = "sqlalchemy"
 LIBRARY_GREAT_EXPECTATIONS = "great_expectations"
 LIBRARY_DUMMY = "_dummy"
-
+LIBRARY_EVIDENTLY = "evidently"
 
 # Data readers format
 DATAREADER_FILE = "file"
