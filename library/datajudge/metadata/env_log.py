@@ -26,7 +26,7 @@ class EnvLog:
         Return rounded GB ram memory.
         """
         mem = virtual_memory().total
-        return str(round(mem / (1024.0 ** 3)))+" GB"
+        return str(round(mem / (1024.0**3))) + " GB"
 
     def to_dict(self) -> dict:
         """

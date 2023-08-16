@@ -22,20 +22,15 @@ class ODBCArtifactStore(ArtifactStore):
 
     """
 
-    def persist_artifact(self,
-                         src: Any,
-                         dst: str,
-                         src_name: str,
-                         metadata: dict
-                         ) -> None:
+    def persist_artifact(
+        self, src: Any, dst: str, src_name: str, metadata: dict
+    ) -> None:
         """
         Method to persist an artifact.
         """
         raise NotImplementedError
 
-    def _get_and_register_artifact(self,
-                                   src: str,
-                                   fetch_mode: str) -> str:
+    def _get_and_register_artifact(self, src: str, fetch_mode: str) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
@@ -63,9 +58,7 @@ class ODBCArtifactStore(ArtifactStore):
             connection.close()
             raise NotImplementedError
 
-    def _check_access_to_storage(self,
-                                 connection: pyodbc.Connection
-                                 ) -> None:
+    def _check_access_to_storage(self, connection: pyodbc.Connection) -> None:
         """
         Check if there is access to the storage.
         """
@@ -90,9 +83,7 @@ class ODBCArtifactStore(ArtifactStore):
         """
         return get_uri_netloc(uri)
 
-    def _get_data(self,
-                  connection: pyodbc.Connection,
-                  table_full_name: str):
+    def _get_data(self, connection: pyodbc.Connection, table_full_name: str):
         """
         Return a table.
         """
@@ -109,12 +100,11 @@ class ODBCArtifactStore(ArtifactStore):
                 return connection.execute(f"SELECT * FROM {table_full_name}")
             except Exception as ex:
                 raise StoreError(
-                    f"Something wrong with data fetching. Arguments: {str(ex.args)}")
+                    f"Something wrong with data fetching. Arguments: {str(ex.args)}"
+                )
         raise StoreError("Something wrong with resource name.")
 
-    def _store_data(self,
-                    obj: Any,
-                    key: str) -> str:
+    def _store_data(self, obj: Any, key: str) -> str:
         """
         Store data locally in temporary folder and return tmp path.
         """
@@ -124,8 +114,7 @@ class ODBCArtifactStore(ArtifactStore):
         return filepath
 
     @staticmethod
-    def _write_table(query_result: Any,
-                     filepath: str) -> None:
+    def _write_table(query_result: Any, filepath: str) -> None:
         """
         Write a query result as file.
         """

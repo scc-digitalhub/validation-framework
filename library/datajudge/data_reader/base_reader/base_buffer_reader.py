@@ -1,7 +1,7 @@
 """
 BufferReader module.
 """
-from datajudge.data_reader.base_data_reader import DataReader
+from datajudge.data_reader.base_reader.base_data_reader import DataReader
 
 
 class BufferReader(DataReader):
@@ -13,8 +13,7 @@ class BufferReader(DataReader):
     a string reference to the plugin according to store.
     """
 
-    def fetch_data(self,
-                   src: str) -> bytes:
+    def fetch_data(self, src: str) -> bytes:
         """
         Fetch resource from backend as bytes.
         """

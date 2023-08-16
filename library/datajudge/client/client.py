@@ -7,8 +7,11 @@ from typing import List, Optional, Union
 
 from datajudge.client.run_builder import RunBuilder
 from datajudge.client.store_handler import StoreHandler
-from datajudge.utils.commons import (DEFAULT_DIRECTORY, DEFAULT_EXPERIMENT,
-                                     DEFAULT_PROJECT)
+from datajudge.utils.commons import (
+    DEFAULT_DIRECTORY,
+    DEFAULT_EXPERIMENT,
+    DEFAULT_PROJECT,
+)
 
 
 class Client:
@@ -42,16 +45,14 @@ class Client:
 
     """
 
-    def __init__(self,
-                 metadata_store: Optional["StoreConfig"] = None,
-                 store: Optional[Union["StoreConfig", List["StoreConfig"]]] = None,
-                 project: Optional[str] = DEFAULT_PROJECT,
-                 tmp_dir: Optional[str] = DEFAULT_DIRECTORY
-                 ) -> None:
-        self._store_handler = StoreHandler(metadata_store,
-                                           store,
-                                           project,
-                                           tmp_dir)
+    def __init__(
+        self,
+        metadata_store: Optional["StoreConfig"] = None,
+        store: Optional[Union["StoreConfig", List["StoreConfig"]]] = None,
+        project: Optional[str] = DEFAULT_PROJECT,
+        tmp_dir: Optional[str] = DEFAULT_DIRECTORY,
+    ) -> None:
+        self._store_handler = StoreHandler(metadata_store, store, project, tmp_dir)
         self._run_builder = RunBuilder(self._store_handler)
 
     def add_store(self, store: "StoreConfig") -> None:
@@ -66,12 +67,14 @@ class Client:
         """
         self._store_handler.add_artifact_store(store)
 
-    def create_run(self,
-                   resources: Union[List["DataResource"], "DataResource"],
-                   run_config: "RunConfig",
-                   experiment: Optional[str] = DEFAULT_EXPERIMENT,
-                   run_id: Optional[str] = None,
-                   overwrite: Optional[bool] = False) -> "Run":
+    def create_run(
+        self,
+        resources: Union[List["DataResource"], "DataResource"],
+        run_config: "RunConfig",
+        experiment: Optional[str] = DEFAULT_EXPERIMENT,
+        run_id: Optional[str] = None,
+        overwrite: Optional[bool] = False,
+    ) -> "Run":
         """
         Create a new run.
 
@@ -93,8 +96,6 @@ class Client:
         Run
             Run object.
         """
-        return self._run_builder.create_run(resources,
-                                            run_config,
-                                            experiment,
-                                            run_id,
-                                            overwrite)
+        return self._run_builder.create_run(
+            resources, run_config, experiment, run_id, overwrite
+        )

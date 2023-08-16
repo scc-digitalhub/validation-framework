@@ -8,16 +8,29 @@ DATAJUDGE_VERSION = ""
 # Libraries
 LIBRARY_FRICTIONLESS = "frictionless"
 LIBRARY_PANDAS_PROFILING = "pandas_profiling"
+LIBRARY_YDATA_PROFILING = "ydata_profiling"
 LIBRARY_DUCKDB = "duckdb"
 LIBRARY_SQLALCHEMY = "sqlalchemy"
 LIBRARY_GREAT_EXPECTATIONS = "great_expectations"
 LIBRARY_DUMMY = "_dummy"
-
+LIBRARY_EVIDENTLY = "evidently"
 
 # Data readers format
 DATAREADER_FILE = "file"
 DATAREADER_NATIVE = "native"
 DATAREADER_BUFFER = "buffer"
+
+
+# Data readers type
+BASE_FILE_READER = "FileReader"
+BASE_NATIVE_READER = "NativeReader"
+BASE_BUFFER_READER = "BufferReader"
+PANDAS_DATAFRAME_FILE_READER = "PandasDataFrameFileReader"
+PANDAS_DATAFRAME_DUCKDB_READER = "PandasDataFrameDuckDBReader"
+PANDAS_DATAFRAME_SQL_READER = "PandasDataFrameSQLReader"
+POLARS_DATAFRAME_FILE_READER = "PolarsDataFrameFileReader"
+POLARS_DATAFRAME_DUCKDB_READER = "PolarsDataFrameDuckDBReader"
+POLARS_DATAFRAME_SQL_READER = "PolarsDataFrameSQLReader"
 
 
 # Store types

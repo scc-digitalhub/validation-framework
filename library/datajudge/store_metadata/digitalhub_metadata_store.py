@@ -25,11 +25,13 @@ class DigitalHubMetadataStore(MetadataStore):
 
     """
 
-    def __init__(self,
-                 name: str,
-                 store_type: str,
-                 metadata_uri: str,
-                 config:  Optional[dict] = None) -> None:
+    def __init__(
+        self,
+        name: str,
+        store_type: str,
+        metadata_uri: str,
+        config: Optional[dict] = None,
+    ) -> None:
         super().__init__(name, store_type, metadata_uri, config)
         # To memorize runs present in the backend
         self._key_vault = {
@@ -38,7 +40,7 @@ class DigitalHubMetadataStore(MetadataStore):
             self._DJ_SCHEMA: [],
             self._DJ_PROFILE: [],
             self._ARTIFACT_METADATA: [],
-            self._RUN_ENV: []
+            self._RUN_ENV: [],
         }
         # API endpoints
         self._endpoints = {
@@ -47,13 +49,10 @@ class DigitalHubMetadataStore(MetadataStore):
             self._DJ_SCHEMA: cfg.API_DJ_SCHEMA,
             self._DJ_PROFILE: cfg.API_DJ_PROFILE,
             self._ARTIFACT_METADATA: cfg.API_ARTIFACT_METADATA,
-            self._RUN_ENV: cfg.API_RUN_ENV
+            self._RUN_ENV: cfg.API_RUN_ENV,
         }
 
-    def init_run(self,
-                 exp_name: str,
-                 run_id: str,
-                 overwrite: bool) -> None:
+    def init_run(self, exp_name: str, run_id: str, overwrite: bool) -> None:
         """
         Check if run id is stored in the keys vault.
         Decide then if overwrite or not all runs metadata.
@@ -68,18 +67,18 @@ class DigitalHubMetadataStore(MetadataStore):
             for i in self._key_vault:
                 # Cleanup on overwrite
                 self._key_vault[i] = [
-                    elm for elm in self._key_vault[i] if elm.run_id != run_id]
+                    elm for elm in self._key_vault[i] if elm.run_id != run_id
+                ]
             return
 
         if not overwrite and exist:
-            raise RunError("Id already present, please change " +
-                           "it or enable overwrite.")
+            raise RunError(
+                "Id already present, please change " + "it or enable overwrite."
+            )
 
-    def log_metadata(self,
-                     metadata: dict,
-                     dst: str,
-                     src_type: str,
-                     overwrite: bool) -> None:
+    def log_metadata(
+        self, metadata: dict, dst: str, src_type: str, overwrite: bool
+    ) -> None:
         """
         Method that log metadata.
         """
@@ -90,36 +89,28 @@ class DigitalHubMetadataStore(MetadataStore):
                 if elm.run_id == metadata["runId"]:
                     key = elm.key
         dst = self._build_source_destination(dst, src_type, key)
-        kwargs = {
-            "json": metadata
-        }
+        kwargs = {"json": metadata, "timeout": 60}
         kwargs = self._parse_auth(kwargs)
 
         if key is None:
             if src_type == self._RUN_METADATA:
-                kwargs["params"] = {
-                    "overwrite": "true" if overwrite else "false"
-                }
-            response = requests.post(dst, **kwargs)
+                kwargs["params"] = {"overwrite": "true" if overwrite else "false"}
+            response = requests.post(dst, timeout=60, **kwargs)
             self._parse_response(response, src_type)
         else:
-            response = requests.put(dst, **kwargs)
+            response = requests.put(dst, timeout=60, **kwargs)
             self._parse_response(response, src_type)
 
-    def _build_source_destination(self,
-                                  dst: str,
-                                  src_type: str,
-                                  key: Optional[str] = None
-                                  ) -> str:
+    def _build_source_destination(
+        self, dst: str, src_type: str, key: Optional[str] = None
+    ) -> str:
         """
         Return source destination API based on input source type.
         """
         key = "/" if key is None else "/" + key
         return check_url(dst + self._endpoints[src_type] + key)
 
-    def _parse_response(self,
-                        response: Response,
-                        src_type: str) -> None:
+    def _parse_response(self, response: Response, src_type: str) -> None:
         """
         Parse the JSON response from the backend APIs.
         """
@@ -146,9 +137,7 @@ class DigitalHubMetadataStore(MetadataStore):
         # Exception
         raise Exception("Something wrong with JSON response!")
 
-    def get_run_metadata_uri(self,
-                             exp_name: str,
-                             run_id: str) -> str:
+    def get_run_metadata_uri(self, exp_name: str, run_id: str) -> str:
         """
         Return the URL of the metadata store for the Run.
         """
@@ -162,7 +151,5 @@ class DigitalHubMetadataStore(MetadataStore):
             if self.config["auth"] == "basic":
                 kwargs["auth"] = self.config["user"], self.config["password"]
             if self.config["auth"] == "oauth":
-                kwargs["headers"] = {
-                    "Authorization": f"Bearer {self.config['token']}"
-                }
+                kwargs["headers"] = {"Authorization": f"Bearer {self.config['token']}"}
         return kwargs

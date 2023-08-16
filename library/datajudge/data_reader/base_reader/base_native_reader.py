@@ -1,7 +1,7 @@
 """
 NativeReader module.
 """
-from datajudge.data_reader.base_data_reader import DataReader
+from datajudge.data_reader.base_reader.base_data_reader import DataReader
 
 
 class NativeReader(DataReader):
@@ -14,8 +14,7 @@ class NativeReader(DataReader):
     for remote storages.
     """
 
-    def fetch_data(self,
-                   src: str) -> str:
+    def fetch_data(self, src: str) -> str:
         """
         Fetch resource from backend.
         """

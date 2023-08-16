@@ -32,28 +32,25 @@ class StoreRegistry:
         self.registry[DEFAULT_STORE] = None
         self.registry[STORE_TYPE_METADATA] = None
 
-    def register(self,
-                 new_store: Union["ArtifactStore",
-                                  "MetadataStore"],
-                 store_type: str) -> None:
+    def register(
+        self, new_store: Union["ArtifactStore", "MetadataStore"], store_type: str
+    ) -> None:
         """
         Register a new store.
         """
         if store_type == STORE_TYPE_ARTIFACT:
             for store in self.get_all_stores(store_type):
                 if store.name == new_store.name:
-                    raise StoreError("There is already a store with that name. " +
-                                     "Please choose another name to identify the store")
+                    raise StoreError(
+                        "There is already a store with that name. Please choose another name to identify the store"
+                    )
             self.registry[store_type].append(new_store)
         else:
             self.registry[store_type] = new_store
 
-    def get_store(self,
-                  store_type: str,
-                  store_name: Optional[str] = None
-                  ) -> Union["ArtifactStore",
-                             List["ArtifactStore"],
-                             "MetadataStore"]:
+    def get_store(
+        self, store_type: str, store_name: Optional[str] = None
+    ) -> Union["ArtifactStore", List["ArtifactStore"], "MetadataStore"]:
         """
         Return a store from registry.
         """
@@ -70,11 +67,9 @@ class StoreRegistry:
 
         raise StoreError("Invalid store type.")
 
-    def get_all_stores(self,
-                       store_type: str
-                       ) -> Union["ArtifactStore",
-                                  List["ArtifactStore"],
-                                  "MetadataStore"]:
+    def get_all_stores(
+        self, store_type: str
+    ) -> Union["ArtifactStore", List["ArtifactStore"], "MetadataStore"]:
         """
         Return all stores by type.
         """
@@ -89,21 +84,24 @@ class StoreHandler:
 
     """
 
-    def __init__(self,
-                 metadata_store: Optional["StoreConfig"] = None,
-                 store: Optional[List["StoreConfig"]] = None,
-                 project: Optional[str] = DEFAULT_PROJECT,
-                 tmp_dir: Optional[str] = DEFAULT_DIRECTORY) -> None:
+    def __init__(
+        self,
+        metadata_store: Optional["StoreConfig"] = None,
+        store: Optional[List["StoreConfig"]] = None,
+        project: Optional[str] = DEFAULT_PROJECT,
+        tmp_dir: Optional[str] = DEFAULT_DIRECTORY,
+    ) -> None:
         self._store_registry = StoreRegistry()
         self._store_builder = StoreBuilder(project, tmp_dir)
         self._setup(metadata_store, store)
 
         self._tmp_dir = tmp_dir
 
-    def _setup(self,
-               metadata_store: Optional["StoreConfig"] = None,
-               store: Optional[List["StoreConfig"]] = None
-               ) -> None:
+    def _setup(
+        self,
+        metadata_store: Optional["StoreConfig"] = None,
+        store: Optional[List["StoreConfig"]] = None,
+    ) -> None:
         """
         Build stores according to configurations provided by user
         and register them into the store registry.
@@ -119,16 +117,14 @@ class StoreHandler:
         # Register default store
         self._update_default_store()
 
-    def _add_metadata_store(self,
-                            config: Union["StoreConfig", dict]) -> None:
+    def _add_metadata_store(self, config: Union["StoreConfig", dict]) -> None:
         """
         Add a metadata store to the registry.
         """
         md_store = self._store_builder.build(config, md_store=True)
         self._store_registry.register(md_store, STORE_TYPE_METADATA)
 
-    def add_artifact_store(self,
-                           config: Union["StoreConfig", dict]) -> None:
+    def add_artifact_store(self, config: Union["StoreConfig", dict]) -> None:
         """
         Add an artifact store to the registry.
         """
@@ -167,9 +163,7 @@ class StoreHandler:
                 else:
                     raise StoreError("Configure only one store as default.")
 
-        try:
-            assert default.is_default
-        except (AssertionError, TypeError, AttributeError):
+        if (default is None) or (not default.is_default):
             raise StoreError("Please configure one store as default.")
 
     def get_md_store(self) -> "MetadataStore":
@@ -190,10 +184,9 @@ class StoreHandler:
         """
         return self._store_registry.get_store(DEFAULT_STORE)
 
-    def get_all_art_stores(self
-                           ) -> Union["ArtifactStore",
-                                      List["ArtifactStore"],
-                                      "MetadataStore"]:
+    def get_all_art_stores(
+        self,
+    ) -> Union["ArtifactStore", List["ArtifactStore"], "MetadataStore"]:
         """
         Get all artifact stores from registry.
         """

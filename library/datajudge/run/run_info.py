@@ -33,15 +33,15 @@ class RunInfo:
 
     """
 
-    def __init__(self,
-                 experiment_name: str,
-                 resources: List["DataResource"],
-                 run_id: str,
-                 run_config: "RunConfig",
-                 run_metadata_uri: Optional[str] = None,
-                 run_artifacts_uri: Optional[str] = None
-                 ) -> None:
-
+    def __init__(
+        self,
+        experiment_name: str,
+        resources: List["DataResource"],
+        run_id: str,
+        run_config: "RunConfig",
+        run_metadata_uri: Optional[str] = None,
+        run_artifacts_uri: Optional[str] = None,
+    ) -> None:
         self.experiment_name = experiment_name
         self.run_id = run_id
         self.run_config = run_config
@@ -68,13 +68,12 @@ class RunInfo:
             "runLibraries": self.run_libraries,
             "runMetadataUri": self.run_metadata_uri,
             "runArtifactsUri": self.run_artifacts_uri,
-            "resources": [i.dict(exclude_none=True)
-                          for i in self.resources],
+            "resources": [i.dict(exclude_none=True) for i in self.resources],
             "created": self.created,
             "beginStatus": self.begin_status,
             "started": self.started,
             "endStatus": self.end_status,
-            "finished": self.finished
+            "finished": self.finished,
         }
         return run_dict
 

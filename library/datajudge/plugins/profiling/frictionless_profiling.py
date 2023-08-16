@@ -6,12 +6,11 @@ from typing import List
 import frictionless
 from frictionless import Resource
 
-from datajudge.data_reader.base_file_reader import FileReader
 from datajudge.metadata.datajudge_reports import DatajudgeProfile
 from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.profiling.profiling_plugin import Profiling
 from datajudge.plugins.utils.plugin_utils import exec_decorator
-from datajudge.utils.commons import LIBRARY_FRICTIONLESS
+from datajudge.utils.commons import LIBRARY_FRICTIONLESS, BASE_FILE_READER
 from datajudge.utils.io_utils import write_bytesio
 
 
@@ -25,16 +24,15 @@ class ProfilePluginFrictionless(Profiling):
         self.resource = None
         self.exec_multiprocess = True
 
-    def setup(self,
-              data_reader: FileReader,
-              resource: "DataResource",
-              exec_args: dict) -> None:
+    def setup(
+        self, data_reader: "FileReader", resource: "DataResource", exec_args: dict
+    ) -> None:
         """
         Set plugin resource.
         """
+        self.data_reader = data_reader
         self.resource = resource
         self.exec_args = exec_args
-        self.data_reader = data_reader
 
     @exec_decorator
     def profile(self) -> Resource:
@@ -42,10 +40,7 @@ class ProfilePluginFrictionless(Profiling):
         Profile
         """
         data = self.data_reader.fetch_data(self.resource.path)
-        profile = Resource().describe(data,
-                                      expand=True,
-                                      stats=True,
-                                      **self.exec_args)
+        profile = Resource().describe(data, expand=True, stats=True, **self.exec_args)
         return Resource(profile.to_dict())
 
     @exec_decorator
@@ -59,18 +54,16 @@ class ProfilePluginFrictionless(Profiling):
         if exec_err is None:
             rep = result.artifact.to_dict()
             fields = rep.get("schema", {}).get("fields")
+            fields = {f["name"]: {"type": f["type"]} for f in fields}
             stats = {k: v for k, v in rep.items() if k != "schema"}
         else:
-            self.logger.error(
-                f"Execution error {str(exec_err)} for plugin {self._id}")
-            fields = None
-            stats = None
+            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
+            fields = {}
+            stats = {}
 
-        return DatajudgeProfile(self.get_lib_name(),
-                                self.get_lib_version(),
-                                duration,
-                                stats,
-                                fields)
+        return DatajudgeProfile(
+            self.get_lib_name(), self.get_lib_version(), duration, stats, fields
+        )
 
     @exec_decorator
     def render_artifact(self, result: "Result") -> List[tuple]:
@@ -106,9 +99,7 @@ class ProfileBuilderFrictionless(PluginBuilder):
     Profile plugin builder.
     """
 
-    def build(self,
-              resources: List["DataResource"]
-              ) -> List[ProfilePluginFrictionless]:
+    def build(self, resources: List["DataResource"]) -> List[ProfilePluginFrictionless]:
         """
         Build a plugin.
         """
@@ -116,7 +107,7 @@ class ProfileBuilderFrictionless(PluginBuilder):
         for res in resources:
             resource = self._get_resource_deepcopy(res)
             store = self._get_resource_store(resource)
-            data_reader = FileReader(store)
+            data_reader = self._get_data_reader(BASE_FILE_READER, store)
             plugin = ProfilePluginFrictionless()
             plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)

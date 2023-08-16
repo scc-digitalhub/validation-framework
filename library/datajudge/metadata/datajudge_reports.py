@@ -19,6 +19,7 @@ class DatajudgeBaseReport:
         Time required by the execution process.
 
     """
+
     lib_name: str
     lib_version: str
     duration: float
@@ -46,6 +47,7 @@ class DatajudgeProfile(DatajudgeBaseReport):
         Descriptors of data fields.
 
     """
+
     stats: dict
     fields: dict
 
@@ -65,6 +67,7 @@ class DatajudgeReport(DatajudgeBaseReport):
         List of errors found by validation process.
 
     """
+
     constraint: dict
     valid: bool
     errors: dict
@@ -81,4 +84,5 @@ class DatajudgeSchema(DatajudgeBaseReport):
         A list of fields.
 
     """
+
     fields: list

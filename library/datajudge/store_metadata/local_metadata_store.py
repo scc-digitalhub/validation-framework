@@ -6,8 +6,7 @@ from typing import Optional
 from datajudge.store_metadata.metadata_store import MetadataStore
 from datajudge.utils import commons as cfg
 from datajudge.utils.exceptions import RunError
-from datajudge.utils.file_utils import (check_dir, get_path, make_dir,
-                                        remove_files)
+from datajudge.utils.file_utils import check_dir, get_path, make_dir, clean_all
 from datajudge.utils.io_utils import write_json
 
 
@@ -19,11 +18,13 @@ class LocalMetadataStore(MetadataStore):
 
     """
 
-    def __init__(self,
-                 name: str,
-                 store_type: str,
-                 metadata_uri: str,
-                 config:  Optional[dict] = None) -> None:
+    def __init__(
+        self,
+        name: str,
+        store_type: str,
+        metadata_uri: str,
+        config: Optional[dict] = None,
+    ) -> None:
         super().__init__(name, store_type, metadata_uri, config)
         self._filenames = {
             self._RUN_METADATA: cfg.FN_RUN_METADATA,
@@ -40,10 +41,7 @@ class LocalMetadataStore(MetadataStore):
             self._ARTIFACT_METADATA: 0,
         }
 
-    def init_run(self,
-                 exp_name: str,
-                 run_id: str,
-                 overwrite: bool) -> None:
+    def init_run(self, exp_name: str, run_id: str, overwrite: bool) -> None:
         """
         Check run metadata folder existence.
         If folder doesn't exist, create it.
@@ -52,11 +50,9 @@ class LocalMetadataStore(MetadataStore):
         uri = self.get_run_metadata_uri(exp_name, run_id)
         self._check_dst_folder(uri, overwrite, init=True)
 
-    def log_metadata(self,
-                     metadata: dict,
-                     dst: str,
-                     src_type: str,
-                     overwrite: bool) -> None:
+    def log_metadata(
+        self, metadata: dict, dst: str, src_type: str, overwrite: bool
+    ) -> None:
         """
         Method that log metadata.
         """
@@ -65,9 +61,9 @@ class LocalMetadataStore(MetadataStore):
         write_json(metadata, dst)
 
     @staticmethod
-    def _check_dst_folder(dst: str,
-                          overwrite: bool,
-                          init: Optional[bool] = False) -> None:
+    def _check_dst_folder(
+        dst: str, overwrite: bool, init: Optional[bool] = False
+    ) -> None:
         """
         Check if run folder already exist, otherwise it creates it.
         """
@@ -75,14 +71,14 @@ class LocalMetadataStore(MetadataStore):
             if init and not overwrite:
                 raise RunError("Run already exists, please use another id.")
             if init and overwrite:
-                remove_files(dst)
+                clean_all(dst)
+                make_dir(dst)
         else:
             make_dir(dst)
 
-    def _build_source_destination(self,
-                                  dst: str,
-                                  src_type: str,
-                                  key: Optional[str] = None) -> str:
+    def _build_source_destination(
+        self, dst: str, src_type: str, key: Optional[str] = None
+    ) -> str:
         """
         Return source path based on input source type.
         """
@@ -92,9 +88,7 @@ class LocalMetadataStore(MetadataStore):
             self._cnt[src_type] += 1
         return get_path(dst, filename)
 
-    def get_run_metadata_uri(self,
-                             exp_name: str,
-                             run_id: str) -> str:
+    def get_run_metadata_uri(self, exp_name: str, run_id: str) -> str:
         """
         Return the path of the metadata folder for the Run.
         """

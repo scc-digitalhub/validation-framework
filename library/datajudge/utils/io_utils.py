@@ -17,8 +17,8 @@ class BytesIOWrapper(BufferedReader):
 
     def __init__(self, text_io_buffer, encoding=None, errors=None, **kwargs):
         super().__init__(text_io_buffer, **kwargs)
-        self.encoding = encoding or text_io_buffer.encoding or 'utf-8'
-        self.errors = errors or text_io_buffer.errors or 'strict'
+        self.encoding = encoding or text_io_buffer.encoding or "utf-8"
+        self.errors = errors or text_io_buffer.errors or "strict"
 
     def _encoding_call(self, method_name, *args, **kwargs):
         raw_method = getattr(self.raw, method_name)
@@ -26,13 +26,13 @@ class BytesIOWrapper(BufferedReader):
         return val.encode(self.encoding, errors=self.errors)
 
     def read(self, size=-1):
-        return self._encoding_call('read', size)
+        return self._encoding_call("read", size)
 
     def read1(self, size=-1):
-        return self._encoding_call('read1', size)
+        return self._encoding_call("read1", size)
 
     def peek(self, size=-1):
-        return self._encoding_call('peek', size)
+        return self._encoding_call("peek", size)
 
 
 def wrap_bytes(src: IO) -> StringIO:
@@ -73,8 +73,7 @@ def write_bytesio(src: str) -> BytesIO:
     return bytesio
 
 
-def write_json(data: dict,
-               path: Union[str, Path]) -> None:
+def write_json(data: dict, path: Union[str, Path]) -> None:
     """
     Store JSON file.
     """
@@ -82,8 +81,7 @@ def write_json(data: dict,
         json.dump(data, file)
 
 
-def write_text(string: str,
-               path: Union[str, Path]) -> None:
+def write_text(string: str, path: Union[str, Path]) -> None:
     """
     Write text on a file.
     """
@@ -91,8 +89,7 @@ def write_text(string: str,
         file.write(string)
 
 
-def write_bytes(byt: bytes,
-                path: Union[str, Path]) -> None:
+def write_bytes(byt: bytes, path: Union[str, Path]) -> None:
     """
     Write text on a file.
     """
@@ -100,8 +97,7 @@ def write_bytes(byt: bytes,
         file.write(byt)
 
 
-def write_object(buff: IO,
-                 dst: str) -> None:
+def write_object(buff: IO, dst: str) -> None:
     """
     Save a buffer as file.
     """

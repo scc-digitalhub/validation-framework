@@ -1,13 +1,13 @@
 """
 Common filesystem utils.
 """
-import glob
 import os
 import shutil
 from pathlib import Path
 
 
 # Directories
+
 
 def check_dir(path: str) -> bool:
     """
@@ -19,7 +19,7 @@ def check_dir(path: str) -> bool:
         return False
 
 
-def make_dir(*args):
+def make_dir(*args) -> None:
     """
     Dirs builder function.
     """
@@ -33,14 +33,14 @@ def get_absolute_path(*args) -> str:
     """
     Return absolute path.
     """
-    return Path(*args).absolute().as_posix()
+    return str(Path(*args).absolute())
 
 
 def get_path(*args) -> str:
     """
     Return path.
     """
-    return Path(*args).as_posix()
+    return str(Path(*args))
 
 
 def check_make_dir(uri: str) -> None:
@@ -52,6 +52,7 @@ def check_make_dir(uri: str) -> None:
 
 
 # Files
+
 
 def check_path(path: str) -> bool:
     """
@@ -68,17 +69,6 @@ def copy_file(src: str, dst: str) -> None:
     Copy local file to destination.
     """
     shutil.copy(src, dst)
-
-
-def remove_files(path: str) -> None:
-    """
-    Remove files from a folder.
-    """
-    if not path.endswith("*"):
-        path = get_path(path, "*")
-    files = glob.glob(path)
-    for file in files:
-        os.remove(file)
 
 
 def clean_all(path: str) -> None:

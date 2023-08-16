@@ -46,12 +46,16 @@ def rebuild_uri(uri: str, *args) -> str:
     """
     parsed = parse_uri(uri)
     new_path = str(Path(parsed.path, *args))
-    new_uri = urlunparse((parsed.scheme,
-                          parsed.netloc,
-                          new_path,
-                          parsed.params,
-                          parsed.query,
-                          parsed.fragment))
+    new_uri = urlunparse(
+        (
+            parsed.scheme,
+            parsed.netloc,
+            new_path,
+            parsed.params,
+            parsed.query,
+            parsed.fragment,
+        )
+    )
     return new_uri
 
 
@@ -69,5 +73,5 @@ def check_url(url: str) -> str:
     """
     Parse an URL and clean it from double '/' character.
     """
-    parsed = get_uri_path(url).replace('//', '/')
+    parsed = get_uri_path(url).replace("//", "/")
     return urljoin(url, parsed)

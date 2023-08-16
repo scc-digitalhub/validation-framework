@@ -1,8 +1,6 @@
 """
 Dummy artifact store module.
 """
-from typing import Any
-
 from datajudge.store_artifact.artifact_store import ArtifactStore
 
 
@@ -10,60 +8,32 @@ class DummyArtifactStore(ArtifactStore):
     """
     Dummy artifact store object implementation.
 
-    Allows the client to interact store methods.
-
+    Only allows the client to interact store methods.
     """
 
-    def persist_artifact(self,
-                         src: Any,
-                         dst: str,
-                         src_name: str,
-                         metadata: dict
-                         ) -> None:
-        """
-        Do nothing.
-        """
+    def persist_artifact(self, *args) -> None:
+        ...
 
-    def _get_and_register_artifact(self,
-                                   src: str,
-                                   fetch_mode: str) -> str:
-        """
-        Return none.
-        """
+    def _get_and_register_artifact(self, *args) -> None:
+        ...
 
-    def fetch_file(self, src: str) -> str:
-        """
-        Do nothing.
-        """
+    def fetch_file(self, *args) -> None:
+        ...
 
-    def fetch_native(self, src: str) -> str:
-        """
-        Do nothing.
-        """
+    def fetch_native(self, *args) -> None:
+        ...
 
-    def fetch_buffer(self, src: str) -> None:
-        """
-        Do nothing.
-        """
+    def fetch_buffer(self, *args) -> None:
+        ...
 
-    def _check_access_to_storage(self) -> None:
-        """
-        Do nothing.
-        """
+    def _check_access_to_storage(self, *args) -> None:
+        ...
 
-    def get_run_artifacts_uri(self,
-                              exp_name: str,
-                              run_id: str) -> None:
-        """
-        Return none.
-        """
+    def get_run_artifacts_uri(self, *args) -> None:
+        ...
 
-    def _get_data(self, *args) -> Any:
-        """
-        Do nothing.
-        """
+    def _get_data(self, *args) -> None:
+        ...
 
-    def _store_data(self, *args) -> str:
-        """
-        Do nothing.
-        """
+    def _store_data(self, *args) -> None:
+        ...

@@ -1,7 +1,7 @@
 """
 FileReader module.
 """
-from datajudge.data_reader.base_data_reader import DataReader
+from datajudge.data_reader.base_reader.base_data_reader import DataReader
 
 
 class FileReader(DataReader):
@@ -12,8 +12,7 @@ class FileReader(DataReader):
     resources from backend and store them locally.
     """
 
-    def fetch_data(self,
-                   src: str) -> str:
+    def fetch_data(self, src: str) -> str:
         """
         Fetch resource from backend.
         """

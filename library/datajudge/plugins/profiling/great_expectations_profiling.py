@@ -1,25 +1,26 @@
 """
 GreatExpectations implementation of profiling plugin.
 """
-import os
 from copy import deepcopy
-from pathlib import Path
 from typing import List
 
 import great_expectations as ge
 from great_expectations.core.expectation_suite import ExpectationSuite
-from great_expectations.profile.user_configurable_profiler import \
-    UserConfigurableProfiler
+from great_expectations.profile.user_configurable_profiler import (
+    UserConfigurableProfiler,
+)
 
-from datajudge.data_reader.pandas_dataframe_file_reader import PandasDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeProfile
 from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.profiling.profiling_plugin import Profiling
-from datajudge.plugins.utils.great_expectations_utils import \
-    get_great_expectations_validator
+from datajudge.plugins.utils.great_expectations_utils import (
+    get_great_expectations_validator,
+)
 from datajudge.plugins.utils.plugin_utils import exec_decorator
-from datajudge.utils.commons import LIBRARY_GREAT_EXPECTATIONS
-from datajudge.utils.file_utils import clean_all
+from datajudge.utils.commons import (
+    LIBRARY_GREAT_EXPECTATIONS,
+    PANDAS_DATAFRAME_FILE_READER,
+)
 
 
 class ProfilePluginGreatExpectations(Profiling):
@@ -32,10 +33,12 @@ class ProfilePluginGreatExpectations(Profiling):
         self.resource = None
         self.exec_multiprocess = True
 
-    def setup(self,
-              data_reader: PandasDataFrameFileReader,
-              resource: "DataResource",
-              exec_args: dict) -> None:
+    def setup(
+        self,
+        data_reader: "NativeReader",
+        resource: "DataResource",
+        exec_args: dict,
+    ) -> None:
         """
         Set plugin resource.
         """
@@ -49,9 +52,9 @@ class ProfilePluginGreatExpectations(Profiling):
         Profile a Data Resource.
         """
         data = self.data_reader.fetch_data(self.resource.path)
-        validator = get_great_expectations_validator(data,
-                                                    str(self.resource.name),
-                                                    str(self.resource.title))
+        validator = get_great_expectations_validator(
+            data, str(self.resource.name), str(self.resource.title)
+        )
         profiler = UserConfigurableProfiler(profile_dataset=validator)
         result = profiler.build_suite()
         return ExpectationSuite(**result.to_json_dict())
@@ -66,19 +69,16 @@ class ProfilePluginGreatExpectations(Profiling):
 
         if exec_err is None:
             res = deepcopy(result.artifact).to_json_dict()
-            fields = list(res.get("meta", {}).get("columns", {}).keys())
-            stats = res.get("expectations")
+            fields = {"fields": list(res.get("meta", {}).get("columns", {}).keys())}
+            stats = {"stats": list(res.get("expectations"))}
         else:
-            self.logger.error(
-                f"Execution error {str(exec_err)} for plugin {self._id}")
-            fields = None
-            stats = None
+            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
+            fields = {}
+            stats = {}
 
-        return DatajudgeProfile(self.get_lib_name(),
-                                self.get_lib_version(),
-                                duration,
-                                stats,
-                                fields)
+        return DatajudgeProfile(
+            self.get_lib_name(), self.get_lib_version(), duration, stats, fields
+        )
 
     @exec_decorator
     def render_artifact(self, result: "Result") -> List[tuple]:
@@ -114,9 +114,9 @@ class ProfileBuilderGreatExpectations(PluginBuilder):
     Profile plugin builder.
     """
 
-    def build(self,
-              resources: List["DataResource"]
-              ) -> List[ProfilePluginGreatExpectations]:
+    def build(
+        self, resources: List["DataResource"]
+    ) -> List[ProfilePluginGreatExpectations]:
         """
         Build a plugin.
         """
@@ -124,15 +124,11 @@ class ProfileBuilderGreatExpectations(PluginBuilder):
         for res in resources:
             resource = self._get_resource_deepcopy(res)
             store = self._get_resource_store(resource)
-            data_reader = PandasDataFrameFileReader(store)
+            data_reader = self._get_data_reader(PANDAS_DATAFRAME_FILE_READER, store)
             plugin = ProfilePluginGreatExpectations()
             plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)
         return plugins
 
     def destroy(self) -> None:
-        """
-        Destory plugins.
-        """
-        path = Path(os.getcwd(), "ge_ctxt")
-        clean_all(path)
+        ...

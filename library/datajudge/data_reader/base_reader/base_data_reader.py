@@ -13,14 +13,11 @@ class DataReader(metaclass=ABCMeta):
 
     """
 
-    def __init__(self,
-                 store: "ArtifactStore"
-                 ) -> None:
+    def __init__(self, store: "ArtifactStore") -> None:
         self.store = store
 
     @abstractmethod
-    def fetch_data(self,
-                   src: str) -> Any:
+    def fetch_data(self, src: str) -> Any:
         """
         Fetch resources from backend.
         """

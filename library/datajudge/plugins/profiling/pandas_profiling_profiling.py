@@ -8,21 +8,33 @@ import pandas_profiling
 from pandas_profiling import ProfileReport
 
 
-from datajudge.data_reader.pandas_dataframe_file_reader import PandasDataFrameFileReader
 from datajudge.metadata.datajudge_reports import DatajudgeProfile
 from datajudge.plugins.base_plugin import PluginBuilder
 from datajudge.plugins.profiling.profiling_plugin import Profiling
 from datajudge.plugins.utils.plugin_utils import exec_decorator
-from datajudge.utils.commons import LIBRARY_PANDAS_PROFILING
+from datajudge.utils.commons import (
+    LIBRARY_PANDAS_PROFILING,
+    PANDAS_DATAFRAME_FILE_READER,
+)
 from datajudge.utils.io_utils import write_bytesio
 
 
 # Columns/fields to parse from profile
 PROFILE_COLUMNS = ["analysis", "table", "variables"]
-PROFILE_FIELDS = ["n_distinct", "p_distinct", "is_unique",
-                  "n_unique", "p_unique", "type", "hashable",
-                  "n_missing", "n", "p_missing", "count",
-                  "memory_size"]
+PROFILE_FIELDS = [
+    "n_distinct",
+    "p_distinct",
+    "is_unique",
+    "n_unique",
+    "p_unique",
+    "type",
+    "hashable",
+    "n_missing",
+    "n",
+    "p_missing",
+    "count",
+    "memory_size",
+]
 
 
 class ProfilePluginPandasProfiling(Profiling):
@@ -35,10 +47,12 @@ class ProfilePluginPandasProfiling(Profiling):
         self.resource = None
         self.exec_multiprocess = True
 
-    def setup(self,
-              data_reader: PandasDataFrameFileReader,
-              resource: "DataResource",
-              exec_args: dict) -> None:
+    def setup(
+        self,
+        data_reader: "NativeReader",
+        resource: "DataResource",
+        exec_args: dict,
+    ) -> None:
         """
         Set plugin resource.
         """
@@ -70,31 +84,24 @@ class ProfilePluginPandasProfiling(Profiling):
             full_profile = json.loads(json_str)
 
             # Short profile args
-            args = {
-                k: full_profile.get(k, {}) for k in PROFILE_COLUMNS
-            }
+            args = {k: full_profile.get(k, {}) for k in PROFILE_COLUMNS}
 
             # Variables overwriting by filtering
             var = args.get("variables", {})
             for key in var:
-                args["variables"][key] = {
-                    k: var[key][k] for k in PROFILE_FIELDS
-                }
+                args["variables"][key] = {k: var[key][k] for k in PROFILE_FIELDS}
 
             # Get fields, stats and duration
             fields = args.get("variables", {})
             stats = args.get("table", {})
         else:
-            self.logger.error(
-                f"Execution error {str(exec_err)} for plugin {self._id}")
-            fields = None
-            stats = None
+            self.logger.error(f"Execution error {str(exec_err)} for plugin {self._id}")
+            fields = {}
+            stats = {}
 
-        return DatajudgeProfile(self.get_lib_name(),
-                                self.get_lib_version(),
-                                duration,
-                                stats,
-                                fields)
+        return DatajudgeProfile(
+            self.get_lib_name(), self.get_lib_version(), duration, stats, fields
+        )
 
     @exec_decorator
     def render_artifact(self, result: "Result") -> List[tuple]:
@@ -105,21 +112,18 @@ class ProfilePluginPandasProfiling(Profiling):
 
         if result.artifact is None:
             _object = {"errors": result.errors}
-            filename = self._fn_profile.format(
-                f"{LIBRARY_PANDAS_PROFILING}.json")
+            filename = self._fn_profile.format(f"{LIBRARY_PANDAS_PROFILING}.json")
             artifacts.append(self.get_render_tuple(_object, filename))
         else:
             string_html = result.artifact.to_html()
             strio_html = write_bytesio(string_html)
-            html_filename = self._fn_profile.format(
-                f"{LIBRARY_PANDAS_PROFILING}.html")
+            html_filename = self._fn_profile.format(f"{LIBRARY_PANDAS_PROFILING}.html")
             artifacts.append(self.get_render_tuple(strio_html, html_filename))
 
             string_json = result.artifact.to_json()
             string_json = string_json.replace("NaN", "null")
             strio_json = write_bytesio(string_json)
-            json_filename = self._fn_profile.format(
-                f"{LIBRARY_PANDAS_PROFILING}.json")
+            json_filename = self._fn_profile.format(f"{LIBRARY_PANDAS_PROFILING}.json")
             artifacts.append(self.get_render_tuple(strio_json, json_filename))
 
         return artifacts
@@ -144,9 +148,9 @@ class ProfileBuilderPandasProfiling(PluginBuilder):
     Profile plugin builder.
     """
 
-    def build(self,
-              resources: List["DataResource"]
-              ) -> List[ProfilePluginPandasProfiling]:
+    def build(
+        self, resources: List["DataResource"]
+    ) -> List[ProfilePluginPandasProfiling]:
         """
         Build a plugin.
         """
@@ -154,7 +158,7 @@ class ProfileBuilderPandasProfiling(PluginBuilder):
         for res in resources:
             resource = self._get_resource_deepcopy(res)
             store = self._get_resource_store(resource)
-            data_reader = PandasDataFrameFileReader(store)
+            data_reader = self._get_data_reader(PANDAS_DATAFRAME_FILE_READER, store)
             plugin = ProfilePluginPandasProfiling()
             plugin.setup(data_reader, resource, self.exec_args)
             plugins.append(plugin)

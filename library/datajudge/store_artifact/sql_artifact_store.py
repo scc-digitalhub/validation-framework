@@ -24,20 +24,15 @@ class SQLArtifactStore(ArtifactStore):
 
     """
 
-    def persist_artifact(self,
-                         src: Any,
-                         dst: str,
-                         src_name: str,
-                         metadata: dict
-                         ) -> None:
+    def persist_artifact(
+        self, src: Any, dst: str, src_name: str, metadata: dict
+    ) -> None:
         """
         Method to persist an artifact.
         """
         raise NotImplementedError
 
-    def _get_and_register_artifact(self,
-                                   src: str,
-                                   fetch_mode: str) -> str:
+    def _get_and_register_artifact(self, src: str, fetch_mode: str) -> str:
         """
         Method to fetch an artifact from the backend an to register
         it on the paths registry.
@@ -88,7 +83,8 @@ class SQLArtifactStore(ArtifactStore):
             return create_engine(connection_string, future=True)
         except Exception as ex:
             raise StoreError(
-                f"Something wrong with connection string. Arguments: {str(ex.args)}")
+                f"Something wrong with connection string. Arguments: {str(ex.args)}"
+            )
 
     @staticmethod
     def _get_table_name(uri: str) -> str:
@@ -106,11 +102,9 @@ class SQLArtifactStore(ArtifactStore):
         name = get_uri_netloc(uri)
         return name.split(".")[0]
 
-    def _get_data(self,
-                  engine: Engine,
-                  table_name: str,
-                  schema: Optional[str] = None
-                  ) -> CursorResult:
+    def _get_data(
+        self, engine: Engine, table_name: str, schema: Optional[str] = None
+    ) -> CursorResult:
         """
         Return a table from a db.
         """
@@ -121,9 +115,7 @@ class SQLArtifactStore(ArtifactStore):
             results = conn.execute(query)
         return results
 
-    def _store_data(self,
-                    obj: CursorResult,
-                    key: str) -> str:
+    def _store_data(self, obj: CursorResult, key: str) -> str:
         """
         Store data locally in temporary folder and return tmp path.
         """
@@ -133,8 +125,7 @@ class SQLArtifactStore(ArtifactStore):
         return filepath
 
     @staticmethod
-    def _write_table(query_result: CursorResult,
-                     filepath: str) -> None:
+    def _write_table(query_result: CursorResult, filepath: str) -> None:
         """
         Write a query result as file.
         """

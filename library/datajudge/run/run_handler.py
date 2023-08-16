@@ -4,12 +4,18 @@ Run handler module.
 import concurrent.futures
 from typing import Any, List
 
-from datajudge.data_reader.base_file_reader import FileReader
+from datajudge.data_reader.utils import build_reader
 from datajudge.plugins.plugin_factory import builder_factory
-from datajudge.utils.commons import (OPERATION_INFERENCE,
-                                     OPERATION_PROFILING, OPERATION_VALIDATION,
-                                     RESULT_DATAJUDGE, RESULT_LIBRARY,
-                                     RESULT_RENDERED, RESULT_WRAPPED)
+from datajudge.utils.commons import (
+    BASE_FILE_READER,
+    OPERATION_INFERENCE,
+    OPERATION_PROFILING,
+    OPERATION_VALIDATION,
+    RESULT_DATAJUDGE,
+    RESULT_LIBRARY,
+    RESULT_RENDERED,
+    RESULT_WRAPPED,
+)
 from datajudge.utils.exceptions import RunError
 from datajudge.utils.file_utils import get_absolute_path
 from datajudge.utils.uri_utils import get_name_from_uri
@@ -30,21 +36,17 @@ class RunHandlerRegistry:
         """
         Setup the run handler registry.
         """
-        for ops in [OPERATION_INFERENCE,
-                    OPERATION_VALIDATION,
-                    OPERATION_PROFILING]:
+        for ops in [OPERATION_INFERENCE, OPERATION_VALIDATION, OPERATION_PROFILING]:
             self.registry[ops] = {}
-            for res in [RESULT_WRAPPED,
-                        RESULT_DATAJUDGE,
-                        RESULT_RENDERED,
-                        RESULT_LIBRARY]:
+            for res in [
+                RESULT_WRAPPED,
+                RESULT_DATAJUDGE,
+                RESULT_RENDERED,
+                RESULT_LIBRARY,
+            ]:
                 self.registry[ops][res] = []
 
-    def register(self,
-                 ops: str,
-                 _type: str,
-                 _object: Any
-                 ) -> None:
+    def register(self, ops: str, _type: str, _object: Any) -> None:
         """
         Register an object on the registry based on
         operation and result typology.
@@ -54,9 +56,7 @@ class RunHandlerRegistry:
         else:
             self.registry[ops][_type].append(_object)
 
-    def get_object(self,
-                   ops: str,
-                   _type: str) -> list:
+    def get_object(self, ops: str, _type: str) -> list:
         """
         Return object from registry.
         """
@@ -75,46 +75,48 @@ class RunHandler:
 
     """
 
-    def __init__(self,
-                 config: "RunConfig",
-                 store_handler: "StoreHandler") -> None:
-
+    def __init__(self, config: "RunConfig", store_handler: "StoreHandler") -> None:
         self._config = config
         self._store_handler = store_handler
         self._registry = RunHandlerRegistry()
 
-    def infer(self,
-              resources: List["DataResource"],
-              parallel: bool = False,
-              num_worker: int = 10
-              ) -> None:
+    def infer(
+        self,
+        resources: List["DataResource"],
+        parallel: bool = False,
+        num_worker: int = 10,
+    ) -> None:
         """
         Wrapper for plugins infer methods.
         """
-        builders = builder_factory(self._config.inference,
-                                   OPERATION_INFERENCE,
-                                   self._store_handler.get_all_art_stores())
+        builders = builder_factory(
+            self._config.inference,
+            OPERATION_INFERENCE,
+            self._store_handler.get_all_art_stores(),
+        )
         plugins = self._create_plugins(builders, resources)
         self._scheduler(plugins, OPERATION_INFERENCE, parallel, num_worker)
         self._destroy_builders(builders)
 
-    def validate(self,
-                 resources: List["DataResource"],
-                 constraints: List["Constraint"],
-                 error_report: str,
-                 parallel: bool = False,
-                 num_worker: int = 10
-                 ) -> None:
+    def validate(
+        self,
+        resources: List["DataResource"],
+        constraints: List["Constraint"],
+        error_report: str,
+        parallel: bool = False,
+        num_worker: int = 10,
+    ) -> None:
         """
         Wrapper for plugins validate methods.
         """
         self._parse_report_arg(error_report)
         constraints = listify(constraints)
-        builders = builder_factory(self._config.validation,
-                                   OPERATION_VALIDATION,
-                                   self._store_handler.get_all_art_stores())
-        plugins = self._create_plugins(
-            builders, resources, constraints, error_report)
+        builders = builder_factory(
+            self._config.validation,
+            OPERATION_VALIDATION,
+            self._store_handler.get_all_art_stores(),
+        )
+        plugins = self._create_plugins(builders, resources, constraints, error_report)
         self._scheduler(plugins, OPERATION_VALIDATION, parallel, num_worker)
         self._destroy_builders(builders)
 
@@ -124,39 +126,39 @@ class RunHandler:
         Check error_report argument and raise
         if differs from options.
         """
-        if error_report not in ("count",
-                                "partial",
-                                "full"):
-            raise RunError("Available options for error_report are 'count', 'partial', 'full'.")
+        if error_report not in ("count", "partial", "full"):
+            raise RunError(
+                "Available options for error_report are 'count', 'partial', 'full'."
+            )
 
-    def profile(self,
-                resources: List["DataResource"],
-                parallel: bool = False,
-                num_worker: int = 10
-                ) -> None:
+    def profile(
+        self,
+        resources: List["DataResource"],
+        parallel: bool = False,
+        num_worker: int = 10,
+    ) -> None:
         """
         Wrapper for plugins profile methods.
         """
-        builders = builder_factory(self._config.profiling,
-                                   OPERATION_PROFILING,
-                                   self._store_handler.get_all_art_stores())
+        builders = builder_factory(
+            self._config.profiling,
+            OPERATION_PROFILING,
+            self._store_handler.get_all_art_stores(),
+        )
         plugins = self._create_plugins(builders, resources)
         self._scheduler(plugins, OPERATION_PROFILING, parallel, num_worker)
         self._destroy_builders(builders)
 
     @staticmethod
-    def _create_plugins(builders: "PluginBuilder",
-                        *args) -> List["Plugin"]:
+    def _create_plugins(builders: "PluginBuilder", *args) -> List["Plugin"]:
         """
         Return a list of plugins.
         """
         return flatten_list([builder.build(*args) for builder in builders])
 
-    def _scheduler(self,
-                   plugins: List["Plugin"],
-                   ops: str,
-                   parallel: bool,
-                   num_worker: int) -> None:
+    def _scheduler(
+        self, plugins: List["Plugin"], ops: str, parallel: bool, num_worker: int
+    ) -> None:
         """
         Schedule execution to avoid multiprocessing issues.
         """
@@ -179,9 +181,7 @@ class RunHandler:
         self._pool_execute_multithread(multithreading, ops, num_worker)
         self._pool_execute_multiprocess(multiprocess, ops, num_worker)
 
-    def _sequential_execute(self,
-                            plugins: List["Plugin"],
-                            ops: str) -> None:
+    def _sequential_execute(self, plugins: List["Plugin"], ops: str) -> None:
         """
         Execute operations in sequence.
         """
@@ -189,10 +189,9 @@ class RunHandler:
             data = self._execute(plugin)
             self._register_results(ops, data)
 
-    def _pool_execute_multiprocess(self,
-                                   plugins: List["Plugin"],
-                                   ops: str,
-                                   num_worker: int) -> None:
+    def _pool_execute_multiprocess(
+        self, plugins: List["Plugin"], ops: str, num_worker: int
+    ) -> None:
         """
         Instantiate a concurrent.future.ProcessPoolExecutor pool to
         execute operations in multiprocessing.
@@ -201,10 +200,9 @@ class RunHandler:
             for data in pool.map(self._execute, plugins):
                 self._register_results(ops, data)
 
-    def _pool_execute_multithread(self,
-                                  plugins: List["Plugin"],
-                                  ops: str,
-                                  num_worker: int) -> None:
+    def _pool_execute_multithread(
+        self, plugins: List["Plugin"], ops: str, num_worker: int
+    ) -> None:
         """
         Instantiate a concurrent.future.ThreadPoolExecutor pool to
         execute operations in multithreading.
@@ -225,10 +223,11 @@ class RunHandler:
         """
         return plugin.execute()
 
-    def _register_results(self,
-                          operation: str,
-                          result: dict,
-                          ) -> None:
+    def _register_results(
+        self,
+        operation: str,
+        result: dict,
+    ) -> None:
         """
         Register results.
         """
@@ -253,55 +252,89 @@ class RunHandler:
         """
         Get a list of schemas produced by inference libraries.
         """
-        return [obj.artifact for obj in self.get_item(OPERATION_INFERENCE, RESULT_WRAPPED)]
+        return [
+            obj.artifact for obj in self.get_item(OPERATION_INFERENCE, RESULT_WRAPPED)
+        ]
 
     def get_artifact_report(self) -> List[Any]:
         """
         Get a list of reports produced by validation libraries.
         """
-        return [obj.artifact for obj in self.get_item(OPERATION_VALIDATION, RESULT_WRAPPED)]
+        return [
+            obj.artifact for obj in self.get_item(OPERATION_VALIDATION, RESULT_WRAPPED)
+        ]
 
     def get_artifact_profile(self) -> List[Any]:
         """
         Get a list of profiles produced by profiling libraries.
         """
-        return [obj.artifact for obj in self.get_item(OPERATION_PROFILING, RESULT_WRAPPED)]
+        return [
+            obj.artifact for obj in self.get_item(OPERATION_PROFILING, RESULT_WRAPPED)
+        ]
 
     def get_datajudge_schema(self) -> List["DatajudgeSchema"]:
         """
         Wrapper for plugins parsing methods.
         """
-        return [obj.artifact for obj in self.get_item(OPERATION_INFERENCE, RESULT_DATAJUDGE)]
+        return [
+            obj.artifact for obj in self.get_item(OPERATION_INFERENCE, RESULT_DATAJUDGE)
+        ]
 
     def get_datajudge_report(self) -> List["DatajudgeReport"]:
         """
         Wrapper for plugins parsing methods.
         """
-        return [obj.artifact for obj in self.get_item(OPERATION_VALIDATION, RESULT_DATAJUDGE)]
+        return [
+            obj.artifact
+            for obj in self.get_item(OPERATION_VALIDATION, RESULT_DATAJUDGE)
+        ]
 
     def get_datajudge_profile(self) -> List["DatajudgeProfile"]:
         """
         Wrapper for plugins parsing methods.
         """
-        return [obj.artifact for obj in self.get_item(OPERATION_PROFILING, RESULT_DATAJUDGE)]
+        return [
+            obj.artifact for obj in self.get_item(OPERATION_PROFILING, RESULT_DATAJUDGE)
+        ]
 
     def get_rendered_schema(self) -> List[Any]:
         """
         Get a list of schemas ready to be persisted.
         """
-        return listify(flatten_list([obj.artifact for obj in self.get_item(OPERATION_INFERENCE, RESULT_RENDERED)]))
+        return listify(
+            flatten_list(
+                [
+                    obj.artifact
+                    for obj in self.get_item(OPERATION_INFERENCE, RESULT_RENDERED)
+                ]
+            )
+        )
 
     def get_rendered_report(self) -> List[Any]:
         """
         Get a list of reports ready to be persisted.
         """
-        return listify(flatten_list([obj.artifact for obj in self.get_item(OPERATION_VALIDATION, RESULT_RENDERED)]))
+        return listify(
+            flatten_list(
+                [
+                    obj.artifact
+                    for obj in self.get_item(OPERATION_VALIDATION, RESULT_RENDERED)
+                ]
+            )
+        )
 
     def get_rendered_profile(self) -> List[Any]:
         """
         Get a list of profiles ready to be persisted.
         """
-        return listify(flatten_list([obj.artifact for obj in self.get_item(OPERATION_PROFILING, RESULT_RENDERED)]))
+        return listify(
+            flatten_list(
+                [
+                    obj.artifact
+                    for obj in self.get_item(OPERATION_PROFILING, RESULT_RENDERED)
+                ]
+            )
+        )
 
     def get_libraries(self) -> List[dict]:
         """
@@ -315,37 +348,29 @@ class RunHandler:
                     libs[ops].append(i)
         return libs
 
-    def log_metadata(self,
-                     src: dict,
-                     dst: str,
-                     src_type: str,
-                     overwrite: bool) -> None:
+    def log_metadata(self, src: dict, dst: str, src_type: str, overwrite: bool) -> None:
         """
         Method to log metadata in the metadata store.
         """
         store = self._store_handler.get_md_store()
         store.log_metadata(src, dst, src_type, overwrite)
 
-    def persist_artifact(self,
-                         src: Any,
-                         dst: str,
-                         src_name: str,
-                         metadata: dict) -> None:
+    def persist_artifact(
+        self, src: Any, dst: str, src_name: str, metadata: dict
+    ) -> None:
         """
         Method to persist artifacts in the default artifact store.
         """
         store = self._store_handler.get_def_store()
         store.persist_artifact(src, dst, src_name, metadata)
 
-    def persist_data(self,
-                     resources: List["DataResource"],
-                     dst: str) -> None:
+    def persist_data(self, resources: List["DataResource"], dst: str) -> None:
         """
         Persist input data as artifact.
         """
         for res in resources:
             store = self._store_handler.get_art_store(res.store)
-            data_reader = FileReader(store)
+            data_reader = build_reader(BASE_FILE_READER, store)
             for path in listify(res.path):
                 tmp_pth = data_reader.fetch_data(path)
                 tmp_pth = get_absolute_path(tmp_pth)
